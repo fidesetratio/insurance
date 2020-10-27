@@ -1,0 +1,605 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="list_polis_powersave" pageWidth="1800" pageHeight="800" orientation="Landscape" columnWidth="1730" leftMargin="35" rightMargin="35" topMargin="45" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<reportFont name="Roman" isDefault="false" fontName="Times New Roman" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="nama" class="java.lang.String">
+		<defaultValueExpression><![CDATA["HIMMIA"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tgl_lahir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("29/06/1972")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="identitas" class="java.lang.String">
+		<defaultValueExpression><![CDATA["0952022906725506"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[/* Formatted on 2008/09/01 20:27 (Formatter Plus v4.8.5) */
+SELECT  det_bisnis.lsdbs_name,  (CASE
+             WHEN pol.lca_id in ('37')
+                THEN 'Agency'
+			 WHEN pol.lca_id in ('52')
+                THEN 'Agency Arthamas'
+             WHEN pol.lca_id IN ('08', '42')
+                THEN 'Worksite'
+             WHEN pol.lca_id = '09'
+                THEN 'Bancassurance'
+             WHEN pol.lca_id = '46'
+                THEN 'Hybrid'
+             ELSE 'Regional'
+          END
+         ) dist,
+         NVL (NVL (cab_bank_1.nama_cabang, cab_bank_2.nama_cabang),
+              cabang.lca_nama
+             ) cabang,
+         cab_bank_1.kci,
+         NVL (NVL (cab_bank_1.mns_nama, cab_bank_2.nama_reff),
+              ag.mcl_first
+             ) penjual,
+         pol.reg_spaj, pol.mspo_policy_no_format, pp.mcl_first pp_nama,
+         pp.mspe_date_birth pp_lahir, pp.mspe_no_identity pp_id,
+         tt.mcl_first tt_nama, ins.mste_beg_date, stat.lssp_status,
+         kurs.lku_symbol, prod.mspr_premium,
+         NVL (powersave.mpr_jangka_invest, stable.msl_mgi) mgi,
+         NVL (powersave.mpr_rate, stable.msl_rate) bunga,
+         (SELECT lpr_rate
+            FROM eka.lst_pwrsave_rate
+           WHERE lpr_jenis =
+                    DECODE (NVL (powersave.mpr_jangka_invest, stable.msl_mgi),
+                            3, 10,
+                            6, 20,
+                            12, 30,
+                            24, 40,
+                            36, 50,
+                            1, 60,
+                            0
+                           )
+             AND lpr_flag =
+                    (CASE
+                        WHEN prod.lsbs_id = 142
+                             AND prod.lsdbs_number IN (1, 3)
+                           THEN 0                           --Powersave Normal
+                        WHEN prod.lsbs_id IN (143, 144)
+                           THEN 0                           --Powersave Normal
+                        WHEN prod.lsbs_id = 155 AND prod.lsdbs_number = 1
+                           THEN 1                              --Platinum Save
+                        WHEN prod.lsbs_id = 142 AND prod.lsdbs_number = 2
+                           THEN 2                               --Simas Prima
+                        WHEN prod.lsbs_id = 175 AND prod.lsdbs_number = 2
+                           THEN 2                               --Simas Prima syariah
+                        WHEN prod.lsbs_id = 158
+                        AND prod.lsdbs_number IN (1, 2, 3, 4, 7)
+                           THEN 3                   --Powersave Bulanan Normal
+                        WHEN prod.lsbs_id = 158 AND prod.lsdbs_number = 5
+                           THEN 4                      --Platinum Save Bulanan
+                        WHEN prod.lsbs_id = 158 AND prod.lsdbs_number = 6
+                           THEN 5                        --Simas Prima Bulanan
+                        WHEN prod.lsbs_id = 155 AND prod.lsdbs_number = 2
+                           THEN 6                                --Specta Save
+                        WHEN prod.lsbs_id = 158 AND prod.lsdbs_number = 8
+                           THEN 7                        --Specta Save Bulanan
+                        WHEN prod.lsbs_id = 155 AND prod.lsdbs_number = 3
+                           THEN 8                      --Platinum Save (SMART)
+                        WHEN prod.lsbs_id = 158 AND prod.lsdbs_number = 9
+                           THEN 9              --Platinum Save (SMART) Bulanan
+                        WHEN prod.lsbs_id = 142 AND prod.lsdbs_number = 4
+                           THEN 10              --My Saving Investa (MAYAPADA)
+                        WHEN prod.lsbs_id = 142
+                             AND prod.lsdbs_number IN (5, 6)
+                           THEN 11                      --Privilege Save (UOB)
+                        WHEN prod.lsbs_id = 164 AND prod.lsdbs_number = 1
+                           THEN 12                        --Stable Link AGENCY
+                        WHEN prod.lsbs_id = 164 AND prod.lsdbs_number = 2
+                           THEN 13         --Simas Stabil Link (Bank Sinarmas)
+                        WHEN prod.lsbs_id = 164 AND prod.lsdbs_number = 3
+                           THEN 14                      --Stable Link MAYAPADA
+                        WHEN prod.lsbs_id = 164 AND prod.lsdbs_number = 4
+                           THEN 15                           --Stable Link UOB
+                        WHEN prod.lsbs_id = 164 AND prod.lsdbs_number = 5
+                           THEN 16                           --Stable Link BII
+                        WHEN prod.lsbs_id = 142 AND prod.lsdbs_number = 7
+                           THEN 17         --Powersave Bung Maksi (BUMIPUTERA)
+                        WHEN prod.lsbs_id = 142 AND prod.lsdbs_number = 8
+                           THEN 18                           --Powersave DM/TM
+                        ELSE -1
+                     END
+                    )
+             AND lku_id = pol.lku_id
+             AND ins.mste_beg_date BETWEEN lpr_begdate AND lpr_enddate
+             AND prod.mspr_tsi BETWEEN lpr_dari AND lpr_akhir) flag_powersave,
+         NVL (powersave.mpr_note, stable.msl_note) memo,
+		 NVL (stable.msl_edate, (select mps_batas_date - 1
+				from eka.mst_powersave_proses
+				where mps_kode in (2,3,5)
+				and reg_spaj = pol.reg_spaj
+				and mps_deposit_date in (select max(mps_deposit_date) from eka.mst_powersave_ro where reg_spaj = pol.reg_spaj and mps_kode in (2,3,5)))
+			 ) tgl_jatuh_tempo ,
+		 NVL (pinjam.mspin_tgl_bayar, stable.msl_paid_date) tgl_bayar
+    FROM eka.mst_policy pol,
+         eka.mst_insured ins,
+         eka.mst_product_insured prod,
+         eka.mst_client_new pp,
+         eka.mst_client_new tt,
+		 eka.mst_pinjaman pinjam,
+         eka.lst_policy_status stat,
+         eka.lst_det_bisnis det_bisnis,
+         eka.lst_bisnis bisnis,
+         eka.lst_kurs kurs,
+         (SELECT reg_spaj, mpr_jangka_invest, mpr_rate, mpr_note, mpr_mature_date
+            FROM eka.mst_powersave_ro
+           WHERE mps_kode = 5) powersave,
+         (SELECT reg_spaj, msl_mgi, msl_rate, msl_note, msl_edate, msl_paid_date
+            FROM eka.mst_slink
+           WHERE msl_no = 1 AND msl_kode = 5) stable,
+         (SELECT a.mns_kd_nasabah, b.nama_cabang, c.nama_cabang kci, a.mns_nama
+            FROM eka.mst_nasabah a, eka.lst_cab_bii b, eka.lst_cab_bii c
+           WHERE a.kd_region = b.kd_region
+             AND a.kd_koord = b.kd_koord
+             AND a.kd_area = b.kd_area
+             AND a.kd_cabang = b.kd_cabang
+             AND a.kd_region = c.kd_region
+             AND a.kd_koord = c.kd_koord
+             AND a.kd_area = c.kd_area
+             AND c.kd_cabang = '000') cab_bank_1,
+         (SELECT a.reg_spaj, b.nama_reff, b.jenis, c.nama_cabang
+            FROM (select * 
+ 							from eka.mst_reff_bii a
+							 where	  level_id=4
+ 							and	  no_urut=(select max(no_urut) from eka.mst_reff_bii where reg_spaj=a.reg_spaj)) a, 
+					eka.lst_reff_bii b, 
+					eka.lst_cabang_bii c
+           WHERE a.lrb_id = b.lrb_id AND a.lcb_no = c.lcb_no) cab_bank_2,
+         eka.lst_cabang cabang,
+         eka.mst_agent_prod agent_prod,
+		 eka.mst_agent agent,
+         eka.mst_client ag
+   WHERE pol.lstb_id = 1
+     AND pol.reg_spaj = ins.reg_spaj
+	 AND pol.reg_spaj = pinjam.reg_spaj(+)
+     AND ins.mste_insured_no = prod.mste_insured_no
+     AND ins.reg_spaj = prod.reg_spaj
+     AND prod.lsbs_id < 300
+     AND pol.mspo_policy_holder = pp.mcl_id
+     AND (   (    pp.mcl_first LIKE '%' || upper($P{nama}) || '%'
+              AND pp.mspe_date_birth = $P{tgl_lahir}
+             )
+          OR pp.mspe_no_identity LIKE '%' || upper($P{identitas}) || '%'
+         )
+     AND ins.mste_insured = tt.mcl_id
+     AND pol.lssp_id = stat.lssp_id
+     AND prod.lsbs_id = det_bisnis.lsbs_id
+     AND prod.lsdbs_number = det_bisnis.lsdbs_number
+     AND det_bisnis.lsbs_id = bisnis.lsbs_id
+     AND (bisnis.lsbs_jenis = 1 OR bisnis.lsbs_id = 164)
+     AND pol.lku_id = kurs.lku_id
+     AND pol.reg_spaj = powersave.reg_spaj(+)
+     AND pol.reg_spaj = stable.reg_spaj(+)
+     AND pol.mspo_plan_provider = cab_bank_1.mns_kd_nasabah(+)
+     AND pol.reg_spaj = cab_bank_2.reg_spaj(+)
+     AND pol.lca_id = cabang.lca_id
+     AND pol.reg_spaj = agent_prod.reg_spaj
+     AND agent_prod.lsle_id = 4
+	 AND agent_prod.msag_id = agent.msag_id
+     AND agent.mcl_id = ag.mcl_id
+ORDER BY 1, 2, 6]]>
+	</queryString>
+	<field name="BUNGA" class="java.math.BigDecimal"/>
+	<field name="CABANG" class="java.lang.String"/>
+	<field name="DIST" class="java.lang.String"/>
+	<field name="FLAG_POWERSAVE" class="java.math.BigDecimal"/>
+	<field name="KCI" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSSP_STATUS" class="java.lang.String"/>
+	<field name="MEMO" class="java.lang.String"/>
+	<field name="MGI" class="java.math.BigDecimal"/>
+	<field name="MSPO_POLICY_NO_FORMAT" class="java.lang.String"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="MSTE_BEG_DATE" class="java.util.Date"/>
+	<field name="PENJUAL" class="java.lang.String"/>
+	<field name="PP_ID" class="java.lang.String"/>
+	<field name="PP_LAHIR" class="java.util.Date"/>
+	<field name="PP_NAMA" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="TGL_BAYAR" class="java.util.Date"/>
+	<field name="TGL_JATUH_TEMPO" class="java.util.Date"/>
+	<field name="TT_NAMA" class="java.lang.String"/>
+	<group name="lsdbs_name">
+		<groupExpression><![CDATA[$F{LSDBS_NAME}]]></groupExpression>
+		<groupHeader>
+			<band height="25">
+				<textField isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="0" y="5" width="500" height="15" forecolor="#FF0000"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Produk : " + $F{LSDBS_NAME}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<title>
+		<band height="30">
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="0" y="0" width="720" height="30"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Top"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["LIST POLIS DARI  PEMEGANG  POLIS  YANG SAMA\n" +
+"Tgl. Proses  : " + $P{REPORT_SCRIPTLET}.formatDateWithTime(new Date())]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="30">
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1505" y="0" width="75" height="30"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Bunga yang Diberikan"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1430" y="0" width="75" height="30"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Bunga Standar"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1295" y="0" width="85" height="30"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Jumlah Premi"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="885" y="0" width="130" height="30"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tertanggung"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1255" y="0" width="40" height="30"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Mata Uang"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1085" y="0" width="171" height="30"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Status Polis"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="785" y="0" width="100" height="30"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["No. Bukti Identitas"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1015" y="0" width="70" height="30"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Efektif Polis"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1380" y="0" width="50" height="30"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["MGI / MTI"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="0" y="0" width="85" height="30"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Lini Bisnis"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="485" y="0" width="100" height="30"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["No. Polis"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="365" y="0" width="120" height="30"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Penjual / AO"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="235" y="0" width="130" height="30"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["KCI"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="85" y="0" width="150" height="30"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Cabang / Nama Bank"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="715" y="0" width="70" height="30"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tgl. Lahir"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="585" y="0" width="130" height="30"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Nama Pemegang Polis"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1580" y="0" width="75" height="30"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tgl Jatuh Tempo"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1655" y="0" width="75" height="30"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tanggal Bayar"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="15">
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="5" y="0" width="80" height="15"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{DIST}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="85" y="0" width="150" height="15"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CABANG}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="235" y="0" width="130" height="15"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KCI}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="365" y="0" width="120" height="15"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PENJUAL}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="485" y="0" width="100" height="15"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_POLICY_NO_FORMAT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="585" y="0" width="130" height="15"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="715" y="0" width="70" height="15"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{PP_LAHIR}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="785" y="0" width="100" height="15"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_ID}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="885" y="0" width="130" height="15"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1015" y="0" width="70" height="15"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSTE_BEG_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1085" y="0" width="171" height="15"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSSP_STATUS}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1255" y="0" width="40" height="15"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;(#,##0.00)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1295" y="0" width="85" height="15"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSPR_PREMIUM}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1380" y="0" width="50" height="15"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MGI}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##%" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1430" y="0" width="75" height="15"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{FLAG_POWERSAVE}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##%" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1505" y="0" width="75" height="15"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{BUNGA}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1580" y="0" width="75" height="15"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{TGL_JATUH_TEMPO})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1655" y="0" width="75" height="15"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{TGL_BAYAR})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="115">
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="0" y="10" width="720" height="105"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Top"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Catatan : \n" +
+"* Polis yang ditampilkan adalah polis dari produk investasi yang ada 'bunga' nya \n"+
+"* Polis di atas adalah semua polis dari Pemegang Polis yang sama ( Tertanggung bisa berbeda ) \n"+
+"* Polis di atas termasuk juga polis yang sudah lapse, pinjaman dgn SPH \n"+
+"* Bunga Standar = bunga yang diumumkan secara resmi \n"+
+"* Bunga yang diberikan = bunga yang diberikan untuk Polis ybs. Jadi bisa = bunga standar atau bisa Special"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

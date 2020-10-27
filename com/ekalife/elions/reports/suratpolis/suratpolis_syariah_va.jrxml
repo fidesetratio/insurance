@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="suratpolis_syariah_va" pageWidth="595" pageHeight="842" columnWidth="525" leftMargin="35" rightMargin="35" topMargin="45" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<reportFont name="Roman" isDefault="false" fontName="Times New Roman" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["09190076341"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="hamid" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.direksi")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT a.mste_no_vacc, b.lscb_id, eka.f_lsbs(a.reg_spaj, k.lsbs_id) as lsbs_name,i.lku_rp, j.lku_dol, i.jum_rp, j.jum_dol,
+    (case when jumlah_premi<2 then 'Premi Pokok' else 'Premi Pokok + Top-Up'end) premprem, a.mste_beg_date, b.mspo_policy_holder, b.mspo_policy_no, 
+    c.lsbs_id, d.premi, ((select upper(lti_note || ' ') from eka.lst_title where lti_id = e.lti_id) || e.mcl_first) mcl_first,
+    decode (e.mspe_sex, 1, 'Bpk. ', 'Ibu ') gelar, e.mcl_jenis, g.msap_address, g.kota, g.msap_zip_code, b.mspo_date_print, 
+    b.lca_id , l.lsdbs_number, trim(replace(replace(eka.f_lsdbs(a.reg_spaj, k.lsbs_id, l.lsdbs_number),'SINGLE'),'REGULER')) lsdbs_name,
+    (select sum(msdb_premium) from eka.mst_det_billing where reg_spaj = $P{spaj}) jml_tagih,
+    (select a.lsjb_id from eka.mst_payment a, eka.mst_tag_payment b 
+        where a.reg_spaj = $P{spaj}
+            and a.mspa_payment_id = b.mspa_payment_id 
+            and b.msbi_tahun_ke = 1 
+            and b.msbi_premi_ke = 1 
+            and rownum=1) lsjb_id,
+	(case when l.lsbs_id=200 and l.lsdbs_number in(5,6) then 'Bank Harda Internasional'
+        else 'Bank Sinarmas Syariah' end) bank,
+    k.lsgb_id
+FROM eka.mst_insured a, eka.mst_policy b, eka.mst_product_insured c,
+    (select reg_spaj, SUM (mspr_premium) premi
+        from eka.mst_product_insured
+        where reg_spaj = $P{spaj}
+            and mspr_active = 1
+        group by reg_spaj) d,
+    eka.mst_client_new e,
+    eka.mst_address_billing g,
+    (select count(*) jumlah_premi from eka.mst_ulink u 
+        where reg_spaj = $P{spaj}
+        and mu_tgl_trans = (select mu_tgl_trans from eka.mst_ulink where reg_spaj = u.reg_spaj and mu_ke=1)) h,       
+    (select b.reg_spaj, k.lku_symbol lku_rp, sum(p.mspa_payment) jum_rp
+        from eka.mst_billing b, eka.mst_tag_payment t, eka.mst_payment p, eka.lst_kurs k
+        where b.msbi_beg_date = (select msbi_beg_date from eka.mst_billing where reg_spaj = b.reg_spaj and msbi_tahun_ke=1 and msbi_premi_ke=1)
+            and b.reg_spaj = $P{spaj}
+            and b.reg_spaj = t.reg_spaj and b.msbi_tahun_ke = t.msbi_tahun_ke and b.msbi_premi_ke = t.msbi_premi_ke
+            and t.mspa_payment_id = p.mspa_payment_id
+            and p.lku_id='01'
+            and p.lku_id=k.lku_id
+        group by k.lku_symbol, b.reg_spaj) i,
+    (select b.reg_spaj, k.lku_symbol lku_dol, sum(p.mspa_payment) jum_dol
+        from eka.mst_billing b, eka.mst_tag_payment t, eka.mst_payment p, eka.lst_kurs k
+        where b.msbi_beg_date = (select msbi_beg_date from eka.mst_billing where reg_spaj = b.reg_spaj and msbi_tahun_ke=1 and msbi_premi_ke=1)
+            and b.reg_spaj = $P{spaj}
+            and b.reg_spaj = t.reg_spaj and b.msbi_tahun_ke = t.msbi_tahun_ke and b.msbi_premi_ke = t.msbi_premi_ke
+            and t.mspa_payment_id = p.mspa_payment_id
+            and p.lku_id='02'
+            and p.lku_id=k.lku_id
+        group by k.lku_symbol, b.reg_spaj) j,
+    eka.lst_bisnis k,
+    eka.lst_det_bisnis l
+WHERE b.reg_spaj = a.reg_spaj
+    AND c.lsbs_id = k.lsbs_id
+    AND a.reg_spaj = c.reg_spaj
+    AND b.reg_spaj = d.reg_spaj
+    AND c.lsbs_id < 300
+    AND b.reg_spaj = $P{spaj}
+    AND b.mspo_policy_holder = e.mcl_id
+    AND b.reg_spaj = g.reg_spaj
+    AND b.reg_spaj = i.reg_spaj(+)
+    AND b.reg_spaj = j.reg_spaj(+)
+    AND c.lsbs_id = l.lsbs_id
+    AND c.lsdbs_number = l.lsdbs_number]]>
+	</queryString>
+	<field name="BANK" class="java.lang.String"/>
+	<field name="GELAR" class="java.lang.String"/>
+	<field name="JML_TAGIH" class="java.math.BigDecimal"/>
+	<field name="JUM_DOL" class="java.math.BigDecimal"/>
+	<field name="JUM_RP" class="java.math.BigDecimal"/>
+	<field name="KOTA" class="java.lang.String"/>
+	<field name="LCA_ID" class="java.lang.String"/>
+	<field name="LKU_DOL" class="java.lang.String"/>
+	<field name="LKU_RP" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSBS_NAME" class="java.lang.String"/>
+	<field name="LSCB_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="LSGB_ID" class="java.lang.Integer"/>
+	<field name="LSJB_ID" class="java.math.BigDecimal"/>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="MCL_JENIS" class="java.math.BigDecimal"/>
+	<field name="MSAP_ADDRESS" class="java.lang.String"/>
+	<field name="MSAP_ZIP_CODE" class="java.lang.String"/>
+	<field name="MSPO_DATE_PRINT" class="java.sql.Timestamp"/>
+	<field name="MSPO_POLICY_HOLDER" class="java.lang.String"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSTE_BEG_DATE" class="java.sql.Timestamp"/>
+	<field name="MSTE_NO_VACC" class="java.lang.String"/>
+	<field name="PREMI" class="java.math.BigDecimal"/>
+	<field name="PREMPREM" class="java.lang.String"/>
+	<variable name="duit" class="java.lang.String">
+		<variableExpression><![CDATA[(($F{JUM_DOL} != null || $F{JUM_RP} != null) ? 
+(
+$F{LSJB_ID}.intValue() == 3 ? 
+      ($P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_RP}, $F{JML_TAGIH})+" ("+$P{REPORT_SCRIPTLET}.formatTerbilang($F{JML_TAGIH}, $F{LKU_RP})+")") : 
+(
+  ($F{JUM_DOL} != null && $F{JUM_RP} != null) ?
+    ($P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_RP}, $F{JUM_RP})+" ("+$P{REPORT_SCRIPTLET}.formatTerbilang($F{JUM_RP}, $F{LKU_RP})+") dan " + $P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_DOL}, $F{JUM_DOL})+" ("+$P{REPORT_SCRIPTLET}.formatTerbilang($F{JUM_DOL}, $F{LKU_DOL})+")") : 
+  ($F{JUM_RP} != null) ? 
+    ($P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_RP}, $F{JUM_RP})+" ("+$P{REPORT_SCRIPTLET}.formatTerbilang($F{JUM_RP}, $F{LKU_RP})+")") : 
+  ($F{JUM_DOL} != null) ? 
+    ($P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_DOL}, $F{JUM_DOL})+" ("+$P{REPORT_SCRIPTLET}.formatTerbilang($F{JUM_DOL}, $F{LKU_DOL})+")") : 
+  ""    
+))
+: "")]]></variableExpression>
+	</variable>
+	<variable name="bayar" class="java.lang.String">
+		<variableExpression><![CDATA[$F{LSCB_ID}.intValue() == 1 ? "3 bulan" :
+$F{LSCB_ID}.intValue() == 2 ? "6 bulan" :
+$F{LSCB_ID}.intValue() == 3 ? "tahun"   :
+$F{LSCB_ID}.intValue() == 4 ? "5 tahun" :
+$F{LSCB_ID}.intValue() == 5 ? "6 tahun" :
+$F{LSCB_ID}.intValue() == 6 ? "bulan"   :
+$F{LSCB_ID}.intValue() == 8 ? "4 bulan" : ""]]></variableExpression>
+	</variable>
+	<detail>
+		<band height="276">
+			<image hAlign="Center" hyperlinkType="None">
+				<reportElement positionType="Float" x="5" y="14" width="515" height="30"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.bismillah")]]></imageExpression>
+			</image>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="5" y="54" width="516" height="16"/>
+				<textElement textAlignment="Justified" markup="styled">
+					<font reportFont="Roman" size="10" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Jakarta, "+
+$P{REPORT_SCRIPTLET}.formatDateIndonesian(($F{MSPO_DATE_PRINT}!=null?$F{MSPO_DATE_PRINT}:new Date()))
++"\n"+
+"\n"+
+"Kepada Yth.\n"+
+($F{MCL_JENIS}.intValue()==1?"":$F{GELAR}+" ") +$F{MCL_FIRST}+"\n"+
+$F{MSAP_ADDRESS}+"\n"+
+($F{KOTA}!=null?($F{KOTA}+" "):"")+
+($F{MSAP_ZIP_CODE}!=null?" "+$F{MSAP_ZIP_CODE}:"")+
+"\n\n"+
+"Nasabah yang terhormat,"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="5" y="90" width="516" height="16"/>
+				<textElement textAlignment="Justified" markup="styled">
+					<font reportFont="Roman" size="10" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, PT Asuransi Jiwa Sinarmas MSIG Tbk. Unit Syariah untuk memberikan perlindungan kepada keluarga Bapak/Ibu. Pada kesempatan ini kami juga mengucapkan <style isBold=\"true\" pdfFontName=\"Times-Bold\">'Selamat'</style> karena dengan mulai berlakunya polis Bapak/Ibu per tanggal <style isBold=\"true\" pdfFontName=\"Times-Bold\">"+$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSTE_BEG_DATE})+"</style>, Bapak/Ibu telah menjadi keluarga besar PT Asuransi Jiwa Sinarmas MSIG Tbk. Unit Syariah."+
+"\n\n"+
+"Mulai berlakunya Asuransi Jiwa Syariah merupakan permulaan dari hubungan jangka panjang yang akan kita jalin bersama, antara Bapak/Ibu sebagai Pemegang Polis "+
+"dan kami sebagai Wakil Para Peserta. Kami akan memberikan pelayanan yang terbaik bagi Bapak/Ibu secara konsisten sesuai dengan falsafah kami untuk menjadi "+
+"<style isBold=\"true\" pdfFontName=\"Times-Bold\">'Mitra Anda Seumur Hidup'</style> dengan komitmen memberikan jaminan sepenuhnya atas semua manfaat sebagaimana tercantum dalam Polis.\n\n"+
+
+"Kami telah menerbitkan Polis No. <style isBold=\"true\" pdfFontName=\"Times-Bold\">"+$P{REPORT_SCRIPTLET}.formatPolis($F{MSPO_POLICY_NO})+"</style> "+
+"beserta lampiran-lampirannya, yang semuanya merupakan dokumen yang penting dan berharga. Untuk itu harap dipelajari Polis dan disimpan dengan baik. "+"\n\n"+
+"Sehubungan dengan penerbitan Polis tersebut, kami ucapkan terimakasih atas pembayaran kontribusi pertama sejumlah : "]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="5" y="74" width="516" height="16"/>
+				<textElement textAlignment="Center" markup="styled">
+					<font reportFont="Roman" size="10" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Hal : Penerbitan Polis Asuransi No. " +"<style isBold=\"true\" pdfFontName=\"Times-Bold\">"+$P{REPORT_SCRIPTLET}.formatPolis($F{MSPO_POLICY_NO})+"</style>\n" + 
+"atas nama <style isBold=\"true\" pdfFontName=\"Times-Bold\">" + $F{MCL_FIRST} +"</style>"+"\n"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="5" y="127" width="516" height="16">
+					<printWhenExpression><![CDATA[new Boolean(
+($F{LSBS_ID}.intValue() != 200  && ($F{LSDBS_NUMBER}.intValue()!= 5 || $F{LSDBS_NUMBER}.intValue()!= 6)) &&
+($F{LSBS_ID}.intValue() != 215  && $F{LSDBS_NUMBER}.intValue()!= 4) && ($F{LSBS_ID}.intValue() != 224  && $F{LSDBS_NUMBER}.intValue()!= 3)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Justified" markup="styled">
+					<font reportFont="Roman" size="10" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Bapak/Ibu setiap saat dapat juga melakukan transaksi untuk penambahan dana (Top-Up) melalui transfer ke rekening "+$F{BANK}+" A/C No : <style isBold=\"true\" pdfFontName=\"Times-Bold\">"+$F{MSTE_NO_VACC}+"</style>."+
+"\n\n"+
+"Sinarmas MSIG Life juga telah meluncurkan aplikasi Android, <style isBold=\"true\" pdfFontName=\"Times-Bold\">M-Polis</style>, yang akan memberikan kemudahan dan kenyamanan Bapak/Ibu untuk mengakses informasi polis, produk, tagihan premi, status klaim, dan fitur lainnya dimanapun dan kapanpun Bapak/Ibu inginkan. Aplikasi dapat diunduh di Google Play Store dengan <style isItalic=\"true\" pdfFontName=\"Times-Italic\">keyword</style> "+"“m-polis” atau gunakan tautan berikut ini <style isBold=\"true\" pdfFontName=\"Times-Bold\">bit.ly/mpolisapp</style>."+
+"\n\n"+
+"Selain itu, Bapak/Ibu juga dapat mengecek keabsahan dan status Polis di website : <style isBold=\"true\" pdfFontName=\"Times-Bold\">epolicy.sinarmasmsiglife.co.id</style>. ( masukkan user id : nomor bukti identitas yang  dilampirkan saat pengajuan Surat Permintaan Asuransi Jiwa; dan masukkan password : tanggal lahir (ddmmyyyy)."+
+"\n\n"+
+"Apabila ada hal-hal yang ingin ditanyakan, Bapak/Ibu dapat menghubungi Layanan Customer Service PT Asuransi Jiwa Sinarmas MSIG Tbk. Unit Syariah di No tlp. 021-50609999 dan 021-26508300 (Senin-Jumat, jam 8.15-16.30 WIB)."+
+"\n"+
+"Untuk layanan bebas pulsa di No tlp. 0-800-1401217 dan untuk alamat email kami : cs@sinarmasmsiglife.co.id."+
+"\n\n"+
+"Demikian kami sampaikan. Atas perhatiannya kami ucapkan terima kasih."]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement positionType="Float" x="5" y="106" width="516" height="14"/>
+				<subreportParameter name="spaj">
+					<subreportParameterExpression><![CDATA[$P{spaj}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.sub_suratpolis_bayar")+".jasper"]]></subreportExpression>
+			</subreport>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="5" y="152" width="516" height="39"/>
+				<textElement textAlignment="Justified" markup="styled">
+					<font reportFont="Roman" fontName="Times New Roman" size="10" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Hormat kami,\n\n"+
+"PT Asuransi Jiwa Sinarmas MSIG Tbk. Unit Syariah"]]></textFieldExpression>
+			</textField>
+			<image hyperlinkType="None">
+				<reportElement positionType="Float" x="5" y="195" width="145" height="50"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{hamid}]]></imageExpression>
+			</image>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="5" y="260" width="221" height="15"/>
+				<textElement markup="styled">
+					<font fontName="Times New Roman" size="10" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("printing.jabatanDirektur")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="5" y="127" width="516" height="16">
+					<printWhenExpression><![CDATA[new Boolean(
+($F{LSBS_ID}.intValue() == 200  && ($F{LSDBS_NUMBER}.intValue() == 3 || $F{LSDBS_NUMBER}.intValue() == 4 || $F{LSDBS_NUMBER}.intValue() == 5 || $F{LSDBS_NUMBER}.intValue() == 6 || $F{LSDBS_NUMBER}.intValue() == 7)) || 
+($F{LSBS_ID}.intValue() == 215) || ($F{LSBS_ID}.intValue() == 224 && $F{LSDBS_NUMBER}.intValue() == 3)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Justified" markup="styled">
+					<font reportFont="Roman" size="10" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{LSBS_ID}.intValue() == 215) || ($F{LSBS_ID}.intValue() == 224 && $F{LSDBS_NUMBER}.intValue() == 3) ? 
+"Sinarmas MSIG Life juga telah meluncurkan aplikasi Android, <style isBold=\"true\" pdfFontName=\"Times-Bold\">M-Polis</style>, yang akan memberikan kemudahan dan kenyamanan Bapak/Ibu untuk mengakses informasi polis, produk, tagihan premi, status klaim, dan fitur lainnya dimanapun dan kapanpun Bapak/Ibu inginkan. Aplikasi dapat diunduh di Google Play Store dengan <style isItalic=\"true\" pdfFontName=\"Times-Italic\">keyword</style> "+"“m-polis” atau gunakan tautan berikut ini <style isBold=\"true\" pdfFontName=\"Times-Bold\">bit.ly/mpolisapp</style>."+
+"\n\n"+
+"Selain itu, Bapak/Ibu juga dapat mengecek keabsahan dan status Polis di website : <style isBold=\"true\" pdfFontName=\"Times-Bold\">epolicy.sinarmasmsiglife.co.id</style>. ( masukkan user id : nomor bukti identitas yang  dilampirkan saat pengajuan Surat Permintaan Asuransi Jiwa; dan masukkan password : tanggal lahir (ddmmyyyy)." +
+"\n\n"+
+"Apabila ada hal-hal yang ingin ditanyakan, Bapak/Ibu dapat menghubungi Layanan Customer Service PT Asuransi Jiwa Sinarmas MSIG Tbk. Unit Syariah di No tlp. 021-50609999 dan 021-26508300 (Senin-Jumat, jam 8.15-16.30 WIB)."+
+"\n"+
+"Untuk layanan bebas pulsa di No tlp. 0-800-1401217 dan untuk alamat email kami : cs@sinarmasmsiglife.co.id."+
+"\n\n"+"Demikian kami sampaikan. Atas perhatiannya kami ucapkan terima kasih."
+:
+"Bapak/Ibu setiap saat dapat juga melakukan transaksi untuk penambahan dana (Top-Up) melalui transfer ke rekening "+$F{BANK}+" A/C No : <style isBold=\"true\" pdfFontName=\"Times-Bold\">"+$F{MSTE_NO_VACC}+"</style>."+
+"\n\n"+
+"Sinarmas MSIG Life juga telah meluncurkan aplikasi Android, <style isBold=\"true\" pdfFontName=\"Times-Bold\">M-Polis</style>, yang akan memberikan kemudahan dan kenyamanan Bapak/Ibu untuk mengakses informasi polis, produk, tagihan premi, status klaim, dan fitur lainnya dimanapun dan kapanpun Bapak/Ibu inginkan. Aplikasi dapat diunduh di Google Play Store dengan <style isItalic=\"true\" pdfFontName=\"Times-Italic\">keyword</style> "+"“m-polis” atau gunakan tautan berikut ini <style isBold=\"true\" pdfFontName=\"Times-Bold\">bit.ly/mpolisapp</style>."+
+"\n\n"+
+"Selain itu, Bapak/Ibu juga dapat mengecek keabsahan dan status Polis di website : <style isBold=\"true\" pdfFontName=\"Times-Bold\">epolicy.sinarmasmsiglife.co.id</style>. ( masukkan user id : nomor bukti identitas yang  dilampirkan saat pengajuan Surat Permintaan Asuransi Jiwa; dan masukkan password : tanggal lahir (ddmmyyyy)." +
+"\n\n"+
+"Apabila ada hal-hal yang ingin ditanyakan, Bapak/Ibu dapat menghubungi Layanan Customer Service PT Asuransi Jiwa Sinarmas MSIG Tbk. Unit Syariah di No tlp. 021-50609999 dan 021-26508300 (Senin-Jumat, jam 8.15-16.30 WIB)."+
+"\n"+
+"Untuk layanan bebas pulsa di No tlp. 0-800-1401217 dan untuk alamat email kami : cs@sinarmasmsiglife.co.id."+
+"\n\n"+"Demikian kami sampaikan. Atas perhatiannya kami ucapkan terima kasih."]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="5" y="245" width="221" height="15"/>
+				<textElement markup="styled">
+					<font fontName="Times New Roman" size="10" isBold="true" isUnderline="true" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("printing.namaDirektur")]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<lastPageFooter>
+		<band height="700"/>
+	</lastPageFooter>
+</jasperReport>

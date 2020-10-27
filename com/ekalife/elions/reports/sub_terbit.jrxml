@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="sub_terbit" pageWidth="595" pageHeight="842" columnWidth="575" leftMargin="20" rightMargin="0" topMargin="0" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="spaj" class="java.lang.String"/>
+	<parameter name="user" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT decode (T2.jumlah , 1,'Titipan Premi','Titipan Premi Ke- ' || "EKA"."MST_DEPOSIT_PREMIUM"."MSDP_NUMBER") "KETERANGAN",
+"EKA"."MST_DEPOSIT_PREMIUM"."MSDP_PAYMENT", "EKA"."MST_DEPOSIT_PREMIUM"."MSDP_NUMBER",
+ eka.lst_kurs.lku_symbol,
+ (select sum(a.mspr_premium) from eka.mst_product_insured a where a.reg_spaj= EKA.MST_DEPOSIT_PREMIUM.REG_SPAJ ) total_premi,
+ NVL(EKA.MST_INSURED.MSTE_FLAG_GUTHRIE,0) MSTE_FLAG_GUTHRIE,
+ x.lsbs_id
+FROM EKA.MST_DEPOSIT_PREMIUM,
+(select count ( eka.MST_DEPOSIT_PREMIUM.MSDP_NUMBER) jumlah from eka.MST_DEPOSIT_PREMIUM where 
+		eka.MST_DEPOSIT_PREMIUM.reg_spaj =$P{spaj}) T2,
+(select lsbs_id from eka.mst_product_insured  where reg_spaj =$P{spaj} and lsbs_id <300) x,
+		eka.lst_kurs,EKA.MST_INSURED
+WHERE EKA.MST_DEPOSIT_PREMIUM.REG_SPAJ =$P{spaj}
+and eka.lst_kurs.lku_id = EKA.MST_DEPOSIT_PREMIUM.lku_id AND
+EKA.MST_INSURED.REG_SPAJ = EKA.MST_DEPOSIT_PREMIUM.REG_SPAJ
+order by "EKA"."MST_DEPOSIT_PREMIUM"."MSDP_NUMBER"]]>
+	</queryString>
+	<field name="KETERANGAN" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="MSDP_NUMBER" class="java.math.BigDecimal"/>
+	<field name="MSDP_PAYMENT" class="java.math.BigDecimal"/>
+	<field name="MSTE_FLAG_GUTHRIE" class="java.math.BigDecimal"/>
+	<field name="TOTAL_PREMI" class="java.math.BigDecimal"/>
+	<detail>
+		<band height="19">
+			<textField>
+				<reportElement x="2" y="3" width="80" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Bottom">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KETERANGAN}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="189" y="3" width="87" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSTE_FLAG_GUTHRIE}.intValue() == 1 ? $P{REPORT_SCRIPTLET}.format2Digit($F{TOTAL_PREMI}) :
+$P{REPORT_SCRIPTLET}.format2Digit($F{MSDP_PAYMENT}) ]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="163" y="3" width="22" height="12"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="132">
+			<staticText>
+				<reportElement x="2" y="109" width="80" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Field Admin]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy">
+				<reportElement x="2" y="26" width="55" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="67" y="26" width="55" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[JAKARTA]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="2" y="87" width="80" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{user}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="2" y="4" width="282" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Atas bantuannya, saya ucapkan terima kasih.]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

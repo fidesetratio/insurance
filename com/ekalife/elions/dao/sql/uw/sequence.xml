@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<insert id="elions.uw.insertTestStable" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.TEST_STABLE (
+		   NO_REG, TGL, NOMOR, FLAG_SIAPA) 
+		VALUES ( #no_reg#, #tgl#, #nomor#, #flag_siapa#)		
+	</insert>
+
+	<!-- Select untuk bulan tahun sequence -->
+	<select id="elions.uw.selectGetCounterValueEb" resultClass="string" parameterClass="java.util.HashMap">
+		<![CDATA[
+		SELECT msco_value
+		FROM       eka.mst_counter@eb a
+		]]>
+		WHERE a.msco_number = #aplikasi# AND a.lca_id = #cabang# 
+		FOR UPDATE
+	</select>
+	
+	<!-- Select untuk bulan tahun sequence -->
+	<select id="elions.uw.selectGetCounterMonthYear" resultClass="string" parameterClass="java.util.HashMap">
+		<![CDATA[
+		SELECT msco_month_year
+		FROM       eka.mst_counter a
+		]]>
+		WHERE a.msco_number = #aplikasi# AND a.lca_id = #cabang# 
+		FOR UPDATE
+	</select>
+
+	<!-- Select untuk sequence 2 -->
+	<select id="elions.uw.selectGetCounter2" resultClass="string" parameterClass="java.util.HashMap">
+		<![CDATA[
+		SELECT a.msco_value msco_value
+		FROM       eka.mst_counter a
+		]]>
+		WHERE a.msco_number = #aplikasi# AND a.lca_id = #cabang# 
+		FOR UPDATE
+	</select>
+	<!-- FOR UPDATE -->
+
+	<!-- Select untuk sequence -->
+	<select id="elions.uw.selectGetCounter" resultClass="string" parameterClass="java.util.HashMap">
+		<![CDATA[
+		SELECT (case when a.msco_value>=a.msco_max then 0 else a.msco_value end)+1 msco_value
+		FROM       eka.mst_counter a
+		]]>
+		WHERE a.msco_number = #aplikasi# AND a.lca_id = #cabang# 
+		FOR UPDATE
+	</select>
+	<!-- FOR UPDATE -->
+
+	<!-- Update untuk sequence -->
+	<update id="elions.uw.update.mst_counter" parameterClass="java.util.HashMap">
+		UPDATE eka.mst_counter
+		   SET msco_value = #nilai#
+		 WHERE msco_number = #aplikasi# AND lca_id = #cabang#
+   	</update>
+
+	<!-- Update untuk month year sequence -->
+	<update id="elions.uw.update.mst_counter.month_year" parameterClass="java.util.HashMap">
+		UPDATE eka.mst_counter
+		   SET msco_month_year = #nilai#
+		 WHERE msco_number = #aplikasi# AND lca_id = #cabang#
+   	</update>
+   	
+   	<update id="elions.uw.update.mst_counter_eb.msco_value" parameterClass="java.util.HashMap">
+		UPDATE eka.mst_counter@eb
+		   SET msco_value = #nilai#
+		 WHERE msco_number = #aplikasi# AND lca_id = #cabang#
+   	</update>
+
+	<!-- Select untuk sequence nomor pre -->
+	<select id="elions.uw.selectCounterRekEkalife" resultClass="java.util.HashMap" parameterClass="int">
+		SELECT lsrek_symbol, nvl(lsrek_no_cr,0) lsrek_no_cr, lsrek_gl_no
+		  FROM eka.lst_rek_ekalife
+		 WHERE lsrek_id = #value#
+	</select>
+
+ 	<update id="elions.uw.update.lst_rek_ekalife" parameterClass="com.ekalife.elions.model.Premi">
+		UPDATE eka.lst_rek_ekalife
+		   SET lsrek_no_cr = #no_cr#
+		 WHERE lsrek_id = #rek_id#
+ 	</update>
+ 	
+ 	<select id="elions.uw.selectCounterNoPre" resultClass="string">
+ 		select eka.pacgl.get_nopre() from dual
+ 	</select>
+ 	
+ 	<select id="elions.uw.selectCounterNoJm" resultClass="string">
+ 		select eka.pacgl.get_nojm() from dual
+ 	</select>
+ 	
+</sqlMap>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<update id="elions.refund.updateNoSuratRefund" parameterClass="java.lang.Double" >
+		update
+            EKA.MST_COUNTER
+        set
+            MSCO_VALUE=#newCounterCd#
+        where
+            MSCO_NUMBER = 89 and LCA_ID = '01'
+	</update>
+
+	<update id="elions.refund.updatePositionMstTBank" parameterClass="java.util.HashMap" >
+		update
+            EKA.MST_TBANK
+        set
+            POSITION='5',
+            LUS_ID_VOID = #lus_id#
+        where
+         	no_pre = #no_pre#
+	</update>
+    
+	<update id="elions.refund.updatePositionMstPtcTm" parameterClass="java.util.HashMap" >
+		update
+            EKA.MST_PTC_TM
+        set
+            MTM_POSITION='0'
+        where
+         	NO_JM  = #no_jm#
+	</update>
+    
+	<update id="elions.refund.updatePosisiAndCancelRefund" parameterClass="java.util.HashMap" >
+		update
+            EKA.MST_REFUND
+            <dynamic prepend=" set ">
+				<isNotNull removeFirstPrepend="true" prepend="," property="posisiCd">POSISI_NO=#posisiCd# </isNotNull>
+				<isNotNull removeFirstPrepend="true" prepend="," property="cancelWho">CANCEL_WHO = #cancelWho# </isNotNull>
+				<isNotNull removeFirstPrepend="true" prepend="," property="cancelWhen">CANCEL_WHEN = #cancelWhen# </isNotNull>
+			</dynamic>
+        where
+            REG_SPAJ = #regSpaj#
+	</update>
+
+    <update id="elions.refund.updateTglKirimDokFisik" parameterClass="java.util.HashMap" >
+		update
+            EKA.MST_REFUND
+        set
+            TGL_KIRIM_DOK_FISIK = #tglKirimDokFisik#, UPDATE_WHO = #updateWho#, UPDATE_WHEN = #updateWhen#
+        where
+            REG_SPAJ = #regSpaj#
+    </update>
+    
+	<update id="elions.refund.updateWhoAndWhenMstRefund" parameterClass="java.util.HashMap" >
+		update eka.mst_refund set update_who = #updateWho#, update_when = #updateWhen#
+		where reg_spaj = #regSpaj#
+    </update>
+    
+	<update id="elions.refund.updateMstPowerSaveRo" parameterClass="java.util.HashMap" >
+		update EKA.MST_POWERSAVE_RO SET MPR_AKTIF = 0 where REG_SPAJ = #reg_spaj# and MPR_AKTIF = 1
+	</update>
+    
+    <update id="elions.refund.updateMstSLink" parameterClass="java.util.HashMap" >
+    	update eka.mst_slink set msl_aktif = 0 where REG_SPAJ = #reg_spaj# and msl_aktif = 1
+    </update>
+    
+	<update id="elions.refund.updateMstSSave" parameterClass="java.util.HashMap" >
+		update eka.mst_ssave set mss_aktif = 0 where reg_spaj = #reg_spaj# and mss_aktif = 1
+    </update>
+    
+	<update id="elions.refund.updateMstPSave" parameterClass="java.util.HashMap" >
+		update eka.mst_psave set mps_aktif = 0 where reg_spaj = #reg_spaj# and mps_aktif = 1  
+    </update>
+    
+    <update id="elions.refund.updateMstDrekBySpaj" parameterClass="java.lang.String" >
+		update eka.mst_drek
+		set flag_proses = 0, flag_update = 0, no_spaj = null, tgl_proses = null, user_proses = null
+		where no_spaj = rpad(replace(#spaj#,'.'),11,' ')
+    </update>
+    
+    <update id="elions.refund.updateMstTempPremiRefund" parameterClass="java.util.HashMap" >
+		update eka.mst_temp_premi_refund
+		<dynamic prepend=" set ">
+			<isNotNull removeFirstPrepend="true" prepend="," property="reg_spaj">status = 1</isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="no_pre">mstp_nopre_keluar = #no_pre#</isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="no_jm_sa">mstp_nojmsa_masuk = #no_jm_sa#</isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="no_jm_sa_new">mstp_nojmsa_keluar = #no_jm_sa_new#</isNotNull>
+		</dynamic>
+		where reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ')
+    </update>
+    
+    <update id="elions.refund.updateMstRefund" parameterClass="java.util.HashMap" >
+		update eka.mst_refund
+        <dynamic prepend=" set ">
+			<isNotNull removeFirstPrepend="true" prepend="," property="no_pre">no_pre = #no_pre#</isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="no_jm">no_jm = #no_jm#</isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="no_jm_sa">no_jm_sa = #no_jm_sa#</isNotNull>
+		</dynamic>
+        where reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ')
+	</update>
+    
+    <update id="elions.refund.updateNoVaBatalPolis" parameterClass="java.util.HashMap" >
+		UPDATE eka.mst_det_va
+		SET spaj = #spaj#
+		WHERE no_va = #no_va#
+	</update>
+	
+	<update id="elions.refund.updateMsteNoVacc" parameterClass="java.util.HashMap" >
+		UPDATE eka.mst_insured
+		SET mste_no_vacc = #no_va#
+		WHERE reg_spaj = #spaj#
+	</update>
+</sqlMap>

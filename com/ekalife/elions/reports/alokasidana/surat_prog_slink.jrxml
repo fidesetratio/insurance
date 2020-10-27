@@ -1,0 +1,668 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="surat_prog_slink" pageWidth="595" pageHeight="842" columnWidth="575" leftMargin="20" rightMargin="0" topMargin="65" bottomMargin="10" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<property name="com.jasperassistant.designer.HGuides" value="401"/>
+	<import value="com.ekalife.elions.process.SuratUnitLink"/>
+	<import value="net.sf.jasperreports.engine.xml.JRXmlLoader"/>
+	<import value="com.ibatis.common.resources.Resources"/>
+	<import value="net.sf.jasperreports.engine.design.JRJdtCompiler"/>
+	<reportFont name="Roman" isDefault="false" fontName="Times New Roman" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+	<parameter name="judul_id" class="java.lang.String">
+		<defaultValueExpression><![CDATA["1"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["09200818594"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="fisibel" class="java.lang.Boolean">
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<parameter name="sdsFooter" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="sdsAkuisisi" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="sdsAlokasiBiaya" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="namaplan" class="java.lang.String"/>
+	<parameter name="subConnection" class="java.sql.Connection"/>
+	<parameter name="elionsManager" class="com.ekalife.elions.service.ElionsManager"/>
+	<parameter name="flags" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[new Integer(
+SuratUnitLink.ULINK_RINCIAN |
+SuratUnitLink.ULINK_RINGKASAN |
+SuratUnitLink.ULINK_ALOKASI_INVESTASI |
+SuratUnitLink.ULINK_CATATAN |
+SuratUnitLink.ULINK_ALOKASI_BIAYA |
+SuratUnitLink.ULINK_ALOKASI_BIAYA_AKUISISI
+)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="sdsRincian" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="sdsRingkasan" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="nama_produk" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT   n.flag_bulanan,
+         a.reg_spaj,
+         a.mspo_policy_no,
+         LPAD (c.lsbs_id, 3, 0) lsbs_id,
+         c.lsdbs_number,
+         d.mcl_jenis,
+         DECODE (
+            d.mcl_jenis,
+            1,
+            eka.pemegang (d.mcl_id,
+                          TRIM (d.mcl_first),
+                          a.mspo_age,
+                          d.mcl_jenis,
+                          1),
+            NVL (p.lti_note, '') || ' ' || TRIM (d.mcl_first)
+         )
+            AS nama_pp,
+         f.msap_address address1,
+         (TRIM (NVL (g.lska_note, f.kota)) || ' ' || f.msap_zip_code)
+            address2,
+         c.mspr_tsi,
+         N.msl_mgi,
+         n.msl_premi,
+         (CASE
+             WHEN (c.lsbs_id = 152 AND i.lsdbs_number = 2)
+             THEN
+                'EKALINK 80 SYARIAH'
+             WHEN (c.lsbs_id = 153 AND i.lsdbs_number IN (3, 4))
+             THEN
+                'EKALINK 80 PLUS SYARIAH'
+             WHEN (c.lsbs_id = 154 AND i.lsdbs_number IN (5, 6))
+             THEN
+                'EKALINK 18 SYARIAH'
+             WHEN (c.lsbs_id = 162 AND i.lsdbs_number IN (5, 6))
+             THEN
+                'EKALINK 88'
+             WHEN (c.lsbs_id = 162 AND i.lsdbs_number IN (7, 8))
+             THEN
+                'EKALINK 88 PLUS'
+             WHEN (c.lsbs_id = 186 AND i.lsdbs_number = 3)
+             THEN
+                'SIMAS PROGRESSIVE LINK'
+             WHEN (c.lsbs_id = 186 AND i.lsdbs_number != 3)
+             THEN
+                'PROGRESSIVE LINK'
+             WHEN (c.lsbs_id IN (164, 174))
+             THEN
+                (CASE
+                    WHEN c.lsbs_id = 164 AND c.lsdbs_number = 1
+                    THEN
+                       'STABLE LINK'
+                    WHEN c.lsbs_id = 164 AND c.lsdbs_number = 2
+                    THEN
+                       'SIMAS STABIL LINK'
+                    WHEN c.lsbs_id = 164
+                         AND (c.lsdbs_number > 2 AND c.lsdbs_number < 9)
+                    THEN
+                       'STABLE LINK'
+                    ELSE
+                       i.lsdbs_name
+                       || NVL (
+                             (SELECT   DECODE (flag_bulanan,
+                                               0,
+                                               '',
+                                               1,
+                                               ' MANFAAT BULANAN',
+                                               3,
+                                               ' MANFAAT TRIWULANAN',
+                                               6,
+                                               ' MANFAAT SEMESTERAN',
+                                               12,
+                                               ' MANFAAT TAHUNAN')
+                                FROM   eka.mst_slink
+                               WHERE   msl_no = 1 AND reg_spaj = a.reg_spaj),
+                             ''
+                          )
+                 END)
+             WHEN c.lsbs_id IN
+                        (115,
+                         116,
+                         117,
+                         118,
+                         119,
+                         122,
+                         138,
+                         139,
+                         152,
+                         153,
+                         154,
+                         164)
+             THEN
+                i.lsdbs_name
+             ELSE
+                h.lsbs_name
+          END)
+            nama_plan,
+         A.MSPO_AGE,
+         B.MSTE_AGE,
+         m.lku_id,
+         m.lku_symbol,
+         l.lscb_print,
+         l.lscb_pay_mode,
+         DECODE (
+            a.mspo_pay_period,
+            1,
+            'SEKALIGUS',
+            DECODE (a.mspo_installment,
+                    NULL, a.mspo_pay_period,
+                    a.mspo_installment)
+            || ' TAHUN'
+         )
+            pay_period,
+         b.mste_beg_date,
+         n.msl_rate,
+         n.msl_tgl_nab,
+         (NVL (q.lti_note, '') || ' ' || TRIM (e.mcl_first)) AS nama_tt,
+         a.mspo_pay_period,
+         a.lssp_id,
+         n.msl_bdate,
+         n.msl_edate,
+         a.mspo_ins_period,
+         n.msl_nab,
+         n.msl_bunga,
+         DECODE (n.msl_mgi,
+                 1,
+                 'BULANAN',
+                 3,
+                 'TRIWULANAN',
+                 6,
+                 'SEMESTERAN',
+                 12,
+                 'TAHUNAN')
+            lscb_rider,
+         DECODE ( (SELECT   DISTINCT mrs_rider_cb
+                     FROM   eka.mst_rider_save
+                    WHERE   reg_spaj = a.reg_spaj),
+                 0,
+                 'BAYAR LANGSUNG',
+                 1,
+                 'POTONG BUNGA')
+            jenis_lscb_rider,
+         (SELECT   COUNT (lsbs_id)
+            FROM   eka.mst_product_insured
+           WHERE   lsbs_id >= 800 AND reg_spaj = a.reg_spaj)
+            total_rider,
+         (SELECT   SUM (mrs_premi)
+            FROM   eka.mst_rider_save
+           WHERE   reg_spaj = a.reg_spaj)
+            premi_rider,
+         r.lsbp_id,
+         r.mrc_cabang cabang_bank,
+         r.mrc_nama nama_rek,
+         r.mrc_no_ac no_rek,
+         r.mrc_kota kota_bank,
+         s.lsbp_nama nama_bank
+  FROM   eka.mst_policy a,
+         eka.mst_insured b,
+         (SELECT   *
+            FROM   eka.mst_product_insured
+           WHERE   mspr_active = 1 AND lsbs_id < 800) c,
+         eka.mst_client_new d,
+         eka.mst_client_new e,
+         eka.mst_address_billing f,
+         eka.lst_kabupaten g,
+         eka.lst_bisnis h,
+         eka.lst_det_bisnis i,
+         eka.lst_pay_mode l,
+         eka.lst_kurs m,
+         (  SELECT   flag_bulanan,
+                     reg_spaj,
+                     msl_mgi,
+                     msl_rate,
+                     msl_nab,
+                     msl_tgl_nab,
+                     msl_edate,
+                     msl_bdate,
+                     SUM (msl_bunga) msl_bunga,
+                     msl_premi
+              FROM   eka.mst_slink
+             WHERE       reg_spaj = $P{spaj}
+                     AND msl_new = 1
+                     AND msl_bdate = (SELECT   msl_bdate
+                                        FROM   eka.mst_slink
+                                       WHERE   msl_no = 1 AND reg_spaj = $P{spaj})
+          GROUP BY   flag_bulanan,
+                     reg_spaj,
+                     msl_mgi,
+                     msl_rate,
+                     msl_nab,
+                     msl_tgl_nab,
+                     msl_edate,
+                     msl_bdate,
+                     msl_premi) N,
+         eka.lst_title p,
+         eka.lst_title q,
+         eka.mst_rek_client r,
+         eka.lst_bank_pusat s
+ WHERE       g.lska_id(+) = f.lska_id
+         AND a.mspo_policy_holder = d.mcl_id
+         AND a.reg_spaj = b.reg_spaj
+         AND b.reg_spaj = c.reg_spaj
+         AND b.reg_spaj = n.reg_spaj
+         AND b.mste_insured_no = c.mste_insured_no
+         AND b.mste_insured = e.mcl_id
+         AND f.reg_spaj = a.reg_spaj
+         AND c.lsbs_id = h.lsbs_id
+         AND c.lsbs_id = i.lsbs_id(+)
+         AND c.lsdbs_number = i.lsdbs_number(+)
+         AND a.reg_spaj = $P{spaj}
+         AND a.lscb_id = l.lscb_id
+         AND a.lku_id = m.lku_id
+         AND d.lti_id = p.lti_id(+)
+         AND e.lti_id = q.lti_id(+)
+         AND a.reg_spaj = r.reg_spaj
+         AND r.lsbp_id = s.lsbp_id]]>
+	</queryString>
+	<field name="ADDRESS1" class="java.lang.String"/>
+	<field name="ADDRESS2" class="java.lang.String"/>
+	<field name="CABANG_BANK" class="java.lang.String"/>
+	<field name="FLAG_BULANAN" class="java.math.BigDecimal"/>
+	<field name="JENIS_LSCB_RIDER" class="java.lang.String"/>
+	<field name="KOTA_BANK" class="java.lang.String"/>
+	<field name="LKU_ID" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSBP_ID" class="java.math.BigDecimal"/>
+	<field name="LSBS_ID" class="java.lang.String"/>
+	<field name="LSCB_PAY_MODE" class="java.lang.String"/>
+	<field name="LSCB_PRINT" class="java.lang.String"/>
+	<field name="LSCB_RIDER" class="java.lang.String"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="LSSP_ID" class="java.math.BigDecimal"/>
+	<field name="MCL_JENIS" class="java.math.BigDecimal"/>
+	<field name="MSL_BDATE" class="java.util.Date"/>
+	<field name="MSL_BUNGA" class="java.math.BigDecimal"/>
+	<field name="MSL_EDATE" class="java.util.Date"/>
+	<field name="MSL_MGI" class="java.math.BigDecimal"/>
+	<field name="MSL_NAB" class="java.math.BigDecimal"/>
+	<field name="MSL_PREMI" class="java.math.BigDecimal"/>
+	<field name="MSL_RATE" class="java.math.BigDecimal"/>
+	<field name="MSL_TGL_NAB" class="java.util.Date"/>
+	<field name="MSPO_AGE" class="java.math.BigDecimal"/>
+	<field name="MSPO_INS_PERIOD" class="java.math.BigDecimal"/>
+	<field name="MSPO_PAY_PERIOD" class="java.math.BigDecimal"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSPR_TSI" class="java.math.BigDecimal"/>
+	<field name="MSTE_AGE" class="java.math.BigDecimal"/>
+	<field name="MSTE_BEG_DATE" class="java.util.Date"/>
+	<field name="NAMA_BANK" class="java.lang.String"/>
+	<field name="NAMA_PLAN" class="java.lang.String"/>
+	<field name="NAMA_PP" class="java.lang.String"/>
+	<field name="NAMA_REK" class="java.lang.String"/>
+	<field name="NAMA_TT" class="java.lang.String"/>
+	<field name="NO_REK" class="java.lang.String"/>
+	<field name="PAY_PERIOD" class="java.lang.String"/>
+	<field name="PREMI_RIDER" class="java.math.BigDecimal"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="TOTAL_RIDER" class="java.math.BigDecimal"/>
+	<pageHeader>
+		<band height="168">
+			<textField hyperlinkType="None">
+				<reportElement x="225" y="133" width="115" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("product.syariah").indexOf($F{LSBS_ID}.toString())>-1?"MPI":"MTI"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="225" y="145" width="171" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("product.syariah").indexOf($F{LSBS_ID}.toString())>-1?"Tingkat Proyeksi Investasi pada MPI Pertama":"Tingkat Target Investasi pada MTI Pertama"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="395" y="157" width="5" height="11"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="9" width="555" height="13"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="styled">
+					<font reportFont="Roman" size="11" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["<style isBold=\"true\" isUnderline=\"true\" pdfFontName=\"Times-Bold\">"+
+($P{judul_id}.equals("1")?"LAPORAN ALOKASI DANA AWAL - ":
+$P{judul_id}.equals("2")?"LAPORAN TRANSAKSI - ":
+$P{judul_id}.equals("3")?"ILUSTRASI ALOKASI DANA - ":"") + $F{NAMA_PLAN}+
+"</style>"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="225" y="36" width="115" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[No. Polis]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="405" y="60" width="140" height="11"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSTE_AGE} + " tahun"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="0" width="225" height="9">
+					<printWhenExpression><![CDATA[$P{fisibel}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font reportFont="Roman" size="7" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Printed: " + $P{REPORT_SCRIPTLET}.formatDateWithTime(new Date())]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="60" width="220" height="11"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ADDRESS2}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="405" y="133" width="140" height="11"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="styled">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSL_MGI} + " Bulan"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="395" y="84" width="5" height="11"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="395" y="145" width="5" height="11"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="395" y="133" width="5" height="11"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="405" y="36" width="140" height="11"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatPolis($F{MSPO_POLICY_NO})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="405" y="84" width="140" height="11"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSCB_PAY_MODE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="48" width="220" height="11"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ADDRESS1}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="395" y="60" width="5" height="11"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="225" y="157" width="115" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[Tanggal Perhitungan Unit]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="40" y="36" width="180" height="11"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PP}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="225" y="84" width="115" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[Cara Pembayaran]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="395" y="48" width="5" height="11"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="36" width="40" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[Bpk./Ibu]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="405" y="157" width="140" height="11"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSL_TGL_NAB})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="403" y="48" width="160" height="11"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_TT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="395" y="36" width="5" height="11"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="405" y="145" width="140" height="11"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="styled">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSL_RATE} + "% per Tahun"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="225" y="48" width="115" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("product.syariah").indexOf($F{LSBS_ID}.toString())>-1?"Nama Peserta":"Nama Tertanggung"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="225" y="60" width="115" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("product.syariah").indexOf($F{LSBS_ID}.toString())>-1?"Usia Peserta":"Usia Tertanggung"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="405" y="96" width="140" height="11"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSL_BDATE})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="395" y="96" width="5" height="11"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="225" y="96" width="115" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[Tanggal Transaksi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="225" y="72" width="115" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[Mata Uang]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="395" y="72" width="5" height="11"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="405" y="72" width="140" height="11"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_ID}.equals("01")?"Rupiah":
+$F{LKU_ID}.equals("02")?"US Dollar":""]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="22" width="555" height="11"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="styled">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSBS_ID}.equals("164")?($F{FLAG_BULANAN}.intValue()==0?"("+$F{NAMA_PLAN}+"-BUKAN MANFAAT BULANAN)":
+($F{FLAG_BULANAN}.intValue()==1?"("+$F{NAMA_PLAN}+"-MANFAAT BULANAN)":"")):($F{LSBS_ID}.equals("186")?"":$F{NAMA_PLAN})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="225" y="108" width="115" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[Premi Pokok]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="395" y="108" width="5" height="11"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="405" y="108" width="140" height="11"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="styled">
+					<font reportFont="Roman" fontName="Times New Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSL_MGI}.intValue()==1?"Rp.166,667.00":
+($F{MSL_MGI}.intValue()==3?"Rp.500,000.00":
+($F{MSL_MGI}.intValue()==6?"Rp.1,000,000.00":"Rp.2,000,000.00"))]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="225" y="120" width="115" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[Premi TopUp]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="395" y="120" width="5" height="11"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="405" y="120" width="140" height="11"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="styled">
+					<font reportFont="Roman" fontName="Times New Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Rp."+$P{REPORT_SCRIPTLET}.format2Digit($F{MSL_PREMI}.add($F{MSL_MGI}.intValue()==1?new BigDecimal(166667).negate():
+($F{MSL_MGI}.intValue()==3?new BigDecimal(500000).negate():
+($F{MSL_MGI}.intValue()==6?new BigDecimal(1000000).negate():new BigDecimal(2000000).negate()))))]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="6">
+			<subreport isUsingCache="false">
+				<reportElement key="rincian" positionType="Float" x="0" y="2" width="555" height="2"/>
+				<subreportParameter name="spaj">
+					<subreportParameterExpression><![CDATA[$P{spaj}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="elionsManager">
+					<subreportParameterExpression><![CDATA[$P{elionsManager}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$P{sdsRincian}]]></dataSourceExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("subreport.surat_slink_rincian_trans")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="false">
+				<reportElement key="footer" positionType="Float" x="0" y="4" width="555" height="2"/>
+				<subreportParameter name="namaplan">
+					<subreportParameterExpression><![CDATA[$F{NAMA_PLAN}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="no_rek">
+					<subreportParameterExpression><![CDATA[$F{NO_REK}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lsbs_id">
+					<subreportParameterExpression><![CDATA[$F{LSBS_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="kota_bank">
+					<subreportParameterExpression><![CDATA[$F{KOTA_BANK}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="nama_rek">
+					<subreportParameterExpression><![CDATA[$F{NAMA_REK}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="cabang_bank">
+					<subreportParameterExpression><![CDATA[$F{CABANG_BANK}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="flag_bulanan">
+					<subreportParameterExpression><![CDATA[$F{FLAG_BULANAN}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="nama_bank">
+					<subreportParameterExpression><![CDATA[$F{NAMA_BANK}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="nama_produk">
+					<subreportParameterExpression><![CDATA[$P{nama_produk}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$P{sdsFooter}]]></dataSourceExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("subreport.surat_slink_footer")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="false">
+				<reportElement key="alokasiBiaya" positionType="Float" x="0" y="0" width="555" height="2"/>
+				<subreportParameter name="spaj">
+					<subreportParameterExpression><![CDATA[$P{spaj}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$P{sdsAlokasiBiaya}]]></dataSourceExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("subreport.alokasi_biaya_slink")+".jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+</jasperReport>

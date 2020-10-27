@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="sub_profil" pageWidth="800" pageHeight="842" columnWidth="790" leftMargin="10" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperFunctionReport">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<parameter name="tgl_a" class="java.lang.String">
+		<defaultValueExpression><![CDATA["01/01/2012"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tgl_b" class="java.lang.String">
+		<defaultValueExpression><![CDATA["31/12/2012"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lcb_no" class="java.lang.String">
+		<defaultValueExpression><![CDATA["S01"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="statement1" class="java.lang.String"/>
+	<parameter name="lsbsId" class="java.lang.String"/>
+	<parameter name="lsdbsNumber" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT 
+        (CASE
+            WHEN (premi < 100000000) THEN ' <100'
+            WHEN (premi BETWEEN 100000000 AND 199999999) THEN ' 100-199'
+            WHEN (premi BETWEEN 200000000 AND 499999999) THEN ' 200-499'
+            WHEN (premi BETWEEN 500000000 AND 999999999) THEN ' 500-999'
+            WHEN (premi BETWEEN 1000000000 AND 4999999999) THEN ' 1000-4999'
+            WHEN (premi >= 500000000) THEN ' >=5000'
+            ELSE '-'
+        END) kategori, sum(case when mspe_sex = 0 then 1 else 0 end) cowo, sum(case when mspe_sex = 1 then 1 else 0 end) cewe, b.jml_cowo, b.jml_cewe FROM (
+    SELECT 
+        c.reg_spaj, e.mspe_sex, sum(a.mspro_nilai_kurs * b.msdpr_premium) premi
+    FROM 
+        eka.mst_production a, eka.mst_det_production b, eka.mst_policy c, eka.mst_reff_bii d, eka.mst_client_new e
+    WHERE 
+        a.lstb_id = 1 
+        AND a.mspro_prod_date between to_date($P{tgl_a},'dd/MM/yyyy') and to_date($P{tgl_b},'dd/MM/yyyy')
+        AND a.lstb_id = b.lstb_id
+        AND a.reg_spaj = b.reg_spaj
+        AND a.mspro_prod_ke = b.mspro_prod_ke
+        AND a.mspro_prod_date = b.mspro_prod_date
+  	    AND b.lsbs_id =$P{lsbsId}
+        AND b.lsdbs_number =$P{lsdbsNumber}
+        AND a.reg_spaj = c.reg_spaj
+        AND c.lspd_id <> 95
+        AND c.reg_spaj = d.reg_spaj
+        AND d.no_urut = (select max(no_urut) from eka.mst_reff_bii where level_id = 4 and reg_spaj = d.reg_spaj)
+        AND trim(d.lcb_penutup) = trim($P{lcb_no})
+        AND c.mspo_policy_holder = e.mcl_id
+         $P!{statement1}
+    GROUP BY c.reg_spaj, e.mspe_sex)a,
+(SELECT 
+        sum(case when e.mspe_sex = 0 then 1 else 0 end) jml_cowo, sum(case when e.mspe_sex = 1 then 1 else 0 end) jml_cewe
+    FROM 
+        eka.mst_production a, eka.mst_det_production b, eka.mst_policy c, eka.mst_reff_bii d, eka.mst_client_new e
+    WHERE 
+        a.lstb_id = 1 
+        AND a.mspro_prod_date between to_date($P{tgl_a},'dd/MM/yyyy') and to_date($P{tgl_b},'dd/MM/yyyy')
+        AND a.lstb_id = b.lstb_id
+        AND a.reg_spaj = b.reg_spaj
+        AND a.mspro_prod_ke = b.mspro_prod_ke
+        AND a.mspro_prod_date = b.mspro_prod_date
+        AND a.msbi_tahun_ke =B.MSBI_TAHUN_KE
+        AND a.msbi_premi_ke =B.MSBI_PREMI_KE
+        AND a.msbi_tahun_ke =1
+        AND a.msbi_premi_ke =1
+  	    AND b.lsbs_id =$P{lsbsId}
+        AND b.lsdbs_number =$P{lsdbsNumber}
+        AND a.reg_spaj = c.reg_spaj
+        AND c.lspd_id <> 95
+        AND c.reg_spaj = d.reg_spaj
+        AND d.no_urut = (select max(no_urut) from eka.mst_reff_bii where level_id = 4 and reg_spaj = d.reg_spaj)
+        AND trim(d.lcb_penutup) = trim($P{lcb_no})
+        AND c.mspo_policy_holder = e.mcl_id
+         $P!{statement1})b
+ GROUP BY 
+    (CASE
+        WHEN (premi < 100000000) THEN ' <100'
+        WHEN (premi BETWEEN 100000000 AND 199999999) THEN ' 100-199'
+        WHEN (premi BETWEEN 200000000 AND 499999999) THEN ' 200-499'
+        WHEN (premi BETWEEN 500000000 AND 999999999) THEN ' 500-999'
+        WHEN (premi BETWEEN 1000000000 AND 4999999999) THEN ' 1000-4999'
+        WHEN (premi >= 500000000) THEN ' >=5000'
+        ELSE '-'
+    END), b.jml_cowo, b.jml_cewe
+ORDER BY kategori]]>
+	</queryString>
+	<field name="CEWE" class="java.math.BigDecimal"/>
+	<field name="COWO" class="java.math.BigDecimal"/>
+	<field name="JML_CEWE" class="java.math.BigDecimal"/>
+	<field name="JML_COWO" class="java.math.BigDecimal"/>
+	<field name="KATEGORI" class="java.lang.String"/>
+	<variable name="total" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal($F{COWO}.doubleValue()+$F{CEWE}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="total_cewe" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{CEWE}]]></variableExpression>
+	</variable>
+	<variable name="total_cowo" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{COWO}]]></variableExpression>
+	</variable>
+	<variable name="total_total" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{total}]]></variableExpression>
+	</variable>
+	<title>
+		<band height="15">
+			<staticText>
+				<reportElement mode="Transparent" x="1" y="0" width="769" height="15" backcolor="#80FF80"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[Premium Per Policy (dalam juta Rp)]]></text>
+			</staticText>
+		</band>
+	</title>
+	<detail>
+		<band height="15">
+			<textField hyperlinkType="None">
+				<reportElement x="270" y="0" width="100" height="15" backcolor="#80FF80"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{COWO}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="370" y="0" width="100" height="15" backcolor="#80FF80"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{JML_COWO}.doubleValue() == 0 ? "0 " :
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($F{COWO}.doubleValue()* 100) / $F{JML_COWO}.doubleValue())) + " % "]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="470" y="0" width="100" height="15" backcolor="#80FF80"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{CEWE}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="0" width="170" height="15" backcolor="#80FF80"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="570" y="0" width="100" height="15" backcolor="#80FF80"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{JML_CEWE}.doubleValue() == 0 ? "0 " :
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($F{CEWE}.doubleValue()* 100) / $F{JML_CEWE}.doubleValue())) + " % "]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="670" y="0" width="100" height="15" backcolor="#80FF80"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="170" y="0" width="100" height="15" backcolor="#80FF80"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KATEGORI}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="15">
+			<staticText>
+				<reportElement mode="Opaque" x="1" y="0" width="169" height="15" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement mode="Opaque" x="170" y="0" width="100" height="15" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement mode="Opaque" x="270" y="0" width="100" height="15" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_cowo}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement mode="Opaque" x="370" y="0" width="100" height="15" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement mode="Opaque" x="470" y="0" width="100" height="15" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_cewe}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement mode="Opaque" x="570" y="0" width="100" height="15" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement mode="Opaque" x="670" y="0" width="100" height="15" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_total}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

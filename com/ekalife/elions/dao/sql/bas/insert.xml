@@ -1,0 +1,626 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<typeAlias alias="hashMap" type="java.util.HashMap"/>
+	<typeAlias alias="formSpaj" type="com.ekalife.elions.model.FormSpaj"/>
+	<typeAlias alias="formHistory" type="com.ekalife.elions.model.FormHist"/>
+	<typeAlias alias="spaj" type="com.ekalife.elions.model.Spaj"/>
+	<typeAlias alias="spajDet" type="com.ekalife.elions.model.SpajDet"/>
+	<typeAlias alias="region" type="com.ekalife.elions.model.Region"/>
+	<typeAlias alias="agen" type="com.ekalife.elions.model.Agen"/>
+	<typeAlias alias="btpp" type="com.ekalife.elions.model.btpp"/>
+	<typeAlias alias="sms_out" type="com.ekalife.elions.model.sms.Smsserver_out"/>
+	<typeAlias alias="travelIns" type="com.ekalife.elions.model.TravelInsurance"/>
+	<typeAlias alias="kartuNama" type="com.ekalife.elions.model.KartuNama"/>
+
+	<insert id="elions.bas.insertMstKartuPas" parameterClass="hashMap">
+		INSERT INTO EKA.MST_KARTU_PAS (DIST, NO_KARTU, PRODUK, PREMI, UP, LUS_ID_INPUT, TGL_INPUT, REG_SPAJ, KETERANGAN, MSAG_ID, PRODUCT_CODE, PRODUCT_SUB_CODE, ID_TICKET, LSBS_LINEBUS, jenis)
+		  VALUES   (UPPER (#dist:VARCHAR#),
+		            UPPER (#no_kartu:VARCHAR#),
+		            UPPER (#produk:VARCHAR#),
+		            #premi:DOUBLE#,
+		            #up:DOUBLE#,
+		            #lus_id_input:INTEGER#,
+		            SYSDATE,
+		            UPPER (#reg_spaj:CHAR#),
+		            UPPER (#keterangan:VARCHAR#),
+		            UPPER (#msag_id:VARCHAR#),
+		            #product_code:INTEGER#,
+		            #product_sub_code:INTEGER#,
+                    #id_ticket:VARCHAR#,
+                    #lsbs_linebus:INTEGER#,
+                    #jenis:INTEGER#)	
+	</insert>
+
+	<insert id="elions.bas.insertMstBukuPas" parameterClass="hashMap">
+		INSERT INTO EKA.MST_BUKU_PAS (NO_BUKU, PIN, PRODUK, PREMI, LUS_ID_INPUT, TGL_INPUT, REG_SPAJ)
+		  VALUES   (UPPER (#no_buku:VARCHAR#),
+		            UPPER (#pin:VARCHAR#),
+		            UPPER (#produk:VARCHAR#),
+		            #premi:DOUBLE#,
+		            #lus_id_input:INTEGER#,
+		            SYSDATE,
+		            UPPER (#reg_spaj:CHAR#))            	
+	</insert>
+
+	<insert id="elions.bas.insertMstTravelInsDet" parameterClass="travelIns">
+		INSERT INTO EKA.MST_TRAVEL_INS_DET (MSID_BEG_DATE,
+		                                    MSTI_ID,
+		                                    MSTI_JENIS,
+		                                    MSID_NO,
+		                                    MSID_PREMI,
+		                                    MSID_PREMI_SETOR,
+		                                    MSID_UP,
+		                                    MSID_BLANKO,
+		                                    MSID_NAMA,
+		                                    MSID_SEX,
+		                                    MSID_ALAMAT,
+		                                    MSID_KOTA,
+		                                    MSID_KD_POS,
+		                                    MSID_PLACE_BIRTH,
+		                                    MSID_DATE_BIRTH,
+		                                    MSID_KD_TELP_RMH,
+		                                    MSID_TELP_RMH,
+		                                    MSID_HP,
+		                                    MSID_END_DATE,
+		                                    TGL_INPUT,
+		                                    LUS_ID)
+		  VALUES   (#msid_beg_date:TIMESTAMP#,
+		            #msti_id#,
+		            #msti_jenis#,
+		            (SELECT NVL (MAX (msid_no), 0) + 1 FROM eka.mst_travel_ins_det WHERE msti_id = #msti_id# AND msti_jenis = #msti_jenis#),
+		            #msid_premi:DOUBLE#,
+		            #msid_premi_setor:DOUBLE#,
+		            #msid_up:DOUBLE#,
+		            #kode_premi# || UPPER (#msid_blanko:VARCHAR#),
+		            TRIM(UPPER (#msid_nama:VARCHAR#)),
+		            #msid_sex:INTEGER#,
+		            UPPER (#msid_alamat:VARCHAR#),
+		            UPPER (#msid_kota:VARCHAR#),
+		            UPPER (#msid_kd_pos:VARCHAR#),
+		            UPPER (#msid_place_birth:VARCHAR#),
+		            #msid_date_birth:TIMESTAMP#,
+		            UPPER (#msid_kd_telp_rmh:VARCHAR#),
+		            UPPER (#msid_telp_rmh:VARCHAR#),
+		            UPPER (#msid_hp:VARCHAR#),
+		            #msid_end_date:TIMESTAMP#,
+		            SYSDATE,
+		            #lus_id:INTEGER#)
+	</insert>
+
+	<insert id="elions.bas.insertMstPositionTravelIns" parameterClass="travelIns">
+		INSERT INTO EKA.MST_POSITION_TRAVEL_INS (MSTI_ID,
+		                                         MSTI_JENIS,
+		                                         MSPT_DATE,
+		                                         MSPT_DESC,
+		                                         MSPT_LUS_ID)
+		  VALUES   (#msti_id:INTEGER#,
+		            #msti_jenis:INTEGER#,
+		            SYSDATE,
+		            UPPER (#mspt_desc:VARCHAR#),
+		            #mspt_lus_id#)
+	</insert>
+	
+	<insert id="elions.bas.insertMstTravelIns" parameterClass="travelIns">
+		INSERT INTO EKA.MST_TRAVEL_INS (MSTI_ID,
+		                                MSTI_JENIS,
+		                                LCA_ID,
+		                                LSB_ID,
+		                                NO_PRE,
+		                                NO_VOUCHER,
+		                                MSTI_POSISI,
+		                                MSTI_TGL,
+		                                MSTI_TGL_RK,
+		                                MSTI_JML_PESERTA,
+		                                MSTI_PREMI,
+		                                MSTI_PREMI_SETOR,
+		                                MSTI_UP,
+		                                MSTI_MSAG_ID,
+		                                MSTI_KOMISI,
+		                                MSTI_KOM_TAX,
+		                                MSTI_TGL_INPUT,
+		                                MSTI_TGL_PROD,
+		                                MSTI_TGL_AKSEP,
+		                                MSTI_TGL_KOMISI,
+		                                LUS_ID_INPUT,
+		                                LUS_ID_AKSEP,
+		                                LUS_ID_KOMISI)
+		  VALUES   (#msti_id#,
+		            #msti_jenis#,
+		            UPPER (#lca_id:CHAR#),
+		            #lsb_id:INTEGER#,
+		            UPPER (#no_pre:CHAR#),
+		            UPPER (#no_voucher:CHAR#),
+		            #msti_posisi:INTEGER#,
+		            #msti_tgl:TIMESTAMP#,
+		            #msti_tgl_rk:TIMESTAMP#,
+		            #msti_jml_peserta:INTEGER#,
+		            #msti_premi:DOUBLE#,
+		            #msti_premi_setor:DOUBLE#,
+		            #msti_up:DOUBLE#,
+		            UPPER (#msti_msag_id:VARCHAR#),
+		            #msti_komisi:DOUBLE#,
+		            #msti_kom_tax:DOUBLE#,
+		            SYSDATE,
+		            #msti_tgl_prod:TIMESTAMP#,
+		            #msti_tgl_aksep:TIMESTAMP#,
+		            #msti_tgl_komisi:TIMESTAMP#,
+		            #lus_id_input:INTEGER#,
+		            #lus_id_aksep:INTEGER#,
+		            #lus_id_komisi:INTEGER#)
+	</insert>
+
+	<insert id="elions.bas.insertMstQuestionnaire" parameterClass="com.ekalife.elions.model.Questionnaire">
+		INSERT INTO eka.mst_questionnaire
+		            (reg_spaj, lsqu_id,
+		             msqu_jawab, msqu_desc,
+		             create_dt, lus_id)
+		     VALUES (UPPER (#reg_spaj:CHAR#), #lsqu_id:INTEGER#,
+		             #msqu_jawab:INTEGER#, UPPER (#msqu_desc:VARCHAR#),
+		             sysdate, #lus_id:INTEGER#)
+	</insert>
+
+	<insert id="elions.bas.insertNewFormSpaj" parameterClass="formSpaj">
+		INSERT INTO eka.mst_form
+		            (msf_id, mss_jenis,
+		             lca_id, lsjs_id, msab_id,
+		             msf_amount, msf_amount_req, start_no_blanko,
+		             end_no_blanko, posisi, status_permintaan,no_blanko_req,
+		             lus_id,bmi_id,trav_ins_type, bukti_pemb_pas
+		             , busdev<!-- untuk brosur -->
+		             )
+		     VALUES (UPPER (#msf_id:VARCHAR#), #mss_jenis:INTEGER#,
+		             UPPER (#lca_id:CHAR#), #lsjs_id:INTEGER#, #msab_id:INTEGER#,
+		             #msf_amount:INTEGER#, #msf_amount_req:INTEGER#, #start_no_blanko:VARCHAR#,
+		             #end_no_blanko:VARCHAR#, #posisi:INTEGER#, #status_permintaan:INTEGER#,
+		             #no_blanko_req:VARCHAR#,#lus_id:INTEGER#,#bmi_id:VARCHAR#,#trav_ins_type:INTEGER#,
+		             #bukti_pembayaran:VARCHAR#
+		             ,#busdev:VARCHAR# <!-- untuk brosur -->
+		             )
+	</insert>
+
+	<insert id="elions.bas.insertFormHistory" parameterClass="formHistory">
+		insert into eka.mst_form_hist (msf_id, msf_urut, posisi, msfh_lus_id, msfh_dt, msfh_desc)
+		values (UPPER (#msf_id:VARCHAR#), #msf_urut:INTEGER#, #posisi:INTEGER#, #msfh_lus_id:INTEGER#, sysdate, #msfh_desc:VARCHAR#)
+	</insert>
+	
+	<insert id="elions.bas.insertFormHistory2" parameterClass="formHistory">
+		insert into eka.mst_form_hist (msf_id, msf_urut, posisi, msfh_lus_id, msfh_dt, msfh_desc)
+		values (UPPER (#msf_id:VARCHAR#), #msf_urut:INTEGER#, #posisi:INTEGER#, #msfh_lus_id:INTEGER#, #msfh_dt:TIMESTAMP#, #msfh_desc:VARCHAR#)
+	</insert>
+
+
+	<insert id="elions.bas.insertNewSpaj" parameterClass="spaj">
+		INSERT INTO eka.mst_spaj
+		            (mss_jenis, lca_id, lsjs_id,
+		             msab_id,lus_id, mss_amount,
+		             modify_lus_id, modify_dt,damage)
+		     VALUES (#mss_jenis:INTEGER#, UPPER (#lca_id:CHAR#), #lsjs_id:INTEGER#,
+		             #msab_id:INTEGER#, #lus_id:INTEGER#, #mss_amount:INTEGER#,
+		             #modify_lus_id:INTEGER#, sysdate,0)	
+	</insert>
+
+	<insert id="elions.bas.insertAgentBranch" parameterClass="agen">
+		INSERT INTO eka.mst_agent_branch
+		            (msab_id, msab_nama,
+		             msag_id, lca_id,
+		             lwk_id, lsrg_id
+		            )
+		     VALUES (nvl((select max(msab_id)+1 from eka.mst_agent_branch),0), UPPER (#msab_nama:VARCHAR#),
+		             UPPER (#msag_id:CHAR#), UPPER (#lca_id:CHAR#),
+		             UPPER (#lwk_id:CHAR#), UPPER (#lsrg_id:CHAR#)
+		            )
+	</insert>
+	
+	<insert id="elions.bas.insertSpajDet" parameterClass="spajDet">
+		INSERT INTO eka.mst_spaj_det
+		            (msf_id,msf_id_asli,  mss_jenis, lca_id, lsjs_id,
+		             msab_id, lsp_id,
+		             no_blanko, mssd_desc,
+		             mssd_lus_id, mssd_dt
+		            )
+		     VALUES (#msf_id:VARCHAR#, #msf_id_asli:VARCHAR#, #mss_jenis:INTEGER#, UPPER (#lca_id:CHAR#), #lsjs_id:INTEGER#,
+		             #msab_id:INTEGER#, #lsp_id:INTEGER#,
+		             UPPER (#no_blanko:VARCHAR#), UPPER (#mssd_desc:VARCHAR#),
+		             #mssd_lus_id:INTEGER#, SYSDATE
+		            )	
+	</insert>
+	
+	<insert id="elions.bas.insertSpajASM" parameterClass="java.util.HashMap">
+		insert into eka.mst_spaj_det(lsjs_id,no_blanko,lsp_id,lca_id,mssd_lus_id,mssd_dt,mssd_desc)
+		values(#lsjs_id#,#no_blanko#,#lsp_id#,#lca_id#,#mssd_lus_id#,sysdate,#mssd_desc#)
+	</insert>
+	
+	<insert id="elions.bas.insertMstBtpp" parameterClass="com.ekalife.elions.model.btpp.Btpp">
+	    insert into eka.mst_btpp 
+	         ( lst_kd_cab,mst_no, mst_tgl_input, lst_nm_cab, lst_nm_admin, mst_nm_pemegang,
+	           flag_print,lus_id,mst_tgl_setor, mst_no_telp, mst_ket,mst_no_btpp, premi, extra_premi, biaya_polis, up, tot_byr, kd_agen, nm_penutup,prde_byr_awal, prde_byr_akhr , mst_flag_batal, reg_spaj)  
+		  values   ( #lst_kd_cab#,#mst_no#,#mst_tgl_input#,#lst_nm_cab#, #lst_nm_admin# ,#mst_nm_pemegang#,
+		  			#flag_print#, #lus_id#, #mst_tglsetor#, #mst_no_telp#, #mst_ket#, #mst_no_btpp#, #premi# , #extra_premi#, #biaya_polis#, #up# , #tot_byr#, #msag_id#, #mcl_first#, #prde_byr_awal#, #prde_byr_akhr#, #mst_flag_batal#, #reg_spaj#)  
+	</insert>
+	
+	<insert id="elions.bas.insertMstHistoryBtpp" parameterClass="java.util.HashMap">
+		insert into eka.mst_history_btpp(mst_no,mst_tgl, kode_cabang,alasan_batal, mst_no_new, flg_btl)
+		values(#mst_no#,sysdate,#kode_cabang#,#alasanbatal#, #mst_no_new#, #flg_btl#)
+	</insert>
+	
+	<insert id="elions.bas.insert_client_old" parameterClass="string">
+		  insert into eka.mst_client_old     SELECT a.*, b.mco_number, SYSDATE mco_date_input
+			  FROM eka.mst_client_new a, (SELECT COUNT (*)+1 mco_number
+			                                FROM eka.mst_client_old
+			                               WHERE mcl_id = #value#) b
+			 WHERE a.mcl_id = #value# 
+	</insert>
+	
+	<insert id="elions.bas.insert_address_old" parameterClass="string">
+		 insert into eka.mst_address_old		 
+			SELECT a.*, b.mao_number, SYSDATE mao_date_input
+			  FROM eka.mst_address_new a, (SELECT COUNT (*) + 1 mao_number
+			                                 FROM eka.mst_address_old
+			                                WHERE mcl_id = #value#) b
+			 WHERE a.mcl_id = #value#
+	</insert>
+		
+	<insert id="elions.bas.insert_address_billing_old" parameterClass="string">
+		  INSERT INTO eka.mst_address_billing_old
+		   SELECT a.*, b.mabo_number, SYSDATE mabo_date_input
+		     FROM eka.mst_address_billing a, (SELECT COUNT (*) + 1 mabo_number
+		                                        FROM eka.mst_address_billing_old WHERE reg_spaj = #value# ) b
+		    WHERE a.reg_spaj = #value# 
+	</insert>
+	
+	<insert id="elions.bas.insert_mst_keluarga" parameterClass="com.ekalife.elions.model.Keluarga">
+			INSERT INTO EKA.MST_KELUARGA
+			(REG_SPAJ,NAMA,LSRE_ID,TANGGAL_LAHIR,INSURED,NO)
+			VALUES
+			(#reg_spaj#,upper(#nama#),#lsre_id#,#tanggal_lahir#,#insured#,#no#)
+	</insert>
+	
+	<insert id="elions.bas.insert_mst_keluarga_old" parameterClass="string">			
+		 INSERT INTO eka.mst_keluarga_old
+		   SELECT a.*, NVL (b.mko_number, 0) + 1 mko_number, SYSDATE mko_date_input
+		     FROM eka.mst_keluarga a, (SELECT MAX (mko_number) mko_number
+		                                 FROM eka.mst_keluarga_old
+		                                WHERE reg_spaj = #spaj# ) b
+		    WHERE a.reg_spaj = #spaj# 
+	</insert>
+	
+	<insert id="elions.bas.insert_lst_ulangan" parameterClass="java.util.HashMap">
+		INSERT INTO eka.lst_ulangan
+		            (reg_spaj, tanggal, jenis, status_polis, lus_id, keterangan
+		            )
+		     VALUES (replace(#reg_spaj#,'.'), sysdate, #jenis#, #status_polis#, #lus_id#, #keterangan#
+		            )
+	</insert>
+	
+	<insert id="elions.bas.insertFitrahHist" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_FITRAH_HIST (                                               
+			NO_BLANKO, MSF_URUT, LSJS_ID, 
+			LSP_ID, MSFH_DESC, MSFH_DATE, 
+			MSAB_ID, LUS_ID, LCA_ID, FLAG_URUT                                                                         
+		) VALUES (                                                                      
+			upper(#no_blanko:VARCHAR#), #msf_urut:INTEGER#, 
+			#lsjs_id:INTEGER#, #lsp_id:INTEGER#, upper(#msfh_desc:VARCHAR#), 
+			#msfh_date:TIMESTAMP#, #msab_id:INTEGER#, 
+			#lus_id:INTEGER#, upper(#lca_id:CHAR#),#flag_urut:INTEGER#                                                          
+		)		
+	</insert>
+	
+	<insert id="elions.bas.insertSmsServerOutWithGateway" parameterClass="sms_out">
+		INSERT INTO EKA.SMSSERVER_OUT (                    
+			 TYPE                                             
+			, RECIPIENT                                        
+			, TEXT                                             
+			, WAP_URL                                          
+			, WAP_EXPIRY_DATE                                  
+			, WAP_SIGNAL                                       
+			, CREATE_DATE                                      
+			, ORIGINATOR                                       
+			, ENCODING                                         
+			, STATUS_REPORT                                    
+			, FLASH_SMS                                        
+			, SRC_PORT                                         
+			, DST_PORT                                         
+			, SENT_DATE                                        
+			, REF_NO                                           
+			, PRIORITY                                         
+			, STATUS                                           
+			, ERRORS                                           
+			, GATEWAY_ID
+			, LUS_ID  
+			, ID_REFRENCE    
+			, JENIS        
+			, LJS_ID
+			, MSPO_POLICY_NO
+			, REG_SPAJ                       
+		) values (                                         
+			 upper(#type#)                            
+			, upper(EKA.UTILS.STANDARD_HP(#recipient#))                       
+			, #text#                    
+			, upper(#wap_url#)                         
+			, #wap_expiry_date#                               
+			, upper(#wap_signal#)                      
+			, sysdate                                   
+			, upper(EKA.UTILS.STANDARD_HP(#originator#))                      
+			, upper(#encoding#)                        
+			, #status_report#                          
+			, #flash_sms#                              
+			, #src_port#                               
+			, #dst_port#                               
+			, #sent_date#                                     
+			, upper(#ref_no#)                          
+			, #priority#                               
+			, 'U'                          
+			, #errors#                                 
+			, EKA.UTILS.SMS_GATEWAY(#recipient#)
+			, #lus_id# 
+			, #id_refrence#  
+			, #jenis#                   
+			, #ljs_id#
+			, #mspo_policy_no#
+			, #reg_spaj#
+		)
+	</insert>
+	
+	<insert id="elions.bas.insertSmsserver_out" parameterClass="sms_out">
+		INSERT INTO EKA.SMSSERVER_OUT (                    
+			 TYPE                                             
+			, RECIPIENT                                        
+			, TEXT                                             
+			, WAP_URL                                          
+			, WAP_EXPIRY_DATE                                  
+			, WAP_SIGNAL                                       
+			, CREATE_DATE                                      
+			, ORIGINATOR                                       
+			, ENCODING                                         
+			, STATUS_REPORT                                    
+			, FLASH_SMS                                        
+			, SRC_PORT                                         
+			, DST_PORT                                         
+			, SENT_DATE                                        
+			, REF_NO                                           
+			, PRIORITY                                         
+			, STATUS                                           
+			, ERRORS                                           
+			, GATEWAY_ID
+			, LUS_ID  
+			, ID_REFRENCE  
+			, JENIS       
+			, LJS_ID
+			, MSPO_POLICY_NO
+			, REG_SPAJ                                     
+		) values (                                         
+			 upper(#type#)                            
+			, upper(EKA.UTILS.STANDARD_HP(#recipient#))                       
+			, upper(#text#)                            
+			, upper(#wap_url#)                         
+			, #wap_expiry_date#                               
+			, upper(#wap_signal#)                      
+			, sysdate                                   
+			, upper(EKA.UTILS.STANDARD_HP(#originator#))                      
+			, upper(#encoding#)                        
+			, #status_report#                          
+			, #flash_sms#                              
+			, #src_port#                               
+			, #dst_port#                               
+			, #sent_date#                                     
+			, upper(#ref_no#)                          
+			, #priority#                               
+			, 'U'                          
+			, #errors#                                 
+			, upper(#gateway_id#)
+			, #lus_id# 
+			, #id_refrence#      
+			, #jenis#                                
+			, #ljs_id#
+			, #mspo_policy_no#
+			, #reg_spaj#
+		)
+	</insert>
+	
+	<insert id="elions.bas.insertFormBandara" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_form_bandara(no_permintaan,tgl_permintaan,nama_perwakilan,lsjs_id,juml_blanko,no_blanko,lus_admin,trav_ins_type)
+		     VALUES (#id#, to_date(#date#,'dd/mm/yyyy'), upper(#nama#), 15, #jumlh#, #noBlanko#,#lus_id#, #jenis#)	
+	</insert>
+	
+	<insert id="elions.bas.insertMstInputAgensys" parameterClass="com.ekalife.elions.model.Mia">
+		INSERT INTO EKA.MST_INPUT_AGENSYS (MIA_AGENSYS_ID, LUS_ID, MSAG_ID, MIA_RECRUITER, MIA_LEVEL_RECRUIT, MCL_ID, LBN_ID, LCA_ID, LWK_ID, 
+										   LSRG_ID, MIA_NO_KONTRAK, MIA_KTP, MIA_NAMA, MIA_BIRTH_PLACE, MIA_BIRTH_DATE, MIA_INPUT_DATE, 
+										   MIA_ALAMAT, MIA_AWAL_KONTRAK, MIA_AKHIR_KONTRAK, MIA_TGL_AKTIF, MIA_AKTIF, MIA_LEVEL, MIA_NO_REK, MIA_TGL_BERKAS) 
+								    VALUES (upper(#mia_agensys_id:CHAR#), #lus_id:INTEGER#, upper(#msag_id:CHAR#), upper(#mia_recruiter:CHAR#), 
+								    		#mia_level_recruit:INTEGER#, upper(#mcl_id:CHAR#), #lbn_id:INTEGER#, upper(#lca_id:CHAR#), 
+								    		upper(#lwk_id:CHAR#), upper(#lsrg_id:CHAR#), upper(#mia_no_kontrak:VARCHAR#), 
+								    		upper(#mia_ktp:VARCHAR#), upper(#mia_nama:VARCHAR#), upper(#mia_birth_place:VARCHAR#), 
+								    		to_date(#mia_birth_date#,'dd/mm/yyyy'), sysdate, upper(#mia_alamat:VARCHAR#), 
+								    		to_date(#mia_awal_kontrak#,'dd/mm/yyyy'), to_date(#mia_akhir_kontrak#,'dd/mm/yyyy'), to_date(#mia_tgl_aktif#,'dd/mm/yyyy'), 
+								    		#mia_aktif:INTEGER#, #mia_level:INTEGER#, upper(#mia_no_rek:VARCHAR#), to_date(#mia_tgl_berkas#,'dd/mm/yyyy'))
+	</insert>
+	
+	<insert id="elions.bas.insertFollowupBilling" parameterClass="com.ekalife.elions.model.Followup">
+		 INSERT INTO EKA.MST_FOLLOWUP (
+		   REG_SPAJ, MSBI_TAHUN_KE, MSBI_PREMI_KE, 
+		   MSFU_URUT, LSFU_ID, LUS_ID, 
+		   MSFU_KET, MSFU_CREATE_DATE, MSFU_STATUS, MSFU_ATTACHMENT, MSFU_REMIND_DATE) 
+		VALUES ( #reg_spaj#, #msbi_tahun_ke#, #msbi_premi_ke#, 
+			(select nvl(max(msfu_urut), 0)+1 
+			from eka.mst_followup 
+			where reg_spaj = rpad(replace(#reg_spaj# ,'.'),11,' ') and msbi_tahun_ke = #msbi_tahun_ke# and msbi_premi_ke = #msbi_premi_ke#)
+		, #lsfu_id#, #lus_id#, #msfu_ket#, sysdate, #msfu_status#, #msfu_attachment#, #reminder_date#)	
+	</insert>
+	
+	<insert id="elions.bas.insertFollowupCSF" parameterClass="com.ekalife.elions.model.Followup">
+		INSERT INTO EKA.MST_CSF_FOLLOW (
+		   MSCFL_ID, MSCFL_NO_REF, REG_SPAJ, 
+		   MSPO_POLICY_NO, MCL_FIRST, MSCFL_TGL_PERIODE, 
+		   MSCFL_TGL_JTH_TEMPO, MSCFL_REGION, MSCFL_NAMA_PRODUK, 
+		   MSCFL_BANK, MSCFL_JML_BAYAR, MSCFL_FLAG_AKTIF, 
+		   MSCFL_KETERANGAN, MSCFL_INPUT_DATE, MSBI_TAHUN_KE, 
+		   MSBI_PREMI_KE, LSCSF_JENIS, LUS_ID)
+		select 
+			(select lpad(nvl(max(to_number(substr(mscfl_id, 1, 5))), 0)+1, 5, '0') || 'CSFL' || TO_CHAR(sysdate, 'mmyyyy') from eka.mst_csf_follow where substr(mscfl_id, 10, 6) = TO_CHAR(sysdate, 'mmyyyy')) mscfl_id, 
+		    (select nvl(max(mscfl_no_ref), 0)+1 from eka.mst_csf_follow where reg_spaj = a.reg_spaj and mscfl_flag_aktif = 1) mscfl_no_ref, 
+		    a.reg_spaj, a.mspo_policy_no, eka.utils.pemegang(a.reg_spaj) mcl_first,
+		    b.msbi_beg_date mscfl_tgl_periode, b.msbi_due_date mscfl_tgl_jth_tempo, c.lsrg_nama mscfl_region, 
+		    eka.utils.det_produk(d.lsbs_id, d.lsdbs_number) mscfl_nama_produk, null mscfl_bank, null mscfl_jml_bayar, 
+		    decode(#msfu_status#, 0, 1, 1, 0, null) mscfl_flag_aktif, #msfu_ket# mscfl_keterangan, sysdate mscfl_input_date, 
+		    b.msbi_tahun_ke, b.msbi_premi_ke, 1 lscsf_jenis, #lus_id# lus_id
+		from 
+		    eka.mst_policy a, eka.mst_billing b, eka.lst_region c, eka.mst_product_insured d
+		where 
+		    a.reg_spaj = rpad(replace(#reg_spaj# ,'.'),11,' ')
+		    and a.reg_spaj = b.reg_spaj and b.msbi_tahun_ke = #msbi_tahun_ke# and b.msbi_premi_ke = #msbi_premi_ke#
+		    and a.lca_id = c.lca_id and a.lwk_id = c.lwk_id and a.lsrg_id = c.lsrg_id
+		    and a.reg_spaj = d.reg_spaj and d.lsbs_id <![CDATA[<]]> 300
+	</insert>
+	
+	<insert id="elions.bas.insertAgentContract" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_agent_contract (
+			MAC_ID, REGION, MSAG_ID, 
+			MAC_ATASAN_CAB, MAC_NAMA_AGEN, MAC_LEVEL, 
+			MAC_IDENTITAS, MAC_TMPT_LAHIR, MAC_TGL_LAHIR, 
+			MAC_ALAMAT, MAC_TGL_KONTRAK, MAC_KOTA_CAB, 
+			MAC_ATASAN_PUSAT, MAC_JBTN_ATASAN_PUSAT, LUS_ID, 
+			TGL_INPUT, MAC_FILENAME, MAC_DISTRIBUSI
+		) values (
+			#MAC_ID#, 
+			#LSRG_NAMA#, 
+			#MSAG_ID#, 
+			#vp_sales#, 
+			#MCL_FIRST#, 
+			#JABATAN#, 
+			#ktp#, 
+			#placeBirth#, 
+			#birth#, 
+			#alamat#, 
+			#MSAG_BEG_DATE#, 
+			#cab_bank#, 
+			#LEADER2#, 
+			#jabatanpusat#, 
+			#lus_id#, 
+			sysdate,
+			#fileName#,
+			#DISTRIBUSI#
+		)
+	</insert>
+	
+	<insert id="elions.bas.insertHadiah" parameterClass="com.ekalife.elions.model.Hadiah">
+		<isNotEqual property="program_hadiah" compareValue="1">
+			INSERT INTO EKA.MST_HADIAH (
+				REG_SPAJ, MH_NO, LHC_ID, 
+				LH_ID, LSPD_ID, SUPPLIER_ID, 
+				MH_FLAG_KIRIM, MH_BUDGET, MH_HARGA, 
+				MH_ALAMAT, MH_KOTA, MH_KODEPOS, 
+				MH_TELEPON, MH_KETERANGAN, MH_QUANTITY, 
+				LBN_ID, MH_REK_NO, MH_REK_NAMA, 
+				MH_TGL_INPUT, MH_TGL_AKSEP, MH_TGL_PAID, 
+				MH_TGL_KIRIM_VENDOR, MH_TGL_TERIMA_AJS, MH_TGL_KIRIM_AJS, 
+				MH_TGL_TERIMA_NSBH, CREATE_ID, CREATE_DT) 
+			VALUES ( 
+				#reg_spaj#, #mh_no#, #lhc_id#, #lh_id#, #lspd_id#, #supplier_id#, #mh_flag_kirim#, #mh_budget#, #mh_harga#,
+				#mh_alamat#, #mh_kota#, #mh_kodepos#, #mh_telepon#, #mh_keterangan#, #mh_quantity#, #lbn_id#, #mh_rek_no#,
+				#mh_rek_nama#, #mh_tgl_input#, #mh_tgl_aksep#, #mh_tgl_paid#, #mh_tgl_kirim_vendor#, #mh_tgl_terima_ajs#,
+				#mh_tgl_kirim_ajs#, #mh_tgl_terima_nsbh#, #create_id#, #create_dt#)	
+		</isNotEqual>
+		<isEqual property="program_hadiah" compareValue="1">
+			INSERT INTO EKA.MST_HADIAH (
+				REG_SPAJ, MH_NO, LHC_ID, 
+				LH_ID, LSPD_ID, SUPPLIER_ID, 
+				MH_FLAG_KIRIM, MH_BUDGET, MH_HARGA, 
+				MH_ALAMAT, MH_KOTA, MH_KODEPOS, 
+				MH_TELEPON, MH_KETERANGAN, MH_QUANTITY, 
+				LBN_ID, MH_REK_NO, MH_REK_NAMA, 
+				MH_TGL_INPUT, MH_TGL_AKSEP, MH_TGL_PAID, 
+				MH_TGL_KIRIM_VENDOR, MH_TGL_TERIMA_AJS, MH_TGL_KIRIM_AJS, 
+				MH_TGL_TERIMA_NSBH, CREATE_ID, CREATE_DT, PROGRAM_HADIAH, MH_TGL_KIRIM_UW,
+				MH_ALAMAT_KIRIM, MH_KOTA_KIRIM, MH_KODEPOS_KIRIM, FLAG_STANDARD) 
+			VALUES ( 
+				#reg_spaj#, #mh_no#, #lhc_id#, #lh_id#, #lspd_id#, #supplier_id#, #mh_flag_kirim#, #mh_budget#, #mh_harga#,
+				#mh_alamat#, #mh_kota#, #mh_kodepos#, #mh_telepon#, #mh_keterangan#, #mh_quantity#, #lbn_id#, #mh_rek_no#,
+				#mh_rek_nama#, #mh_tgl_input#, #mh_tgl_aksep#, #mh_tgl_paid#, #mh_tgl_kirim_vendor#, #mh_tgl_terima_ajs#,
+				#mh_tgl_kirim_ajs#, #mh_tgl_terima_nsbh#, #create_id#, #create_dt#, #program_hadiah#, #mh_tgl_kirim_uw#,
+				#mh_alamat#, #mh_kota#, #mh_kodepos#, #flag_standard#)	
+		</isEqual>
+	</insert>
+	
+	<insert id="elions.bas.insertHadiahHist" parameterClass="com.ekalife.elions.model.Hadiah">
+		insert into eka.mst_hadiah_hist (
+			reg_spaj, mh_no, lspd_id, 
+			keterangan, create_id, create_dt) 
+		values ( 
+			#reg_spaj#,
+			#mh_no#,
+			#lspd_id#,
+			#keterangan#,
+			#create_id#,
+			#create_dt#)	
+	</insert>
+	
+	<insert id="elions.bas.insertJenisHadiahPS" parameterClass="java.util.HashMap">
+		insert into eka.lst_hadiah(
+			lhc_id, lh_id, lh_nama, lh_harga, lh_hari, create_id, create_dt, flag_standard, flag_active)
+		values(
+			#lhc_id#,
+			(select max(lh_id)+1 from eka.lst_hadiah where lhc_id = 8),
+			#lh_nama#,
+			#lh_harga#,
+			#lh_hari#,
+			#create_id#,
+			sysdate,
+			#flag_standard#,
+			#flag_active#
+		)
+	</insert>
+	
+	<insert id="elions.bas.insertBatalSspHist" parameterClass="hashMap">
+	   insert into eka.mst_cplan_posisi@eb (
+	       no_id, mcp_tgl, lssp_id, lspd_id, 
+	       mcp_note, lus_id)
+	   values (#id#, SYSDATE, #lssp_id#, 
+	       #lspd_id#, upper(#mcp_note#), #lus_id#)
+	</insert>
+	
+	<insert id="elions.bas.insertBrosur" parameterClass="hashMap">
+		insert into eka.lst_jenis_spaj (lsjs_id,lsjs_prefix,lsjs_desc,lus_id,create_dt,aktif,jenis) 
+			values((select max(lsjs_id)+1 from eka.lst_jenis_spaj),upper(#prefix#),#nm_brosur#,#lus_id#,sysdate,1,#jenis#)
+	</insert>
+	
+	<insert id="elions.bas.insertStokBrosur" parameterClass="hashMap">
+		insert into STOK.STOCK_BROSUR (stock_id, code_brosur, stock_name, stock, busdev, aktif, jenis)
+			values(#stok_id#,upper(#prefix#),#nm_brosur#,0,#busdev#,1,#jenis#)
+	</insert>
+	
+	<insert id="elions.bas.insertKartuNama" parameterClass="kartuNama">
+		insert into eka.mst_kartu_nama (mkn_id, msag_id, mkn_type, mkn_create_date, mkn_lus_id, mkn_document, mkn_approve, mkn_position, telp)
+			values(#mkn_id#, #msag_id#, #mkn_type#, sysdate, #mkn_lus_id#, #mkn_document#, #mkn_approve#, #mkn_position#, #telp#)
+	</insert>
+	
+	<insert id="elions.bas.insertLstAddrRegionHist" parameterClass="hashMap">
+		insert into eka.lst_addr_region_hist (lar_id, create_date, lus_id, keterangan)
+		values (#lar_id#, sysdate, #lus_id#, #keterangan#)
+	</insert>
+	
+	<insert id="elions.bas.insertLstAutobetSpeedyHist" parameterClass="hashMap">
+		insert into eka.lst_autodebet_speedy_hist(lar_id, lar_telpon, lar_speedy, tgl_autodebet, status, keterangan)
+		values (#lar_id#, #lar_telpon#, #lar_speedy#, to_date(#tgl_autodebet#,'MM/dd/yyyy'), #status#, #keterangan#)
+	</insert>
+	
+	<insert id="elions.bas.insertMonitoringSpaj" parameterClass="hashMap">
+		insert into eka.mst_spaj_ao (id_dok, msag_id, name_customer,informasi, fdm, lus_id, create_date, flag_active, lstb_id, jenis, note, jenis_further, tgl_kembali_ke_agen, tgl_terima_dari_agen, keterangan_further, tgl_further, flag_further, email_cc) 
+			values(upper(#no_blanko#), #msag_id#, upper(#holder_name#), upper(#informasi#), upper(#fdm#), #lus_id#, sysdate, 1, 1, #jenis#, upper(#note#), #jenis_further#, #tgl_kembali_ke_agen#, #tgl_terima_agen#, #keterangan_further#, #tgl_further#, #flag_further#, #email_cc#)
+	</insert>
+	
+	<insert id="elions.bas.insertAgingFollowup" parameterClass="hashMap">
+		insert into eka.lst_aging_followup_temp(mspo_policy_no, pemegang, beg_date, end_date, followup, create_date)
+			values(#polis#, #pemegang#, to_date(#beg_date#,'dd/MM/yyyy'), to_date(#end_date#,'dd/MM/yyyy'), 0, sysdate)
+	</insert>
+	
+	 <insert id="elions.bas.insertSpajHist" parameterClass="formSpaj">
+		INSERT INTO EKA.LST_JENIS_SPAJ_HIST (LSJS_ID, MSS_AMOUNT, LCA_ID,LUS_ID,PRINT_DT,LSJS_STOCK,MSF_ID ,NO_BLANKO , JENIS, KETERANGAN)
+		  VALUES   (#lsjs_id#, #msf_amount#, #lca_id#, #lus_id# 
+		  <isEmpty property="msfh_dt">,trunc(sysdate)</isEmpty>
+		  <isNotEmpty property="msfh_dt">,#msfh_dt# </isNotEmpty>
+		  , (SELECT lsjs_qty_form FROM EKA.LST_JENIS_SPAJ WHERE LSJS_ID =#lsjs_id#) , #msf_id# , #no_blanko_req#, #mss_jenis#,#msfh_desc#)
+	</insert>
+	
+</sqlMap>

@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="suratpolis_mallins" pageWidth="595" pageHeight="842" columnWidth="525" leftMargin="35" rightMargin="35" topMargin="45" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.VGuides.Detail" value="15"/>
+	<property name="com.jasperassistant.designer.DataSource" value="EKATEST"/>
+	<reportFont name="Roman" isDefault="false" fontName="Times New Roman" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["09200913872"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT 
+i.lku_rp, j.lku_dol, i.jum_rp, j.jum_dol,
+(case when jumlah_premi<2 then 'Premi Pokok' else 'Premi Pokok + Top-Up'end) premprem,
+a.mste_beg_date, b.mspo_policy_holder, b.mspo_policy_no, 
+       c.lsbs_id, d.premi, ((select upper(lti_note || ' ') from eka.lst_title where lti_id = e.lti_id) || e.mcl_first) mcl_first,
+       DECODE (e.mspe_sex, 1, 'Bpk. ', 'Ibu ') gelar, e.mcl_jenis,
+g.msap_address, g.kota, g.msap_zip_code, b.mspo_date_print, 
+b.lca_id , c.lsdbs_number,
+(select sum(msdb_premium) from eka.mst_det_billing where reg_spaj = $P{spaj} and msbi_premi_ke = 1) jml_tagih,
+(SELECT a.lsjb_id FROM eka.mst_payment a, eka.mst_tag_payment b 
+  WHERE a.reg_spaj = $P{spaj} AND a.mspa_payment_id = b.mspa_payment_id AND b.msbi_tahun_ke = 1 AND b.msbi_premi_ke = 1 and rownum = 1) lsjb_id
+  FROM eka.mst_insured a,
+       eka.mst_policy b,
+       eka.mst_product_insured c,
+       (SELECT   reg_spaj, SUM (mspr_premium) premi
+            FROM eka.mst_product_insured
+           WHERE reg_spaj = $P{spaj} AND mspr_active = 1
+        GROUP BY reg_spaj) d,
+       eka.mst_client_new e,
+	   eka.mst_address_billing g,
+	   (select count(*) jumlah_premi from eka.mst_ulink u 
+		where reg_spaj = $P{spaj} 
+		and mu_tgl_trans = (select mu_tgl_trans from eka.mst_ulink where reg_spaj = u.reg_spaj and mu_ke=1)) h,	   
+	   (select b.reg_spaj, k.lku_symbol lku_rp, sum(p.mspa_payment) jum_rp
+		from eka.mst_billing b, eka.mst_tag_payment t, eka.mst_payment p, eka.lst_kurs k
+		where b.msbi_beg_date = (select msbi_beg_date from eka.mst_billing where reg_spaj = b.reg_spaj and msbi_tahun_ke=1 and msbi_premi_ke=1)
+		and b.reg_spaj = $P{spaj}
+		and b.reg_spaj = t.reg_spaj and b.msbi_tahun_ke = t.msbi_tahun_ke and b.msbi_premi_ke = t.msbi_premi_ke
+		and t.mspa_payment_id = p.mspa_payment_id
+		and p.lku_id='01'
+		and p.lku_id=k.lku_id
+		group by k.lku_symbol, b.reg_spaj) i,
+	   (select b.reg_spaj, k.lku_symbol lku_dol, sum(p.mspa_payment) jum_dol
+		from eka.mst_billing b, eka.mst_tag_payment t, eka.mst_payment p, eka.lst_kurs k
+		where b.msbi_beg_date = (select msbi_beg_date from eka.mst_billing where reg_spaj = b.reg_spaj and msbi_tahun_ke=1 and msbi_premi_ke=1)
+		and b.reg_spaj = $P{spaj}
+		and b.reg_spaj = t.reg_spaj and b.msbi_tahun_ke = t.msbi_tahun_ke and b.msbi_premi_ke = t.msbi_premi_ke
+		and t.mspa_payment_id = p.mspa_payment_id
+		and p.lku_id='02'
+		and p.lku_id=k.lku_id
+		group by k.lku_symbol, b.reg_spaj) j
+ WHERE b.reg_spaj = a.reg_spaj
+   AND a.reg_spaj = c.reg_spaj
+   AND b.reg_spaj = d.reg_spaj
+   AND c.lsbs_id < 300
+   AND b.reg_spaj = $P{spaj}
+   AND b.mspo_policy_holder = e.mcl_id
+   AND b.reg_spaj = g.reg_spaj
+	AND b.reg_spaj = i.reg_spaj(+)
+	AND b.reg_spaj = j.reg_spaj(+)]]>
+	</queryString>
+	<field name="GELAR" class="java.lang.String"/>
+	<field name="JML_TAGIH" class="java.math.BigDecimal"/>
+	<field name="JUM_DOL" class="java.math.BigDecimal"/>
+	<field name="JUM_RP" class="java.math.BigDecimal"/>
+	<field name="KOTA" class="java.lang.String"/>
+	<field name="LCA_ID" class="java.lang.String"/>
+	<field name="LKU_DOL" class="java.lang.String"/>
+	<field name="LKU_RP" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="LSJB_ID" class="java.math.BigDecimal"/>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="MCL_JENIS" class="java.math.BigDecimal"/>
+	<field name="MSAP_ADDRESS" class="java.lang.String"/>
+	<field name="MSAP_ZIP_CODE" class="java.lang.String"/>
+	<field name="MSPO_DATE_PRINT" class="java.util.Date"/>
+	<field name="MSPO_POLICY_HOLDER" class="java.lang.String"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSTE_BEG_DATE" class="java.util.Date"/>
+	<field name="PREMI" class="java.math.BigDecimal"/>
+	<field name="PREMPREM" class="java.lang.String"/>
+	<variable name="duit" class="java.lang.String">
+		<variableExpression><![CDATA[(($F{JUM_DOL} != null || $F{JUM_RP} != null) ? 
+(
+$F{LSJB_ID}.intValue() == 3 ? 
+      ($P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_RP}, $F{JUM_RP})+" ("+$P{REPORT_SCRIPTLET}.formatTerbilang($F{JUM_RP}, $F{LKU_RP})+")") : 
+(
+  ($F{JUM_DOL} != null && $F{JUM_RP} != null) ?
+    ($P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_RP}, $F{JUM_RP})+" ("+$P{REPORT_SCRIPTLET}.formatTerbilang($F{JUM_RP}, $F{LKU_RP})+") dan " + $P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_DOL}, $F{JUM_DOL})+" ("+$P{REPORT_SCRIPTLET}.formatTerbilang($F{JUM_DOL}, $F{LKU_DOL})+")") : 
+  ($F{JUM_RP} != null) ? 
+    ($P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_RP}, $F{JUM_RP})+" ("+$P{REPORT_SCRIPTLET}.formatTerbilang($F{JUM_RP}, $F{LKU_RP})+")") : 
+  ($F{JUM_DOL} != null) ? 
+    ($P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_DOL}, $F{JUM_DOL})+" ("+$P{REPORT_SCRIPTLET}.formatTerbilang($F{JUM_DOL}, $F{LKU_DOL})+")") : 
+  ""    
+))
+: "")]]></variableExpression>
+	</variable>
+	<detail>
+		<band height="261">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="5" y="15" width="519" height="16"/>
+				<textElement textAlignment="Justified" markup="styled">
+					<font reportFont="Roman" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["\n\n\n"+"Kepada Yth.\n"+
+($F{MCL_JENIS}.intValue()==1?"":$F{GELAR}+" ") +$F{MCL_FIRST}+"\n"+
+$F{MSAP_ADDRESS}+"\n"+
+($F{KOTA}!=null?($F{KOTA}+" "):"")+
+($F{MSAP_ZIP_CODE}!=null?" "+$F{MSAP_ZIP_CODE}:"")
++"\n"+
+"\n\n"+
+"Dengan Hormat,"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="5" y="33" width="519" height="16"/>
+				<textElement textAlignment="Justified" markup="styled">
+					<font reportFont="Roman" isUnderline="false" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Dengan ini mengucapkan <style isBold=\"true\" pdfFontName=\"Times-BoldItalic\">'Selamat'</style>, karena mulai tanggal <style isBold=\"true\" pdfFontName=\"Times-Bold\">"+$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSTE_BEG_DATE})+"</style>" +
+" Polis Anda mulai berlaku dan dengan demikian Anda telah bergabung dengan keluarga besar Pemegang Polis Asuransi Jiwa Sinarmas MSIG. Untuk itu kami mengucapkan terima kasih atas kepercayaan yang diberikan kepada PT Asuransi Jiwa Sinarmas MSIG Tbk. sebagai perusahaan Asuransi Jiwa Anda."+
+"\n\n"+
+"Dengan mulai berlakunya Asuransi Jiwa ini, hal ini merupakan permulaan dari hubungan jangka panjang yang akan kita jalin bersama, antara Anda sebagai Pemegang Polis dan kami sebagai Penanggung. Kami akan memberikan pelayanan yang terbaik bagi Anda secara konsisten sesuai dengan falsafah kami untuk menjadi <style isBold=\"true\" pdfFontName=\"Times-BoldItalic\">'Mitra Anda Seumur Hidup'</style> dengan komitmen memberikan jaminan sepenuhnya atas semua manfaat sebagaimana tercantum dalam Polis." +
+"\n\n"+
+"Kami telah menerbitkan Polis No. <style isBold=\"true\" pdfFontName=\"Times-Bold\">"+$P{REPORT_SCRIPTLET}.formatPolis($F{MSPO_POLICY_NO})+"</style> beserta lampiran-lampirannya, yang semuanya merupakan dokumen yang penting dan berharga. Untuk itu harap dipelajari dan dimengerti seluruh isi Polis dan disimpan dengan baik. Selanjutnya keabsahan dan status Polis Anda dapat dilihat di Website kami www.sinarmasmsiglife.co.id/E-Policy. ( user id : nomor identitas; dan password : tanggal lahir)." +
+"\n\n"+
+"Apabila ada hal-hal yang kurang jelas, silahkan menghubungi Customer Service kami melalui telepon bebas pulsa <style isBold=\"true\" pdfFontName=\"Times-BoldItalic\">'0.800.140.1217'</style> atau email kami di: cs@sinarmasmsiglife.co.id"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="5" y="223" width="256" height="16"/>
+				<textElement markup="styled">
+					<font fontName="Times New Roman" size="12" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("printing.jabatanDirektur")]]></textFieldExpression>
+			</textField>
+			<image hyperlinkType="None">
+				<reportElement positionType="Float" x="5" y="155" width="146" height="42"/>
+				<imageExpression class="java.lang.String"><![CDATA["com/ekalife/utils/images/andrew_bain.png"]]></imageExpression>
+			</image>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="5" y="110" width="519" height="31"/>
+				<textElement textAlignment="Justified" markup="styled">
+					<font fontName="Times New Roman" size="12" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Hormat kami,\n"+
+"PT Asuransi Jiwa Sinarmas MSIG Tbk."]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="5" y="204" width="256" height="16"/>
+				<textElement markup="styled">
+					<font fontName="Times New Roman" size="12" isBold="true" isUnderline="true" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("printing.namaDirektur")]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<lastPageFooter>
+		<band height="762">
+			<image hAlign="Center" vAlign="Middle" hyperlinkType="None">
+				<reportElement positionType="Float" isPrintRepeatedValues="false" x="0" y="25" width="526" height="711"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.suratpolis.epolicy")]]></imageExpression>
+			</image>
+		</band>
+	</lastPageFooter>
+</jasperReport>

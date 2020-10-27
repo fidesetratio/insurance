@@ -1,0 +1,1261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="nationwide_bsm" pageWidth="1460" pageHeight="842" orientation="Landscape" columnWidth="1420" leftMargin="20" rightMargin="20" topMargin="10" bottomMargin="10" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<parameter name="tgl_a" class="java.lang.String">
+		<defaultValueExpression><![CDATA["01/01/2013"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tgl_b" class="java.lang.String">
+		<defaultValueExpression><![CDATA["01/01/2013"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lcb_no" class="java.lang.String">
+		<defaultValueExpression><![CDATA["S01"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="statement1" class="java.lang.String"/>
+	<parameter name="cabang" class="java.lang.String">
+		<defaultValueExpression><![CDATA["ALL"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="wilayah" class="java.lang.String"/>
+	<parameter name="tanggalAkhir" class="java.lang.String">
+		<defaultValueExpression><![CDATA["05/09/2012"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAwal" class="java.lang.String">
+		<defaultValueExpression><![CDATA["04/09/2012"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select lcb_no, nama_cabang, sum(premi_nb_sp) as premi_nb_sp, sum(premi_nb_ssl) as premi_nb_ssl,  sum(premi_nb_nssl) as premi_nb_nssl, sum(premi_nb_simpol) as premi_nb_simpol,
+    sum(os_nssl) as os_nssl, sum(os_sp) as os_sp, sum(os_simpol) as os_simpol, sum(os_ssl) as os_ssl,
+    sum(polis_in_nssl) as polis_in_nssl, sum(polis_out_nssl) as polis_out_nssl, sum(polis_in_sp) as polis_in_sp, sum(polis_out_sp) as polis_out_sp, 
+    sum(polis_in_simpol) as polis_in_simpol, sum(polis_lapse_simpol) as polis_lapse_simpol, sum(polis_ro_ssl) as polis_ro_ssl, sum(polis_out_ssl) as polis_out_ssl
+from
+(
+select e.lcb_no,nama_cabang, 
+        sum(case when ((lsbs_id=142 and lsdbs_number= 2) or (lsbs_id = 158 and lsdbs_number=6)) then (b.mspro_nilai_kurs * msdpr_premium) else 0 end ) as premi_nb_sp,
+        sum(case when (lsbs_id= 164 and lsdbs_number = 2) then (b.mspro_nilai_kurs * msdpr_premium) else 0 end) as premi_nb_ssl,
+ 		sum(case when (lsbs_id= 164 and lsdbs_number = 11) then (b.mspro_nilai_kurs * msdpr_premium) else 0 end) as premi_nb_nssl,
+        sum(case when lsbs_id = 120 then (b.mspro_nilai_kurs * c.msdpr_premium) else 0 end) premi_nb_simpol,
+        0 as os_nssl,
+        0 as os_sp,
+        0 as os_simpol,
+        0 as os_ssl,
+        0 as polis_in_nssl,
+        0 as polis_out_nssl,
+        0 as polis_in_sp,
+        0 as polis_out_sp,
+        0 as polis_in_simpol,
+        0 as polis_lapse_simpol,
+        0 as polis_ro_ssl,
+        0 as polis_out_ssl
+from eka.mst_policy a,
+     eka.mst_production b,
+     eka.mst_det_production c,
+     eka.mst_reff_bii d,
+     eka.lst_cabang_bii e
+where a.reg_spaj = b.reg_spaj
+and a.reg_spaj = c.reg_spaj
+and a.reg_spaj = d.reg_spaj
+and b.mspro_prod_ke = c.mspro_prod_ke
+and b.mspro_prod_date = c.mspro_prod_date
+and d.lcb_penutup = e.lcb_no
+and d.no_urut = (select max(no_urut) from eka.mst_reff_bii where reg_spaj = a.reg_spaj)
+and b.mspro_prod_date = (select min(mspro_prod_date) from eka.mst_production where msbi_tahun_ke = 1 and msbi_premi_ke = 1 and reg_spaj = a.reg_spaj)
+and b.mspro_prod_date between  to_date($P{tanggalAwal},'dd/MM/yyyy') and to_date($P{tanggalAkhir},'dd/MM/yyyy')
+and jenis = 2
+and flag_aktif = 1
+group by e.lcb_no, nama_cabang
+union
+select lcb_no, nama_cabang, 
+    0 as premi_nb_sp,
+    0 as premi_nb_ssl,
+    0 as premi_nb_simpol,
+    0 as premi_nb_nssl,
+    sum(case when nama_plan = 'STABLE LINK NEW' then (decode(lku_id,'02',9600,1) * saldo_akhir_tb) else 0 end) as os_nssl,
+    sum(case when nama_plan = 'POWER SAVE' then (decode(lku_id,'02',9600,1) * saldo_akhir_tb) else 0 end) as os_sp,
+    0 as os_simpol,
+    sum(case when nama_plan = 'STABLE LINK' then (decode(lku_id,'02',9600,1) * saldo_akhir_tb) else 0 end) as os_ssl,
+    sum(case when nama_plan = 'STABLE LINK NEW' then polis_in else 0 end) as polis_in_nssl,
+    sum(case when nama_plan = 'STABLE LINK NEW' then polis_out else 0 end) as polis_out_nssl,
+    sum(case when nama_plan = 'POWER SAVE' then polis_in else 0 end) as polis_in_sp,
+    sum(case when nama_plan = 'POWER SAVE' then polis_out else 0 end) as polis_out_sp,
+    0 as polis_in_simpol,
+    0 as polis_lapse_simpol,
+    (select count(*)
+        from eka.mst_powersave_prod
+        where lcb_id = lcb_no
+        and periode between  to_date($P{tanggalAwal},'dd/MM/yyyy') and to_date($P{tanggalAkhir},'dd/MM/yyyy')) as polis_ro_ssl,
+    sum(case when nama_plan = 'STABLE LINK' then polis_out else 0 end) as polis_out_ssl
+from eka.mst_powersave_monthly a,
+     eka.lst_cabang_bii b
+where a.lcb_id = b.lcb_no
+and a.periode between  to_date($P{tanggalAwal},'dd/MM/yyyy') and to_date($P{tanggalAkhir},'dd/MM/yyyy')
+and saldo_akhir_tb != 0
+and jenis = 2
+and flag_aktif = 1
+group by b.lcb_no, nama_cabang
+)
+group by lcb_no, nama_cabang
+order by nama_cabang]]>
+	</queryString>
+	<field name="LCB_NO" class="java.lang.String"/>
+	<field name="NAMA_CABANG" class="java.lang.String"/>
+	<field name="OS_NSSL" class="java.math.BigDecimal"/>
+	<field name="OS_SIMPOL" class="java.math.BigDecimal"/>
+	<field name="OS_SP" class="java.math.BigDecimal"/>
+	<field name="OS_SSL" class="java.math.BigDecimal"/>
+	<field name="POLIS_IN_NSSL" class="java.math.BigDecimal"/>
+	<field name="POLIS_IN_SIMPOL" class="java.math.BigDecimal"/>
+	<field name="POLIS_IN_SP" class="java.math.BigDecimal"/>
+	<field name="POLIS_LAPSE_SIMPOL" class="java.math.BigDecimal"/>
+	<field name="POLIS_OUT_NSSL" class="java.math.BigDecimal"/>
+	<field name="POLIS_OUT_SP" class="java.math.BigDecimal"/>
+	<field name="POLIS_OUT_SSL" class="java.math.BigDecimal"/>
+	<field name="POLIS_RO_SSL" class="java.math.BigDecimal"/>
+	<field name="PREMI_NB_NSSL" class="java.math.BigDecimal"/>
+	<field name="PREMI_NB_SIMPOL" class="java.math.BigDecimal"/>
+	<field name="PREMI_NB_SP" class="java.math.BigDecimal"/>
+	<field name="PREMI_NB_SSL" class="java.math.BigDecimal"/>
+	<variable name="total_nssl" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{count}]]></variableExpression>
+	</variable>
+	<variable name="total_sp" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{count2}]]></variableExpression>
+	</variable>
+	<variable name="total_simpol" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{count3}]]></variableExpression>
+	</variable>
+	<variable name="total_out_nssl" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{count4}]]></variableExpression>
+	</variable>
+	<variable name="total_out_sp" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{count5}]]></variableExpression>
+	</variable>
+	<variable name="total_out_simpol" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{count6}]]></variableExpression>
+	</variable>
+	<variable name="total_out_ssl" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{count7}]]></variableExpression>
+	</variable>
+	<variable name="count" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal($F{PREMI_NB_NSSL}.intValue()==0?0:1)]]></variableExpression>
+	</variable>
+	<variable name="count2" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal($F{PREMI_NB_SP}.intValue()==0?0:1)]]></variableExpression>
+	</variable>
+	<variable name="count3" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal($F{PREMI_NB_SIMPOL}.intValue()==0?0:1)]]></variableExpression>
+	</variable>
+	<variable name="count4" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal($F{OS_NSSL}.intValue()==0?0:1)]]></variableExpression>
+	</variable>
+	<variable name="count5" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal($F{OS_SP}.intValue()==0?0:1)]]></variableExpression>
+	</variable>
+	<variable name="count6" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal($F{OS_SIMPOL}.intValue()==0?0:1)]]></variableExpression>
+	</variable>
+	<variable name="count7" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal($F{OS_SSL}.intValue()==0?0:1)]]></variableExpression>
+	</variable>
+	<variable name="total_nssl_ratio" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_NB_NSSL}]]></variableExpression>
+	</variable>
+	<variable name="total_sp_ratio" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_NB_SP}]]></variableExpression>
+	</variable>
+	<variable name="total_simpol_ratio" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_NB_SIMPOL}]]></variableExpression>
+	</variable>
+	<variable name="total_out_nssl_ratio" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{OS_NSSL}]]></variableExpression>
+	</variable>
+	<variable name="total_out_sp_ratio" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{OS_SP}]]></variableExpression>
+	</variable>
+	<variable name="total_out_simpol_ratio" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{OS_SIMPOL}]]></variableExpression>
+	</variable>
+	<variable name="total_out_ssl_ratio" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{OS_SSL}]]></variableExpression>
+	</variable>
+	<variable name="total_polisin_nssl" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{POLIS_IN_NSSL}]]></variableExpression>
+	</variable>
+	<variable name="total_polisin_sp" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{POLIS_IN_SP}]]></variableExpression>
+	</variable>
+	<variable name="total_polisin_simpol" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{POLIS_IN_NSSL}]]></variableExpression>
+	</variable>
+	<variable name="total_polisout_nssl" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{POLIS_OUT_NSSL}]]></variableExpression>
+	</variable>
+	<variable name="total_polisout_sp" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{POLIS_OUT_SP}]]></variableExpression>
+	</variable>
+	<variable name="total_lapse_simpol" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{POLIS_LAPSE_SIMPOL}]]></variableExpression>
+	</variable>
+	<variable name="total_ro_sl" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{POLIS_RO_SSL}]]></variableExpression>
+	</variable>
+	<variable name="total_out_sl" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{POLIS_OUT_SSL}]]></variableExpression>
+	</variable>
+	<title>
+		<band height="80">
+			<staticText>
+				<reportElement x="3" y="33" width="115" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[Wilayah]]></text>
+			</staticText>
+			<textField pattern="M/d/yy h:mm:ss a" hyperlinkType="None">
+				<reportElement x="118" y="33" width="9" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField pattern="M/d/yy h:mm:ss a" hyperlinkType="None">
+				<reportElement x="127" y="33" width="250" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["ALL"]]></textFieldExpression>
+			</textField>
+			<textField pattern="M/d/yy h:mm:ss a" hyperlinkType="None">
+				<reportElement x="127" y="18" width="250" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{cabang}]]></textFieldExpression>
+			</textField>
+			<textField pattern="M/d/yy h:mm:ss a" hyperlinkType="None">
+				<reportElement x="118" y="18" width="9" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="3" y="18" width="115" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[Cabang]]></text>
+			</staticText>
+			<textField pattern="M/d/yy h:mm:ss a" hyperlinkType="None">
+				<reportElement x="3" y="48" width="115" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Periode"]]></textFieldExpression>
+			</textField>
+			<textField pattern="M/d/yy h:mm:ss a" hyperlinkType="None">
+				<reportElement x="118" y="48" width="9" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField pattern="M/d/yy h:mm:ss a" hyperlinkType="None">
+				<reportElement x="127" y="48" width="250" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggalAwal}+ " sampai " + $P{tanggalAkhir}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="1420" height="18" backcolor="#D4D4D4"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="12" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[ L a p o r a n   K i n e r j a  U m u m]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="45">
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="60" height="45" forecolor="#000000" backcolor="#D4D4D4"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="200" y="0" width="300" height="15" forecolor="#000000" backcolor="#D4D4D4"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi New Business]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="500" y="0" width="400" height="15" forecolor="#000000" backcolor="#D4D4D4"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Outstanding (Ending Balance)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="900" y="0" width="520" height="15" forecolor="#000000" backcolor="#D4D4D4"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="200" y="15" width="100" height="30" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NEW SIMAS
+STABIL LINK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="300" y="15" width="100" height="30" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SIMAS PRIMA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="600" y="15" width="100" height="30" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SIMAS PRIMA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="500" y="15" width="100" height="30" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NEW SIMAS
+STABIL LINK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="900" y="15" width="130" height="15" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NEW SIMAS STABIL LINK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="1030" y="15" width="130" height="15" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SIMAS PRIMA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="60" y="0" width="140" height="45" forecolor="#000000" backcolor="#D4D4D4"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Cabang]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="900" y="30" width="65" height="15" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[IN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="965" y="30" width="65" height="15" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[OUT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="1030" y="30" width="65" height="15" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[IN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="1095" y="30" width="65" height="15" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[OUT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="400" y="15" width="100" height="30" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SIMPOL ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="700" y="15" width="100" height="30" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SIMPOL (New 
+Business+renewal)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="800" y="15" width="100" height="30" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SIMAS STABIL
+LINK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="1160" y="15" width="130" height="15" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SIMPOL]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="1225" y="30" width="65" height="15" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[LAPSE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="1160" y="30" width="65" height="15" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[IN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="1290" y="15" width="130" height="15" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SIMAS STABIL LINK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="1290" y="30" width="65" height="15" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ROLL OVER]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="1355" y="30" width="65" height="15" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[OUT]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="15">
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="0" width="60" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + ($V{REPORT_COUNT}.intValue()) + "."]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="60" y="0" width="140" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_CABANG}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="200" y="0" width="100" height="15"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{PREMI_NB_NSSL})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="300" y="0" width="100" height="15"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{PREMI_NB_SP})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="500" y="0" width="100" height="15"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{OS_NSSL})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="600" y="0" width="100" height="15"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{OS_SP})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="900" y="0" width="65" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{POLIS_IN_NSSL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="965" y="0" width="65" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{POLIS_OUT_NSSL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1095" y="0" width="65" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{POLIS_OUT_SP}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1030" y="0" width="65" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{POLIS_IN_SP}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="400" y="0" width="100" height="15"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{PREMI_NB_SIMPOL})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="700" y="0" width="100" height="15"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{OS_SIMPOL})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="800" y="0" width="100" height="15"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{OS_SSL})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1225" y="0" width="65" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{POLIS_LAPSE_SIMPOL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1160" y="0" width="65" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{POLIS_IN_SIMPOL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1355" y="0" width="65" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{POLIS_OUT_SSL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1290" y="0" width="65" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{POLIS_RO_SSL}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="150">
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="11" y="96" width="80" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_nssl}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="331" y="126" width="80" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(( $V{total_out_sp}.doubleValue()* 100) / ($V{REPORT_COUNT}.intValue()))) + " % "]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="171" y="126" width="80" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(( $V{total_simpol}.doubleValue()* 100) / ($V{REPORT_COUNT}.intValue()))) + " % "]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="11" y="47" width="80" height="34" forecolor="#000000" backcolor="#D4D4D4"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NEW SIMAS
+STABIL LINK]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="411" y="126" width="80" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(( $V{total_out_simpol}.doubleValue()* 100) / ($V{REPORT_COUNT}.intValue()))) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="171" y="96" width="80" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_simpol}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="91" y="47" width="80" height="34" forecolor="#000000" backcolor="#D4D4D4"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SIMAS PRIMA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="171" y="47" width="80" height="34" forecolor="#000000" backcolor="#D4D4D4"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SIMPOL]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="11" y="32" width="240" height="15" forecolor="#000000" backcolor="#F2F2F2"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[New Business]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="491" y="96" width="80" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_out_ssl}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="251" y="126" width="80" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(( $V{total_out_nssl}.doubleValue()* 100) / ($V{REPORT_COUNT}.intValue()))) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="251" y="96" width="80" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_out_nssl}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="11" y="126" width="80" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(( $V{total_nssl}.doubleValue()* 100) / ($V{REPORT_COUNT}.intValue()))) + " % "]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="411" y="96" width="80" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_out_simpol}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="11" y="111" width="560" height="15" forecolor="#000000" backcolor="#D4D4D4"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Ratio]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="491" y="47" width="80" height="34" forecolor="#000000" backcolor="#D4D4D4"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SIMAS STABIL 
+LINK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="251" y="47" width="80" height="34" forecolor="#000000" backcolor="#D4D4D4"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NEW SIMAS
+STABIL LINK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="331" y="47" width="80" height="34" forecolor="#000000" backcolor="#D4D4D4"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SIMAS PRIMA]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="491" y="126" width="80" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(( $V{total_out_ssl}.doubleValue()* 100) / ($V{REPORT_COUNT}.intValue()))) + " % "]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="251" y="32" width="320" height="15" forecolor="#000000" backcolor="#F2F2F2"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Outstanding]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="411" y="47" width="80" height="34" forecolor="#000000" backcolor="#D4D4D4"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SIMPOL (New
+Business renewal)]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="91" y="126" width="80" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(( $V{total_sp}.doubleValue()* 100) / ($V{REPORT_COUNT}.intValue()))) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="91" y="96" width="80" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_sp}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="331" y="96" width="80" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_out_sp}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="11" y="81" width="560" height="15" forecolor="#000000" backcolor="#D4D4D4"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Active]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="200" height="15" forecolor="#000000" backcolor="#F2F2F2"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Grand Total]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="200" y="0" width="100" height="15"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($V{total_nssl_ratio})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="300" y="0" width="100" height="15"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($V{total_sp_ratio})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="400" y="0" width="100" height="15"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($V{total_simpol_ratio})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="500" y="0" width="100" height="15"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($V{total_out_nssl_ratio})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="600" y="0" width="100" height="15"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($V{total_out_sp_ratio})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="700" y="0" width="100" height="15"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($V{total_out_simpol_ratio})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="800" y="0" width="100" height="15"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($V{total_out_ssl_ratio})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="900" y="0" width="65" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_polisin_nssl}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="965" y="0" width="65" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_polisout_nssl}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1030" y="0" width="65" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_polisin_sp}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1095" y="0" width="65" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_polisout_sp}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1160" y="0" width="65" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_polisin_simpol}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1225" y="0" width="65" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_lapse_simpol}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1290" y="0" width="65" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_ro_sl}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1355" y="0" width="65" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_out_sl}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

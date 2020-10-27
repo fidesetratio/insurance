@@ -1,0 +1,833 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="elions.common">
+
+	<update id="updateMstMessageDailyDeleteMessage" parameterClass="string">
+		UPDATE eka.mst_message_daily
+		   SET msmd_active = 0
+		 WHERE msmd_id = TO_DATE(#value#, 'dd/mm/yyyy')
+	</update>
+
+	<update id="updateEmail" parameterClass="java.util.HashMap">
+		update eka.lst_user set lus_email = #email# where lus_id = #lus_id#
+	</update>
+
+	<update id="updateLstReffBii" parameterClass="java.util.HashMap">
+		UPDATE EKA.LST_REFF_BII  
+     		SET LCB_NO = #ls_cab#
+     			,NAMA_REFF = #nm_agent#   
+         		<isNotNull property="ref">,FLAG_LISENSI = #ref#</isNotNull>
+				<isNotNull property="flag">,FLAG_AKTIF = #flag#</isNotNull>
+				<isNotNull property="tglNonAktif">,TGL_NON_AKTIF =  #tglNonAktif# </isNotNull>
+				<isNotNull property="tglAktif" >,TGL_AKTIF = #tglAktif# </isNotNull>
+				<isNotNull property="pos_code">,LRBJ_ID=(select lrbj_id from eka.lst_reff_bii_jab where n_id_bsim=#pos_code#)</isNotNull>
+				<isNotNull property="tglUpdate">,TGL_UPDATE = #tglUpdate#</isNotNull>
+				<isNotNull property="nik">,NIK = trim(#nik#)</isNotNull>
+           		<isNotNull property="tnik">,PRE_NIK = trim(#tnik#)</isNotNull>
+			WHERE 
+				(trim(AGENT_CODE) =trim(#kd_agent#) <!-- or trim(NIK) =trim(#nik#) <isNotNull>or trim(PRE_NIK) =trim(#tnik#)</isNotNull> --> )
+				AND JENIS=#jenis# 
+				AND LRB_ID = (select max(lrb_id) from eka.lst_reff_bii z where (trim(z.AGENT_CODE) = trim(#kd_agent#)  <!-- or trim(z.NIK) = trim(#nik#)<isNotNull> or trim(z.PRE_NIK) = trim(#tnik#)</isNotNull> -->) and z.flag_aktif=1 AND z.jenis=#jenis# )		
+	</update>
+
+	<update id="updateLstCabangBii" parameterClass="java.util.HashMap">
+		UPDATE EKA.LST_CABANG_BII 
+			  SET NAMA_CABANG = #nm_cabang#
+			WHERE ( EKA.LST_CABANG_BII.KODE = #kd_cabang# ) AND
+					( EKA.LST_CABANG_BII.NAMA_CABANG NOT LIKE '%(NA)%')  AND   
+					( EKA.LST_CABANG_BII.JENIS = #jenis# )
+					<!-- AND (upper(substr(nama_cabang,0,2)) <![CDATA[<>]]> 'KK')  -->
+	</update>
+
+	<update id="updateRegSpajIntoNasabah" parameterClass="java.util.HashMap">
+		update eka.mst_policy set mspo_plan_provider = #mns_kd_nasabah#, mspo_self_ins=#jn_lead# where reg_spaj = #reg_spaj#
+	</update>
+	
+
+
+	<update id="updateMstHistoryUpload" parameterClass="java.util.HashMap">
+		update eka.mst_history_upload set status = #status# where temp_filename = #temp_filename#
+	</update>
+
+	<update id="updateUserOnlineStatus" parameterClass="java.util.HashMap">
+		update eka.lst_user set luss_online = #luss_online# where lus_id = #lus_id#
+	</update>
+
+	<update id="updateEmailAgen" parameterClass="id.co.sinarmaslife.std.model.vo.DropDown">
+		update eka.mst_client_new set mspe_email = #value# where mcl_id = 
+		(select mcl_id from eka.mst_agent where msag_id = lpad(#key#,6,0))
+	</update>
+
+	<update id="updateCurrency" parameterClass="com.ekalife.elions.model.Currency">
+		UPDATE eka.lst_daily_currency
+		   SET lkh_currency = #lkh_currency#, lkh_kurs_jual = #lkh_kurs_jual#, lkh_kurs_beli = #lkh_kurs_beli#
+		 WHERE lku_id = #lku_id# AND lkh_date = #lkh_date#
+	</update>
+
+	<update id="updateLoginPassword" parameterClass="java.util.HashMap">
+		update eka.lst_user set lus_password = eka.encrypt(#pass#),lus_change=sysdate where lus_id=#id#
+	</update>
+		
+	<update id="updateMstCompany" parameterClass="com.ekalife.elions.model.Personal">
+		   update eka.mst_company
+		set    mcl_id         = #mcl_id#,
+		       lju_id         = #lju_id#,
+		       mpt_usaha_desc = upper(#mpt_usaha_desc#),
+		       mpt_term       = #mpt_term#,
+		       mpt_npwp       = #mpt_npwp#,
+		       mpt_contact    = upper(#mpt_contact#),
+		       lca_id         = #lca_id#,
+		       lwk_id         = #lwk_id#,
+		       lsrg_id        = #lsrg_id#,
+		       lbn_id         = #lbn_id#,
+		       lsbp_id        = #lsbp_id#,
+		       tgl_print_inv  = to_date(#s_tgl_print_inv#,'dd/mm/yyyy'),
+		       tgl_print_kw   = to_date(#s_tgl_print_kw#,'dd/mm/yyyy'),
+		       flag_ws		  = #flag_ws#,
+		       lus_admin_ws   = #lus_admin_ws#,
+		       flag_gws       = #flag_gws#,
+		       flag_group      = #flag_group#
+		where  mcl_id         = #mcl_id#
+	</update>
+		
+	<update id="updateMstCompanyContact" parameterClass="com.ekalife.elions.model.ContactPerson">
+			update eka.mst_company_contact
+			set    flag_ut = #flag_ut#,
+			       nama_lengkap    = upper(#nama_lengkap#),
+			       telp_kantor     = #telp_kantor#,
+			       telp_hp         = #telp_hp#,
+			       email           = upper(#email#),
+			       cara_bayar      = #cara_bayar#,
+			       rek_no          = #rek_no#,
+			       rek_nama        = upper(#rek_nama#),
+			       rek_bank        = upper(#rek_bank#),
+			       rek_bank_cabang = upper(#rek_bank_cabang#),
+			       rek_bank_kota   = upper(#rek_bank_kota#),
+			       lus_id          = #lus_id#,
+			       input_date      = #input_date#,
+			       mste_sex		   = #mste_sex#,
+			       jenis_badan     = #jenis_badan#,
+			       npwp			   = #npwp#,
+			       flag_komisi	   = #flag_komisi#
+			where  mcl_id          = #mcl_id# and no_urut = #no_urut#
+	</update>
+
+	<update id="updateMstClientNew" parameterClass="java.util.HashMap">
+		update eka.mst_client_new 
+		set mcl_first=upper(#mcl_first#),
+			mcl_gelar=upper(#mcl_gelar#) 
+		where mcl_id=#mcl_id#
+	</update>
+
+	<update id="updateMstCompanyAddress" parameterClass="com.ekalife.elions.model.AddressNew">
+		UPDATE eka.mst_address_new
+		<dynamic prepend=" set ">
+			<isNotNull removeFirstPrepend="true" prepend="," property="alamat_kantor">alamat_kantor = upper(#alamat_kantor#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="alamat_rumah">alamat_rumah = upper(#alamat_rumah#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="area_code_fax">area_code_fax = upper(#area_code_fax#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="area_code_kantor">area_code_kantor = upper(#area_code_kantor#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="area_code_kantor2">area_code_kantor2 = upper(#area_code_kantor2#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="area_code_rumah">area_code_rumah = upper(#area_code_rumah#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="area_code_rumah2">area_code_rumah2 = upper(#area_code_rumah2#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="email">email = upper(#email#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="kd_pos_kantor">kd_pos_kantor = upper(#kd_pos_kantor#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="kd_pos_rumah">kd_pos_rumah = upper(#kd_pos_rumah#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="kota_kantor">kota_kantor = upper(#kota_kantor#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="kota_rumah">kota_rumah = upper(#kota_rumah#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="no_fax">no_fax = upper(#no_fax#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="no_hp">no_hp = upper(#no_hp#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="no_hp2">no_hp2 = upper(#no_hp2#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="telpon_kantor">telpon_kantor = upper(#telpon_kantor#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="telpon_kantor2">telpon_kantor2 = upper(#telpon_kantor2#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="telpon_rumah">telpon_rumah = upper(#telpon_rumah#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="telpon_rumah2">telpon_rumah2 = upper(#telpon_rumah2#) </isNotNull>
+		</dynamic>
+		WHERE MCL_ID = #mcl_id#                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+	</update>
+
+	<update id="updateMstTandatangan" parameterClass="com.ekalife.elions.model.TandaTangan">
+		UPDATE eka.mst_tandatangan
+		<dynamic prepend=" set ">
+		<isNotNull removeFirstPrepend="true" prepend="," property="mcl_id">mcl_id = upper(#mcl_id#) </isNotNull>
+		<isNotNull removeFirstPrepend="true" prepend="," property="modify_dt">modify_dt = #modify_dt# </isNotNull>
+		<isNotNull removeFirstPrepend="true" prepend="," property="modify_id">modify_id = #modify_id# </isNotNull>
+		<isNotNull removeFirstPrepend="true" prepend="," property="mstt_ext">mstt_ext = upper(#mstt_ext#) </isNotNull>
+		<isNotNull removeFirstPrepend="true" prepend="," property="mstt_image">mstt_image = #mstt_image# </isNotNull>
+		<isNotNull removeFirstPrepend="true" prepend="," property="mstt_nama">mstt_nama = upper(#mstt_nama#) </isNotNull>
+		<isNotNull removeFirstPrepend="true" prepend="," property="reg_spaj">reg_spaj = upper(#reg_spaj#) </isNotNull>
+		</dynamic>
+		WHERE MSTT_ID = #mstt_id#
+	</update>
+
+	<update id="updateLstMenuNew" parameterClass="com.ekalife.elions.model.Menu">
+	  update eka.lst_menu_new
+		set    
+		       link_menu      = #link_menu#
+			<isNotNull property="parent_menu_id">	
+				,parent_menu_id = #parent_menu_id#
+			</isNotNull>   
+			<isNotNull property="lst_menu_id">	
+		       ,lst_menu_id    = #lst_menu_id#
+			</isNotNull>   
+			<isNotNull property="nama_menu">	
+		       ,nama_menu      = #nama_menu#
+			</isNotNull>   
+			<isNotNull property="flag_aktif">	
+		       ,flag_aktif     = #flag_aktif#
+			</isNotNull>   
+			<isNotNull property="flag_public">	
+		       ,flag_public    = #flag_public#
+			</isNotNull>   
+			<isNotNull property="tingkat">	
+		       ,tingkat        = #tingkat#
+			</isNotNull>   
+			<isNotNull property="urutan">	
+		       ,urutan         = #urutan#
+			</isNotNull>   
+			<isNotNull property="jenis">	
+		       ,jenis_id          = #jenis#
+			</isNotNull>   
+			<isNotNull property="icon">	
+		       ,icon           = #icon#
+			</isNotNull>   
+		where  menu_id        = #menu_id#
+	</update>
+	
+	<update id="updateMstNasabah" parameterClass="com.ekalife.elions.model.Nasabah">
+		UPDATE EKA.MST_NASABAH
+		SET   MNS_KD_NASABAH   = #mns_kd_nasabah#
+			 <isNotNull property="mns_nama">	
+		       ,MNS_NAMA         = upper(#mns_nama#)
+		     </isNotNull>  
+			 <isNotNull property="mns_sex">	
+		       ,MNS_SEX          = #mns_sex#
+		     </isNotNull>  
+			 <isNotNull property="mns_dcif">	
+		       ,MNS_DCIF         = #mns_dcif#
+		     </isNotNull>  
+			 <isNotNull property="mns_tipe_nasabah">	
+		       ,MNS_TIPE_NASABAH = #mns_tipe_nasabah#
+		     </isNotNull>  
+			 <isNotNull property="mns_area_kantor">	
+		       ,MNS_AREA_KANTOR  = #mns_area_kantor#
+		     </isNotNull>  
+			 <isNotNull property="mns_tlpkantor">	
+		       ,MNS_TLPKANTOR    = #mns_tlpkantor#
+		     </isNotNull> 
+			 <isNotNull property="mns_area_rumah">	
+		       ,MNS_AREA_RUMAH   = #mns_area_rumah#
+		     </isNotNull>  
+			 <isNotNull property="mns_tlprumah">	
+		       ,MNS_TLPRUMAH     = #mns_tlprumah#
+		     </isNotNull>  
+			 <isNotNull property="mns_area_hp">	
+		       ,MNS_AREA_HP      = #mns_area_hp#
+		     </isNotNull>  
+			 <isNotNull property="mns_hp">	
+		       ,MNS_HP           = #mns_hp#
+		     </isNotNull>  
+			 <isNotNull property="mns_tgl_app">	
+		       ,MNS_TGL_APP      = #mns_tgl_app#
+		     </isNotNull>  
+			 <isNotNull property="mns_waktu_hub">	
+		       ,MNS_WAKTU_HUB    = #mns_waktu_hub#
+		     </isNotNull>  
+			 <isNotNull property="ljl_jenis">	
+		       ,LJL_JENIS        = #ljl_jenis#
+		     </isNotNull>  
+			 <isNotNull property="mns_layanan">	
+		       ,MNS_LAYANAN      = #mns_layanan#
+		     </isNotNull>  
+			 <isNotNull property="mns_st_jelas">	
+		       ,MNS_ST_JELAS     = #mns_st_jelas#
+		     </isNotNull>  
+			 <isNotNull property="mns_nama_lead">	
+		       ,MNS_NAMA_LEAD    = #mns_nama_lead#
+		     </isNotNull>  
+			 <isNotNull property="msag_id">	
+		       ,MSAG_ID          = #msag_id#
+		     </isNotNull>  
+			 <isNotNull property="kd_asm">	
+		       ,KD_ASM           = #kd_asm#
+		     </isNotNull>  
+			 <isNotNull property="kd_sm">
+		       ,KD_SM            = #kd_sm#
+		     </isNotNull>  
+			 <isNotNull property="kd_leader">	
+		       ,KD_LEADER        = #kd_leader#
+		     </isNotNull>  
+			 <isNotNull property="kd_rm">	
+		       ,KD_RM            = #kd_rm#
+		     </isNotNull>  
+			 <isNotNull property="mns_nama_fa">	
+		       ,MNS_NAMA_FA      = #mns_nama_fa#
+		     </isNotNull>  
+			 <isNotNull property="kd_region">	
+		       ,KD_REGION        = #kd_region#
+		     </isNotNull>  
+			 <isNotNull property="kd_koord">	
+		       ,KD_KOORD         = #kd_koord#
+		     </isNotNull>  
+			 <isNotNull property="kd_area">	
+		       ,KD_AREA          = #kd_area#
+		     </isNotNull>  
+			 <isNotNull property="kd_cabang">	
+		       ,KD_CABANG        = #kd_cabang#
+		     </isNotNull>  
+			 <isNotNull property="referrer_id">	
+		       ,REFERRER_ID      = #referrer_id#
+		     </isNotNull>  
+			 <isNotNull property="referrer_fa">	
+		       ,REFERRER_FA      = #referrer_fa#
+		     </isNotNull> 
+			 <isNotNull property="kode">	
+		       ,KODE             = #kode#
+		     </isNotNull>  
+			 <isNotNull property="mns_reff_cab">	
+		       ,MNS_REFF_CAB     = #mns_reff_cab#
+		     </isNotNull>  
+			 <isNotNull property="mns_rek_bii">	
+		       ,MNS_REK_BII      = #mns_rek_bii#
+		     </isNotNull>  
+			 <isNotNull property="mns_usia">	
+		       ,MNS_USIA         = #mns_usia#
+		     </isNotNull>  
+			 <isNotNull property="mns_tt_nasabah">	
+		       ,MNS_TT_NASABAH   = #mns_tt_nasabah#
+		     </isNotNull>  
+		       ,MNS_TGL_TT       = #mns_tgl_tt#
+			 <isNotNull property="lsbs_id">	
+		       ,LSBS_ID          = #lsbs_id#
+		     </isNotNull>  
+			 <isNotNull property="mns_ok_saran">	
+		       ,MNS_OK_SARAN     = #mns_ok_saran#
+		     </isNotNull>  
+			 <isNotNull property="mns_up">	
+		       ,MNS_UP           = #mns_up#
+		     </isNotNull>  
+			 <isNotNull property="mns_frek_review">	
+		       ,MNS_FREK_REVIEW  = #mns_frek_review#
+		     </isNotNull> 
+			 <isNotNull property="lspd_id">	
+		       ,LSPD_ID          = #lspd_id#
+		     </isNotNull>
+		     <isNotNull property="leader_ref1">	
+		       ,LEADER_REF1          = #leader_ref1#
+		     </isNotNull>  
+		     <isNotNull property="leader_ref2">	
+		       ,LEADER_REF2         = #leader_ref2#
+		     </isNotNull>  
+		     <isNotNull property="leader_ref3">	
+		       ,LEADER_REF3          = #leader_ref3#
+		     </isNotNull>
+		     <isNotNull property="jn_lead">	
+		       ,JN_LEAD          = #jn_lead#
+		     </isNotNull>     
+		WHERE  MNS_KD_NASABAH   = #mns_kd_nasabah#
+	</update>
+	
+	<update id="updateMstDetNasabah" parameterClass="com.ekalife.elions.model.Nasabah">
+		UPDATE EKA.MST_DET_NASABAH
+		SET   MNS_KD_NASABAH   = #mns_kd_nasabah#
+			<isNotNull property="referrer_id">	
+		       ,REFERRER_ID      = #referrer_id#
+		     </isNotNull>
+		     <isNotNull property="leader_ref1">	
+		       ,LEADER_REF1          = #leader_ref1#
+		     </isNotNull>  
+		     <isNotNull property="leader_ref2">	
+		       ,LEADER_REF2         = #leader_ref2#
+		     </isNotNull>  
+		     <isNotNull property="leader_ref3">	
+		       ,LEADER_REF3          = #leader_ref3#
+		     </isNotNull>
+		WHERE  MNS_KD_NASABAH   = #mns_kd_nasabah#     
+	</update>
+	
+	<update id="updateLstAddrRegionLarEmail" parameterClass="java.util.HashMap">
+		UPDATE EKA.LST_ADDR_REGION
+		SET    LAR_EMAIL  = #LAR_EMAIL#
+		WHERE  LAR_ID     = #LAR_ID#
+	</update>
+		
+	<update id="updateMstClientHistory" parameterClass="java.util.HashMap">
+		UPDATE eka.mst_client_history
+		   SET msch_nama_pp = #MSCH_NAMA_PP#,
+		       msch_nama_tt = #MSCH_NAMA_TT#,
+		       msch_alamat = #MSCH_ALAMAT#,
+		       msch_kota = #MSCH_KOTA#
+		 WHERE mspo_policy_no = #MSPO_POLICY_NO#
+ 	</update>
+	<update id="updateMstClientHistoryTgl" parameterClass="com.ekalife.elions.model.ClientHistory">
+		UPDATE eka.mst_client_history
+		   SET msch_tgl_terima = #msch_tgl_terima#,
+		       msch_tgl_kirim = #msch_tgl_kirim#
+		 WHERE msch_status_input = #msch_status_input#
+		   AND lus_id = #lus_id#
+		   AND mspo_policy_no = RPAD (REPLACE (#mspo_policy_no#, '.'), 14, ' ')
+	</update>	   
+	
+	<update id="updateMReasTempNewFlagIns" parameterClass="int">
+		UPDATE eka.m_reas_temp_new SET flag_ins=#value# 
+			WHERE flag_ins=1
+	</update>
+	
+	<update id="updateMstNasabahLsbsId" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_NASABAH
+		   SET LSBS_ID = #lsbs_id#
+		 WHERE MNS_KD_NASABAH = #mns_kd_nasabah#
+	</update>
+	
+	<update id="updateMstNasabahLspdId" parameterClass="java.util.HashMap">
+		UPDATE eka.mst_nasabah 
+		   SET lspd_id = #lspd_id#
+		 WHERE mns_kd_nasabah = #mns_kd_nasabah#
+	</update>
+	
+	<update id="updateMstRelasiNasabah" parameterClass="com.ekalife.elions.model.RelasiNasabah">
+		UPDATE EKA.MST_RELASI_NASABAH
+		   SET mrn_nama = upper(#mrn_nama#),
+		   	   mrn_alamat = upper(#mrn_alamat#),
+		   	   mrn_contact_no = #mrn_contact_no#,
+		   	   mrn_ket_relasi = upper(#mrn_ket_relasi#),
+		   	   mrn_alasan = upper(#mrn_alasan#),
+		   	   mrn_ref_to_bii = #mrn_ref_to_bii#,
+		   	   referrer_id = #referrer_id#
+		 WHERE mns_kd_nasabah = #mns_kd_nasabah#
+		   AND mrn_no_relasi = #mrn_no_relasi#
+	</update>
+	
+	<update id="updateMstChildren" parameterClass="com.ekalife.elions.model.Children">
+		UPDATE EKA.MST_CHILDREN
+		   SET mch_jn_relasi = #mch_jn_relasi#,
+		   	   mch_nama = upper(#mch_nama#),
+		   	   mch_birth_date = #mch_birth_date#,
+		   	   mch_usia = #mch_usia#,
+		   	   mch_pekerjaan = upper(#mch_pekerjaan#),
+		   	   mch_renc_studi = upper(#mch_renc_studi#),
+		   	   mch_tempat_studi = upper(#mch_tempat_studi#),
+		   	   mch_waktu_realisasi = upper(#mch_waktu_realisasi#),
+		   	   mch_biaya = #mch_biaya#,
+		   	   mch_renc_skrg = upper(#mch_renc_skrg#),
+		   	   mch_pengaturan = upper(#mch_pengaturan#)
+		 WHERE mns_kd_nasabah = #mns_kd_nasabah#
+		   AND mch_id = #mch_id#
+	</update>
+	
+	<update id="updateMstMatrixAdv" parameterClass="com.ekalife.elions.model.Matrix">
+		UPDATE EKA.MST_MATRIX_ADV
+		   SET MSMA_STUDI_C = #msma_studi_c#,
+		   	   MSMA_STUDI_B = #msma_studi_b#,
+		   	   MSMA_STUDI_A = #msma_studi_a#,
+		   	   MSMA_PENSIUN_C = #msma_pensiun_c#,
+		   	   MSMA_PENSIUN_B = #msma_pensiun_b#,
+		   	   MSMA_PENSIUN_A = #msma_pensiun_a#,
+		   	   MSMA_PROTEKSI_C = #msma_proteksi_c#,
+		   	   MSMA_PROTEKSI_B = #msma_proteksi_b#,
+		   	   MSMA_PROTEKSI_A = #msma_proteksi_a#,
+		   	   MSMA_SAVING_C = #msma_saving_c#,
+		   	   MSMA_SAVING_B = #msma_saving_b#,
+		   	   MSMA_SAVING_A = #msma_saving_a#
+		 WHERE MNS_KD_NASABAH = #mns_kd_nasabah#
+		   AND LSBS_ID = #lsbs_id#
+		   AND MSMA_FUND = #msma_fund#
+	</update>
+	
+	<update id="updateMstRekomendasi" parameterClass="com.ekalife.elions.model.Rekomendasi">
+		UPDATE EKA.MST_REKOMENDASI
+		   SET LSBS_ID = #lsbs_id#,
+		   	   MSREK_ALASAN = upper(#msrek_alasan#)
+		 WHERE MNS_KD_NASABAH = #mns_kd_nasabah#
+		   AND MSREK_NO = #msrek_no#  	   
+	</update>
+	
+	<update id="updateMstAspirasi" parameterClass="com.ekalife.elions.model.Aspirasi">
+		UPDATE EKA.MST_ASPIRASI
+		   SET MSAS_ASPIRASI = upper(#msas_aspirasi#)
+		 WHERE MNS_KD_NASABAH = #mns_kd_nasabah#
+		   AND MSAS_NO = #msas_no#
+	</update>
+	
+	<update id="updateMstJiffy" parameterClass="com.ekalife.elions.model.Jiffy">
+		UPDATE EKA.MST_JIFFY
+		   SET mjf_perusahaan = upper(#mjf_perusahaan#),
+		   	   mjf_lama_kerja = #mjf_lama_kerja#,
+		   	   mjf_lama_kerja_bln = #mjf_lama_kerja_bln#,
+		   	   mjf_jn_pekerjaan = upper(#mjf_jn_pekerjaan#),
+		   	   mjf_alamat_ktr = upper(#mjf_alamat_ktr#),
+		   	   mjf_kota = upper(#mjf_kota#),
+		   	   mjf_kd_pos_ktr = #mjf_kd_pos_ktr#,
+		   	   mjf_renc_karir = #mjf_renc_karir#,
+		   	   mjf_ket_renc_karir = upper(#mjf_ket_renc_karir#),
+		   	   mjf_renc_realisasi = upper(#mjf_renc_realisasi#),
+		   	   mjf_ket_pekerjaan = upper(#mjf_ket_pekerjaan#),
+		   	   mjf_hobby = upper(#mjf_hobby#),
+		   	   mjf_alasan_hobby = upper(#mjf_alasan_hobby#),
+		   	   mjf_frek_hobby = upper(#mjf_frek_hobby#),
+		   	   mjf_partner_hobby = #mjf_partner_hobby#,
+		   	   mjf_ket_partner = upper(#mjf_ket_partner#),
+		   	   mjf_ket_hobby = upper(#mjf_ket_hobby#),
+		   	   mjf_menikah_yt = #mjf_menikah_yt#,
+		   	   mjf_menikah_ket = upper(#mjf_menikah_ket#),
+		   	   mjf_anak_yt = #mjf_anak_yt#,
+		   	   mjf_anak_ket = upper(#mjf_anak_ket#),
+		   	   mjf_cucu_yt = #mjf_cucu_yt#,
+		   	   mjf_cucu_ket = upper(#mjf_cucu_ket#),
+		   	   mjf_ket_family = upper(#mjf_ket_family#),
+		   	   mjf_frek_ktm_teman = upper(#mjf_frek_ktm_teman#),
+		   	   mjf_ingin_sering_yt = #mjf_ingin_sering_yt#,
+		   	   mjf_ingin_sering_ket = upper(#mjf_ingin_sering_ket#),
+		   	   mjf_real_pensiun_yt = #mjf_real_pensiun_yt#,
+		   	   mjf_real_pensiun_ket = upper(#mjf_real_pensiun_ket#),
+		   	   mjf_ket_friend = upper(#mjf_ket_friend#),
+		   	   mjf_besar_biaya = #mjf_besar_biaya#,
+		   	   mjf_kebutuhan = #mjf_kebutuhan#,
+		   	   mjf_biaya_pendidikan = #mjf_biaya_pendidikan#,
+		   	   mjf_biaya_pensiun = #mjf_biaya_pensiun#,
+		   	   mjf_biaya_pleasure = #mjf_biaya_pleasure#,
+		   	   mjf_ket_you = upper(#mjf_ket_you#),
+		   	   mjf_sikap_resiko = #mjf_sikap_resiko#,
+		   	   mjf_budget = #mjf_budget#
+		 WHERE MNS_KD_NASABAH = #mns_kd_nasabah#
+	</update>
+	
+	<update id="updateMstRelasiNasabahRow" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_RELASI_NASABAH
+		SET EKA.MST_RELASI_NASABAH.MRN_NO_RELASI = #mrn_no_relasiafter#
+	  WHERE EKA.MST_RELASI_NASABAH.MNS_KD_NASABAH = #mns_kd_nasabah#
+		AND EKA.MST_RELASI_NASABAH.MRN_NO_RELASI = #mrn_no_relasibefore#
+	</update>
+	
+	<update id="updateMstProdBankRow" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_PROD_BANK
+		SET EKA.MST_PROD_BANK.MPB_NO = #mpb_noafter#
+	  WHERE EKA.MST_PROD_BANK.MNS_KD_NASABAH = #mns_kd_nasabah#
+	    AND EKA.MST_PROD_BANK.MPB_NO = #mpb_nobefore#
+	</update>
+	
+	<update id="updateMstChildrenRow" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_CHILDREN
+		SET EKA.MST_CHILDREN.MCH_ID = #mch_idafter#
+	  WHERE EKA.MST_CHILDREN.MNS_KD_NASABAH = #mns_kd_nasabah#
+		AND EKA.MST_CHILDREN.MCH_ID = #mch_idbefore#
+	</update>
+	
+	<update id="updateMstAktivitas" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_AKTIVITAS  
+		SET TGL_TRANSFER = SYSDATE
+	  WHERE MNS_KD_NASABAH = #mns_kd_nasabah#
+	  	AND KD_AKTIVITAS = #kd_aktivitas#
+	</update>
+	
+	<update id="updateMstAktivitasUsingModel" parameterClass="com.ekalife.elions.model.Aktivitas">
+		UPDATE eka.mst_aktivitas                                                                                                                              
+			<dynamic prepend=" set ">                                                                                                                             
+				<isNotNull removeFirstPrepend="true" prepend="," property="approval">approval = #approval# </isNotNull>                                               
+				<isNotNull removeFirstPrepend="true" prepend="," property="kd_aktivitas">kd_aktivitas = #kd_aktivitas# </isNotNull>                                   
+				<isNotNull removeFirstPrepend="true" prepend="," property="keterangan">keterangan = upper(#keterangan#) </isNotNull>                                  
+				<isNotNull removeFirstPrepend="true" prepend="," property="mns_kd_nasabah">mns_kd_nasabah = upper(#mns_kd_nasabah#) </isNotNull>                      
+				<isNotNull removeFirstPrepend="true" prepend="," property="pert_ke">pert_ke = #pert_ke# </isNotNull>                                                  
+				<isNotNull removeFirstPrepend="true" prepend="," property="status">status = #status# </isNotNull>                                                     
+				<isNotNull removeFirstPrepend="true" prepend="," property="tgl_pert">tgl_pert = #tgl_pert# </isNotNull>                                               
+				<isNotNull removeFirstPrepend="true" prepend="," property="tgl_transfer">tgl_transfer = #tgl_transfer# </isNotNull>                                   
+			</dynamic>                                                                                                                                            
+		WHERE MNS_KD_NASABAH = #mns_kd_nasabah#                                                                                                               
+		AND PERT_KE = #pert_ke#                                                                                                                               
+		AND KD_AKTIVITAS = #kd_aktivitas#
+	</update>
+	
+	<update id="updateMstKebutuhan" parameterClass="com.ekalife.elions.model.Kebutuhan">
+		UPDATE EKA.MST_KEBUTUHAN
+		SET LJK_ID = #ljk_id#,
+			MKB_RANK = #mkb_rank#,
+			MKB_ALASAN = upper(#mkb_alasan#),
+			MKB_JML_BUTUH = #mkb_jml_butuh#,
+			MKB_PDPT_BUTUH = #mkb_pdpt_butuh#,
+			MKB_WKT_BUTUH_TH = #mkb_wkt_butuh_th#,
+			MKB_WKT_BUTUH_BL = #mkb_wkt_butuh_bl#,
+			MKB_JML_DPOLEH = #mkb_jml_dpoleh#,
+			MKB_PDPT_DPOLEH = #mkb_pdpt_dpoleh#,
+			MKB_WKT_DPOLEH_TH = #mkb_wkt_dpoleh_th#,
+			MKB_WKT_DPOLEH_BL = #mkb_wkt_dpoleh_bl#,
+			MKB_PENTING = #mkb_penting#
+	  WHERE MNS_KD_NASABAH = #mns_kd_nasabah#
+		AND MKB_NO = #mkb_no#
+	</update>
+	
+	<update id="updateMstPendapatan" parameterClass="com.ekalife.elions.model.Pendapatan">
+		UPDATE eka.mst_pendapatan                                                                                                                             
+		SET LSP_ID = #lsp_id#,                                                     
+			LSP_IN_OUT = #lsp_in_out#,                                         
+			MNS_KD_NASABAH = upper(#mns_kd_nasabah#),                      
+			MPP_VALUE = #mpp_value#,                                            
+			MPP_VALUE_ALASAN = upper(#mpp_value_alasan#)              
+	  WHERE MNS_KD_NASABAH = #mns_kd_nasabah#                                                                                                               
+		AND LSP_ID = #lsp_id# 
+	</update>
+	
+	<update id="updateMstSurplusCalc" parameterClass="com.ekalife.elions.model.SurplusCalc">
+		UPDATE EKA.MST_SURPLUS_CALC
+		  SET JUMLAH_BUTUH = #jumlah_butuh#,                                 
+			  JUMLAH_TERSEDIA = #jumlah_tersedia#,                         
+			  PCT_INVEST = #pct_invest#,                                         
+			  RATE_INFLASI = #rate_inflasi#,                                 
+			  TAHUN_BUTUH = #tahun_butuh#,                                     
+			  TAMBAHAN = #tambahan#
+		WHERE MNS_KD_NASABAH = #mns_kd_nasabah#
+	</update>
+	
+	<update id="updateMstProtectCalc" parameterClass="com.ekalife.elions.model.ProtectCalc">
+	 UPDATE EKA.MST_PROTECT_CALC
+		SET ADD_CAPITAL1 = #add_capital1#,                                   
+			ADD_CAPITAL2 = #add_capital2#,                                   
+			BENEFIT_INSURANCE1 = #benefit_insurance1#,                
+			BENEFIT_INSURANCE2 = #benefit_insurance2#,                 
+			BENEFIT_PENSIUN1 = #benefit_pensiun1#,                      
+			BENEFIT_PENSIUN2 = #benefit_pensiun2#,                       
+			CAPITAL_LUMP_SUMS1 = #capital_lump_sums1#,                 
+			CAPITAL_LUMP_SUMS2 = #capital_lump_sums2#,                 
+			CAPITAL_SAVING1 = #capital_saving1#,                          
+			CAPITAL_SAVING2 = #capital_saving2#,                          
+			INC_CHILD_COST1 = #inc_child_cost1#,                          
+			INC_CHILD_COST2 = #inc_child_cost2#,                          
+			MEDICAL_EXPENSE1 = #medical_expense1#,                       
+			MEDICAL_EXPENSE2 = #medical_expense2#,                       
+			NAMA1 = upper(#nama1#),                                                 
+			NAMA2 = upper(#nama2#),                                                 
+			OTHER_INCOME1 = #other_income1#,                               
+			OTHER_INCOME2 = #other_income2#,                                
+			PCT_INTEREST1 = #pct_interest1#,                                
+			PCT_INTEREST2 = #pct_interest2#,                                
+			REDUCTION_CREDIT1 = #reduction_credit1#,                    
+			REDUCTION_CREDIT2 = #reduction_credit2#,                    
+			REDUCTION_KPR1 = #reduction_kpr1#,                             
+			REDUCTION_KPR2 = #reduction_kpr2#,                             
+			REDUCTION_PERSONAL1 = #reduction_personal1#,              
+			REDUCTION_PERSONAL2 = #reduction_personal2#,              
+			REDUCTION_PREMI1 = #reduction_premi1#,                       
+			REDUCTION_PREMI2 = #reduction_premi2#,                       
+			REDUCTION_SAVING1 = #reduction_saving1#,                   
+			REDUCTION_SAVING2 = #reduction_saving2#,                  
+			YEARLY_INCOME1 = #yearly_income1#,                           
+			YEARLY_INCOME2 = #yearly_income2# 
+	  WHERE MNS_KD_NASABAH = #mns_kd_nasabah#
+	</update>
+	
+	<update id="updateMstIncomeCalc" parameterClass="com.ekalife.elions.model.IncomeCalc">
+		UPDATE EKA.MST_INCOME_CALC
+		SET ANNUAL_INCOME = #annual_income#,                               
+			CAPITAL = #capital#,                                                   
+			PCT_INTEREST1 = #pct_interest1#,                                
+			PCT_INTEREST2 = #pct_interest2#,                                 
+			PERIOD_YEAR = #period_year# 
+		WHERE MNS_KD_NASABAH = #mns_kd_nasabah#
+	</update>
+	
+	<update id="updateMstProdBank" parameterClass="com.ekalife.elions.model.ProdBank">
+		UPDATE eka.mst_prod_bank                                                                                                                              
+			<dynamic prepend=" set ">                                                                                                                             
+				<isNotNull removeFirstPrepend="true" prepend="," property="lpb_id">lpb_id = #lpb_id# </isNotNull>                                                     
+				<isNotNull removeFirstPrepend="true" prepend="," property="mns_kd_nasabah">mns_kd_nasabah = upper(#mns_kd_nasabah#) </isNotNull>                      
+				<isNotNull removeFirstPrepend="true" prepend="," property="mpb_jml_tabungan">mpb_jml_tabungan = #mpb_jml_tabungan# </isNotNull>                       
+				<isNotNull removeFirstPrepend="true" prepend="," property="mpb_ket_nm_bank">mpb_ket_nm_bank = upper(#mpb_ket_nm_bank#) </isNotNull>                   
+				<isNotNull removeFirstPrepend="true" prepend="," property="mpb_nm_bank">mpb_nm_bank = upper(#mpb_nm_bank#) </isNotNull>                               
+				<isNotNull removeFirstPrepend="true" prepend="," property="mpb_nm_tabungan">mpb_nm_tabungan = upper(#mpb_nm_tabungan#) </isNotNull>                   
+				<isNotNull removeFirstPrepend="true" prepend="," property="mpb_no">mpb_no = #mpb_no# </isNotNull>                                                     
+				<isNotNull removeFirstPrepend="true" prepend="," property="mpb_note">mpb_note = upper(#mpb_note#) </isNotNull>                                        
+				<isNotNull removeFirstPrepend="true" prepend="," property="mpb_status">mpb_status = #mpb_status# </isNotNull>                                         
+				<isNotNull removeFirstPrepend="true" prepend="," property="mpb_tabungan">mpb_tabungan = #mpb_tabungan# </isNotNull>                                   
+			</dynamic>                                                                                                                                            
+		WHERE MNS_KD_NASABAH = #mns_kd_nasabah#                                                                                                               
+		AND LPB_ID = #lpb_id#                                                                                                                                 
+		AND MPB_NO = #mpb_no# 
+	</update>
+	
+	<update id="updateDaftarSk" parameterClass="java.util.HashMap">
+		UPDATE EKA.LST_HRD_SURAT_OTORISASI SET REGIONAL_FLAG = #regional_flag#, AKM_FLAG = #akm_flag#
+			WHERE SURAT_ID = #surat_id# 
+	</update>
+	
+	<update id="updateDaftarSkAgency" parameterClass="java.util.HashMap">
+		update hrd.hrd_surat@absen set is_agency = #is_agency#
+			where surat_id = #surat_id# 
+	</update>
+	
+	<update id="updateMstAgentAbsen" parameterClass="java.util.HashMap">
+		update eka.mst_agent_absen set jam_keluar = sysdate 
+		where msag_id = #msag_id# 
+		  and tanggal = trunc(sysdate)
+	</update>
+	
+	<update id="updateMstKuesionerBrand" parameterClass="com.ekalife.elions.model.KuesionerBrand">
+		update eka.mst_kuesioner_brand
+		set
+		lus_id=#lus_id#,
+	mkb_cr_msig_1=#mkb_cr_msig_1#,        
+	mkb_cr_msig_2=#mkb_cr_msig_2#,
+	mkb_cr_msig_3=#mkb_cr_msig_3#,
+	mkb_cr_msig_4=#mkb_cr_msig_4#,
+	mkb_cr_msig_5=#mkb_cr_msig_5#,
+	mkb_cr_aset_1=#mkb_cr_aset_1#,      
+	mkb_cr_aset_2=#mkb_cr_aset_2#,  
+	mkb_cr_aset_3=#mkb_cr_aset_3#,  
+	mkb_cr_aset_4=#mkb_cr_aset_4#,  
+	mkb_cr_aset_5=#mkb_cr_aset_5#,  
+	mkb_cr_pelanggan_1=#mkb_cr_pelanggan_1#,   
+	mkb_cr_pelanggan_2=#mkb_cr_pelanggan_2#, 
+	mkb_cr_pelanggan_3=#mkb_cr_pelanggan_3#, 
+	mkb_cr_pelanggan_4=#mkb_cr_pelanggan_4#, 
+	mkb_cr_pelanggan_5=#mkb_cr_pelanggan_5#, 
+	mkb_cr_prima_1=#mkb_cr_prima_1#,       
+	mkb_cr_prima_2=#mkb_cr_prima_2#,  
+	mkb_cr_prima_3=#mkb_cr_prima_3#,  
+	mkb_cr_prima_4=#mkb_cr_prima_4#,  
+	mkb_cr_prima_5=#mkb_cr_prima_5#,  
+	mkb_pr_terbaik_1=#mkb_pr_terbaik_1#,     
+	mkb_pr_terbaik_2=#mkb_pr_terbaik_2#,     
+	mkb_pr_terbaik_3=#mkb_pr_terbaik_3#,     
+	mkb_pr_terbaik_4=#mkb_pr_terbaik_4#,     
+	mkb_pr_terbaik_5=#mkb_pr_terbaik_5#,     
+	mkb_pr_fleksibilias_1=#mkb_pr_fleksibilias_1#,
+	mkb_pr_fleksibilias_2=#mkb_pr_fleksibilias_2#,
+	mkb_pr_fleksibilias_3=#mkb_pr_fleksibilias_3#,
+	mkb_pr_fleksibilias_4=#mkb_pr_fleksibilias_4#,
+	mkb_pr_fleksibilias_5=#mkb_pr_fleksibilias_5#,
+	mkb_pr_asuransi_1=#mkb_pr_asuransi_1#,    
+	mkb_pr_asuransi_2=#mkb_pr_asuransi_2#,    
+	mkb_pr_asuransi_3=#mkb_pr_asuransi_3#,    
+	mkb_pr_asuransi_4=#mkb_pr_asuransi_4#,    
+	mkb_pr_asuransi_5=#mkb_pr_asuransi_5#,    
+	mkb_pr_produk_1=#mkb_pr_produk_1#,      
+	mkb_pr_produk_2=#mkb_pr_produk_2#,   
+	mkb_pr_produk_3=#mkb_pr_produk_3#,   
+	mkb_pr_produk_4=#mkb_pr_produk_4#,   
+	mkb_pr_produk_5=#mkb_pr_produk_5#,   
+	mkb_im_internasional_1=#mkb_im_internasional_1#,
+	mkb_im_internasional_2=#mkb_im_internasional_2#,
+	mkb_im_internasional_3=#mkb_im_internasional_3#,
+	mkb_im_internasional_4=#mkb_im_internasional_4#,
+	mkb_im_internasional_5=#mkb_im_internasional_5#,
+	mkb_im_positif_1=#mkb_im_positif_1#,    
+	mkb_im_positif_2=#mkb_im_positif_2#,
+	mkb_im_positif_3=#mkb_im_positif_3#,
+	mkb_im_positif_4=#mkb_im_positif_4#,
+	mkb_im_positif_5=#mkb_im_positif_5#,
+	mkb_im_moderen_1=#mkb_im_moderen_1#,     
+	mkb_im_moderen_2=#mkb_im_moderen_2#, 
+	mkb_im_moderen_3=#mkb_im_moderen_3#, 
+	mkb_im_moderen_4=#mkb_im_moderen_4#, 
+	mkb_im_moderen_5=#mkb_im_moderen_5#, 
+	mkb_im_komitmen_1=#mkb_im_komitmen_1#,    
+	mkb_im_komitmen_2=#mkb_im_komitmen_2#,    
+	mkb_im_komitmen_3=#mkb_im_komitmen_3#,    
+	mkb_im_komitmen_4=#mkb_im_komitmen_4#,    
+	mkb_im_komitmen_5=#mkb_im_komitmen_5#,    
+	mkb_em_waspada_1=#mkb_em_waspada_1#,     
+	mkb_em_waspada_2=#mkb_em_waspada_2#,     
+	mkb_em_waspada_3=#mkb_em_waspada_3#,     
+	mkb_em_waspada_4=#mkb_em_waspada_4#,     
+	mkb_em_waspada_5=#mkb_em_waspada_5#,     
+	mkb_em_kenyamanan_1=#mkb_em_kenyamanan_1#,  
+	mkb_em_kenyamanan_2=#mkb_em_kenyamanan_2#,  
+	mkb_em_kenyamanan_3=#mkb_em_kenyamanan_3#,  
+	mkb_em_kenyamanan_4=#mkb_em_kenyamanan_4#,  
+	mkb_em_kenyamanan_5=#mkb_em_kenyamanan_5#,  
+	mkb_em_pengertian_1=#mkb_em_pengertian_1#,  
+	mkb_em_pengertian_2=#mkb_em_pengertian_2#,  
+	mkb_em_pengertian_3=#mkb_em_pengertian_3#,  
+	mkb_em_pengertian_4=#mkb_em_pengertian_4#,  
+	mkb_em_pengertian_5=#mkb_em_pengertian_5#,  
+	mkb_em_ketulusan_1=#mkb_em_ketulusan_1#, 
+	mkb_em_ketulusan_2=#mkb_em_ketulusan_2#, 
+	mkb_em_ketulusan_3=#mkb_em_ketulusan_3#, 
+	mkb_em_ketulusan_4=#mkb_em_ketulusan_4#, 
+	mkb_em_ketulusan_5=#mkb_em_ketulusan_5#, 
+	mkb_input_date=#mkb_input_date#
+		where lus_id = #lus_id# 
+	</update>
+	
+	<update id="updateNik" parameterClass="java.util.HashMap">
+		update eka.lst_user set lus_change = sysdate , lus_nik=#nik#
+		where lus_id= #lus_id# 
+		 
+	</update>
+	
+	<update id="updateVoucherTaxi" parameterClass="com.ekalife.elions.model.VoucherTaxi">
+	    UPDATE eka.mst_voucher_taxi@eb
+	        <dynamic prepend=" set ">
+	            <isNotNull removeFirstPrepend="true" prepend="," property="msvt_msag_id">msvt_msag_id = #msvt_msag_id#</isNotNull>
+	            <isNotNull removeFirstPrepend="true" prepend="," property="msvt_user_dept">msvt_user_dept = upper(#msvt_user_dept#)</isNotNull>
+	            <isNotNull removeFirstPrepend="true" prepend="," property="msvt_from">msvt_from = upper(#msvt_from#)</isNotNull>
+	            <isNotNull removeFirstPrepend="true" prepend="," property="msvt_to">msvt_to = upper(#msvt_to#)</isNotNull>
+	            <isNotNull removeFirstPrepend="true" prepend="," property="msvt_cost">msvt_cost = #msvt_cost#</isNotNull>
+	            <isNotNull removeFirstPrepend="true" prepend="," property="msvt_release_date">msvt_release_date = #msvt_release_date#</isNotNull>
+	            <isNotNull removeFirstPrepend="true" prepend="," property="msvt_return_date">msvt_return_date = #msvt_return_date#</isNotNull>
+	            <isNotNull removeFirstPrepend="true" prepend="," property="lus_id">lus_id = #lus_id#</isNotNull>
+	            <isNotNull removeFirstPrepend="true" prepend="," property="msvt_insert_date">msvt_insert_date = #msvt_insert_date#</isNotNull>
+	            <isNotNull removeFirstPrepend="true" prepend="," property="lus_id_edit">lus_id_edit = #lus_id_edit#</isNotNull>
+	            <isNotNull removeFirstPrepend="true" prepend="," property="msvt_edit_date">msvt_edit_date = #msvt_edit_date#</isNotNull>
+	            <isNotNull removeFirstPrepend="true" prepend="," property="msvt_status_flag">msvt_status_flag = #msvt_status_flag#</isNotNull>
+	            <isNotNull removeFirstPrepend="true" prepend="," property="msvt_status_desc">msvt_status_desc = #msvt_status_desc#</isNotNull>
+	        </dynamic>
+	    WHERE msvt_no = #msvt_no#
+	</update>	
+	
+	<update id="updateDataPolicy" parameterClass="java.util.HashMap">
+	 	<isEqual property="id" compareValue="1">
+	 		update eka.mst_policy
+			set	mspo_no_blanko=#s_update#
+			where mspo_policy_no=#nopol#
+	 	</isEqual>
+	 	<isEqual property="id" compareValue="2">
+	 		update eka.mst_policy
+			set	mspo_nasabah_dcif=#s_update#
+			where mspo_policy_no=#nopol#
+	 	</isEqual>
+	 	<isEqual property="id" compareValue="3">
+	 		update eka.mst_policy
+			set	mspo_no_pengiriman=#s_update#
+			where mspo_policy_no=#nopol#
+	 	</isEqual>
+		
+	</update>
+	
+		<!-- iga rds phase 3: proses di elions-->
+	<update id="updateLspdIdWhereNopol" parameterClass="java.util.HashMap">
+		update eka.mst_policy 
+		set lspd_id = 99
+		where lspd_id = 6
+		and mspo_policy_no = #polis#
+	</update>
+	
+	<update id="updateDataJne" parameterClass="java.util.HashMap">
+		update 
+			eka.mst_jne_pod
+			set 
+				mspo_no_pengiriman = #s_connote#,				
+				mstj_tujuan  = #s_dest#,
+				mstj_consignee = #s_consignee#,
+				mstj_receiver = #s_penerima# ,
+				mstj_tgl_terima = to_date(#d_tglTerima#,'dd/MM/yyyy'),
+				lus_id = #lus_id#,
+				mstj_tgl_upload =sysdate
+		where 
+			reg_spaj =RPAD (REPLACE (#spaj#, '.'), 11, ' ')
+	</update>
+	
+	<update id="updateDataNIK" parameterClass="java.util.HashMap">
+		update eka.mst_worksite_flag
+		set	nik = #nik#
+		where reg_spaj = RPAD (REPLACE (#spaj#, '.'), 11, ' ')
+	</update>
+	<!--<update id="updateLstSalesTm" parameterClass="java.util.HashMap">
+		UPDATE EKA.LST_SALES_TM@eb
+		SET TM_ID = #nik#,
+			SPV_CODE = '002612',
+			TM_CODE = #nm_agent#,
+			FLAG_AKTIF = #aktif#,
+			NIK =#nik#
+		where
+			trim(TM_ID) = trim(#nik#)
+			and CALLCENTER_CODE = #cc_code#	
+	</update>-->
+</sqlMap>

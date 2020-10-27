@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="sub_outstanding_spaj_all_cabang" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="832" leftMargin="0" rightMargin="10" topMargin="0" bottomMargin="0">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<property name="com.jasperassistant.designer.HGuides" value="1,28,97,278,343,392,460,462,529,726"/>
+	<parameter name="lca_id" class="java.lang.String">
+		<defaultValueExpression><![CDATA["03"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAwal" class="java.lang.String">
+		<defaultValueExpression><![CDATA["04/04/2007"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.lang.String">
+		<defaultValueExpression><![CDATA["14/08/2007"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="msf_id" class="java.lang.String">
+		<defaultValueExpression><![CDATA["03C0700001"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT  msf_id, msfh_dt, total_spaj_cab, msag_id, mcl_first,nvl(tabel_2.jumlah,0) jumlah,lca_nama
+    FROM (SELECT   a.msf_id, b.msfh_dt, SUM (a.msf_amount) total_spaj_cab, lca_nama
+              FROM eka.mst_form a, eka.mst_form_hist b, eka.lst_cabang c, eka.lst_jenis_spaj d
+             WHERE a.msf_id = b.msf_id
+               AND a.mss_jenis = 0
+               AND a.lca_id =$P{lca_id}
+               AND b.msf_urut = 1
+               AND b.posisi = 0
+			   AND a.lca_id=c.lca_id
+				AND a.lsjs_id = d.lsjs_id
+				AND d.jenis = 0
+			   AND TRUNC(b.msfh_dt) >=to_date($P{tanggalAwal},'dd/mm/yyyy')
+			   AND TRUNC(b.msfh_dt) <=to_date($P{tanggalAkhir},'dd/mm/yyyy')
+          GROUP BY a.msf_id, b.msfh_dt, c.lca_nama ) tabel_1,
+         (SELECT a.msf_id_asli, c.msag_id, d.mcl_first, count(*) jumlah
+            FROM eka.mst_spaj_det a,
+                 eka.mst_agent_branch b,
+                 eka.mst_agent c,
+                 eka.mst_client_new d
+           WHERE a.msab_id <> 0
+             AND a.msab_id = b.msab_id
+             AND b.msag_id = c.msag_id
+             AND c.mcl_id = d.mcl_id 
+			group by a.msf_id_asli, c.msag_id, d.mcl_first		
+		) tabel_2
+   WHERE tabel_1.msf_id = tabel_2.msf_id_asli(+)
+and msf_id=$P{msf_id}
+GROUP BY msf_id, msfh_dt, total_spaj_cab, msag_id, mcl_first,jumlah,lca_nama]]>
+	</queryString>
+	<field name="JUMLAH" class="java.math.BigDecimal"/>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="MSAG_ID" class="java.lang.String"/>
+	<field name="MSF_ID" class="java.lang.String"/>
+	<group name="msf_id">
+		<groupExpression><![CDATA[$F{MSF_ID}]]></groupExpression>
+	</group>
+	<group name="agen">
+		<groupExpression><![CDATA[$F{MSAG_ID}]]></groupExpression>
+		<groupHeader>
+			<band height="16">
+				<textField evaluationTime="Group" evaluationGroup="agen" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="535" y="0" width="165" height="15"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{MCL_FIRST}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="agen" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="475" y="1" width="53" height="15"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{MSAG_ID}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="agen" isBlankWhenNull="false" hyperlinkType="None">
+					<reportElement x="740" y="0" width="34" height="15"/>
+					<textElement textAlignment="Left">
+						<font isItalic="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Number"><![CDATA[$F{JUMLAH}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="28" y="0" width="1" height="16"/>
+				</line>
+				<line>
+					<reportElement x="0" y="0" width="1" height="16"/>
+				</line>
+				<line>
+					<reportElement x="97" y="0" width="1" height="16"/>
+				</line>
+				<line>
+					<reportElement x="278" y="0" width="1" height="16"/>
+				</line>
+				<line>
+					<reportElement x="529" y="-1" width="1" height="16"/>
+				</line>
+				<line>
+					<reportElement x="726" y="0" width="1" height="16"/>
+				</line>
+				<line>
+					<reportElement x="792" y="-1" width="1" height="16"/>
+				</line>
+				<line>
+					<reportElement x="460" y="0" width="1" height="16"/>
+				</line>
+				<line>
+					<reportElement x="393" y="0" width="1" height="16"/>
+				</line>
+				<line>
+					<reportElement x="341" y="0" width="1" height="16"/>
+				</line>
+			</band>
+		</groupHeader>
+	</group>
+</jasperReport>

@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="permohonan_terbit_worksheet" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="6"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="6"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="user" class="java.lang.String"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["06200700180"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="keter" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT g.mkl_kerja kerja_pp, k.mkl_kerja kerja_tt, k.mkl_kerja kerjaa, c.mspo_age , h.mste_age, f.lsle_id, c.reg_spaj, g.mcl_first pp, a.lsdbs_name, decode((select lti_note from eka.lst_title where lti_id = g.lti_id),null, '', (select lti_note from eka.lst_title where lti_id = g.lti_id) || ' ') lti_note, g.mcl_jenis,
+         c.mspo_no_blanko, k.mcl_first ttg, i.lku_symbol, d.lsbs_id, c.mspo_jenis_terbit,
+         d.mspr_tsi, d.mspr_premium, d.mspr_discount, b.lscb_pay_mode,
+         j.msdp_number, j.msdp_payment, e.lca_nama, d.lku_id, a.lsbs_id,
+         t1.nilai3, t1.nilai4, (d.mspr_premium - d.mspr_discount) premi,
+         DECODE (t2.jumlah, 1, 'Titipan Premi',  'Titipan Premi Ke- ' || t2.jumlah) keterangan,
+         (CASE
+             WHEN d.lsbs_id NOT IN
+                    (45,53,54,130,131,132,145
+                    ) OR d.lsbs_id > 300 OR NVL (h.mste_flag_guthrie, 0) = 1
+                THEN 0
+             ELSE (CASE
+                      WHEN d.lku_id = '01'
+                         THEN t1.nilai3
+                      ELSE t1.nilai4
+                   END)
+          END
+         ) t,
+         (SELECT SUM (a.mspr_premium)
+            FROM eka.mst_product_insured a
+           WHERE a.reg_spaj = c.reg_spaj) total_premi,
+-- (select sum(msdp_payment) from eka.mst_deposit_premium where reg_spaj = c.reg_spaj) total_premi2
+nvl(nvl((select sum(msl_premi) premi_slink from eka.mst_slink where reg_spaj = c.reg_spaj and msl_new = 1), (select sum(mu_jlh_premi) premi_ulink from eka.mst_ulink a where reg_spaj = c.reg_spaj and mu_tgl_trans = (select mu_tgl_trans from eka.mst_ulink where reg_spaj = a.reg_spaj and mu_ke = 1))), (select sum(msdp_payment) from eka.mst_deposit_premium where reg_spaj = c.reg_spaj)) total_premi2
+    FROM eka.lst_det_bisnis a,
+         eka.lst_pay_mode b,
+         eka.mst_policy c,
+         eka.mst_product_insured d,
+         eka.lst_cabang e,
+         eka.mst_agent_prod f,
+         eka.mst_client_new g,
+         eka.mst_insured h,
+         eka.lst_kurs i,
+         eka.mst_deposit_premium j,
+         eka.mst_client_new k,
+         (SELECT eka.mst_default.msdef_numeric nilai3, a.msdef_numeric nilai4
+            FROM eka.mst_default, eka.mst_default a
+           WHERE eka.mst_default.msdef_id = 3 AND a.msdef_id = 4) t1,
+         (SELECT COUNT (eka.j.msdp_number) jumlah
+            FROM eka.mst_deposit_premium j
+           WHERE j.reg_spaj = $P{spaj}) t2
+   WHERE b.lscb_id = c.lscb_id
+     AND c.reg_spaj = d.reg_spaj
+     AND c.lca_id = e.lca_id
+     AND c.reg_spaj = f.reg_spaj
+     AND c.mspo_policy_holder = g.mcl_id
+     AND a.lsbs_id = d.lsbs_id AND a.lsdbs_number = d.lsdbs_number
+     AND d.reg_spaj = h.reg_spaj AND c.reg_spaj = h.reg_spaj
+     AND d.lku_id = i.lku_id AND c.lku_id = i.lku_id
+     AND h.reg_spaj = j.reg_spaj AND c.reg_spaj = j.reg_spaj
+     AND h.mste_insured = k.mcl_id
+     AND c.reg_spaj = $P{spaj}
+     AND f.lsle_id = 4
+     AND j.msdp_number = 1
+ORDER BY j.msdp_number, d.lsbs_id DESC]]>
+	</queryString>
+	<field name="KERJA_PP" class="java.lang.String"/>
+	<field name="KERJA_TT" class="java.lang.String"/>
+	<field name="KETERANGAN" class="java.lang.String"/>
+	<field name="LCA_NAMA" class="java.lang.String"/>
+	<field name="LKU_ID" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSCB_PAY_MODE" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSLE_ID" class="java.math.BigDecimal"/>
+	<field name="LTI_NOTE" class="java.lang.String"/>
+	<field name="MCL_JENIS" class="java.math.BigDecimal"/>
+	<field name="MSDP_NUMBER" class="java.math.BigDecimal"/>
+	<field name="MSDP_PAYMENT" class="java.math.BigDecimal"/>
+	<field name="MSPO_AGE" class="java.math.BigDecimal"/>
+	<field name="MSPO_JENIS_TERBIT" class="java.math.BigDecimal"/>
+	<field name="MSPO_NO_BLANKO" class="java.lang.String"/>
+	<field name="MSPR_DISCOUNT" class="java.math.BigDecimal"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="MSPR_TSI" class="java.math.BigDecimal"/>
+	<field name="MSTE_AGE" class="java.math.BigDecimal"/>
+	<field name="NILAI3" class="java.math.BigDecimal"/>
+	<field name="NILAI4" class="java.math.BigDecimal"/>
+	<field name="PP" class="java.lang.String"/>
+	<field name="PREMI" class="java.math.BigDecimal"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="T" class="java.math.BigDecimal"/>
+	<field name="TOTAL_PREMI" class="java.math.BigDecimal"/>
+	<field name="TOTAL_PREMI2" class="java.math.BigDecimal"/>
+	<field name="TTG" class="java.lang.String"/>
+	<variable name="sumpremi" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[new Double($F{PREMI}.doubleValue() + $F{T}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="user" class="java.lang.String">
+		<variableExpression><![CDATA[$P{user}]]></variableExpression>
+	</variable>
+	<title>
+		<band height="19">
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="0" width="187" height="19"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["UNDERWRITING WORKSHEET"]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="18" width="553" height="1"/>
+			</line>
+			<textField hyperlinkType="None">
+				<reportElement x="192" y="0" width="361" height="19"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{user} + ", "  +  $P{REPORT_SCRIPTLET}.formatDateWithMinute(new Date())]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<summary>
+		<band height="155">
+			<staticText>
+				<reportElement x="8" y="6" width="137" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[Nomor SPAJ / No. Blangko]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="8" y="24" width="137" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{MCL_JENIS}.intValue() == 0)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[Nama Pemegang Polis / Umur]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="8" y="42" width="137" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[Nama Tertanggung / Umur]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="8" y="60" width="137" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[Plan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="8" y="78" width="137" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[Jumlah UP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="8" y="96" width="137" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[Jumlah Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="8" y="114" width="137" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[Cara Pembayaran]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="156" y="6" width="187" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatSPAJ($F{REG_SPAJ})+" / "+$F{MSPO_NO_BLANKO}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="156" y="60" width="187" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="180" y="78" width="85" height="13"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($F{MSPR_TSI})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="180" y="96" width="85" height="13"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[(($F{LSBS_ID}.intValue() == 161 || $F{LSBS_ID}.intValue() == 45 || $F{LSBS_ID}.intValue() == 130) && $F{MSPO_JENIS_TERBIT}.intValue()==1)?
+($V{sumpremi}.doubleValue() >1000000 ? 
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($F{TOTAL_PREMI2}.doubleValue())))
+:
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($F{TOTAL_PREMI2}.doubleValue())))
+):$F{LSBS_ID}.intValue() == 183?
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($F{TOTAL_PREMI}.doubleValue())))
+:
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($F{TOTAL_PREMI}.doubleValue()+$F{T}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="156" y="114" width="187" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSCB_PAY_MODE}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="156" y="24" width="187" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{MCL_JENIS}.intValue() == 0)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP} + " / " + $F{MSPO_AGE} + " Thn"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="156" y="42" width="187" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TTG} + " / " + $F{MSTE_AGE} + " Thn"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="156" y="78" width="25" height="13"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="156" y="96" width="25" height="13"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="348" y="6" width="207" height="13"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["("+$F{LCA_NAMA}+")"]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement x="0" y="132" width="553" height="19"/>
+				<subreportParameter name="spaj">
+					<subreportParameterExpression><![CDATA[$P{spaj}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="keter">
+					<subreportParameterExpression><![CDATA[$P{keter}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user">
+					<subreportParameterExpression><![CDATA[$P{user}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.sub_terbit_worksheet")+".jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement x="144" y="60" width="7" height="13"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="144" y="42" width="7" height="13"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="144" y="78" width="7" height="13"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="144" y="24" width="7" height="13"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="144" y="6" width="7" height="13"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="144" y="96" width="7" height="13"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="144" y="114" width="7" height="13"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="348" y="24" width="207" height="13"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Pekerjaan: " + $F{KERJA_PP}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="348" y="42" width="207" height="13"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Pekerjaan: " + $F{KERJA_TT}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="348" y="60" width="207" height="13"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Berat/Tinggi Badan: "]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="348" y="78" width="85" height="13"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Asuransi Tambahan: "]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement x="348" y="90" width="115" height="43"/>
+				<subreportParameter name="spaj">
+					<subreportParameterExpression><![CDATA[$P{spaj}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="keter">
+					<subreportParameterExpression><![CDATA[$P{keter}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user">
+					<subreportParameterExpression><![CDATA[$P{user}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.sub_terbit_worksheet_rider")+".jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement x="8" y="24" width="137" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{MCL_JENIS}.intValue() == 1)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[Nama Pemegang Polis]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="156" y="24" width="187" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{MCL_JENIS}.intValue() == 1)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LTI_NOTE} + $F{PP}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

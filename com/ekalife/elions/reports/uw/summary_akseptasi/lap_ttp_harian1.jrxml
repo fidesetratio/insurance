@@ -1,0 +1,592 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="lap_ttp_harian1" pageWidth="1395" pageHeight="842" columnWidth="1355" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<queryString>
+		<![CDATA[SELECT   DISTINCT
+           eka.workdays (b.mste_tgl_kirim_polis, TRUNC (a.mspo_date_ttp))
+              SELISIH,
+           SYSDATE,
+           i.selisih_ssl,
+           a.mspo_policy_no,
+           a.reg_spaj,
+           b.mste_tgl_kirim_polis kirimPolis,
+           d.lsbs_name Produk,
+           e.lca_nama cabang,
+           input_ttp.msps_date inputTtp,
+           terima_ttp.msps_date terimaTtp,
+           input_ttp.msps_desc,
+           f.mcl_first PP,
+           g.lus_login_name,
+           TRUNC (86400 * (input_ttp.msps_date - terima_ttp.msps_date))
+           - 60
+             * (TRUNC (
+                   (86400 * (input_ttp.msps_date - terima_ttp.msps_date)) / 60
+                ))
+              detik,
+           TRUNC ( (86400 * (input_ttp.msps_date - terima_ttp.msps_date)) / 60)
+           - 60
+             * (TRUNC( ( (86400 * (input_ttp.msps_date - terima_ttp.msps_date))
+                        / 60)
+                      / 60))
+              menit,
+           TRUNC( ( (86400 * (input_ttp.msps_date - terima_ttp.msps_date)) / 60)
+                 / 60)
+           - 24
+             * (TRUNC( ( ( (86400
+                            * (input_ttp.msps_date - terima_ttp.msps_date))
+                          / 60)
+                        / 60)
+                      / 24))
+             jam,
+           TRUNC( ( ( (86400 * (input_ttp.msps_date - terima_ttp.msps_date))
+                     / 60)
+                   / 60)
+                 / 24)
+              hari
+    FROM   (SELECT   y.reg_spaj,
+                     y.msps_date,
+                     y.lspd_id,
+                     y.lus_id,
+                     y.msps_desc
+              FROM   eka.mst_position_spaj y
+             WHERE       lspd_id = 7
+                     AND UPPER (msps_desc) LIKE UPPER ('TRANSFER KE%')
+                     AND y.lus_id IN (15, 622)) input_ttp,
+           (SELECT   x.reg_spaj,
+                     x.msps_date,
+                     x.lspd_id,
+                     x.lus_id,
+                     x.msps_desc
+              FROM   eka.mst_position_spaj x
+             WHERE       lspd_id = 7
+                     AND UPPER (msps_desc) LIKE UPPER ('TGL TERIMA%')
+                     AND x.lus_id IN (15, 622)) terima_ttp,
+           eka.mst_policy a,
+           eka.mst_insured b,
+           eka.mst_product_insured c,
+           eka.lst_bisnis d,
+           eka.lst_cabang e,
+           eka.mst_client_new f,
+           eka.lst_user g,
+           (SELECT      days
+                     || ' Hari '
+                     || hh
+                     || ' Jam '
+                     || mi
+                     || ' Menit '
+                     || ss
+                     || ' Detik'
+                        selisih_ssl,reg_spaj
+              FROM   (SELECT   TO_CHAR (input_ttp.msps_date,
+                                        'DD.MM.YYYY:HH24:MI:SS')
+                                  Hiredate,
+                               TO_CHAR (terima_ttp.msps_date,
+                                        'DD.MM.YYYY:HH24:MI:SS')
+                                  Today,
+                               TRUNC(86400
+                                     * (input_ttp.msps_date
+                                        - terima_ttp.msps_date))
+                               - 60
+                                 * (TRUNC( (86400
+                                            * (input_ttp.msps_date
+                                               - terima_ttp.msps_date))
+                                          / 60))
+                                  SS,
+                               TRUNC( (86400
+                                       * (input_ttp.msps_date
+                                          - terima_ttp.msps_date))
+                                     / 60)
+                               - 60
+                                 * (TRUNC( ( (86400
+                                              * (input_ttp.msps_date
+                                                 - terima_ttp.msps_date))
+                                            / 60)
+                                          / 60))
+                                  MI,
+                               TRUNC( ( (86400
+                                         * (input_ttp.msps_date
+                                            - terima_ttp.msps_date))
+                                       / 60)
+                                     / 60)
+                               - 24
+                                 * (TRUNC( ( ( (86400
+                                                * (input_ttp.msps_date
+                                                   - terima_ttp.msps_date))
+                                              / 60)
+                                            / 60)
+                                          / 24))
+                                  HH,
+                               TRUNC( ( ( (86400
+                                           * (input_ttp.msps_date
+                                              - terima_ttp.msps_date))
+                                         / 60)
+                                       / 60)
+                                     / 24)
+                                  DAYS ,input_ttp.reg_spaj
+                        FROM   (SELECT   y.reg_spaj,
+                                         y.msps_date,
+                                         y.lspd_id,
+                                         y.lus_id,
+                                         y.msps_desc
+                                  FROM   eka.mst_position_spaj y
+                                 WHERE   lspd_id = 7
+                                         AND UPPER (msps_desc) LIKE
+                                               UPPER ('TRANSFER KE%')
+                                         AND y.lus_id IN (15, 622)) input_ttp,
+                               (SELECT   x.reg_spaj,
+                                         x.msps_date,
+                                         x.lspd_id,
+                                         x.lus_id,
+                                         x.msps_desc
+                                  FROM   eka.mst_position_spaj x
+                                 WHERE   lspd_id = 7
+                                         AND UPPER (msps_desc) LIKE
+                                               UPPER ('TGL TERIMA%')
+                                         AND x.lus_id IN (15, 622)) terima_ttp
+                       WHERE       input_ttp.reg_spaj = terima_ttp.reg_spaj
+                               AND input_ttp.lspd_id = 7
+                               AND input_ttp.lspd_id = terima_ttp.lspd_id
+                               AND NVL (
+                                     TRUNC (SYSDATE)
+                                     - TRUNC (input_ttp.msps_date),
+                                     0
+                                  ) <1)) i
+   WHERE       a.reg_spaj = input_ttp.reg_spaj
+           AND a.reg_spaj = c.reg_spaj
+           AND a.reg_spaj = b.reg_spaj
+           AND a.reg_spaj = i.reg_spaj
+           AND input_ttp.reg_spaj = terima_ttp.reg_spaj
+           AND input_ttp.lspd_id = 7
+           AND input_ttp.lspd_id = terima_ttp.lspd_id
+           AND c.lsbs_id = d.lsbs_id
+           AND a.lca_id = e.lca_id
+           AND input_ttp.lus_id = g.lus_id
+           AND a.mspo_policy_holder = f.mcl_id
+           AND a.mspo_date_ttp IS NOT NULL
+           AND b.mste_tgl_kirim_polis IS NOT NULL
+            and c.lsbs_id<300
+            and nvl(trunc(sysdate) - trunc(a.mspo_date_ttp), 0)<1
+        order by a.reg_spaj desc]]>
+	</queryString>
+	<field name="CABANG" class="java.lang.String"/>
+	<field name="DETIK" class="java.math.BigDecimal"/>
+	<field name="HARI" class="java.math.BigDecimal"/>
+	<field name="INPUTTTP" class="java.util.Date"/>
+	<field name="JAM" class="java.math.BigDecimal"/>
+	<field name="KIRIMPOLIS" class="java.util.Date"/>
+	<field name="LUS_LOGIN_NAME" class="java.lang.String"/>
+	<field name="MENIT" class="java.math.BigDecimal"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSPS_DESC" class="java.lang.String"/>
+	<field name="PP" class="java.lang.String"/>
+	<field name="PRODUK" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="SELISIH" class="java.math.BigDecimal"/>
+	<field name="SELISIH_SSL" class="java.lang.String"/>
+	<field name="SYSDATE" class="java.util.Date"/>
+	<field name="TERIMATTP" class="java.util.Date"/>
+	<pageHeader>
+		<band height="41">
+			<staticText>
+				<reportElement x="1" y="1" width="554" height="20"/>
+				<textElement>
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Laporan Harian Proses Input TTP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="21" width="80" height="20"/>
+				<textElement>
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tanggal  :]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="80" y="21" width="140" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{SYSDATE})]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="45">
+			<staticText>
+				<reportElement x="0" y="0" width="25" height="45"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="25" y="0" width="195" height="45"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[CABANG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="220" y="0" width="100" height="45"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO.POLIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="320" y="0" width="120" height="45"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[NAMA PP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="440" y="0" width="120" height="45"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[PRODUK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="560" y="0" width="120" height="45"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[TGL KIRIM POLIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="800" y="0" width="120" height="45"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[TGL  INPUT TTP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="920" y="0" width="100" height="45"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[USER]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1020" y="0" width="155" height="45"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[LAMA PENGEMBALIAN TTP (HARI KERJA)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="680" y="0" width="120" height="45"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[TGL TERIMA TTP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1175" y="0" width="160" height="25"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SL  INPUT TTP ( STLH TTP DITERIMA) ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1175" y="25" width="40" height="20" isPrintWhenDetailOverflows="true"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[H]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1215" y="25" width="40" height="20" isPrintWhenDetailOverflows="true"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jam]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1255" y="25" width="40" height="20" isPrintWhenDetailOverflows="true"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Menit]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1295" y="25" width="40" height="20" isPrintWhenDetailOverflows="true"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Detik]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="18">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="0" y="0" width="25" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{REPORT_COUNT}+"."]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="25" y="0" width="195" height="18" isPrintInFirstWholeBand="true"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CABANG}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="220" y="0" width="100" height="18"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_POLICY_NO}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="320" y="0" width="120" height="18"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="440" y="0" width="120" height="18"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PRODUK}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy (HH:mm:ss)" hyperlinkType="None">
+				<reportElement x="560" y="0" width="120" height="18"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{KIRIMPOLIS}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy (HH:mm:ss)" hyperlinkType="None">
+				<reportElement x="800" y="0" width="120" height="18" isPrintInFirstWholeBand="true"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{INPUTTTP}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="920" y="0" width="100" height="18"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LUS_LOGIN_NAME}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1020" y="0" width="155" height="18"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{SELISIH}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy (HH:mm:ss)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="680" y="0" width="120" height="18" isPrintInFirstWholeBand="true"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{TERIMATTP}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1175" y="0" width="40" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{HARI}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1215" y="0" width="40" height="18" isPrintInFirstWholeBand="true"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" markup="none"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{JAM}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1255" y="0" width="40" height="18" isPrintInFirstWholeBand="true"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" markup="none"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MENIT}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1295" y="0" width="40" height="18" isPrintInFirstWholeBand="true"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" markup="none"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{DETIK}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

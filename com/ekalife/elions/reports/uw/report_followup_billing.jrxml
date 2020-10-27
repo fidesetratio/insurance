@@ -1,0 +1,686 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_followup_billing" pageWidth="1569" pageHeight="842" columnWidth="1529" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="dataprod"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<parameter name="bdate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["01/06/2016"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="edate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["31/07/2016"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tipe_p" class="java.lang.String"/>
+	<parameter name="prod_p" class="java.lang.String"/>
+	<parameter name="prod_q" class="java.lang.String">
+		<defaultValueExpression><![CDATA["1=1"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tipe_q" class="java.lang.String">
+		<defaultValueExpression><![CDATA["( ( EKA.MST_BILLING.MSBI_BEG_DATE between to_date('21/12/2016','dd/MM/yyyy') and to_date('29/12/2016','dd/MM/yyyy')) "]]></defaultValueExpression>
+	</parameter>
+	<parameter name="status_q" class="java.lang.String">
+		<defaultValueExpression><![CDATA["1=1"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="q1" class="java.lang.String">
+		<defaultValueExpression><![CDATA["between add_months(to_date('21/12/2016','dd/MM/yyyy'),-6) and add_months(to_date('29/12/2016','dd/MM/yyyy'),-6)"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="q2" class="java.lang.String">
+		<defaultValueExpression><![CDATA["between add_months(to_date('21/12/2016','dd/MM/yyyy'),-12) and add_months(to_date('29/12/2016','dd/MM/yyyy'),-12)"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="q3" class="java.lang.String">
+		<defaultValueExpression><![CDATA["between add_months(to_date('21/12/2016','dd/MM/yyyy'),-3) and add_months(to_date('29/12/2016','dd/MM/yyyy'),-3)"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="q4" class="java.lang.String">
+		<defaultValueExpression><![CDATA["between add_months(to_date('21/12/2016','dd/MM/yyyy'),-1) and add_months(to_date('29/12/2016','dd/MM/yyyy'),-1)"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT A.* FROM(
+SELECT  DISTINCT EKA.MST_POLICY.REG_SPAJ , EKA.MST_POLICY.MSPO_POLICY_NO POLIS,
+        TO_CHAR(EKA.MST_BILLING.MSBI_BEG_DATE, 'dd/MM/yyyy') TGL_JATUH_TEMPO,
+        EKA.MST_CLIENT_NEW.MCL_FIRST PEMEGANG,
+        (CASE WHEN EKA.MST_POLICY.LSRE_ID != 1 THEN (SELECT MCL_FIRST FROM EKA.MST_CLIENT_NEW WHERE EKA.MST_INSURED.MSTE_INSURED = MCL_ID) ELSE EKA.MST_CLIENT_NEW.MCL_FIRST END) TERTANGGUNG,
+        EKA.MST_PRODUCT_INSURED.mspr_premium + NVL((select ber.mu_jlh_premi from eka.mst_ulink ber where ber.reg_Spaj=EKA.MST_POLICY.REG_SPAJ and ber.mu_ke in(1,2,3) and ber.lt_id=5 and rownum=1),0) premium,
+        EKA.LST_PAY_MODE.LSCB_PAY_MODE CARA_BAYAR,
+        EKA.LST_DET_BISNIS.LSDBS_NAME PRODUK,
+        EKA.LST_POLICY_STATUS.LSSP_STATUS STATUS_POLIS,
+        EKA.LST_CABANG.LCA_NAMA CABANG,
+        EKA.LST_REGION.LSRG_NAMA REGION,
+        EKA.LST_PAY_MODE.LSCB_ID,
+        'UNPAID' STATUS_BAYAR,
+        (CASE WHEN EKA.MST_PRODUCT_INSURED.LKU_ID='01' THEN 'IDR' ELSE 'USD' END )KURS,
+        TO_CHAR(EKA.MST_BILLING.MSBI_end_DATE, 'dd/MM/yyyy') END_DATE,
+        EKA.MST_POLICY.LCA_ID LCA_ID
+FROM EKA.MST_BILLING ,
+   EKA.MST_DET_BILLING ,
+   EKA.MST_POLICY ,
+   EKA.MST_CLIENT_NEW ,
+   EKA.LST_PAY_MODE ,
+   EKA.LST_KURS ,
+   EKA.MST_BILLING_HCR ,
+   EKA.MST_ADDRESS_BILLING ,
+   EKA.LST_REGION ,
+   EKA.LST_ADDR_REGION ,
+   EKA.MST_INSURED,
+   EKA.LST_CABANG,
+   EKA.MST_PRODUCT_INSURED,
+   EKA.LST_DET_BISNIS,
+   EKA.LST_POLICY_STATUS     
+WHERE ( EKA.MST_BILLING.REG_SPAJ = EKA.MST_BILLING_HCR.REG_SPAJ (+)) 
+and          ( EKA.MST_BILLING.MSBI_TAHUN_KE = EKA.MST_BILLING_HCR.MSBIH_TAHUN_KE (+)) 
+and          ( EKA.MST_BILLING.MSBI_PREMI_KE = EKA.MST_BILLING_HCR.MSBIH_PREMI_KE (+)) 
+and          ( EKA.MST_DET_BILLING.REG_SPAJ = EKA.MST_BILLING.REG_SPAJ ) 
+and          ( EKA.MST_DET_BILLING.MSBI_TAHUN_KE = EKA.MST_BILLING.MSBI_TAHUN_KE ) 
+and          ( EKA.MST_DET_BILLING.MSBI_PREMI_KE = EKA.MST_BILLING.MSBI_PREMI_KE ) 
+and          ( EKA.MST_POLICY.REG_SPAJ = EKA.MST_BILLING.REG_SPAJ ) 
+and          ( EKA.MST_POLICY.MSPO_POLICY_HOLDER = EKA.MST_CLIENT_NEW.MCL_ID ) 
+and          ( EKA.LST_PAY_MODE.LSCB_ID = EKA.MST_POLICY.LSCB_ID ) 
+and          ( EKA.MST_POLICY.LKU_ID = EKA.LST_KURS.LKU_ID ) 
+and          ( EKA.MST_POLICY.REG_SPAJ = EKA.MST_ADDRESS_BILLING.REG_SPAJ ) 
+and          ( EKA.MST_ADDRESS_BILLING.LCA_ID = EKA.LST_REGION.LCA_ID ) 
+and          ( EKA.LST_ADDR_REGION.LAR_ID = EKA.LST_REGION.LAR_ID ) 
+and          ( EKA.MST_ADDRESS_BILLING.LWK_ID = EKA.LST_REGION.LWK_ID ) 
+and          ( EKA.MST_ADDRESS_BILLING.LSRG_ID = EKA.LST_REGION.LSRG_ID ) 
+and          ( EKA.MST_POLICY.REG_SPAJ = EKA.MST_INSURED.REG_SPAJ ) 
+and          ( EKA.MST_POLICY.LSCB_ID <> 0 ) 
+and          (  EKA.MST_POLICY.LSSP_ID = EKA.LST_POLICY_STATUS.LSSP_ID) 
+and $P!{tipe_q}
+and          ( EKA.MST_BILLING.LSPD_ID in (11,12,56,57) ) 
+and          ( EKA.MST_BILLING.MSBI_PREMI_KE > 1 ) ) 
+and          ( EKA.MST_POLICY.LCA_ID = EKA.LST_CABANG.LCA_ID )  
+and          ( EKA.MST_INSURED.REG_SPAJ = EKA.MST_PRODUCT_INSURED.REG_SPAJ ) 
+and          ( EKA.MST_INSURED.MSTE_INSURED_NO = EKA.MST_PRODUCT_INSURED.MSTE_INSURED_NO ) 
+and          ( EKA.MST_PRODUCT_INSURED.LSBS_ID = EKA.LST_DET_BISNIS.LSBS_ID )
+and          ( EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER = EKA.LST_DET_BISNIS.LSDBS_NUMBER )
+and          ( EKA.MST_PRODUCT_INSURED.LSBS_ID < 300)
+and          ( EKA.MST_POLICY.LCA_ID NOT IN ('42','67', '40','09','58','66'))
+and $P!{prod_q}
+and          NOT ( EKA.MST_PRODUCT_INSURED.LSBS_ID||EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER) IN('2032','1535', '1593')
+and $P!{status_q}
+and EKA.MST_BILLING.MSBI_PAID = 0
+ORDER BY TGL_JATUH_TEMPO, EKA.LST_CABANG.LCA_NAMA, EKA.LST_REGION.LSRG_NAMA, EKA.LST_DET_BISNIS.LSDBS_NAME) A,
+(SELECT DISTINCT REG_SPAJ FROM EKA.MST_BILLING A WHERE A.MSBI_BEG_DATE  $P!{q1} AND A.MSBI_PAID = 1)B
+WHERE A.REG_SPAJ = B.REG_SPAJ AND A.LSCB_ID = 2
+UNION ALL 
+SELECT A.* FROM(
+SELECT  DISTINCT EKA.MST_POLICY.REG_SPAJ , EKA.MST_POLICY.MSPO_POLICY_NO POLIS,
+        TO_CHAR(EKA.MST_BILLING.MSBI_BEG_DATE, 'dd/MM/yyyy') TGL_JATUH_TEMPO,
+        EKA.MST_CLIENT_NEW.MCL_FIRST PEMEGANG,
+        (CASE WHEN EKA.MST_POLICY.LSRE_ID != 1 THEN (SELECT MCL_FIRST FROM EKA.MST_CLIENT_NEW WHERE EKA.MST_INSURED.MSTE_INSURED = MCL_ID) ELSE EKA.MST_CLIENT_NEW.MCL_FIRST END) TERTANGGUNG,
+        EKA.MST_PRODUCT_INSURED.mspr_premium + NVL((select ber.mu_jlh_premi from eka.mst_ulink ber where ber.reg_Spaj=EKA.MST_POLICY.REG_SPAJ and ber.mu_ke in(1,2,3) and ber.lt_id=5 and rownum=1),0) premium,
+        EKA.LST_PAY_MODE.LSCB_PAY_MODE CARA_BAYAR,
+        EKA.LST_DET_BISNIS.LSDBS_NAME PRODUK,
+        EKA.LST_POLICY_STATUS.LSSP_STATUS STATUS_POLIS,
+        EKA.LST_CABANG.LCA_NAMA CABANG,
+        EKA.LST_REGION.LSRG_NAMA REGION,
+        EKA.LST_PAY_MODE.LSCB_ID,
+        'UNPAID' STATUS_BAYAR,
+        (CASE WHEN EKA.MST_PRODUCT_INSURED.LKU_ID='01' THEN 'IDR' ELSE 'USD' END )KURS,
+        TO_CHAR(EKA.MST_BILLING.MSBI_end_DATE, 'dd/MM/yyyy') END_DATE,
+        EKA.MST_POLICY.LCA_ID LCA_ID
+FROM EKA.MST_BILLING ,
+   EKA.MST_DET_BILLING ,
+   EKA.MST_POLICY ,
+   EKA.MST_CLIENT_NEW ,
+   EKA.LST_PAY_MODE ,
+   EKA.LST_KURS ,
+   EKA.MST_BILLING_HCR ,
+   EKA.MST_ADDRESS_BILLING ,
+   EKA.LST_REGION ,
+   EKA.LST_ADDR_REGION ,
+   EKA.MST_INSURED,
+   EKA.LST_CABANG,
+   EKA.MST_PRODUCT_INSURED,
+   EKA.LST_DET_BISNIS,
+   EKA.LST_POLICY_STATUS     
+WHERE ( EKA.MST_BILLING.REG_SPAJ = EKA.MST_BILLING_HCR.REG_SPAJ (+)) 
+and          ( EKA.MST_BILLING.MSBI_TAHUN_KE = EKA.MST_BILLING_HCR.MSBIH_TAHUN_KE (+)) 
+and          ( EKA.MST_BILLING.MSBI_PREMI_KE = EKA.MST_BILLING_HCR.MSBIH_PREMI_KE (+)) 
+and          ( EKA.MST_DET_BILLING.REG_SPAJ = EKA.MST_BILLING.REG_SPAJ ) 
+and          ( EKA.MST_DET_BILLING.MSBI_TAHUN_KE = EKA.MST_BILLING.MSBI_TAHUN_KE ) 
+and          ( EKA.MST_DET_BILLING.MSBI_PREMI_KE = EKA.MST_BILLING.MSBI_PREMI_KE ) 
+and          ( EKA.MST_POLICY.REG_SPAJ = EKA.MST_BILLING.REG_SPAJ ) 
+and          ( EKA.MST_POLICY.MSPO_POLICY_HOLDER = EKA.MST_CLIENT_NEW.MCL_ID ) 
+and          ( EKA.LST_PAY_MODE.LSCB_ID = EKA.MST_POLICY.LSCB_ID ) 
+and          ( EKA.MST_POLICY.LKU_ID = EKA.LST_KURS.LKU_ID ) 
+and          ( EKA.MST_POLICY.REG_SPAJ = EKA.MST_ADDRESS_BILLING.REG_SPAJ ) 
+and          ( EKA.MST_ADDRESS_BILLING.LCA_ID = EKA.LST_REGION.LCA_ID ) 
+and          ( EKA.LST_ADDR_REGION.LAR_ID = EKA.LST_REGION.LAR_ID ) 
+and          ( EKA.MST_ADDRESS_BILLING.LWK_ID = EKA.LST_REGION.LWK_ID ) 
+and          ( EKA.MST_ADDRESS_BILLING.LSRG_ID = EKA.LST_REGION.LSRG_ID ) 
+and          ( EKA.MST_POLICY.REG_SPAJ = EKA.MST_INSURED.REG_SPAJ ) 
+and          ( EKA.MST_POLICY.LSCB_ID <> 0 ) 
+and          (  EKA.MST_POLICY.LSSP_ID = EKA.LST_POLICY_STATUS.LSSP_ID) 
+and $P!{tipe_q}
+and          ( EKA.MST_BILLING.LSPD_ID in (11,12,56,57) ) 
+and          ( EKA.MST_BILLING.MSBI_PREMI_KE > 1 ) ) 
+and          ( EKA.MST_POLICY.LCA_ID = EKA.LST_CABANG.LCA_ID )  
+and          ( EKA.MST_INSURED.REG_SPAJ = EKA.MST_PRODUCT_INSURED.REG_SPAJ ) 
+and          ( EKA.MST_INSURED.MSTE_INSURED_NO = EKA.MST_PRODUCT_INSURED.MSTE_INSURED_NO ) 
+and          ( EKA.MST_PRODUCT_INSURED.LSBS_ID = EKA.LST_DET_BISNIS.LSBS_ID )
+and          ( EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER = EKA.LST_DET_BISNIS.LSDBS_NUMBER )
+and          ( EKA.MST_PRODUCT_INSURED.LSBS_ID < 300)
+and          ( EKA.MST_POLICY.LCA_ID NOT IN ('42','67', '40','09','58','66'))
+and $P!{prod_q}
+and          NOT ( EKA.MST_PRODUCT_INSURED.LSBS_ID||EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER) IN('2032','1535', '1593')
+and $P!{status_q}
+and EKA.MST_BILLING.MSBI_PAID = 0
+ORDER BY TGL_JATUH_TEMPO, EKA.LST_CABANG.LCA_NAMA, EKA.LST_REGION.LSRG_NAMA, EKA.LST_DET_BISNIS.LSDBS_NAME) A,
+(SELECT DISTINCT REG_SPAJ FROM EKA.MST_BILLING A WHERE A.MSBI_BEG_DATE $P!{q2} AND A.MSBI_PAID = 1)B
+WHERE A.REG_SPAJ = B.REG_SPAJ AND A.LSCB_ID = 3
+UNION ALL 
+SELECT A.* FROM(
+SELECT  DISTINCT EKA.MST_POLICY.REG_SPAJ , EKA.MST_POLICY.MSPO_POLICY_NO POLIS,
+        TO_CHAR(EKA.MST_BILLING.MSBI_BEG_DATE, 'dd/MM/yyyy') TGL_JATUH_TEMPO,
+        EKA.MST_CLIENT_NEW.MCL_FIRST PEMEGANG,
+        (CASE WHEN EKA.MST_POLICY.LSRE_ID != 1 THEN (SELECT MCL_FIRST FROM EKA.MST_CLIENT_NEW WHERE EKA.MST_INSURED.MSTE_INSURED = MCL_ID) ELSE EKA.MST_CLIENT_NEW.MCL_FIRST END) TERTANGGUNG,
+        EKA.MST_PRODUCT_INSURED.mspr_premium + NVL((select ber.mu_jlh_premi from eka.mst_ulink ber where ber.reg_Spaj=EKA.MST_POLICY.REG_SPAJ and ber.mu_ke in(1,2,3) and ber.lt_id=5 and rownum=1),0) premium,
+        EKA.LST_PAY_MODE.LSCB_PAY_MODE CARA_BAYAR,
+        EKA.LST_DET_BISNIS.LSDBS_NAME PRODUK,
+        EKA.LST_POLICY_STATUS.LSSP_STATUS STATUS_POLIS,
+        EKA.LST_CABANG.LCA_NAMA CABANG,
+        EKA.LST_REGION.LSRG_NAMA REGION,
+        EKA.LST_PAY_MODE.LSCB_ID,
+        'UNPAID' STATUS_BAYAR,
+        (CASE WHEN EKA.MST_PRODUCT_INSURED.LKU_ID='01' THEN 'IDR' ELSE 'USD' END )KURS,
+        TO_CHAR(EKA.MST_BILLING.MSBI_end_DATE, 'dd/MM/yyyy') END_DATE,
+        EKA.MST_POLICY.LCA_ID LCA_ID
+FROM EKA.MST_BILLING ,
+   EKA.MST_DET_BILLING ,
+   EKA.MST_POLICY ,
+   EKA.MST_CLIENT_NEW ,
+   EKA.LST_PAY_MODE ,
+   EKA.LST_KURS ,
+   EKA.MST_BILLING_HCR ,
+   EKA.MST_ADDRESS_BILLING ,
+   EKA.LST_REGION ,
+   EKA.LST_ADDR_REGION ,
+   EKA.MST_INSURED,
+   EKA.LST_CABANG,
+   EKA.MST_PRODUCT_INSURED,
+   EKA.LST_DET_BISNIS,
+   EKA.LST_POLICY_STATUS     
+WHERE ( EKA.MST_BILLING.REG_SPAJ = EKA.MST_BILLING_HCR.REG_SPAJ (+)) 
+and          ( EKA.MST_BILLING.MSBI_TAHUN_KE = EKA.MST_BILLING_HCR.MSBIH_TAHUN_KE (+)) 
+and          ( EKA.MST_BILLING.MSBI_PREMI_KE = EKA.MST_BILLING_HCR.MSBIH_PREMI_KE (+)) 
+and          ( EKA.MST_DET_BILLING.REG_SPAJ = EKA.MST_BILLING.REG_SPAJ ) 
+and          ( EKA.MST_DET_BILLING.MSBI_TAHUN_KE = EKA.MST_BILLING.MSBI_TAHUN_KE ) 
+and          ( EKA.MST_DET_BILLING.MSBI_PREMI_KE = EKA.MST_BILLING.MSBI_PREMI_KE ) 
+and          ( EKA.MST_POLICY.REG_SPAJ = EKA.MST_BILLING.REG_SPAJ ) 
+and          ( EKA.MST_POLICY.MSPO_POLICY_HOLDER = EKA.MST_CLIENT_NEW.MCL_ID ) 
+and          ( EKA.LST_PAY_MODE.LSCB_ID = EKA.MST_POLICY.LSCB_ID ) 
+and          ( EKA.MST_POLICY.LKU_ID = EKA.LST_KURS.LKU_ID ) 
+and          ( EKA.MST_POLICY.REG_SPAJ = EKA.MST_ADDRESS_BILLING.REG_SPAJ ) 
+and          ( EKA.MST_ADDRESS_BILLING.LCA_ID = EKA.LST_REGION.LCA_ID ) 
+and          ( EKA.LST_ADDR_REGION.LAR_ID = EKA.LST_REGION.LAR_ID ) 
+and          ( EKA.MST_ADDRESS_BILLING.LWK_ID = EKA.LST_REGION.LWK_ID ) 
+and          ( EKA.MST_ADDRESS_BILLING.LSRG_ID = EKA.LST_REGION.LSRG_ID ) 
+and          ( EKA.MST_POLICY.REG_SPAJ = EKA.MST_INSURED.REG_SPAJ ) 
+and          ( EKA.MST_POLICY.LSCB_ID <> 0 ) 
+and          (  EKA.MST_POLICY.LSSP_ID = EKA.LST_POLICY_STATUS.LSSP_ID) 
+and $P!{tipe_q}
+and          ( EKA.MST_BILLING.LSPD_ID in (11,12,56,57) ) 
+and          ( EKA.MST_BILLING.MSBI_PREMI_KE > 1 ) ) 
+and          ( EKA.MST_POLICY.LCA_ID = EKA.LST_CABANG.LCA_ID )  
+and          ( EKA.MST_INSURED.REG_SPAJ = EKA.MST_PRODUCT_INSURED.REG_SPAJ ) 
+and          ( EKA.MST_INSURED.MSTE_INSURED_NO = EKA.MST_PRODUCT_INSURED.MSTE_INSURED_NO ) 
+and          ( EKA.MST_PRODUCT_INSURED.LSBS_ID = EKA.LST_DET_BISNIS.LSBS_ID )
+and          ( EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER = EKA.LST_DET_BISNIS.LSDBS_NUMBER )
+and          ( EKA.MST_PRODUCT_INSURED.LSBS_ID < 300)
+and          ( EKA.MST_POLICY.LCA_ID NOT IN ('42','67', '40','09','58','66'))
+and $P!{prod_q}
+and          NOT ( EKA.MST_PRODUCT_INSURED.LSBS_ID||EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER) IN('2032','1535', '1593')
+and $P!{status_q}
+and EKA.MST_BILLING.MSBI_PAID = 0
+ORDER BY TGL_JATUH_TEMPO, EKA.LST_CABANG.LCA_NAMA, EKA.LST_REGION.LSRG_NAMA, EKA.LST_DET_BISNIS.LSDBS_NAME) A,
+(SELECT DISTINCT REG_SPAJ FROM EKA.MST_BILLING A WHERE A.MSBI_BEG_DATE $P!{q3} AND A.MSBI_PAID = 1)B
+WHERE A.REG_SPAJ = B.REG_SPAJ AND A.LSCB_ID = 1
+UNION ALL 
+SELECT A.* FROM(
+SELECT  DISTINCT EKA.MST_POLICY.REG_SPAJ , EKA.MST_POLICY.MSPO_POLICY_NO POLIS,
+        TO_CHAR(EKA.MST_BILLING.MSBI_BEG_DATE, 'dd/MM/yyyy') TGL_JATUH_TEMPO,
+        EKA.MST_CLIENT_NEW.MCL_FIRST PEMEGANG,
+        (CASE WHEN EKA.MST_POLICY.LSRE_ID != 1 THEN (SELECT MCL_FIRST FROM EKA.MST_CLIENT_NEW WHERE EKA.MST_INSURED.MSTE_INSURED = MCL_ID) ELSE EKA.MST_CLIENT_NEW.MCL_FIRST END) TERTANGGUNG,
+        EKA.MST_PRODUCT_INSURED.mspr_premium + NVL((select ber.mu_jlh_premi from eka.mst_ulink ber where ber.reg_Spaj=EKA.MST_POLICY.REG_SPAJ and ber.mu_ke in(1,2,3) and ber.lt_id=5 and rownum=1),0) premium,
+        EKA.LST_PAY_MODE.LSCB_PAY_MODE CARA_BAYAR,
+        EKA.LST_DET_BISNIS.LSDBS_NAME PRODUK,
+        EKA.LST_POLICY_STATUS.LSSP_STATUS STATUS_POLIS,
+        EKA.LST_CABANG.LCA_NAMA CABANG,
+        EKA.LST_REGION.LSRG_NAMA REGION,
+        EKA.LST_PAY_MODE.LSCB_ID,
+        'UNPAID' STATUS_BAYAR,
+        (CASE WHEN EKA.MST_PRODUCT_INSURED.LKU_ID='01' THEN 'IDR' ELSE 'USD' END )KURS,
+        TO_CHAR(EKA.MST_BILLING.MSBI_end_DATE, 'dd/MM/yyyy') END_DATE,
+        EKA.MST_POLICY.LCA_ID LCA_ID
+FROM EKA.MST_BILLING ,
+   EKA.MST_DET_BILLING ,
+   EKA.MST_POLICY ,
+   EKA.MST_CLIENT_NEW ,
+   EKA.LST_PAY_MODE ,
+   EKA.LST_KURS ,
+   EKA.MST_BILLING_HCR ,
+   EKA.MST_ADDRESS_BILLING ,
+   EKA.LST_REGION ,
+   EKA.LST_ADDR_REGION ,
+   EKA.MST_INSURED,
+   EKA.LST_CABANG,
+   EKA.MST_PRODUCT_INSURED,
+   EKA.LST_DET_BISNIS,
+   EKA.LST_POLICY_STATUS     
+WHERE ( EKA.MST_BILLING.REG_SPAJ = EKA.MST_BILLING_HCR.REG_SPAJ (+)) 
+and          ( EKA.MST_BILLING.MSBI_TAHUN_KE = EKA.MST_BILLING_HCR.MSBIH_TAHUN_KE (+)) 
+and          ( EKA.MST_BILLING.MSBI_PREMI_KE = EKA.MST_BILLING_HCR.MSBIH_PREMI_KE (+)) 
+and          ( EKA.MST_DET_BILLING.REG_SPAJ = EKA.MST_BILLING.REG_SPAJ ) 
+and          ( EKA.MST_DET_BILLING.MSBI_TAHUN_KE = EKA.MST_BILLING.MSBI_TAHUN_KE ) 
+and          ( EKA.MST_DET_BILLING.MSBI_PREMI_KE = EKA.MST_BILLING.MSBI_PREMI_KE ) 
+and          ( EKA.MST_POLICY.REG_SPAJ = EKA.MST_BILLING.REG_SPAJ ) 
+and          ( EKA.MST_POLICY.MSPO_POLICY_HOLDER = EKA.MST_CLIENT_NEW.MCL_ID ) 
+and          ( EKA.LST_PAY_MODE.LSCB_ID = EKA.MST_POLICY.LSCB_ID ) 
+and          ( EKA.MST_POLICY.LKU_ID = EKA.LST_KURS.LKU_ID ) 
+and          ( EKA.MST_POLICY.REG_SPAJ = EKA.MST_ADDRESS_BILLING.REG_SPAJ ) 
+and          ( EKA.MST_ADDRESS_BILLING.LCA_ID = EKA.LST_REGION.LCA_ID ) 
+and          ( EKA.LST_ADDR_REGION.LAR_ID = EKA.LST_REGION.LAR_ID ) 
+and          ( EKA.MST_ADDRESS_BILLING.LWK_ID = EKA.LST_REGION.LWK_ID ) 
+and          ( EKA.MST_ADDRESS_BILLING.LSRG_ID = EKA.LST_REGION.LSRG_ID ) 
+and          ( EKA.MST_POLICY.REG_SPAJ = EKA.MST_INSURED.REG_SPAJ ) 
+and          ( EKA.MST_POLICY.LSCB_ID <> 0 ) 
+and          (  EKA.MST_POLICY.LSSP_ID = EKA.LST_POLICY_STATUS.LSSP_ID) 
+and $P!{tipe_q}
+and          ( EKA.MST_BILLING.LSPD_ID in (11,12,56,57) ) 
+and          ( EKA.MST_BILLING.MSBI_PREMI_KE > 1 ) ) 
+and          ( EKA.MST_POLICY.LCA_ID = EKA.LST_CABANG.LCA_ID )  
+and          ( EKA.MST_INSURED.REG_SPAJ = EKA.MST_PRODUCT_INSURED.REG_SPAJ ) 
+and          ( EKA.MST_INSURED.MSTE_INSURED_NO = EKA.MST_PRODUCT_INSURED.MSTE_INSURED_NO ) 
+and          ( EKA.MST_PRODUCT_INSURED.LSBS_ID = EKA.LST_DET_BISNIS.LSBS_ID )
+and          ( EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER = EKA.LST_DET_BISNIS.LSDBS_NUMBER )
+and          ( EKA.MST_PRODUCT_INSURED.LSBS_ID < 300)
+and          ( EKA.MST_POLICY.LCA_ID NOT IN ('42','67', '40','09','58','66'))
+and $P!{prod_q}
+and          NOT ( EKA.MST_PRODUCT_INSURED.LSBS_ID||EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER) IN('2032','1535', '1593')
+and $P!{status_q}
+and EKA.MST_BILLING.MSBI_PAID = 0
+ORDER BY TGL_JATUH_TEMPO, EKA.LST_CABANG.LCA_NAMA, EKA.LST_REGION.LSRG_NAMA, EKA.LST_DET_BISNIS.LSDBS_NAME) A,
+(SELECT DISTINCT REG_SPAJ FROM EKA.MST_BILLING A WHERE A.MSBI_BEG_DATE $P!{q4} AND A.MSBI_PAID = 1)B
+WHERE A.REG_SPAJ = B.REG_SPAJ AND A.LSCB_ID = 6]]>
+	</queryString>
+	<field name="CABANG" class="java.lang.String"/>
+	<field name="CARA_BAYAR" class="java.lang.String"/>
+	<field name="END_DATE" class="java.lang.String"/>
+	<field name="KURS" class="java.lang.String"/>
+	<field name="LCA_ID" class="java.lang.String"/>
+	<field name="LSCB_ID" class="java.math.BigDecimal"/>
+	<field name="PEMEGANG" class="java.lang.String"/>
+	<field name="POLIS" class="java.lang.String"/>
+	<field name="PREMIUM" class="java.math.BigDecimal"/>
+	<field name="PRODUK" class="java.lang.String"/>
+	<field name="REGION" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="STATUS_BAYAR" class="java.lang.String"/>
+	<field name="STATUS_POLIS" class="java.lang.String"/>
+	<field name="TERTANGGUNG" class="java.lang.String"/>
+	<field name="TGL_JATUH_TEMPO" class="java.lang.String"/>
+	<variable name="no" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[new Integer(1)]]></variableExpression>
+	</variable>
+	<title>
+		<band height="107">
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="20" width="291" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Periode : "+$P{bdate}+" s/d "+$P{edate}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="0" width="291" height="20"/>
+				<textElement>
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Report Follow Up Billing]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="945" y="67" width="100" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[PREMIUM]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1045" y="67" width="69" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[PAID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="67" width="107" height="40"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[NO. POLIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="890" y="67" width="55" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[KURS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="754" y="67" width="136" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[REGION]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="618" y="67" width="136" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[CABANG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="563" y="67" width="55" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[LCA ID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="427" y="67" width="136" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[TERTANGGUNG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="291" y="67" width="136" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[NAMA PEMEGANG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="107" y="67" width="92" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[BEG DATE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="199" y="67" width="92" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[END DATE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1114" y="67" width="87" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[CARA BAYAR]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1201" y="67" width="221" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[PRODUK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1422" y="67" width="107" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[STATUS POLIS]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="36" width="291" height="16"/>
+				<textElement markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tipe_p} +" / "+$P{prod_p}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="20">
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="0" y="0" width="107" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{POLIS}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="291" y="0" width="136" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PEMEGANG}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="427" y="0" width="136" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TERTANGGUNG}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="618" y="0" width="136" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CABANG}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="754" y="0" width="136" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REGION}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="890" y="0" width="55" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KURS}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1045" y="0" width="69" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{STATUS_BAYAR}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.###" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="945" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{PREMIUM}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="563" y="0" width="55" height="20"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LCA_ID}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="107" y="0" width="92" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_JATUH_TEMPO}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="199" y="0" width="92" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{END_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1422" y="0" width="107" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{STATUS_POLIS}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1201" y="0" width="221" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PRODUK}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1114" y="0" width="87" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CARA_BAYAR}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

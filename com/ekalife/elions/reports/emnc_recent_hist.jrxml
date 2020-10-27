@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="emnc_recent_hist" pageWidth="842" pageHeight="1000" orientation="Landscape" columnWidth="812" leftMargin="15" rightMargin="15" topMargin="15" bottomMargin="15" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="tglMulai" class="java.lang.String">
+		<defaultValueExpression><![CDATA["01/01/2012"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tglAkhir" class="java.lang.String">
+		<defaultValueExpression><![CDATA["12/12/2012"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select 
+  activity.act_id as "activity_id",
+  nvl(account.JPN_PIC, '-') as "japanese_pic",
+  nvl(account.LOCAL_PIC, '-') as "local_pic",
+  nvl(account.WS_PIC, '-') as "ws_pic",
+  activity.act_sdate as "start_date",
+  activity.act_edate as "end_date",
+  activity.act_name as "activity_name",
+  nvl(decode(actType.snat_name, 
+    'actType1', 'To do', 
+    'actType2', 'Meeting',
+    'actType3', 'Call',
+    'actType4', 'Socialization',
+    'actType5', 'Seminar',
+    'actType6', 'Quotation Request',
+    'actType7', 'Quotation Submission',
+    'actType8', 'Menemukan Prospek (Bank Nama)',
+    'actType9', 'Pendekatan (Kontak Telepon)',
+    'actType10', 'Dapat Janji Bertemu',
+    'actType11', 'Bertemu Prospek',
+    'actType12', 'Presentasi Proposal',
+    'actType13', 'Isi SPAJ / Closing',
+    'actType14', 'Layanan Purna Jual (Antar Polis)',
+    'actType15', 'Mendapatkan Referensi'
+  ),'-') as "activity_type",
+  account.ACC_NAME as "company_name",
+  nvl(activity.ACT_DETAIL,'-') as "activity_detail"
+from 
+    crm.simas_activity activity
+left join crm.simas_name_act_type actType
+    on activity.act_type = actType.snat_id
+left join crm.SIMAS_LINK_ACT_TO_ACC accLink
+    on activity.act_id = accLink.ATA_ACT_ID
+right join crm.SIMAS_ACCOUNT_REPORT account
+    on account.INST_ID = accLink.ATA_ACC_ID
+where 
+  activity.ACT_EDATE between to_date((to_char(SYSDATE-7,'dd/mm/yyyy')) || ' 16:00:01','dd/MM/yyyy hh24:mi:ss') and to_date((to_char(SYSDATE,'dd/mm/yyyy')) || ' 16:00:00','dd/MM/yyyy hh24:mi:ss')
+order by account.LOCAL_PIC, activity.ACT_SDATE, activity.ACT_EDATE]]>
+	</queryString>
+	<field name="activity_detail" class="java.lang.String"/>
+	<field name="activity_id" class="java.lang.String"/>
+	<field name="activity_name" class="java.lang.String"/>
+	<field name="activity_type" class="java.lang.String"/>
+	<field name="company_name" class="java.lang.String"/>
+	<field name="end_date" class="java.util.Date"/>
+	<field name="japanese_pic" class="java.lang.String"/>
+	<field name="local_pic" class="java.lang.String"/>
+	<field name="start_date" class="java.util.Date"/>
+	<field name="ws_pic" class="java.lang.String"/>
+	<pageHeader>
+		<band height="66">
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="228" y="15" width="364" height="34"/>
+				<textElement textAlignment="Center" markup="none">
+					<font fontName="Bookman Old Style" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Recent Activity on\n" + $P{tglMulai} + " to " + $P{tglAkhir}]]></textFieldExpression>
+			</textField>
+			<image hyperlinkType="None">
+				<reportElement x="0" y="5" width="120" height="40"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.ekalife")]]></imageExpression>
+			</image>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="30">
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="20" y="10" width="80" height="20" backcolor="#DFDFDF"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="9" isBold="true" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[Japanese PIC]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="320" y="10" width="70" height="20" backcolor="#DFDFDF"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="9" isBold="true" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[Activity Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="0" y="10" width="20" height="20" backcolor="#DFDFDF"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="9" isBold="true" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="100" y="10" width="80" height="20" backcolor="#DFDFDF"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="9" isBold="true" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[Local PIC]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="390" y="10" width="110" height="20" backcolor="#DFDFDF"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="9" isBold="true" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[Activity Type]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="620" y="10" width="190" height="20" backcolor="#DFDFDF"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="9" isBold="true" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[This Week's Action]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="500" y="10" width="120" height="20" backcolor="#DFDFDF"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="9" isBold="true" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[Company Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="180" y="10" width="80" height="20" backcolor="#DFDFDF"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="9" isBold="true" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[Worksite PIC]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="260" y="10" width="60" height="20" backcolor="#DFDFDF"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="9" isBold="true" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[Activity Date]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="20" y="0" width="80" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Book Antiqua" size="8" isItalic="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{japanese_pic}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="320" y="0" width="70" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Book Antiqua" size="8" isItalic="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{activity_name}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="100" y="0" width="80" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Book Antiqua" size="8" isItalic="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{local_pic}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="20" height="15" isRemoveLineWhenBlank="true" backcolor="#DFDFDF"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top" markup="none">
+					<font fontName="Book Antiqua" size="8" isItalic="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="390" y="0" width="110" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" markup="none">
+					<font fontName="Book Antiqua" size="8" isItalic="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{activity_type}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="620" y="0" width="190" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Justified" verticalAlignment="Top" markup="none">
+					<font fontName="Book Antiqua" size="8" isItalic="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{activity_detail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="500" y="0" width="120" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" markup="none">
+					<font fontName="Book Antiqua" size="8" isItalic="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{company_name}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="180" y="0" width="80" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" markup="none">
+					<font fontName="Book Antiqua" size="8" isItalic="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ws_pic}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="260" y="0" width="60" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top" markup="none">
+					<font fontName="Book Antiqua" size="8" isItalic="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateStringIndonesian($F{start_date})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="18"/>
+	</columnFooter>
+</jasperReport>

@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="estimasi_bea_meterai" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="100" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperFunctionReport">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="props" class="java.lang.String"/>
+	<parameter name="tgl1" class="java.lang.String">
+		<defaultValueExpression><![CDATA["200810"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tgl2" class="java.lang.String">
+		<defaultValueExpression><![CDATA["200809"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select a.mstm_kode,a.mstm_kode_dirjen,
+a.mstm_bulan bulan_ini,a.mstm_saldo_awal,a.mstm_saldo_akhir ,
+b.msth_jumlah,b.msth_desc,b.msth_ref_no,b.msth_jenis,b.msth_tgl_bayar,a.mstm_create_dt,
+NVL(c.mstm_saldo_akhir,0) saldo_akhir_lalu,NVL(c.mstm_saldo_awal,0) saldo_awal_lalu,c.mstm_bulan bulan_lalu 
+from (select a.*, 1 kd from eka.mst_stamp a) a ,eka.mst_stamp_hist b,
+(select mstm_saldo_akhir,mstm_saldo_awal,mstm_bulan , 1 kd
+from eka.mst_stamp 
+where
+mstm_bulan = $P{tgl2}) c
+where a.mstm_kode = b.mstm_kode and 
+a.mstm_bulan = $P{tgl1}  and
+a.kd = c.kd (+)  and
+b.msth_jenis = 0]]>
+	</queryString>
+	<field name="BULAN_INI" class="java.lang.String"/>
+	<field name="BULAN_LALU" class="java.lang.String"/>
+	<field name="MSTH_DESC" class="java.lang.String"/>
+	<field name="MSTH_JENIS" class="java.math.BigDecimal"/>
+	<field name="MSTH_JUMLAH" class="java.math.BigDecimal"/>
+	<field name="MSTH_REF_NO" class="java.lang.String"/>
+	<field name="MSTH_TGL_BAYAR" class="java.util.Date"/>
+	<field name="MSTM_CREATE_DT" class="java.util.Date"/>
+	<field name="MSTM_KODE" class="java.lang.String"/>
+	<field name="MSTM_KODE_DIRJEN" class="java.lang.String"/>
+	<field name="MSTM_SALDO_AKHIR" class="java.math.BigDecimal"/>
+	<field name="MSTM_SALDO_AWAL" class="java.math.BigDecimal"/>
+	<field name="SALDO_AKHIR_LALU" class="java.math.BigDecimal"/>
+	<field name="SALDO_AWAL_LALU" class="java.math.BigDecimal"/>
+	<summary>
+		<band height="196">
+			<staticText>
+				<reportElement x="101" y="3" width="326" height="39"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ESTIMASI DAN REALISASI
+PEMAKAIAN BEA METERAI ATAS REKENING KORAN GIRO
+PT ASURANSI JIWA SINARMAS MSIG Tbk.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="6" y="54" width="17" height="26"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[NO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="26" y="54" width="128" height="26"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[KETERANGAN]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="158" y="54" width="124" height="26"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["REALISASI PEMAKAIAN BULAN "+ 
+ $P{REPORT_SCRIPTLET}.formatMonth($P{tgl2}.substring(4,6))
+ +" "+$P{tgl2}.substring(0,4)+" (RP)"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="414" y="54" width="124" height="26"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[SALDO (RP)]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="287" y="54" width="124" height="26"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["ESTIMASI PEMAKAIAN BULAN "+
+ $P{REPORT_SCRIPTLET}.formatMonth($P{tgl1}.substring(4,6))
+  +" "+$P{tgl1}.substring(0,4) +"  (RP)"]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="6" y="85" width="536" height="1"/>
+				<graphicElement/>
+			</line>
+			<staticText>
+				<reportElement x="6" y="89" width="17" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[1]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="26" y="89" width="128" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[saldo bulan lalu]]></text>
+			</staticText>
+			<line>
+				<reportElement x="6" y="105" width="536" height="1"/>
+				<graphicElement/>
+			</line>
+			<staticText>
+				<reportElement x="6" y="109" width="17" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[2]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="26" y="109" width="128" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[bea meterai 3000]]></text>
+			</staticText>
+			<line>
+				<reportElement x="6" y="126" width="536" height="1"/>
+				<graphicElement/>
+			</line>
+			<staticText>
+				<reportElement x="6" y="130" width="17" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[3]]></text>
+			</staticText>
+			<line>
+				<reportElement x="6" y="147" width="536" height="1"/>
+				<graphicElement/>
+			</line>
+			<staticText>
+				<reportElement x="26" y="130" width="128" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[bea meterai 6000]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="6" y="151" width="17" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[4]]></text>
+			</staticText>
+			<line>
+				<reportElement x="6" y="168" width="536" height="1"/>
+				<graphicElement/>
+			</line>
+			<staticText>
+				<reportElement x="26" y="151" width="128" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[setoran bea meterai]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="6" y="171" width="17" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[5]]></text>
+			</staticText>
+			<line>
+				<reportElement x="5" y="189" width="537" height="1"/>
+				<graphicElement/>
+			</line>
+			<staticText>
+				<reportElement x="26" y="171" width="128" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[jumlah]]></text>
+			</staticText>
+			<line>
+				<reportElement x="4" y="51" width="1" height="138"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="23" y="52" width="1" height="138"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="155" y="51" width="1" height="138"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="284" y="51" width="1" height="138"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="412" y="50" width="1" height="138"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="542" y="51" width="1" height="138"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="4" y="51" width="539" height="1"/>
+				<graphicElement/>
+			</line>
+			<staticText>
+				<reportElement x="158" y="89" width="124" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[-]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="287" y="89" width="124" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[-]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="158" y="109" width="124" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[0]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="287" y="109" width="124" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[0]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="158" y="151" width="124" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[-]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="287" y="151" width="124" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[-]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="158" y="130" width="124" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(" ",new BigDecimal($F{SALDO_AWAL_LALU}.doubleValue() - $F{SALDO_AKHIR_LALU}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="414" y="89" width="124" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(" ",$F{SALDO_AKHIR_LALU})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="414" y="151" width="124" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(" ",$F{MSTH_JUMLAH})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="414" y="171" width="124" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(" ",new BigDecimal($F{SALDO_AKHIR_LALU}.doubleValue() + $F{MSTH_JUMLAH}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="287" y="171" width="124" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(" ",new BigDecimal($F{SALDO_AKHIR_LALU}.doubleValue() + $F{MSTH_JUMLAH}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="287" y="130" width="124" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(" ",new BigDecimal($F{SALDO_AKHIR_LALU}.doubleValue() + $F{MSTH_JUMLAH}.doubleValue()))]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

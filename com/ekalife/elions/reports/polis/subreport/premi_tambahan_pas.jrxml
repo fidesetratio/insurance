@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="premi_tambahan_pas" pageWidth="300" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="300" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="6"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="6"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="user" class="java.lang.String">
+		<defaultValueExpression><![CDATA["ucup"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["22200600328"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<queryString>
+		<![CDATA[select c.lsbs_id, c.lsdbs_number, c.lsdbs_name, c.mste_age,g.lku_symbol,
+	   (case 
+	   		 when (c.lsbs_id in(800,801,802,803,804,805,806,807,808,809,810,811,812,818,819)) 
+			 then null
+			 else (case
+					   when c.lsbs_id = 813 then (c.mspr_tsi)
+					   else (case when c.lsbs_id = 815 and c.lsdbs_number = 6 then ((h.lstaw_value/1000) * c.mspr_premium) 
+							   	else(case when c.lscb_id = 0 then ((f.lstaw_value/1000)* c.mspr_premium)
+										  else (case when c.lscb_id = 1 then ((f.lstaw_value/1000)*(c.mspr_premium/0.27))
+													 else (case when c.lscb_id = 2 then ((f.lstaw_value/1000)*(c.mspr_premium/0.525))
+															   	else (case when c.lscb_id = 3 then ((f.lstaw_value/1000)* c.mspr_premium)
+																		   else (case when c.lscb_id = 4 then ((f.lstaw_value/1000)*(c.mspr_premium/5))
+																					  else (case when c.lscb_id = 5 then ((f.lstaw_value/1000)*(c.mspr_premium/6))
+																								 else ((f.lstaw_value/1000)*(c.mspr_premium*12))
+																							end)
+																				end)
+																	  end)
+														  end) 
+												end)
+									end)
+							end)
+				  end)
+	   end) rate_rider
+from (SELECT a.lsbs_id, a.lsdbs_number, b.lsdbs_name,a.reg_spaj,a.lku_id,a.mspr_tsi, f.lscb_id, f.mspo_age, g.mste_age,d.mspr_premium
+	    FROM eka.mst_product_insured a, eka.lst_det_bisnis b, (select * from eka.mst_product_insured where lsbs_id < 300)  d, 
+		eka.mst_policy f, eka.mst_insured g
+	   WHERE a.lsbs_id = b.lsbs_id
+	     AND a.reg_spaj = d.reg_spaj
+		 AND a.lsdbs_number = b.lsdbs_number
+	     AND a.lsbs_id > 300
+		 AND a.reg_spaj = $P{spaj}
+		 and a.reg_spaj = f.reg_spaj and f.reg_spaj = g.reg_spaj
+		 ) c,
+	 (select * from eka.lst_table_awal where lstaw_type = 1 and lstaw_tahun_ke = 1) e,
+	 (select * from eka.lst_table_awal where lstaw_type = 1 and lsbs_id in (814,815,816,817) and lstaw_tahun_ke = 1) f,
+	 eka.lst_kurs g	,
+	(select * from eka.lst_table_awal where lsbs_id=815 and lstaw_lama_bayar =6 and lstaw_type = 2 and lstaw_tahun_ke = 1 and lstaw_lama_tanggung = 1)h 
+where c.lsbs_id = e.lsbs_id(+)
+AND	  c.lku_id = e.lku_id(+)
+AND	  c.mste_age = e.lstaw_entry_age(+)
+AND	  (c.lsbs_id >=800 and (c.lsbs_id <=899))
+and   c.lsbs_id = f.lsbs_id(+)
+AND	  c.lku_id = f.lku_id(+)
+AND	  c.mste_age = f.lstaw_entry_age(+)
+AND	  c.lku_id = g.lku_id(+)
+AND	  c.lsbs_id = h.lsbs_id(+)
+AND	  c.lku_id = h.lku_id(+)
+AND	  c.mste_age = h.lstaw_entry_age(+)
+AND	  c.lsdbs_number = h.lstaw_lama_bayar(+)]]>
+	</queryString>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="MSTE_AGE" class="java.math.BigDecimal"/>
+	<field name="RATE_RIDER" class="java.math.BigDecimal"/>
+	<detail>
+		<band height="29">
+			<textField hyperlinkType="None">
+				<reportElement x="60" y="15" width="240" height="13"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["- Premi : Gratis"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="1" width="300" height="13"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Asuransi Tambahan: ASURANSI DEMAM BERDARAH" ]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

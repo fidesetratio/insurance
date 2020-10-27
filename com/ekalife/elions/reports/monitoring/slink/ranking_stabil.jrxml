@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ranking_stabil" pageWidth="700" pageHeight="842" columnWidth="680" leftMargin="10" rightMargin="10" topMargin="10" bottomMargin="10" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<parameter name="tgl_a" class="java.lang.String">
+		<defaultValueExpression><![CDATA["01/02/2013"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tgl_b" class="java.lang.String">
+		<defaultValueExpression><![CDATA["25/04/2013"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lcb_no" class="java.lang.String">
+		<defaultValueExpression><![CDATA["S68"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="statement1" class="java.lang.String">
+		<defaultValueExpression><![CDATA["AND exists (SELECT 1 FROM eka.mst_slink WHERE msl_new in (1,2) AND reg_spaj = a.reg_spaj AND msl_tahun_ke = a.msbi_tahun_ke AND msl_premi_ke = a.msbi_premi_ke)"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lsbsId" class="java.lang.String">
+		<defaultValueExpression><![CDATA["164"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lsdbsNumber" class="java.lang.String">
+		<defaultValueExpression><![CDATA["11"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT agen, sum(total_premi)total_premi, sum(total_polis)total_polis FROM(
+SELECT  distinct agen, sum(premi) total_premi,count(*) total_polis  ,target FROM (
+    SELECT 
+        a.reg_spaj,
+        eka.utils.agen_bancass(d.lrb_id) agen,
+        sum(a.mspro_nilai_kurs * g.msl_premi) premi, f.jumlah_target target
+    FROM 
+        eka.mst_production a, eka.mst_det_production b, eka.mst_policy c, eka.mst_reff_bii d, eka.lst_target_cabang f, eka.mst_slink g
+    WHERE 
+        a.lstb_id = 1 
+        AND a.mspro_prod_date between  to_date($P{tgl_a},'dd/MM/yyyy') and to_date($P{tgl_b},'dd/MM/yyyy')
+        AND a.lstb_id = b.lstb_id
+        AND a.reg_spaj = b.reg_spaj
+        AND a.mspro_prod_ke = b.mspro_prod_ke
+        AND a.mspro_prod_date = b.mspro_prod_date
+        AND A.MSBI_PREMI_KE=B.MSBI_PREMI_KE
+        AND A.MSBI_TAHUN_KE=B.MSBI_TAHUN_KE
+ 	    AND b.lsbs_id =$P{lsbsId}
+        AND b.lsdbs_number =$P{lsdbsNumber}
+        AND a.reg_spaj = c.reg_spaj
+        AND c.lspd_id <> 95
+        AND c.reg_spaj = d.reg_spaj
+        AND f.lcb_no = d.lcb_penutup
+        AND f.lsbs_id =  b.lsbs_id 
+        AND g.reg_spaj = a.reg_spaj 
+        AND g.msl_tahun_ke = a.msbi_tahun_ke 
+        AND g.msl_premi_ke = a.msbi_premi_ke
+        AND g.msl_new in (1,2)
+        AND f.lsdbs_number=b.lsdbs_number
+        AND d.no_urut = (select max(no_urut) from eka.mst_reff_bii where level_id = 4 and reg_spaj = d.reg_spaj)
+ 		$P!{statement1}
+    GROUP BY a.reg_spaj, d.lrb_id,f.jumlah_target
+) GROUP BY agen ,target 
+ORDER BY total_premi desc )
+WHERE ROWNUM < 11
+GROUP BY agen 
+order by total_premi desc]]>
+	</queryString>
+	<field name="AGEN" class="java.lang.String"/>
+	<field name="TOTAL_POLIS" class="java.math.BigDecimal"/>
+	<field name="TOTAL_PREMI" class="java.math.BigDecimal"/>
+	<variable name="total_policy" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTAL_POLIS}]]></variableExpression>
+	</variable>
+	<variable name="total_premi" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTAL_PREMI}]]></variableExpression>
+	</variable>
+	<variable name="total_komisi" class="java.math.BigDecimal" calculation="Sum"/>
+	<title>
+		<band height="40">
+			<staticText>
+				<reportElement mode="Opaque" x="20" y="10" width="87" height="30" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Seller]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="247" y="10" width="150" height="15" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="247" y="25" width="150" height="15" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Actual]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="107" y="10" width="140" height="30" forecolor="#000000" backcolor="#EFEFEF"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Seller]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="20" y="0" width="300" height="10" forecolor="#000000" backcolor="#80FF80"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Top 10 Seller]]></text>
+			</staticText>
+		</band>
+	</title>
+	<detail>
+		<band height="15">
+			<textField hyperlinkType="None">
+				<reportElement x="20" y="0" width="87" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + ($V{REPORT_COUNT}.intValue()) + "."]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="107" y="0" width="140" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{AGEN}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.###" hyperlinkType="None">
+				<reportElement x="247" y="0" width="150" height="15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{TOTAL_PREMI}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

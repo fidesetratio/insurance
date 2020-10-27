@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="rekonsiliasi" pageWidth="1320" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="1280" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.VGuides.Title" value="25,25,25"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<parameter name="tanggalAwal" class="java.lang.String">
+		<defaultValueExpression><![CDATA["03/09/2009"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.lang.String">
+		<defaultValueExpression><![CDATA["27/09/2009"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="user" class="java.lang.String"/>
+	<parameter name="harini" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT   d.mar_acc_no, a.reg_spaj, a.mspo_policy_no, eka.utils.pemegang(a.reg_spaj) pp, e.msl_bdate, f.mcp_beg_date open_date_ssp, 
+         b.mste_tgl_aksep, f.mcp_tgl_input tgl_proses_ssp, e.msl_premi premi_spl, 0.25*e.msl_premi setoran_ssp, 0.25*0.006*e.msl_premi premi_ssp,
+         g.msbi_paid_date tgl_bayar_spl, f.mcb_tgl_bayar tgl_bayar_ssp,sysdate
+  FROM   eka.mst_policy a, eka.mst_insured b, eka.mst_product_insured c, eka.mst_account_recur d, eka.mst_slink e, 
+        (SELECT   a.no_rek, a.mcp_beg_date, a.mcp_tgl_input, c.mcb_tgl_bayar
+          FROM   eka.mst_cplan@eb a,
+                 eka.mst_cplan_bill@eb b,
+                 eka.mst_cplan_bayar@eb c
+         WHERE       a.jenis_cp = 19
+                 AND a.no_id = b.no_id
+                 AND b.payment_ke = 1
+                 AND b.no_kwitansi = c.no_kwitansi) f,
+        eka.mst_billing g                 
+ WHERE       a.reg_spaj = b.reg_spaj
+	     AND trunc(  b.mste_beg_date ) >=to_date($P{tanggalAwal},'dd/mm/yyyy')
+		 AND trunc(  b.mste_beg_date ) <=to_date($P{tanggalAkhir},'dd/mm/yyyy')
+         AND b.mste_insured_no = c.mste_insured_no
+         AND b.reg_spaj = c.reg_spaj
+         AND c.lsbs_id = 186
+         AND c.lsdbs_number  = 3 
+         AND a.reg_spaj = d.reg_spaj
+         AND a.reg_spaj = e.reg_spaj
+         AND e.msl_kode = 5
+         AND d.mar_acc_no = f.no_rek(+)
+         AND e.reg_spaj = g.reg_spaj(+)
+         AND e.msl_tahun_ke = g.msbi_tahun_ke(+)
+         AND e.msl_premi_ke = g.msbi_premi_ke(+)]]>
+	</queryString>
+	<field name="MAR_ACC_NO" class="java.lang.String"/>
+	<field name="MSL_BDATE" class="java.util.Date"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSTE_TGL_AKSEP" class="java.util.Date"/>
+	<field name="OPEN_DATE_SSP" class="java.util.Date"/>
+	<field name="PP" class="java.lang.String"/>
+	<field name="PREMI_SPL" class="java.math.BigDecimal"/>
+	<field name="PREMI_SSP" class="java.math.BigDecimal"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="SETORAN_SSP" class="java.math.BigDecimal"/>
+	<field name="SYSDATE" class="java.util.Date"/>
+	<field name="TGL_BAYAR_SPL" class="java.util.Date"/>
+	<field name="TGL_BAYAR_SSP" class="java.util.Date"/>
+	<field name="TGL_PROSES_SSP" class="java.util.Date"/>
+	<title>
+		<band height="46">
+			<staticText>
+				<reportElement x="1" y="1" width="1113" height="25"/>
+				<textElement>
+					<font size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Report Rekonsiliasi  SSP vs SPL  dari SSP Pro ( bundled product SSP/Sinarmas Saving Plan  dengan SPL/Simas Progressive Link )]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1" y="26" width="60" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Periode :]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="60" y="26" width="80" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggalAwal}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="140" y="26" width="15" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[s/d]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="155" y="26" width="80" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggalAkhir}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="26">
+			<staticText>
+				<reportElement x="1" y="1" width="105" height="25"/>
+				<box border="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No.Tab. SSP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="105" y="1" width="100" height="25"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No.Polis SPL]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="205" y="1" width="120" height="25"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama PP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="325" y="1" width="100" height="25"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Efektif polis SPL]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="425" y="1" width="100" height="25"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Open Date  SSP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="525" y="1" width="100" height="25"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tgl.Aksep SPL]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="625" y="1" width="100" height="25"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tgl.prose SSP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="725" y="1" width="120" height="25"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi SPL (80% dr total setoran blnan)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="845" y="1" width="120" height="25"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Setoran bulan SSP ( 20% dr total setoran blnan)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="965" y="1" width="100" height="25"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi SSP ( 0.6 % setoran bulan)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1065" y="1" width="100" height="25"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tgl.pembayaran SPL]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1165" y="1" width="100" height="25"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tgl.pembayaran SSP]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="16">
+			<textField>
+				<reportElement x="1" y="0" width="105" height="16"/>
+				<box topBorder="None" leftBorder="1Point" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{SETORAN_SSP}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="105" y="0" width="100" height="16"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_POLICY_NO}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="205" y="0" width="120" height="16"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="325" y="0" width="100" height="16"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{TGL_BAYAR_SPL}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="425" y="0" width="100" height="16"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{OPEN_DATE_SSP}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="525" y="0" width="100" height="16"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSTE_TGL_AKSEP}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="625" y="0" width="100" height="16"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{TGL_PROSES_SSP}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="725" y="0" width="120" height="16"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{PREMI_SPL}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="845" y="0" width="120" height="16"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{PREMI_SSP}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="965" y="0" width="100" height="16"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{SETORAN_SSP}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1065" y="0" width="100" height="16"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{TGL_BAYAR_SPL}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1165" y="0" width="100" height="16"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{TGL_BAYAR_SSP}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="27">
+			<staticText>
+				<reportElement x="0" y="1" width="47" height="13"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Tgl Cetak]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="14" width="47" height="13"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[User]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="52" y="1" width="100" height="13"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{harini}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="52" y="14" width="100" height="13"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{user}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="47" y="1" width="5" height="13"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="47" y="14" width="5" height="13"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+		</band>
+	</pageFooter>
+</jasperReport>

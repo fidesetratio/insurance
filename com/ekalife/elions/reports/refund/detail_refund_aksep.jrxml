@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="detail_refund_aksep" pageWidth="992" pageHeight="595" orientation="Landscape" columnWidth="952" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<parameter name="tgl_report" class="java.lang.String">
+		<defaultValueExpression><![CDATA["10/04/2014"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<queryString>
+		<![CDATA[        select spaj, rtrim (xmlagg (xmlelement (e, pre_masuk || ',')).extract ('//text()'), ',') as pre_masuk, jm_sa, nvl(rtrim (xmlagg (xmlelement (e, jm || ',')).extract ('//text()'), ','), '-') as jm,  pre_keluar, jm_keluar,
+                nama_pp, nama_rek, nama_bank, cabang_bank, no_rek, premi_refund, cancel_when
+        from (
+            select distinct a.reg_spaj as spaj, nvl(d.mspa_no_pre, e.msdp_no_pre) as pre_masuk,
+                nvl((select rtrim (xmlagg (xmlelement (e, y.no_jm || ',')).extract ('//text()'), ',') from eka.mst_ptc_tm x, eka.mst_ptc_jm y where x.no_jm = y.no_jm
+                        and x.mtm_position != 0 and y.key_jurnal = a.reg_spaj and y.no_jurnal = 2 and y.mjm_cd = 'C' and y.keterangan like 'TITIPAN PREMI NO%'), '-') as jm_sa,
+                nvl(d.mspa_no_jm, '-') as jm, nvl(b.no_pre, (select y.no_pre from eka.mst_tbank x, eka.mst_dbank y where x.no_pre = y.no_pre
+                                                                                    and x.position != 5 and y.key_jurnal = a.reg_spaj and y.keterangan like 'REFUND PREMI%')) as pre_keluar,
+                nvl(b.no_jm, nvl((select y.no_jm from eka.mst_ptc_tm x, eka.mst_ptc_jm y where x.no_jm = y.no_jm and x.mtm_position != 0
+                                            and y.key_jurnal = a.reg_spaj and y.mjm_cd = 'C' and y.no_jurnal = 1 and y.keterangan like 'JB TP%'), '-')) as jm_keluar,
+                c.mcl_first as nama_pp, b.kli_nama as nama_rek, b.kli_nama_bank as nama_bank, b.kli_cabang_bank as cabang_bank,
+                b.kli_norek as no_rek, b.premi_refund, b.cancel_when
+            from eka.mst_policy a, eka.mst_refund b, eka.mst_client_new c, eka.mst_payment d, eka.mst_deposit_premium e
+            where a.reg_spaj = b.reg_spaj
+                and a.reg_spaj = d.reg_spaj (+)
+                and a.reg_spaj = e.reg_spaj (+)
+                and a.mspo_policy_holder = c.mcl_id
+                and a.lku_id = '01'
+                and b.tindakan_cd = 2
+                and b.premi_refund != 0
+                and b.cancel_when BETWEEN to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (00:00:00)', 'dd/mm/yyyy (hh24:mi:ss)') and to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (23:59:59)', 'dd/mm/yyyy (hh24:mi:ss)')
+        )
+        group by spaj, jm_sa, pre_keluar, jm_keluar, nama_pp, nama_rek, nama_bank, cabang_bank, no_rek, premi_refund, cancel_when
+        order by nama_bank, nama_pp, cancel_when]]>
+	</queryString>
+	<field name="CABANG_BANK" class="java.lang.String"/>
+	<field name="CANCEL_WHEN" class="java.sql.Timestamp"/>
+	<field name="JM" class="java.lang.String"/>
+	<field name="JM_KELUAR" class="java.lang.String"/>
+	<field name="JM_SA" class="java.lang.String"/>
+	<field name="NAMA_BANK" class="java.lang.String"/>
+	<field name="NAMA_PP" class="java.lang.String"/>
+	<field name="NAMA_REK" class="java.lang.String"/>
+	<field name="NO_REK" class="java.lang.String"/>
+	<field name="PREMI_REFUND" class="java.math.BigDecimal"/>
+	<field name="PRE_KELUAR" class="java.lang.String"/>
+	<field name="PRE_MASUK" class="java.lang.String"/>
+	<field name="SPAJ" class="java.lang.String"/>
+	<variable name="TOT_PREMI_REFUND" class="java.math.BigDecimal" resetType="Group" resetGroup="bank" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_REFUND}]]></variableExpression>
+	</variable>
+	<variable name="TOT_PREMI_ALL" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_REFUND}]]></variableExpression>
+	</variable>
+	<group name="bank">
+		<groupExpression><![CDATA[$F{NAMA_BANK}]]></groupExpression>
+		<groupHeader>
+			<band height="24">
+				<staticText>
+					<reportElement mode="Opaque" x="0" y="0" width="24" height="24" backcolor="#C0C0C0"/>
+					<box padding="1">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[No]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="24" y="0" width="50" height="24" backcolor="#C0C0C0"/>
+					<box padding="1">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[No. Pre (K)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="274" y="0" width="60" height="24" backcolor="#C0C0C0"/>
+					<box padding="1">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[No. SPAJ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="334" y="0" width="130" height="24" backcolor="#C0C0C0"/>
+					<box padding="1">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Nama Pemegang Polis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="464" y="0" width="130" height="24" backcolor="#C0C0C0"/>
+					<box padding="1">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Atas Nama Rekening]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="594" y="0" width="85" height="24" backcolor="#C0C0C0"/>
+					<box padding="1">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Nama Bank]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="679" y="0" width="85" height="24" backcolor="#C0C0C0"/>
+					<box padding="1">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Cabang Bank]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="764" y="0" width="95" height="24" backcolor="#C0C0C0"/>
+					<box padding="1">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[No. Rekening]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="859" y="0" width="90" height="24" backcolor="#C0C0C0"/>
+					<box padding="1">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Jumlah Premi]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="124" y="0" width="50" height="24" backcolor="#C0C0C0"/>
+					<box padding="1">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[No. Pre (M)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="174" y="0" width="50" height="24" backcolor="#C0C0C0"/>
+					<box padding="1">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[No. JM SA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="74" y="0" width="50" height="24" backcolor="#C0C0C0"/>
+					<box padding="1">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[No. JM (K)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="224" y="0" width="50" height="24" backcolor="#C0C0C0"/>
+					<box padding="1">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[No. JM (M)]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="48">
+				<textField hyperlinkType="None">
+					<reportElement mode="Opaque" x="0" y="0" width="859" height="24" backcolor="#C0C0C0"/>
+					<box padding="1">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Total Premi Dikembalikan Pada " + $F{NAMA_BANK}]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="859" y="0" width="90" height="24"/>
+					<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null,$V{TOT_PREMI_REFUND})]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<title>
+		<band height="120">
+			<image hyperlinkType="None">
+				<reportElement x="0" y="0" width="174" height="60"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.ekalife.large")]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="0" y="50" width="334" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[RINCIAN PENGEMBALIAN PREMI]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="70" width="334" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None" markup="none">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["PERIODE AKSEP TANGGAL " + $P{tgl_report}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="90" width="334" height="30"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Dari       : Dept. New Bussiness\nKepada : Dept. Finance"]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="24">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="24" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Number"><![CDATA[$V{bank_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="24" y="0" width="50" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PRE_KELUAR}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="274" y="0" width="60" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="334" y="0" width="130" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PP}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="464" y="0" width="130" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_REK}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="594" y="0" width="85" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_BANK}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="679" y="0" width="85" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CABANG_BANK}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="764" y="0" width="95" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NO_REK}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="859" y="0" width="90" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null,$F{PREMI_REFUND})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="124" y="0" width="50" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PRE_MASUK}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="74" y="0" width="50" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{JM_KELUAR}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="174" y="0" width="50" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{JM_SA}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="224" y="0" width="50" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{JM}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="48">
+			<textField hyperlinkType="None">
+				<reportElement mode="Opaque" x="0" y="0" width="859" height="24" backcolor="#C0C0C0"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Total Keseluruhan Premi Yang Dikembalikan"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="859" y="0" width="90" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null,$V{TOT_PREMI_ALL})]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

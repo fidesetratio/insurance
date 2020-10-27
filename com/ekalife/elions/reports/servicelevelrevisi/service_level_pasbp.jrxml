@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="service_level_pasbp" pageWidth="940" pageHeight="803" orientation="Landscape" columnWidth="920" leftMargin="10" rightMargin="10" topMargin="20" bottomMargin="20" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="3"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="3"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<parameter name="props" class="java.lang.String"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("01/02/2013")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="user_id" class="java.lang.String"/>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("10/02/2013")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select reg_spaj,mspo_policy_no,mcl_first,msp_pas_create_date,mste_tgl_aksep,msps_date,
+DECODE(TO_CHAR(LENGTH(mnt)),'1',jam||':0'||mnt,'2',jam||':'||mnt) Lama_Proses
+from(
+select distinct a.reg_spaj as reg_spaj, a.mspo_policy_no, b.mcl_first, c.msp_pas_create_date, d.mste_tgl_aksep,f.msps_date,
+eka.hourworkdays(c.msp_pas_create_date, f.msps_date) as jam,    
+ round(
+        (
+            ( (to_number(f.msps_date - c.msp_pas_create_date) * 1440)/60 - 
+            trunc(((to_number(f.msps_date - c.msp_pas_create_date) * 1440)/60) - eka.hourworkdays(c.msp_pas_create_date, f.msps_date)) 
+            ) -  eka.hourworkdays(c.msp_pas_create_date, f.msps_date)
+        )*60
+    ) 
+    as mnt
+from eka.mst_policy a,
+     eka.mst_client_new b,
+     eka.mst_pas_sms c,
+     eka.mst_insured d,
+     eka.mst_production e,
+     (select MSPS_DATE, reg_spaj
+        from (select min(msps_date) as MSPS_DATE,reg_spaj  
+        from eka.mst_position_spaj 
+        where MSPS_DESC like 'Kirim Softcopy Otomatis%'
+        group by reg_spaj
+        ))f
+where a.reg_spaj = c.reg_spaj
+and a.reg_spaj = d.reg_spaj
+and a.reg_spaj = e.reg_spaj
+and a.mspo_policy_holder = b.mcl_id and
+a.reg_spaj = F.REG_SPAJ(+)
+and (e.mspro_prod_date BETWEEN $P{tanggalAwal} AND $P{tanggalAkhir})
+)
+ORDER BY reg_spaj ASC]]>
+	</queryString>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="MSP_PAS_CREATE_DATE" class="java.sql.Timestamp"/>
+	<field name="MSTE_TGL_AKSEP" class="java.sql.Timestamp"/>
+	<field name="MSPS_DATE" class="java.sql.Timestamp"/>
+	<field name="LAMA_PROSES" class="java.lang.String"/>
+	<title>
+		<band height="25">
+			<staticText>
+				<reportElement x="0" y="4" width="1618" height="17"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="14" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[SERVICE LEVEL POLICY ISSUE - PAS BUSINESS PARTNER]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="44">
+			<staticText>
+				<reportElement x="2" y="0" width="138" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PERIODE]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="148" y="0" width="493" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAwal}) + " s/d " + $P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAkhir}) + " (Tanggal Produksi) "]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="2" y="12" width="138" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SERVICE LEVEL]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="148" y="12" width="493" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[6 Jam]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="148" y="24" width="493" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ Jumlah jam kerja dari upload sampai kirim softcopy polis]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="39" width="1620" height="2"/>
+			</line>
+			<staticText>
+				<reportElement x="141" y="0" width="4" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="141" y="12" width="4" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2" y="24" width="138" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[LAMA PROSES REINSTATE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="141" y="24" width="4" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="40">
+			<staticText>
+				<reportElement x="0" y="0" width="24" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="24" y="0" width="98" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO. SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="564" y="0" width="139" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TGL AKSEP
+(B)]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="39" width="1620" height="1"/>
+			</line>
+			<staticText>
+				<reportElement x="233" y="0" width="192" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NAMA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="425" y="0" width="139" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TGL UPLOAD DATA
+(A)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="703" y="0" width="139" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TGL KIRIM SOFTCOPY
+(C)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="842" y="0" width="59" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[LAMA PROSES
+(C) - (A)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="122" y="0" width="111" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO.POLIS]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="18">
+			<textField hyperlinkType="None">
+				<reportElement x="24" y="1" width="98" height="17"/>
+				<textElement textAlignment="Center" rotation="None"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatSPAJ($F{REG_SPAJ})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="122" y="1" width="111" height="17"/>
+				<textElement textAlignment="Left" rotation="None" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatPolis($F{MSPO_POLICY_NO})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="233" y="1" width="192" height="17"/>
+				<textElement textAlignment="Left" rotation="None" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MCL_FIRST}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd MMMM yyyy (HH:mm)" hyperlinkType="None">
+				<reportElement x="425" y="1" width="139" height="17"/>
+				<textElement markup="none"/>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSP_PAS_CREATE_DATE}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd MMMM yyyy (HH:mm)" hyperlinkType="None">
+				<reportElement x="564" y="1" width="139" height="17"/>
+				<textElement markup="none"/>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_AKSEP}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd MMMM yyyy (HH:mm)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="703" y="1" width="139" height="17"/>
+				<textElement/>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSPS_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="842" y="1" width="59" height="17"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LAMA_PROSES}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="1" width="24" height="17"/>
+				<textElement textAlignment="Center" rotation="None"/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<lastPageFooter>
+		<band height="16">
+			<textField hyperlinkType="None">
+				<reportElement x="6" y="2" width="749" height="14"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Printed date : "+$P{REPORT_SCRIPTLET}.formatDateWithTime(new Date()) +"  by User :  "+$P{user_id}]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="46">
+			<line>
+				<reportElement x="0" y="5" width="1620" height="1"/>
+			</line>
+			<subreport>
+				<reportElement x="5" y="10" width="845" height="20"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_level_pasbp")+".jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</summary>
+</jasperReport>

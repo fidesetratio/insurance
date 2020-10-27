@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="covering_letter_all_bancassurance" pageWidth="1146" pageHeight="847" orientation="Landscape" columnWidth="1116" leftMargin="15" rightMargin="15" topMargin="15" bottomMargin="15" isFloatColumnFooter="true" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="EkaTest"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("19/09/2008")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("20/09/2008")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT   p.reg_spaj, p.mspo_policy_no_format, p.mspo_date_print,
+         l.lus_login_name, pp.mcl_first pemegang, tt.mcl_first tertanggung,
+         d.lsdbs_name, lar.lar_nama, lar.lar_admin, lar.lar_alamat
+    FROM eka.mst_policy p,
+         eka.mst_insured i,
+         eka.mst_product_insured pi,
+         eka.lst_user l,
+         eka.mst_client_new pp,
+         eka.mst_client_new tt,
+         eka.lst_det_bisnis d,
+		 eka.lst_region r,
+		 eka.lst_addr_region lar
+   WHERE p.lstb_id = 1
+     AND p.lca_id = '09'
+     AND p.mspo_date_print BETWEEN TO_DATE (TO_CHAR($P{tanggalAwal}, 'dd/mm/yyyy') || ' 00:00', 'dd/mm/yyyy hh24:mi')
+                               AND TO_DATE (TO_CHAR($P{tanggalAkhir}, 'dd/mm/yyyy') || ' 23:59', 'dd/mm/yyyy hh24:mi')
+     AND p.reg_spaj = i.reg_spaj
+     AND i.mste_insured_no = pi.mste_insured_no
+     AND i.reg_spaj = pi.reg_spaj
+     AND pi.lsbs_id < 300
+     AND p.lus_id = l.lus_id
+     AND p.mspo_policy_holder = pp.mcl_id
+     AND i.mste_insured = tt.mcl_id
+     AND pi.lsbs_id = d.lsbs_id
+     AND pi.lsdbs_number = d.lsdbs_number
+	 and p.lca_id = r.lca_id
+	 and p.lwk_id = r.lwk_id
+	 and p.lsrg_id = r.lsrg_id
+	 and r.lar_id = lar.lar_id
+ORDER BY d.lsdbs_name, p.mspo_date_print, lar.lar_nama, lar.lar_admin]]>
+	</queryString>
+	<field name="MSPO_POLICY_NO_FORMAT" class="java.lang.String"/>
+	<field name="MSPO_DATE_PRINT" class="java.sql.Timestamp"/>
+	<field name="LUS_LOGIN_NAME" class="java.lang.String"/>
+	<field name="PEMEGANG" class="java.lang.String"/>
+	<field name="TERTANGGUNG" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LAR_NAMA" class="java.lang.String"/>
+	<field name="LAR_ADMIN" class="java.lang.String"/>
+	<field name="LAR_ALAMAT" class="java.lang.String"/>
+	<variable name="urut" class="java.math.BigDecimal" resetType="Group" resetGroup="produk" calculation="Count">
+		<variableExpression><![CDATA[$F{MSPO_POLICY_NO_FORMAT}]]></variableExpression>
+	</variable>
+	<group name="produk" isStartNewPage="true" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{LSDBS_NAME}]]></groupExpression>
+		<groupHeader>
+			<band height="48">
+				<textField hyperlinkType="None">
+					<reportElement positionType="Float" mode="Transparent" x="0" y="0" width="650" height="15"/>
+					<textElement>
+						<font fontName="Bookman Old Style" size="12" isBold="true" isUnderline="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{LAR_ADMIN} + " (" + $F{LAR_NAMA} + ")"]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement positionType="Float" mode="Transparent" x="0" y="15" width="650" height="15"/>
+					<textElement>
+						<font fontName="Bookman Old Style" size="12" isBold="false" isItalic="true" isUnderline="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement positionType="Float" x="0" y="31" width="40" height="15"/>
+					<textElement textAlignment="Center">
+						<font fontName="Book Antiqua" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[No.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement positionType="Float" x="50" y="31" width="130" height="15"/>
+					<textElement textAlignment="Left">
+						<font fontName="Book Antiqua" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[No. Polis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement positionType="Float" x="185" y="31" width="115" height="15"/>
+					<textElement textAlignment="Center">
+						<font fontName="Book Antiqua" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Tgl Print]]></text>
+				</staticText>
+				<staticText>
+					<reportElement positionType="Float" x="305" y="31" width="120" height="15"/>
+					<textElement textAlignment="Center">
+						<font fontName="Book Antiqua" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Admin Input]]></text>
+				</staticText>
+				<staticText>
+					<reportElement positionType="Float" x="430" y="31" width="310" height="15"/>
+					<textElement textAlignment="Center">
+						<font fontName="Book Antiqua" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Nama Pemegang Polis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement positionType="Float" x="745" y="31" width="310" height="15"/>
+					<textElement textAlignment="Center">
+						<font fontName="Book Antiqua" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Nama Tertanggung]]></text>
+				</staticText>
+				<line>
+					<reportElement positionType="Float" x="0" y="30" width="1055" height="1"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement positionType="Float" x="0" y="47" width="1055" height="1"/>
+					<graphicElement/>
+				</line>
+			</band>
+		</groupHeader>
+	</group>
+	<pageHeader>
+		<band height="55">
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" mode="Transparent" x="0" y="20" width="650" height="15" isPrintWhenDetailOverflows="true"/>
+				<textElement>
+					<font fontName="Bookman Old Style" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Printing Date: " + $P{REPORT_SCRIPTLET}.formatDateWithTime(new Date()) + " by Underwriting Department."]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" mode="Transparent" x="0" y="0" width="650" height="20"/>
+				<textElement>
+					<font fontName="Bookman Old Style" size="16"/>
+				</textElement>
+				<text><![CDATA[Covering Letter]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" mode="Transparent" x="0" y="35" width="650" height="15" isPrintWhenDetailOverflows="true"/>
+				<textElement>
+					<font fontName="Bookman Old Style" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Periode Print Polis Tanggal: " + $P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAwal}) + " s/d " + $P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAwal})]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="15">
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="50" y="0" width="130" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_POLICY_NO_FORMAT}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="185" y="0" width="115" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateWithTime($F{MSPO_DATE_PRINT})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="305" y="0" width="120" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LAR_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="430" y="0" width="310" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PEMEGANG}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="745" y="0" width="310" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TERTANGGUNG}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="10" y="0" width="30" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{urut} + "."]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="50">
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="800" y="20" width="126" height="15"/>
+				<textElement textAlignment="Right">
+					<font fontName="Book Antiqua" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Diterima Oleh :"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="800" y="5" width="126" height="15"/>
+				<textElement textAlignment="Right">
+					<font fontName="Book Antiqua" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tanggal Kirim Polis :"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="800" y="35" width="126" height="15"/>
+				<textElement textAlignment="Right">
+					<font fontName="Book Antiqua" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Paraf :"]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement positionType="Float" x="0" y="4" width="1055" height="1"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band height="15">
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="800" y="0" width="255" height="15"/>
+				<textElement textAlignment="Right">
+					<font fontName="Book Antiqua" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Jakarta, " + $P{REPORT_SCRIPTLET}.formatDateString(new Date())]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="0" width="140" height="15"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" hyperlinkType="None">
+				<reportElement positionType="Float" x="145" y="0" width="25" height="15" isPrintWhenDetailOverflows="true"/>
+				<textElement>
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

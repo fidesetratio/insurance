@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="reportFollowupBillingPL" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<parameter name="cabang" class="java.lang.String"/>
+	<parameter name="bdate" class="java.lang.String"/>
+	<parameter name="edate" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select
+    all_fl.region, 
+    count(all_fl.reg_spaj)jml_polis, sum(all_fl.premi)jml_premi,
+    count(done_fl.reg_spaj)jml_polis_fol, sum(done_fl.premi)jml_premi_fol,
+    count(not_fl.reg_spaj)jml_polis_belum, sum(nvl(not_fl.premi,0))jml_premi_belum
+from
+    (select distinct  
+            lr.lsrg_id, lr.lsrg_nama region, mb.msbi_beg_date, mb.msbi_end_date, mb.msbi_due_date, mp.mspo_policy_no_format, mp.reg_spaj, mb.msbi_tahun_ke,
+            mb.msbi_premi_ke, 'JATUH TEMPO' ket, mb.msbi_flag_topup, mp.lca_id,
+            (select sum(msdb_premium) from eka.mst_det_billing where reg_spaj = mb.reg_spaj and msbi_tahun_ke = mb.msbi_tahun_ke and msbi_premi_ke = mb.msbi_premi_ke)premi
+        from               
+            eka.mst_billing mb, eka.mst_det_billing mdb, eka.mst_policy mp, eka.mst_billing_hcr mbh, eka.mst_insured mi,
+            eka.lst_region lr
+        where              
+            mb.reg_spaj = mbh.reg_spaj(+)
+            and mb.msbi_tahun_ke = mbh.msbih_tahun_ke(+)
+            and mb.msbi_premi_ke = mbh.msbih_premi_ke(+)
+            and mdb.reg_spaj = mb.reg_spaj
+            and mdb.msbi_tahun_ke = mb.msbi_tahun_ke
+            and mdb.msbi_premi_ke = mb.msbi_premi_ke
+            and mp.reg_spaj = mb.reg_spaj
+            and mp.reg_spaj = mi.reg_spaj
+            and mp.lscb_id not in (0, 6)
+            and mb.lspd_id in (11, 12)
+            and mb.msbi_premi_ke > 1
+            and mb.lca_id = lr.lca_id
+            and mb.lwk_id = lr.lwk_id
+            and mb.lsrg_id = lr.lsrg_id
+            and mb.msbi_flag_topup is null
+            and mb.msbi_beg_date between to_date('01/06/2013', 'dd/mm/yyyy') and to_date('30/06/2013', 'dd/mm/yyyy'))all_fl,
+    (select distinct  
+            lr.lsrg_id, lr.lsrg_nama region, mb.msbi_beg_date, mb.msbi_end_date, mb.msbi_due_date, mp.mspo_policy_no_format, mp.reg_spaj, mb.msbi_tahun_ke,
+            mb.msbi_premi_ke, 'JATUH TEMPO' ket, mb.msbi_flag_topup, mp.lca_id,
+            (select sum(msdb_premium) from eka.mst_det_billing where reg_spaj = mb.reg_spaj and msbi_tahun_ke = mb.msbi_tahun_ke and msbi_premi_ke = mb.msbi_premi_ke)premi
+        from               
+            eka.mst_billing mb, eka.mst_det_billing mdb, eka.mst_policy mp, eka.mst_billing_hcr mbh, eka.mst_insured mi,
+            eka.lst_region lr
+        where              
+            mb.reg_spaj = mbh.reg_spaj(+)
+            and mb.msbi_tahun_ke = mbh.msbih_tahun_ke(+)
+            and mb.msbi_premi_ke = mbh.msbih_premi_ke(+)
+            and mdb.reg_spaj = mb.reg_spaj
+            and mdb.msbi_tahun_ke = mb.msbi_tahun_ke
+            and mdb.msbi_premi_ke = mb.msbi_premi_ke
+            and mp.reg_spaj = mb.reg_spaj
+            and mp.reg_spaj = mi.reg_spaj
+            and mp.lscb_id not in (0, 6)
+            and mb.lspd_id in (11, 12)
+            and mb.msbi_premi_ke > 1
+            and mb.lca_id = lr.lca_id
+            and mb.lwk_id = lr.lwk_id
+            and mb.lsrg_id = lr.lsrg_id
+            and mb.msbi_flag_topup is null
+            and mb.msbi_beg_date between to_date('01/06/2013', 'dd/mm/yyyy') and to_date('30/06/2013', 'dd/mm/yyyy')
+            and exists (select *
+                        from eka.mst_followup msfu
+                        where lsfu_id <> 99
+                              and reg_spaj = mp.reg_spaj
+                              and msbi_tahun_ke = mb.msbi_tahun_ke
+                              and msbi_premi_ke = mb.msbi_premi_ke
+                              and msfu.msfu_urut = (select max(msfu_urut)
+                                                        from eka.mst_followup
+                                                        where lsfu_id <> 99
+                                                            and reg_spaj = msfu.reg_spaj
+                                                            and msbi_tahun_ke = msfu.msbi_tahun_ke
+                                                            and msbi_premi_ke = msfu.msbi_premi_ke)))done_fl,
+    (select distinct  
+            lr.lsrg_id, lr.lsrg_nama region, mb.msbi_beg_date, mb.msbi_end_date, mb.msbi_due_date, mp.mspo_policy_no_format, mp.reg_spaj, mb.msbi_tahun_ke,
+            mb.msbi_premi_ke, 'JATUH TEMPO' ket, mb.msbi_flag_topup, mp.lca_id,
+            (select sum(msdb_premium) from eka.mst_det_billing where reg_spaj = mb.reg_spaj and msbi_tahun_ke = mb.msbi_tahun_ke and msbi_premi_ke = mb.msbi_premi_ke)premi
+        from               
+            eka.mst_billing mb, eka.mst_det_billing mdb, eka.mst_policy mp, eka.mst_billing_hcr mbh, eka.mst_insured mi,
+            eka.lst_region lr
+        where              
+            mb.reg_spaj = mbh.reg_spaj(+)
+            and mb.msbi_tahun_ke = mbh.msbih_tahun_ke(+)
+            and mb.msbi_premi_ke = mbh.msbih_premi_ke(+)
+            and mdb.reg_spaj = mb.reg_spaj
+            and mdb.msbi_tahun_ke = mb.msbi_tahun_ke
+            and mdb.msbi_premi_ke = mb.msbi_premi_ke
+            and mp.reg_spaj = mb.reg_spaj
+            and mp.reg_spaj = mi.reg_spaj
+            and mp.lscb_id not in (0, 6)
+            and mb.lspd_id in (11, 12)
+            and mb.msbi_premi_ke > 1
+            and mb.lca_id = lr.lca_id
+            and mb.lwk_id = lr.lwk_id
+            and mb.lsrg_id = lr.lsrg_id
+            and mb.msbi_beg_date between to_date('01/06/2013', 'dd/mm/yyyy') and to_date('30/06/2013', 'dd/mm/yyyy')
+            and mb.msbi_flag_topup is null
+            and not exists (select *
+                        from eka.mst_followup msfu
+                        where lsfu_id <> 99
+                              and reg_spaj = mp.reg_spaj
+                              and msbi_tahun_ke = mb.msbi_tahun_ke
+                              and msbi_premi_ke = mb.msbi_premi_ke
+                              and msfu.msfu_urut = (select max(msfu_urut)
+                                                        from eka.mst_followup
+                                                        where lsfu_id <> 99
+                                                            and reg_spaj = msfu.reg_spaj
+                                                            and msbi_tahun_ke = msfu.msbi_tahun_ke
+                                                            and msbi_premi_ke = msfu.msbi_premi_ke)))not_fl
+where
+    all_fl.reg_spaj = done_fl.reg_spaj(+)
+    and all_fl.reg_spaj = not_fl.reg_spaj(+)
+GROUP BY
+    all_fl.region
+ORDER BY
+    1]]>
+	</queryString>
+	<field name="JML_POLIS" class="java.math.BigDecimal"/>
+	<field name="JML_POLIS_BELUM" class="java.math.BigDecimal"/>
+	<field name="JML_POLIS_FOL" class="java.math.BigDecimal"/>
+	<field name="JML_PREMI" class="java.math.BigDecimal"/>
+	<field name="JML_PREMI_BELUM" class="java.math.BigDecimal"/>
+	<field name="JML_PREMI_FOL" class="java.math.BigDecimal"/>
+	<field name="REGION" class="java.lang.String"/>
+	<variable name="sum_all_polis" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{JML_POLIS}]]></variableExpression>
+	</variable>
+	<variable name="sum_all_premi" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{JML_PREMI}]]></variableExpression>
+	</variable>
+	<variable name="sum_polis_followup" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{JML_POLIS_FOL}]]></variableExpression>
+	</variable>
+	<variable name="sum_premi_followup" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{JML_PREMI_FOL}]]></variableExpression>
+	</variable>
+	<variable name="sum_polis_belum" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{JML_POLIS_BELUM}]]></variableExpression>
+	</variable>
+	<variable name="sum_premi_belum" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{JML_PREMI_BELUM}]]></variableExpression>
+	</variable>
+	<columnHeader>
+		<band height="115">
+			<staticText>
+				<reportElement x="0" y="0" width="450" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Report Follow up Billing Premi Lanjutan]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="29" width="450" height="34"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Cabang : "+$P{cabang}+"\n"+
+"Periode : "+$P{bdate}+" s/d "+$P{edate}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="75" width="30" height="40"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="30" y="75" width="150" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Kantor Pemasaran / Regional]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="180" y="95" width="30" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="210" y="95" width="90" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="180" y="75" width="120" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jumlah Billing]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="300" y="75" width="120" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Yang Sudah di Followup]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="300" y="95" width="30" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="330" y="95" width="90" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="420" y="75" width="120" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Yang Belum di Followup]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="420" y="95" width="30" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="450" y="95" width="90" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="30" height="20"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Number"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="30" y="0" width="150" height="20"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REGION}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="180" y="0" width="30" height="20"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{JML_POLIS}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="210" y="0" width="90" height="20"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrencyNoDigit("",$F{JML_PREMI})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="300" y="0" width="30" height="20"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{JML_POLIS_FOL}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="330" y="0" width="90" height="20"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrencyNoDigit("",$F{JML_PREMI_FOL})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="420" y="0" width="30" height="20"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{JML_POLIS_BELUM}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="450" y="0" width="90" height="20"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrencyNoDigit("",$F{JML_PREMI_BELUM})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="20">
+			<staticText>
+				<reportElement x="30" y="0" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="180" y="0" width="30" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{sum_all_polis}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="210" y="0" width="90" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrencyNoDigit("",$V{sum_all_premi})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="300" y="0" width="30" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{sum_polis_followup}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="330" y="0" width="90" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrencyNoDigit("",$V{sum_premi_followup})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="0" width="30" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{sum_polis_belum}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="450" y="0" width="90" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrencyNoDigit("",$V{sum_premi_belum})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="0" width="30" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

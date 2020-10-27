@@ -1,0 +1,1048 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="elions.cross_selling">
+
+	<typeAlias alias="agenCs" type="com.ekalife.elions.model.cross_selling.AgentCs"/>
+	<typeAlias alias="crossSelling" type="com.ekalife.elions.model.cross_selling.CrossSelling"/>
+	<typeAlias alias="polisCs" type="com.ekalife.elions.model.cross_selling.PolicyCs"/>
+	<typeAlias alias="posisiCs" type="com.ekalife.elions.model.cross_selling.PositionCs"/>
+	<typeAlias alias="hashMap" type="java.util.HashMap"/>
+	<typeAlias alias="cabangBsm" type="com.ekalife.elions.model.CabangBii"/>
+	
+	<typeAlias alias="fat" type="com.ekalife.elions.model.cross_selling.Fat"/>
+	<typeAlias alias="fatLetter" type="com.ekalife.elions.model.cross_selling.FatLetter"/>
+	<typeAlias alias="fatHist" type="com.ekalife.elions.model.cross_selling.FatHistory"/>
+	
+	<select id="selectTopSellerBSM" parameterClass="string" resultClass="hashMap">
+		select
+        	nama_cabang, nama_referrer nama_reff, kurs, premi_sp, premi_ss, tot_premi, jml_polis
+        from
+            eka.MST_TOPTEN_OUTSTANDING
+        order by rank asc
+	</select>
+
+	<!-- 
+	<select id="selectTopSellerBSM" parameterClass="string" resultClass="hashMap">
+		select  x.nama_cabang, x.nama_reff, x.kurs, x.premi_sp, x.premi_ss, x.tot_premi, x.jml_polis from (
+		select nama_reff, nama_cabang, decode(lku_id,'01','Rp','USD') AS kurs, sum(premi_sp) as premi_sp, sum(premi_ss) as premi_ss, sum(premi_sp + premi_ss) as tot_premi, sum(polis_in - polis_out) as jml_Polis from 
+		(
+		select nama_reff, 
+		            nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang,sum(saldo) as saldo, sum(masuk - deposit) as saldo_tb,
+		            case when nama_plan in ('POWER SAVE') then sum(masuk - deposit) else 0 end as premi_sp,
+		            decode(nama_plan,'STABLE LINK',sum(masuk - deposit),0) as premi_ss,
+		            0 as masuk, 0 as deposit, sum(bunga) as bunga, sum(saldo_polis) as saldo_polis, sum(polis_in) as polis_in, sum(polis_out) as polis_out
+		from (
+		select nama_reff, 
+		            nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang, 
+		               sum(saldo) as saldo, 0 as saldo_tb, sum(masuk) as masuk, sum(deposit) as deposit, sum(bunga) as bunga, 
+		               sum(saldo_polis) as saldo_polis, count(reg_spaj) as polis_in, 0 as polis_out
+		    from (
+		        select 
+		                k.nama_reff, 
+		               decode(d.jenis, 1, 'PLATINUM', decode(j.nm_group, NULL, 'POWER SAVE', j.nm_group)) as nama_plan, c.lku_id, 
+		               case d.jenis 
+		                       when 1 Then 45 
+		                    when 2 Then 156
+		                    when 3 Then 888
+		                    when 8 Then 999
+		                    when 9 Then 54
+		                    when 10 Then 189
+		                    when 11 Then 27
+		                    when 16 Then 224
+		                    else decode(g.kode, NULL, 0, 45)
+		               End as id_bank, 
+		               trim(decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', g.kode, eka.get_cabind(c.reg_spaj))), b.lcb_penutup)) as id_cab,
+		               case d.jenis 
+		                       when 0 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                       when 1 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                    when 2 Then 'BANK SINARMAS' 
+		                    when 3 Then 'SINARMAS SEKURITAS' 
+		                    when 8 Then 'BANK SINARMAS (REFF)'  
+		                    when 9 Then 'BANK MAYAPADA' 
+		                    when 10 Then 'UOB BUANA' 
+		                    when 11 Then 'BANK BUMIPUTERA' 
+		                    when 16 Then 'BANK SINARMAS SYARIAH' 
+		                    else decode(g.kode, NULL, case when i.lca_id in ('08','09','37','40','42','46','52') then i.lca_nama else 'REGIONAL' end, decode(i.lca_id, '09', 'BII', i.lca_nama))                    
+		               End as nama_bank,
+		               decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', h.nama_cabang, eka.get_cabind(c.reg_spaj))), d.nama_cabang) as nama_cabang, 
+		               0 as saldo, 0 as saldo_tb, a.mpr_deposit as masuk, 0 as deposit, 0 as bunga, a.reg_spaj, 0 as saldo_polis   
+		        from eka.mst_powersave_ro a, 
+		              (select * from eka.mst_reff_bii a where a.level_id = 4 and a.no_urut = (SELECT MAX (no_urut) FROM eka.mst_reff_bii WHERE reg_spaj = a.reg_spaj AND level_id = 4)) b,
+		              eka.mst_policy c, 
+		              (select * from eka.lst_cabang_bii where jenis in (1,2,3,8,9,10,11,16)) d,
+		              eka.mst_production e,
+		              eka.mst_nasabah g,
+		              eka.lst_cab_bii h,
+		              eka.lst_cabang i,
+		              eka.lst_jn_nasabah j,
+		              eka.lst_reff_bii k
+		        where a.reg_spaj = b.reg_spaj (+)
+		        and a.reg_spaj = c.reg_spaj 
+		        and b.lcb_penutup = d.lcb_no (+)
+		        and b.reff_id = k.LRB_ID
+		        and a.reg_spaj = e.reg_spaj 
+		        and c.mspo_plan_provider = g.mns_kd_nasabah (+)  
+		        and g.kode = h.kode (+)
+		        and c.lca_id = i.lca_id
+		        and g.jn_nasabah = j.jn_nasabah (+) 
+		        and e.mspro_prod_date <![CDATA[<=]]> sysdate
+		        and c.lspd_id <![CDATA[<>]]> 95
+		        and c.lca_id = '09'
+		        and a.mps_kode = 5
+		        and e.mspro_prod_ke = 1
+		        AND g.JN_LEAD (+) = 1
+		        and g.referrer_id (+) is not null
+		    )
+		    group by  nama_reff, nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang    
+		    union all
+		    select nama_reff, nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang, 
+		           sum(saldo) as saldo, sum(saldo_tb) as saldo_tb, sum(masuk) as masuk, sum(deposit) as deposit, sum(bunga) as bunga, 
+		           sum(saldo_polis) as saldo_polis, 0 as polis_in, 0 as polis_out
+		    from (
+		        select 
+		            k.nama_reff, 
+		               decode(d.jenis, 1, 'PLATINUM', decode(j.nm_group, NULL, 'POWER SAVE', j.nm_group)) as nama_plan, c.lku_id, 
+		               case d.jenis 
+		                   when 1 Then 45 
+		                    when 2 Then 156
+		                    when 3 Then 888
+		                    when 8 Then 999
+		                    when 9 Then 54
+		                    when 10 Then 189
+		                    when 11 Then 27
+		                    when 16 Then 224
+		                    else decode(g.kode, NULL, 0, 45)
+		               End as id_bank, 
+		               trim(decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', g.kode, eka.get_cabind(c.reg_spaj))), b.lcb_penutup)) as id_cab,
+		               case d.jenis 
+		                       when 0 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                       when 1 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                    when 2 Then 'BANK SINARMAS' 
+		                    when 3 Then 'SINARMAS SEKURITAS' 
+		                    when 8 Then 'BANK SINARMAS (REFF)'  
+		                    when 9 Then 'BANK MAYAPADA' 
+		                    when 10 Then 'UOB BUANA' 
+		                    when 11 Then 'BANK BUMIPUTERA' 		                    
+		                    when 16 Then 'BANK SINARMAS SYARIAH' 
+		                    else decode(g.kode, NULL, case when i.lca_id in ('08','09','37','40','42','46','52') then i.lca_nama else 'REGIONAL' end, decode(i.lca_id, '09', 'BII', i.lca_nama))                    
+		               End as nama_bank,
+		               decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', h.nama_cabang, eka.get_cabind(c.reg_spaj))), d.nama_cabang) as nama_cabang,
+		               0 as saldo, 0 as saldo_tb, 0 as masuk, 0 as deposit, a.mpb_jum_bayar as bunga, a.reg_spaj, 0 as saldo_polis   
+		        from eka.mst_prosave_bayar a, 
+		              (select * from eka.mst_reff_bii a where a.level_id = 4 and a.no_urut = (SELECT MAX (no_urut) FROM eka.mst_reff_bii WHERE reg_spaj = a.reg_spaj AND level_id = 4)) b,
+		              eka.mst_policy c, 
+		              (select * from eka.lst_cabang_bii where jenis in (2,16)  ) d,
+		              eka.mst_nasabah g,
+		              eka.lst_cab_bii h,
+		              eka.lst_cabang i,
+		              eka.lst_jn_nasabah j,
+		              eka.lst_reff_bii k
+		        where a.reg_spaj = b.reg_spaj (+)
+		        and a.reg_spaj = c.reg_spaj 
+		        and b.lcb_penutup = d.lcb_no (+)
+		        and b.reff_id = k.LRB_ID
+		        and c.mspo_plan_provider = g.mns_kd_nasabah (+)  
+		        and g.kode = h.kode (+)
+		        and c.lca_id = i.lca_id
+		        and g.jn_nasabah = j.jn_nasabah (+) 
+		        and a.mpb_paid_date <![CDATA[<=]]> sysdate
+		        AND g.JN_LEAD (+) = 1
+		        and g.referrer_id (+) is not null
+		    )
+		    group by nama_reff, nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang        
+		    union all
+		    select nama_reff, nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang, 
+		           sum(saldo) as saldo, sum(saldo_tb) as saldo_tb, sum(masuk) as masuk, sum(deposit) as deposit, sum(bunga) as bunga, 
+		           sum(saldo_polis) as saldo_polis, 0 as polis_in, count(reg_spaj) as polis_out
+		    from (
+		        select 
+		                k.nama_reff, 
+		               decode(a.flag_ps, 1, decode(d.jenis, 1, 'PLATINUM', decode(j.nm_group, NULL, 'POWER SAVE', j.nm_group)), 'STABLE SAVE') as nama_plan, c.lku_id, 
+		               case d.jenis 
+		                   when 1 Then 45 
+		                    when 2 Then 156
+		                    when 3 Then 888
+		                    when 8 Then 999
+		                    when 9 Then 54
+		                    when 10 Then 189
+		                    when 11 Then 27
+		                    when 16 Then 224
+		                    else decode(g.kode, NULL, 0, 45)
+		               End as id_bank,
+		               trim(decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', g.kode, eka.get_cabind(c.reg_spaj))), b.lcb_penutup)) as id_cab,
+		               case d.jenis 
+		                       when 0 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                       when 1 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                    when 2 Then 'BANK SINARMAS' 
+		                    when 3 Then 'SINARMAS SEKURITAS' 
+		                    when 8 Then 'BANK SINARMAS (REFF)'  
+		                    when 9 Then 'BANK MAYAPADA' 
+		                    when 10 Then 'UOB BUANA' 
+		                    when 11 Then 'BANK BUMIPUTERA' 		                                       
+		                    when 16 Then 'BANK SINARMAS SYARIAH' 
+		                    else decode(g.kode, NULL, case when i.lca_id in ('08','09','37','40','42','46','52') then i.lca_nama else 'REGIONAL' end, decode(i.lca_id, '09', 'BII', i.lca_nama))                    
+		               End as nama_bank,
+		               decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', h.nama_cabang, eka.get_cabind(c.reg_spaj))), d.nama_cabang) as nama_cabang,
+		                0 as saldo, 0 as saldo_tb, 0 as masuk, f.msdpr_premium as deposit, (a.mspin_jlh_nt - f.msdpr_premium) as bunga, a.reg_spaj, 0 as saldo_polis   
+		        from eka.mst_pinjaman a, 
+		              (select * from eka.mst_reff_bii a where a.level_id = 4 and a.no_urut = (SELECT MAX (no_urut) FROM eka.mst_reff_bii WHERE reg_spaj = a.reg_spaj AND level_id = 4)) b,
+		              eka.mst_policy c, 
+		              (select * from eka.lst_cabang_bii where jenis in (2,16)) d,
+		              eka.mst_production e,
+		                eka.mst_det_production f,
+		              eka.mst_nasabah g,
+		              eka.lst_cab_bii h,
+		              eka.lst_cabang i,
+		              eka.lst_jn_nasabah j,
+		              eka.lst_reff_bii k
+		        where a.reg_spaj = b.reg_spaj (+)
+		        and a.reg_spaj = c.reg_spaj 
+		        and b.lcb_penutup = d.lcb_no (+)
+		        and b.reff_id = k.LRB_ID
+		        and a.reg_spaj = e.reg_spaj 
+		        and e.reg_spaj = f.reg_spaj
+		        and e.lstb_id = f.lstb_id
+		        and e.mspro_prod_ke = f.mspro_prod_ke
+		        and e.mspro_prod_date = f.mspro_prod_date         
+		        and c.mspo_plan_provider = g.mns_kd_nasabah (+)  
+		        and g.kode = h.kode (+)
+		        and c.lca_id = i.lca_id
+		        and g.jn_nasabah = j.jn_nasabah (+) 
+		        and a.mspin_tgl_keluar <![CDATA[<=]]> sysdate
+		        and c.lspd_id <![CDATA[<>]]> 95
+		        and c.lca_id = '09'
+		        and a.flag_ps in (1,3)
+		        and e.mspro_prod_ke = 1
+		        and f.lsbs_id <![CDATA[<]]> 300
+		        AND g.JN_LEAD (+) = 1
+		        and g.referrer_id (+) is not null
+		    )
+		    group by  nama_reff, nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang    
+		    union all
+		    select  nama_reff, nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang, 
+		           sum(saldo) as saldo, sum(saldo_tb) as saldo_tb, sum(masuk) as masuk, sum(deposit) as deposit, sum(bunga) as bunga, 
+		           sum(saldo_polis) as saldo_polis, 0 as polis_in, count(reg_spaj) as polis_out
+		    from (
+		        select 
+		                k.nama_reff,  
+		               decode(a.flag_ps, 1, decode(d.jenis, 1, 'PLATINUM', decode(j.nm_group, NULL, 'POWER SAVE', j.nm_group)), 'STABLE SAVE') as nama_plan, c.lku_id, 
+		               case d.jenis 
+		                   when 1 Then 45 
+		                    when 2 Then 156
+		                    when 3 Then 888
+		                    when 8 Then 999
+		                    when 9 Then 54
+		                    when 10 Then 189
+		                    when 11 Then 27
+		                    when 16 Then 224
+		                    else decode(g.kode, NULL, 0, 45)
+		               End as id_bank,
+		               trim(decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', g.kode, eka.get_cabind(c.reg_spaj))), b.lcb_penutup)) as id_cab,
+		               case d.jenis 
+		                       when 0 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                       when 1 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                    when 2 Then 'BANK SINARMAS' 
+		                    when 3 Then 'SINARMAS SEKURITAS' 
+		                    when 8 Then 'BANK SINARMAS (REFF)'  
+		                    when 9 Then 'BANK MAYAPADA' 
+		                    when 10 Then 'UOB BUANA' 
+		                    when 11 Then 'BANK BUMIPUTERA' 		                                       
+		                    when 16 Then 'BANK SINARMAS SYARIAH' 
+		                    else decode(g.kode, NULL, case when i.lca_id in ('08','09','37','40','42','46','52') then i.lca_nama else 'REGIONAL' end, decode(i.lca_id, '09', 'BII', i.lca_nama))                    
+		               End as nama_bank,
+		               decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', h.nama_cabang, eka.get_cabind(c.reg_spaj))), d.nama_cabang) as nama_cabang,
+		                0 as saldo, 0 as saldo_tb, 0 as masuk, f.msdpr_premium as deposit, (a.mssur_jml_nt - f.msdpr_premium) as bunga, a.reg_spaj, 0 as saldo_polis   
+		        from eka.mst_surrender a, 
+		              (select * from eka.mst_reff_bii a where a.level_id = 4 and a.no_urut = (SELECT MAX (no_urut) FROM eka.mst_reff_bii WHERE reg_spaj = a.reg_spaj AND level_id = 4)) b,
+		              eka.mst_policy c, 
+		              (select * from eka.lst_cabang_bii where jenis in (2,16)) d,
+		              eka.mst_production e,
+		                eka.mst_det_production f,
+		              eka.mst_nasabah g,
+		              eka.lst_cab_bii h,
+		              eka.lst_cabang i,
+		              eka.lst_jn_nasabah j,
+		              eka.lst_reff_bii k
+		        where a.reg_spaj = b.reg_spaj (+) 
+		        and a.reg_spaj = c.reg_spaj 
+		        and b.lcb_penutup = d.lcb_no (+)
+		        and b.reff_id = k.LRB_ID
+		        and a.reg_spaj = e.reg_spaj 
+		        and e.reg_spaj = f.reg_spaj
+		        and e.lstb_id = f.lstb_id
+		        and e.mspro_prod_ke = f.mspro_prod_ke
+		        and e.mspro_prod_date = f.mspro_prod_date         
+		        and c.mspo_plan_provider = g.mns_kd_nasabah (+)  
+		        and g.kode = h.kode (+)
+		        and c.lca_id = i.lca_id
+		        and g.jn_nasabah = j.jn_nasabah (+) 
+		        and a.mssur_tgl_klaim <![CDATA[<=]]> sysdate
+		        and c.lspd_id <![CDATA[<>]]> 95
+		        and c.lca_id = '09'
+		        and a.flag_ps in (1,3)
+		        and e.mspro_prod_ke = 1
+		        and f.lsbs_id <![CDATA[<]]> 300
+		        AND g.JN_LEAD (+) = 1
+		        and g.referrer_id (+) is not null
+		    )
+		    group by nama_reff, nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang    
+		    union all
+		    select  nama_reff, nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang, 
+		           sum(saldo) as saldo, sum(saldo_tb) as saldo_tb, sum(masuk) as masuk, sum(deposit) as deposit, sum(bunga) as bunga, 
+		           sum(saldo_polis) as saldo_polis, 0 as polis_in, count(reg_spaj) as polis_out
+		    from (
+		        select 
+		                k.nama_reff,  
+		               decode(a.flag_ps, 1, decode(d.jenis, 1, 'PLATINUM', decode(j.nm_group, NULL, 'POWER SAVE', j.nm_group)),  decode(a.flag_ps, 2, 'STABLE LINK', 'STABLE SAVE')) as nama_plan, c.lku_id, 
+		               case d.jenis 
+		                   when 1 Then 45 
+		                    when 2 Then 156
+		                    when 3 Then 888
+		                    when 8 Then 999
+		                    when 9 Then 54
+		                    when 10 Then 189
+		                    when 11 Then 27
+		                    when 16 Then 224
+		                    else decode(g.kode, NULL, 0, 45)
+		               End as id_bank,
+		               trim(decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', g.kode, eka.get_cabind(c.reg_spaj))), b.lcb_penutup)) as id_cab,
+		               case d.jenis 
+		                       when 0 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                       when 1 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                    when 2 Then 'BANK SINARMAS' 
+		                    when 3 Then 'SINARMAS SEKURITAS' 
+		                    when 8 Then 'BANK SINARMAS (REFF)'  
+		                    when 9 Then 'BANK MAYAPADA' 
+		                    when 10 Then 'UOB BUANA' 
+		                    when 11 Then 'BANK BUMIPUTERA' 		                                       
+		                    when 16 Then 'BANK SINARMAS SYARIAH' 
+		                    else decode(g.kode, NULL, case when i.lca_id in ('08','09','37','40','42','46','52') then i.lca_nama else 'REGIONAL' end, decode(i.lca_id, '09', 'BII', i.lca_nama))                    
+		               End as nama_bank,
+		               decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', h.nama_cabang, eka.get_cabind(c.reg_spaj))), d.nama_cabang) as nama_cabang,
+		                0 as saldo, 0 as saldo_tb, 0 as masuk, f.msdpr_premium as deposit, (a.nilai_klaim - f.msdpr_premium) as bunga, a.reg_spaj, 0 as saldo_polis      
+		        from eka.mst_maturity a, 
+		              (select * from eka.mst_reff_bii a where a.level_id = 4 and a.no_urut = (SELECT MAX (no_urut) FROM eka.mst_reff_bii WHERE reg_spaj = a.reg_spaj AND level_id = 4)) b,
+		              eka.mst_policy c, 
+		              (select * from eka.lst_cabang_bii where jenis in (2,16)) d,
+		              eka.mst_production e,
+		                eka.mst_det_production f,
+		              eka.mst_nasabah g,
+		              eka.lst_cab_bii h,
+		              eka.lst_cabang i,
+		              eka.lst_jn_nasabah j,
+		              eka.lst_reff_bii k
+		        where a.reg_spaj = b.reg_spaj (+) 
+		        and a.reg_spaj = c.reg_spaj 
+		        and b.lcb_penutup = d.lcb_no (+)
+		        and b.reff_id = k.LRB_ID
+		        and a.reg_spaj = e.reg_spaj 
+		        and e.reg_spaj = f.reg_spaj
+		        and e.lstb_id = f.lstb_id
+		        and e.mspro_prod_ke = f.mspro_prod_ke
+		        and e.mspro_prod_date = f.mspro_prod_date         
+		        and c.mspo_plan_provider = g.mns_kd_nasabah (+)  
+		        and g.kode = h.kode (+)
+		        and c.lca_id = i.lca_id
+		        and g.jn_nasabah = j.jn_nasabah (+) 
+		        and a.tgl_klaim <![CDATA[<=]]> sysdate
+		        and c.lspd_id <![CDATA[<>]]> 95
+		        and c.lca_id = '09'
+		        and a.flag_ps in (1,2,3)
+		        and e.mspro_prod_ke = 1
+		        and f.lsbs_id <![CDATA[<]]> 300
+		        AND g.JN_LEAD (+) = 1
+		        and g.referrer_id (+) is not null
+		    )
+		    group by nama_reff, nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang    
+		    union all
+		    select  nama_reff,
+		            nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang, 
+		               sum(saldo) as saldo, sum(saldo_tb) as saldo_tb, sum(masuk) as masuk, sum(deposit) as deposit, sum(bunga) as bunga, 
+		           sum(saldo_polis) as saldo_polis, count(reg_spaj) as polis_in, 0 as polis_out
+		    from (
+		        select 
+		                k.nama_reff, 
+		               'STABLE SAVE' as nama_plan, c.lku_id, 
+		               case d.jenis 
+		                   when 1 Then 45 
+		                    when 2 Then 156
+		                    when 3 Then 888
+		                    when 8 Then 999
+		                    when 9 Then 54
+		                    when 10 Then 189
+		                    when 11 Then 27
+		                    when 16 Then 224
+		                    else decode(g.kode, NULL, 0, 45)
+		               End as id_bank, 
+		               trim(decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', g.kode, eka.get_cabind(c.reg_spaj))), b.lcb_penutup)) as id_cab,
+		               case d.jenis 
+		                       when 0 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                       when 1 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                    when 2 Then 'BANK SINARMAS' 
+		                    when 3 Then 'SINARMAS SEKURITAS' 
+		                    when 8 Then 'BANK SINARMAS (REFF)'  
+		                    when 9 Then 'BANK MAYAPADA' 
+		                    when 10 Then 'UOB BUANA' 
+		                    when 11 Then 'BANK BUMIPUTERA'		                                       
+		                    when 16 Then 'BANK SINARMAS SYARIAH'  
+		                    else decode(g.kode, NULL, case when i.lca_id in ('08','09','37','40','42','46','52') then i.lca_nama else 'REGIONAL' end, decode(i.lca_id, '09', 'BII', i.lca_nama))                    
+		               End as nama_bank,
+		               decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', h.nama_cabang, eka.get_cabind(c.reg_spaj))), d.nama_cabang) as nama_cabang,
+		               0 as saldo, 0 as saldo_tb, a.mss_premi as masuk, 0 as deposit, 0 as bunga, a.reg_spaj, 0 as saldo_polis      
+		        from eka.mst_ssave a, 
+		              (select * from eka.mst_reff_bii a where a.level_id = 4 and a.no_urut = (SELECT MAX (no_urut) FROM eka.mst_reff_bii WHERE reg_spaj = a.reg_spaj AND level_id = 4)) b,
+		              eka.mst_policy c, 
+		              (select * from eka.lst_cabang_bii where jenis in (2,16)) d,
+		              eka.mst_production e,
+		              eka.mst_nasabah g,
+		              eka.lst_cab_bii h,
+		              eka.lst_cabang i,
+		              eka.lst_jn_nasabah j,
+		              eka.lst_reff_bii k
+		        where a.reg_spaj = b.reg_spaj (+)
+		        and a.reg_spaj = c.reg_spaj 
+		        and b.lcb_penutup = d.lcb_no (+)
+		        and b.reff_id = k.LRB_ID
+		        and a.reg_spaj = e.reg_spaj 
+		        and c.mspo_plan_provider = g.mns_kd_nasabah (+)  
+		        and g.kode = h.kode (+)
+		        and c.lca_id = i.lca_id
+		        and g.jn_nasabah = j.jn_nasabah (+) 
+		        and e.mspro_prod_date <![CDATA[<=]]> sysdate
+		        and c.lspd_id <![CDATA[<>]]> 95
+		        and c.lca_id = '09'
+		        and a.mss_kode = 5
+		        and e.mspro_prod_ke = 1
+		    )
+		    group by nama_reff, nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang    
+		    union all
+		    select nama_reff, nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang, 
+		           sum(saldo) as saldo, sum(saldo_tb) as saldo_tb, sum(masuk) as masuk, sum(deposit) as deposit, sum(bunga) as bunga, 
+		           sum(saldo_polis) as saldo_polis, 0 as polis_in, 0 as polis_out
+		    from (
+		        select 
+		                k.nama_reff, 
+		               decode(d.jenis, 1, 'PLATINUM', decode(j.nm_group, NULL, 'POWER SAVE', j.nm_group)) as nama_plan, c.lku_id, 
+		               case d.jenis 
+		                   when 1 Then 45 
+		                    when 2 Then 156
+		                    when 3 Then 888
+		                    when 8 Then 999
+		                    when 9 Then 54
+		                    when 10 Then 189
+		                    when 11 Then 27
+		                    when 16 Then 224
+		                    else decode(g.kode, NULL, 0, 45)
+		               End as id_bank, 
+		               trim(decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', g.kode, eka.get_cabind(c.reg_spaj))), b.lcb_penutup)) as id_cab,
+		               case d.jenis 
+		                       when 0 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                       when 1 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                    when 2 Then 'BANK SINARMAS' 
+		                    when 3 Then 'SINARMAS SEKURITAS' 
+		                    when 8 Then 'BANK SINARMAS (REFF)'  
+		                    when 9 Then 'BANK MAYAPADA' 
+		                    when 10 Then 'UOB BUANA' 
+		                    when 11 Then 'BANK BUMIPUTERA' 		                                       
+		                    when 16 Then 'BANK SINARMAS SYARIAH' 
+		                    else decode(g.kode, NULL, case when i.lca_id in ('08','09','37','40','42','46','52') then i.lca_nama else 'REGIONAL' end, decode(i.lca_id, '09', 'BII', i.lca_nama))                    
+		               End as nama_bank,
+		               decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', h.nama_cabang, eka.get_cabind(c.reg_spaj))), d.nama_cabang) as nama_cabang,
+		               0 as saldo, 0 as saldo_tb, 0 as masuk, 0 as deposit, a.mssb_jum_bayar as bunga, a.reg_spaj, 0 as saldo_polis      
+		        from eka.mst_ssave_bayar a, 
+		              (select * from eka.mst_reff_bii a where a.level_id = 4 and a.no_urut = (SELECT MAX (no_urut) FROM eka.mst_reff_bii WHERE reg_spaj = a.reg_spaj AND level_id = 4)) b,
+		              eka.mst_policy c, 
+		              (select * from eka.lst_cabang_bii where jenis in (2,16)) d,
+		              eka.mst_nasabah g,
+		              eka.lst_cab_bii h,
+		              eka.lst_cabang i,
+		              eka.lst_jn_nasabah j,
+		              eka.lst_reff_bii k
+		        where a.reg_spaj = b.reg_spaj (+)
+		        and a.reg_spaj = c.reg_spaj 
+		        and b.lcb_penutup = d.lcb_no (+)
+		        and b.reff_id = k.LRB_ID
+		        and c.mspo_plan_provider = g.mns_kd_nasabah (+)  
+		        and g.kode = h.kode (+)
+		        and c.lca_id = i.lca_id
+		        and g.jn_nasabah = j.jn_nasabah (+) 
+		        and a.mssb_paid_date <![CDATA[<=]]> sysdate
+		        and a.flag_proses = 1
+		    )
+		    group by nama_reff, nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang                
+		    union all
+		    select nama_reff, nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang, 
+		           sum(saldo) as saldo, sum(saldo_tb) as saldo_tb, sum(masuk) as masuk, sum(deposit) as deposit, sum(bunga) as bunga, 
+		           sum(saldo_polis) as saldo_polis, count(distinct reg_spaj) as polis_in, 0 as polis_out
+		    from (
+		        select 
+		                j.nama_reff,  
+		               'STABLE LINK' as nama_plan, c.lku_id,
+		               case d.jenis 
+		                   when 1 Then 45 
+		                    when 2 Then 156
+		                    when 3 Then 888
+		                    when 8 Then 999
+		                    when 9 Then 54
+		                    when 10 Then 189
+		                    when 11 Then 27
+		                    when 16 Then 224
+		                    else decode(g.kode, NULL, 0, 45)
+		               End as id_bank, 
+		               trim(decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', g.kode, eka.get_cabind(c.reg_spaj))), b.lcb_penutup)) as id_cab,
+		               case d.jenis 
+		                       when 0 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                       when 1 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                    when 2 Then 'BANK SINARMAS' 
+		                    when 3 Then 'SINARMAS SEKURITAS' 
+		                    when 8 Then 'BANK SINARMAS (REFF)'  
+		                    when 9 Then 'BANK MAYAPADA' 
+		                    when 10 Then 'UOB BUANA' 
+		                    when 11 Then 'BANK BUMIPUTERA'                    
+		                    when 16 Then 'BANK SINARMAS SYARIAH' 
+		                    else decode(g.kode, NULL, case when i.lca_id in ('08','09','37','40','42','46','52') then i.lca_nama else 'REGIONAL' end, decode(i.lca_id, '09', 'BII', i.lca_nama))                    
+		               End as nama_bank,
+		               decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', h.nama_cabang, eka.get_cabind(c.reg_spaj))), d.nama_cabang) as nama_cabang,
+		                0 as saldo, 0 as saldo_tb, a.msl_premi as masuk, 0 as deposit, 0 as bunga, a.reg_spaj, 0 as saldo_polis      
+		        from eka.mst_slink a, 
+		              (select * from eka.mst_reff_bii a where a.level_id = 4 and a.no_urut = (SELECT MAX (no_urut) FROM eka.mst_reff_bii WHERE reg_spaj = a.reg_spaj AND level_id = 4)) b, 
+		              eka.mst_policy c, 
+		              (select * from eka.lst_cabang_bii where jenis in (2,16)) d,
+		              eka.mst_production e,
+		              eka.mst_nasabah g,
+		              eka.lst_cab_bii h,
+		              eka.lst_cabang i,
+		              eka.lst_reff_bii j
+		        where a.reg_spaj = b.reg_spaj (+)
+		        and a.reg_spaj = c.reg_spaj 
+		        and b.lcb_penutup = d.lcb_no (+)
+		        and b.reff_id = j.LRB_ID
+		        and a.reg_spaj = e.reg_spaj 
+		        and a.msl_tahun_ke = e.msbi_tahun_ke 
+		        and a.msl_premi_ke = e.msbi_premi_ke 
+		        and c.mspo_plan_provider = g.mns_kd_nasabah (+)  
+		        and g.kode = h.kode (+)
+		        and c.lca_id = i.lca_id
+		        and e.mspro_prod_date <![CDATA[<=]]> sysdate
+		        and c.lspd_id <![CDATA[<>]]> 95
+		        and c.lca_id = '09'
+		        and a.msl_kode = 5
+		    )
+		    group by nama_reff, nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang    
+		    union all
+		    select nama_reff, nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang, 
+		           sum(saldo) as saldo, sum(saldo_tb) as saldo_tb, sum(masuk) as masuk, sum(deposit) as deposit, sum(bunga) as bunga, 
+		           sum(saldo_polis) as saldo_polis, 0 as polis_in, 0 as polis_out
+		    from (
+		        select 
+		                j.nama_reff, 
+		               'STABLE LINK' as nama_plan, c.lku_id,
+		               case d.jenis 
+		                   when 1 Then 45 
+		                    when 2 Then 156
+		                    when 3 Then 888
+		                    when 8 Then 999
+		                    when 9 Then 54
+		                    when 10 Then 189
+		                    when 11 Then 27
+		                    when 16 Then 224
+		                    else decode(g.kode, NULL, 0, 45)
+		               End as id_bank, 
+		               trim(decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', g.kode, eka.get_cabind(c.reg_spaj))), b.lcb_penutup)) as id_cab,
+		               case d.jenis 
+		                       when 0 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                       when 1 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                    when 2 Then 'BANK SINARMAS' 
+		                    when 3 Then 'SINARMAS SEKURITAS' 
+		                    when 8 Then 'BANK SINARMAS (REFF)'  
+		                    when 9 Then 'BANK MAYAPADA' 
+		                    when 10 Then 'UOB BUANA' 
+		                    when 11 Then 'BANK BUMIPUTERA'                    
+		                    when 16 Then 'BANK SINARMAS SYARIAH' 
+		                    else decode(g.kode, NULL, case when i.lca_id in ('08','09','37','40','42','46','52') then i.lca_nama else 'REGIONAL' end, decode(i.lca_id, '09', 'BII', i.lca_nama))                    
+		               End as nama_bank,
+		               decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', h.nama_cabang, eka.get_cabind(c.reg_spaj))), d.nama_cabang) as nama_cabang,
+		                0 as saldo, 0 as saldo_tb, 0 as masuk, 0 as deposit, mslb_jum_bayar as bunga, a.reg_spaj, 0 as saldo_polis      
+		        from eka.mst_slink_bayar a, 
+		              (select * from eka.mst_reff_bii a where a.level_id = 4 and a.no_urut = (SELECT MAX (no_urut) FROM eka.mst_reff_bii WHERE reg_spaj = a.reg_spaj AND level_id = 4)) b,
+		              eka.mst_policy c, 
+		              (select * from eka.lst_cabang_bii where jenis in (2,16)) d,
+		              eka.mst_nasabah g,
+		              eka.lst_cab_bii h,
+		              eka.lst_cabang i,
+		              eka.lst_reff_bii j
+		        where a.reg_spaj = b.reg_spaj (+)
+		        and a.reg_spaj = c.reg_spaj 
+		        and b.lcb_penutup = d.lcb_no (+)
+		        and b.reff_id = j.LRB_ID
+		        and c.mspo_plan_provider = g.mns_kd_nasabah (+)  
+		        and g.kode = h.kode (+)
+		        and c.lca_id = i.lca_id
+		        and a.mslb_paid_date <![CDATA[<=]]> sysdate
+		        and c.lspd_id <![CDATA[<>]]> 95
+		        and c.lca_id='09'
+		        and a.mslb_desc = 'Bunga'
+		        and a.flag_proses = 1
+		    )
+		    group by nama_reff, nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang       
+		    union all
+		    select z.nama_reff, z.nama_plan, z.lku_id, z.id_bank, z.id_cab, z.nama_bank, z.nama_cabang, 
+		           sum(z.saldo) as saldo, sum(z.saldo_tb) as saldo_tb, sum(z.masuk) as masuk, sum(z.deposit) as deposit, sum(z.bunga) as bunga, 
+		           sum(z.saldo_polis) as saldo_polis, 0 as polis_in, sum(case when MSL_TU_KE=0 and MSL_KODE=5 and MSL_NEW=1 then (select case when sum(msl_premi) > 0 then 0 else 1 end as jml 
+		                                                                                from
+		                                                                                    eka.mst_slink w
+		                                                                                where w.reg_spaj= z.reg_spaj
+		                                                                                and w.msl_kode=5
+		                                                                                and (not exists( select 1 
+		                                                                                                from eka.mst_slink_bayar t
+		                                                                                                where t.reg_spaj=w.reg_spaj 
+		                                                                                                and t.MSLB_TU_KE=w.MSL_TU_KE 
+		                                                                                                and t.mslb_desc='Penarikan'))) else 0 end) as polis_out
+		    from (
+		        select x.MSL_TU_KE,
+		                x.MSL_KODE,
+		                x.MSL_NEW,
+		                j.nama_reff,
+		               'STABLE LINK' as nama_plan, c.lku_id,
+		               case d.jenis 
+		                   when 1 Then 45 
+		                    when 2 Then 156
+		                    when 3 Then 888
+		                    when 8 Then 999
+		                    when 9 Then 54
+		                    when 10 Then 189
+		                    when 11 Then 27
+		                    when 16 Then 224
+		                    else decode(g.kode, NULL, 0, 45)
+		               End as id_bank, 
+		               trim(decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', g.kode, eka.get_cabind(c.reg_spaj))), b.lcb_penutup)) as id_cab,
+		               case d.jenis 
+		                       when 0 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                       when 1 Then (case when c.mspo_self_ins = 1 and c.lca_id = '09' then 'BII' else 'SELF GEN BII' end)
+		                    when 2 Then 'BANK SINARMAS' 
+		                    when 3 Then 'SINARMAS SEKURITAS' 
+		                    when 8 Then 'BANK SINARMAS (REFF)'  
+		                    when 9 Then 'BANK MAYAPADA' 
+		                    when 10 Then 'UOB BUANA' 
+		                    when 11 Then 'BANK BUMIPUTERA'                    
+		                    when 16 Then 'BANK SINARMAS SYARIAH' 		                    
+		                    else decode(g.kode, NULL, case when i.lca_id in ('08','09','37','40','42','46','52') then i.lca_nama else 'REGIONAL' end, decode(i.lca_id, '09', 'BII', i.lca_nama))                    
+		               End as nama_bank,
+		               decode(d.jenis, NULL, decode(g.kode, NULL, eka.get_cabind(c.reg_spaj), decode(i.lca_id, '09', h.nama_cabang, eka.get_cabind(c.reg_spaj))), d.nama_cabang) as nama_cabang,
+		                0 as saldo, 0 as saldo_tb, 0 as masuk, f.msdpr_premium as deposit, (a.mslb_jum_bayar - f.msdpr_premium) as bunga, a.reg_spaj, 0 as saldo_polis     
+		        from eka.mst_slink_bayar a, 
+		              eka.mst_slink x, 
+		              (select * from eka.mst_reff_bii a where a.level_id = 4 and a.no_urut = (SELECT MAX (no_urut) FROM eka.mst_reff_bii WHERE reg_spaj = a.reg_spaj AND level_id = 4)) b,
+		              eka.mst_policy c, 
+		              (select * from eka.lst_cabang_bii where jenis in (2,16)) d,
+		              eka.mst_production e,
+		              eka.mst_det_production f,
+		              eka.mst_nasabah g,
+		              eka.lst_cab_bii h,
+		              eka.lst_cabang i,
+		              eka.lst_reff_bii j
+		        where a.reg_spaj = x.reg_spaj 
+		        and a.mslb_tu_ke = x.msl_tu_ke
+		        and a.reg_spaj = b.reg_spaj (+)
+		        and b.reff_id = j.LRB_ID
+		        and a.reg_spaj = c.reg_spaj 
+		        and b.lcb_penutup = d.lcb_no (+)
+		        and x.reg_spaj = e.reg_spaj 
+		        and x.msl_tahun_ke = e.msbi_tahun_ke 
+		        and x.msl_premi_ke = e.msbi_premi_ke 
+		        and e.reg_spaj = f.reg_spaj
+		        and e.lstb_id = f.lstb_id
+		        and e.mspro_prod_ke = f.mspro_prod_ke
+		        and e.mspro_prod_date = f.mspro_prod_date                 
+		        and c.mspo_plan_provider = g.mns_kd_nasabah (+)  
+		        and g.kode = h.kode (+)
+		        and c.lca_id = i.lca_id
+		        and a.mslb_paid_date <![CDATA[<=]]> sysdate
+		        and c.lspd_id <![CDATA[<>]]> 95
+		        and c.lca_id = '09'
+		        and a.mslb_desc = 'Penarikan'
+		        and a.flag_proses = 1
+		        and x.msl_kode = 5
+		        and f.lsbs_id <![CDATA[<]]> 300
+		    ) z
+		    group by z.nama_reff, z.nama_plan, z.lku_id, z.id_bank, z.id_cab, z.nama_bank, z.nama_cabang                
+		) where 
+		<isEqual compareValue="SSS">
+		 nama_bank='BANK SINARMAS'
+		</isEqual>		
+		<isEqual compareValue="GGG">
+		 nama_bank='BANK SINARMAS SYARIAH' 
+		</isEqual>
+		<isNotEqual compareValue="SSS">
+			<isNotEqual compareValue="GGG">
+				id_cab = #value#
+			</isNotEqual>
+		</isNotEqual>
+		group by nama_reff, nama_plan, lku_id, id_bank, id_cab, nama_bank, nama_cabang
+		) group by nama_cabang, nama_reff, lku_id
+		) x
+		order by kurs, tot_premi desc	
+	</select>
+	 -->
+
+	<select id="selectAllCabangBsm" parameterClass="int" resultClass="cabangBsm">
+		SELECT   eka.utils.cabang_bsm (l.wil_no) wilayah, eka.utils.cabang_bsm (l.head_no) cabang_induk,
+		         L.NAMA_CABANG, L.LCB_NO, L.ALAMAT, L.KOTA, L.NAMA_HEAD, L.NAMA_WAKIL, L.NO_TELP, L.NO_FAX,
+		         L.LEVEL_ID, L.HEAD_NO, L.JENIS, L.KODE, L.REK_HEAD, L.KODE_ALIAS, L.WIL_NO, L.TEAM_NAME,
+		         L.MSAG_ID_AO, L.LCB_GROUP, L.EMAIL_CAB, L.FLAG_AKTIF, L.EMAIL_HEAD, L.MNEMONIC
+		  FROM   EKA.LST_CABANG_BII L
+		 WHERE   l.jenis = 2 
+		<isNotEmpty>
+		  AND l.flag_aktif = #value# 
+		</isNotEmpty>
+		 ORDER BY wilayah, cabang_induk, nama_cabang
+	</select>
+
+	<select id="selectRMdanRD" parameterClass="string" resultClass="hashMap">
+		SELECT     a.msag_id, a.lsle_id, a.msag_sbm
+		      FROM eka.mst_agent a,
+		           (SELECT lsla_id, lsla_nm,
+		                   (CASE WHEN lsla_id IN (1, 2) THEN 0 ELSE lsla_id - 2 END) lsle_id, 
+						   (CASE WHEN lsla_id = 2 THEN 1 ELSE 0 END) msag_sbm
+		              FROM eka.lst_level_artha) c
+		     WHERE a.lsle_id = c.lsle_id
+		       AND a.msag_sbm = c.msag_sbm
+		       AND a.msag_active = 1
+		START WITH a.msag_id = #value#
+		CONNECT BY (PRIOR a.mst_leader = a.msag_id OR PRIOR a.msag_rm = a.msag_id)	
+	</select>
+
+	<select id="selectValidasiDoubleNoPolASM" parameterClass="hashMap" resultClass="int">
+		SELECT COUNT(*) FROM eka.mst_policy_cs WHERE mscs_policy_no = #pol# AND reg_spaj <![CDATA[<>]]> #reg_spaj# 
+	</select>
+
+	<select id="selectEmailCabangSpajCrossSelling" parameterClass="string" resultClass="string">
+		SELECT c.lar_email
+		  FROM eka.mst_policy_cs a, eka.lst_region b, eka.lst_addr_region c
+		 WHERE reg_spaj = RPAD (REPLACE (#value#, '.'), 11, ' ')
+		   AND a.lca_id = b.lca_id
+		   AND a.lwk_id = b.lwk_id
+		   AND a.lsrg_id = b.lsrg_id
+		   AND b.lar_id = c.lar_id
+	</select>
+
+	<select id="selectEmailAgenCrossSelling" parameterClass="string" resultClass="string">
+		SELECT a.mspe_email
+		       msag_beg_date, msag_end_date
+		  FROM eka.mst_client_new a, eka.mst_agent b, eka.mst_agent_cs c
+		 WHERE a.mcl_id = b.mcl_id
+		   AND b.msag_id = c.msag_id
+		   AND c.lsle_id = 4
+		   AND c.reg_spaj = RPAD (REPLACE (#value#, '.'), 11, ' ')
+	</select>
+
+	<select id="selectKursBySpaj" parameterClass="java.util.HashMap" resultClass="double">
+		SELECT $jenis_kurs$
+		  FROM eka.lst_daily_currency
+		 WHERE lku_id = #lku_id# AND lkh_date = (SELECT mscs_pay_date
+		                                       FROM eka.mst_policy_cs
+		                                      WHERE reg_spaj = #reg_spaj#)	
+	</select>
+
+	<select id="selectLstCommNew" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+		SELECT lsco_comm, lsco_bonus
+		  FROM eka.lst_comm_new kom
+		 WHERE lsco_jenis = #lsco_jenis#
+		   AND lsbs_id = #lsbs_id#
+		   AND lsdbs_number = #lsdbs_number#
+		   AND lscb_id = #lscb_id#
+		   AND lsco_insper = #lsco_insper#
+		   AND lku_id = #lku_id#
+		   AND lev_comm = #lev_comm#
+		   AND lsco_year = #lsco_year#
+		   AND lsco_date =
+		          (SELECT MAX (lsco_date)
+		             FROM eka.lst_comm_new
+		            WHERE lsco_jenis = kom.lsco_jenis
+		              AND lsbs_id = kom.lsbs_id
+		              AND lsdbs_number = kom.lsdbs_number
+		              AND lscb_id = kom.lscb_id
+		              AND lsco_insper = kom.lsco_insper
+		              AND lku_id = kom.lku_id
+		              AND lev_comm = kom.lev_comm
+		              AND lsco_year = kom.lsco_year) 	
+	</select>
+
+	<select id="selectMstPolicyCsBySpaj" parameterClass="string" resultClass="polisCs">
+		SELECT (LPAD (a.lsbs_id, 3, 0) || LPAD (a.lsdbs_number, 3, 0)) lsbs_lsdbs,
+		       a.reg_spaj, a.lspd_id, a.lscb_id, a.lus_id, a.lsbs_id, a.lsdbs_number,
+		       a.lku_id, a.mscs_policy_no, a.mscs_ins_period, a.mscs_pay_period,
+		       a.mscs_premium, a.mscs_tsi, a.mscs_holder, a.mscs_age,
+		       a.mscs_birth_date, a.mscs_spaj_date, a.mscs_input_date,
+		       a.mscs_ttp_date, a.mscs_pay_date, a.mscs_beg_date, a.mscs_end_date,
+		       a.mscs_prod_date, a.mscs_prod_kurs, a.mscs_upp_eva, a.mscs_upp_kontes,
+		       a.mscs_upp_lain, a.mscs_comm, a.mscs_comm_tax, a.mscs_comm_kurs,
+		       a.mscs_comm_paid, a.mscs_comm_pay_date, b.lus_login_name,
+		       c.lspd_position, d.lsrg_nama, e.lwk_nama, f.lca_nama, a.lca_id,
+		       a.lwk_id, a.lsrg_id, a.mscs_pay_count, a.mscs_tgl_terima_asm, a.mscs_policy_type
+		  FROM eka.mst_policy_cs a,
+		       eka.lst_user b,
+		       eka.lst_document_position c,
+		       eka.lst_region d,
+		       eka.lst_wakil e,
+		       eka.lst_cabang f
+		 WHERE a.lus_id = b.lus_id
+		   AND a.lspd_id = c.lspd_id
+		   AND a.lca_id = d.lca_id
+		   AND a.lwk_id = d.lwk_id
+		   AND a.lsrg_id = d.lsrg_id
+		   AND d.lca_id = e.lca_id
+		   AND d.lwk_id = e.lwk_id
+		   AND e.lca_id = f.lca_id
+		   AND a.reg_spaj = #value#		 
+	</select>
+
+	<select id="selectMstAgentCsBySpaj" parameterClass="string" resultClass="agenCs">
+		SELECT   a.reg_spaj, a.msag_id, a.lsle_id, a.lev_comm, a.flag_sbm,
+		         c.mcl_first, b.lca_id, d.lsrg_nama
+		    FROM eka.mst_agent_cs a,
+		         eka.mst_agent b,
+		         eka.mst_client_new c,
+		         eka.lst_region d
+		   WHERE a.msag_id = b.msag_id
+		     AND b.mcl_id = c.mcl_id
+		     AND a.reg_spaj = #value#
+		     AND b.lca_id = d.lca_id
+		     AND b.lwk_id = d.lwk_id
+		     AND b.lsrg_id = d.lsrg_id
+		ORDER BY a.lsle_id DESC
+	</select>		
+	
+	<select id="selectMstPositionCsBySpaj" parameterClass="string" resultClass="posisiCs">
+		SELECT a.reg_spaj, a.mspc_date, a.lspd_id, a.lus_id, a.mspc_desc,
+		       b.lus_login_name, c.lspd_position
+		  FROM eka.mst_position_cs a, eka.lst_user b, eka.lst_document_position c
+		 WHERE a.lus_id = b.lus_id AND a.lspd_id = c.lspd_id AND a.reg_spaj = #value#
+	</select>
+
+	<select id="selectPosisiDokumenBySpaj" parameterClass="string" resultClass="posisiCs">
+		SELECT a.reg_spaj, a.lspd_id, b.lspd_position
+		  FROM eka.mst_policy_cs a, eka.lst_document_position b
+		 WHERE a.lspd_id = b.lspd_id AND a.reg_spaj = #value#
+	</select>
+
+	<select id="selectCariCrossSelling" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+		<isEqual property="tipe" compareValue="0"> <!-- SPAJ -->
+			SELECT a.reg_spaj, a.mscs_policy_no, a.mscs_holder, b.lspd_position
+			  FROM eka.mst_policy_cs a, eka.lst_document_position b
+			 WHERE a.reg_spaj LIKE '%' || upper(#kata#) || '%' AND a.lspd_id = b.lspd_id
+		</isEqual>
+		<isEqual property="tipe" compareValue="1"> <!-- No Polis -->
+			SELECT a.reg_spaj, a.mscs_policy_no, a.mscs_holder, b.lspd_position
+			  FROM eka.mst_policy_cs a, eka.lst_document_position b
+			 WHERE a.mscs_policy_no LIKE '%' || upper(#kata#) || '%' AND a.lspd_id = b.lspd_id
+		</isEqual>
+		<isEqual property="tipe" compareValue="2"> <!-- Pemegang -->
+			SELECT a.reg_spaj, a.mscs_policy_no, a.mscs_holder, b.lspd_position
+			  FROM eka.mst_policy_cs a, eka.lst_document_position b
+			 WHERE a.mscs_holder LIKE '%' || upper(#kata#) || '%' AND a.lspd_id = b.lspd_id
+		</isEqual>
+	</select>
+
+	<select id="selectDaftarCrossSelling" parameterClass="java.util.HashMap" resultClass="polisCs">
+		SELECT a.reg_spaj, a.mscs_policy_no, c.lsbs_id, c.lsbs_name, d.lsdbs_number,
+		       d.lsdbs_name, a.mscs_premium, a.mscs_tsi, a.mscs_holder,
+		       a.mscs_input_date, a.mscs_beg_date, a.mscs_end_date, e.lus_login_name, a.mscs_policy_type,
+		       a.mscs_tgl_terima_asm
+		  FROM eka.mst_policy_cs a,
+		       eka.lst_bisnis c,
+		       eka.lst_det_bisnis d,
+		       eka.lst_user e
+		 WHERE a.lsbs_id = c.lsbs_id
+		   AND a.lsbs_id = d.lsbs_id
+		   AND a.lsdbs_number = d.lsdbs_number
+		   AND a.lus_id = e.lus_id
+		<isNotEmpty property="lspd_id" prepend=" ">
+		   AND a.lspd_id = #lspd_id#
+		</isNotEmpty>
+		<isNotEmpty property="reg_spaj" prepend=" ">
+		   AND (a.reg_spaj LIKE '%' || upper(#reg_spaj#) || '%' OR a.mscs_policy_no LIKE '%' || upper(#reg_spaj#) || '%') 	
+		</isNotEmpty>
+		<isNotEmpty property="mscs_holder" prepend=" ">
+		   AND a.mscs_holder LIKE '%' || upper(#mscs_holder#) || '%'
+		</isNotEmpty>
+		<isNotEmpty property="startDate" prepend=" ">
+		   AND (a.mscs_input_date BETWEEN to_date(#startDate#||' 00:00','dd/MM/yyyy HH24:mi') AND to_date(#endDate#||' 00:00','dd/MM/yyyy HH24:mi')+1) 
+		</isNotEmpty>
+	</select>
+
+	<!-- Query2 Jatis (Prata) -->
+
+	<select id="selectDaftarKolomTabel" parameterClass="string" resultClass="string">
+		SELECT   column_name
+		    FROM all_tab_cols@jatis
+		   WHERE owner = 'EKA' AND table_name = upper(#value#)
+		ORDER BY column_id	
+	</select>
+
+	<!-- Query Jatis ada 9, query ke 2,3,4,5 hanya ada yg FULL saja, sedangkan ke 1,6,7,8,9 ada FULL dan INCREMENTAL -->
+
+	<select id="selectmasterdata_simas" resultClass="hashMap" parameterClass="string"> <!-- Query Jatis 1 (FULL & INCREMENTAL) -->
+		<isEqual compareValue="i">
+			SELECT * FROM eka.jat1_master2@jatis
+			MINUS
+			SELECT * FROM eka.jat1_master1@jatis
+		</isEqual>
+		<isNotEqual compareValue="i">
+			SELECT * FROM eka.jat1_master2@jatis
+		</isNotEqual>
+	</select>
+
+	<select id="selectbalancereport_simas" resultClass="hashMap" parameterClass="string"> <!-- Query Jatis 2 (FULL only) -->
+		SELECT * FROM eka.jat2_balanc2@jatis                  
+	</select>	
+
+	<select id="selectnilaitunai_simas" resultClass="hashMap" parameterClass="string"> <!-- Query Jatis 3 (FULL only) -->
+		SELECT * FROM eka.jat3_ntunai2@jatis
+	</select>
+
+	<select id="selectdetailtrx_simas" resultClass="hashMap" parameterClass="string"> <!-- Query Jatis 4 (FULL only) -->
+		SELECT * FROM eka.jat4_dtrx2@jatis                    
+	</select>
+
+	<select id="selectdetailfund_simas" resultClass="hashMap" parameterClass="string"> <!-- Query Jatis 5 (FULL only) -->
+		SELECT * FROM eka.jat5_dfund2@jatis                   
+	</select>
+
+	<select id="selectdetailrider_simas" resultClass="hashMap" parameterClass="string"> <!-- Query Jatis 6 (FULL & INCREMENTAL) -->
+		<isEqual compareValue="i">
+			SELECT * FROM eka.jat6_drider2@jatis
+			MINUS
+			SELECT * FROM eka.jat6_drider1@jatis
+		</isEqual>
+		<isNotEqual compareValue="i">
+			SELECT * FROM eka.jat6_drider2@jatis
+		</isNotEqual>
+	</select>
+
+	<select id="selectpolicyprofile_simas" resultClass="hashMap" parameterClass="string"> <!-- Query Jatis 7 (FULL & INCREMENTAL) -->
+		<isEqual compareValue="i">
+			SELECT * FROM eka.jat7_pprofile2@jatis
+			MINUS
+			SELECT * FROM eka.jat7_pprofile1@jatis
+		</isEqual>
+		<isNotEqual compareValue="i">
+			SELECT * FROM eka.jat7_pprofile2@jatis
+		</isNotEqual>
+	</select>
+
+	<select id="selectpolicyinsurable_simas" resultClass="hashMap" parameterClass="string"> <!-- Query Jatis 8 (FULL & INCREMENTAL) -->
+		<isEqual compareValue="i">
+			SELECT * FROM eka.jat8_pinsured2@jatis
+			MINUS
+			SELECT * FROM eka.jat8_pinsured1@jatis
+		</isEqual>
+		<isNotEqual compareValue="i">
+			SELECT * FROM eka.jat8_pinsured2@jatis
+		</isNotEqual>
+	</select>
+	<select id="selectpolicybeneficiary_simas" resultClass="hashMap" parameterClass="string"> <!-- Query Jatis 9 (FULL & INCREMENTAL) -->
+		<isEqual compareValue="i">
+			SELECT * FROM eka.jat9_pbenef2@jatis
+			MINUS
+			SELECT * FROM eka.jat9_pbenef1@jatis
+		</isEqual>
+		<isNotEqual compareValue="i">
+			SELECT * FROM eka.jat9_pbenef2@jatis
+		</isNotEqual>
+	</select>
+	
+	<!-- Pengajuan FAT -->
+
+	<select id="selectListFat" parameterClass="hashMap" resultClass="fat">
+		SELECT 
+			L.FATID, L.KD_AGENT, L.NAMA, 
+			L.TPL, L.TGL_LAHIR, L.GENDER, 
+			L.NOTELP, L.NOHP, L.POSITION, 
+			L.ACT_DATE, L.END_DATE, 
+			L.HONOR, L.TARGET, L.TARGETNOA, 
+			L.RESIGN_WHY, L.IS_ACTIVE, L.ALAMAT, 
+			L.GETNO, L.TGL_UPDATE, L.NIK_INPUT, 
+			L.NO_IDENTITAS, L.NOREK, L.KET_JBT, 
+			L.LCB_NO, L.LUS_ID, L.CREATE_DATE, L.POSISI,
+			L.KET_TERM
+		FROM
+			HRD.LST_FAT@eb L
+		WHERE
+			(trunc(l.tgl_update) between #begdate# and #enddate#) AND (upper(l.nama) like '%' || upper(#nama#) || '%')
+			<isNotEmpty property="posisi"> AND l.posisi = #posisi#</isNotEmpty>
+			<isNotEmpty property="lcb_no"> AND l.lcb_no = #lcb_no#</isNotEmpty>
+		ORDER BY 
+			l.nama
+	</select>
+
+	<select id="selectFat" parameterClass="string" resultClass="fat">
+		SELECT 
+			L.FATID, L.KD_AGENT, L.NAMA, 
+			L.TPL, L.TGL_LAHIR, L.GENDER, 
+			L.NOTELP, L.NOHP, L.POSITION, 
+			L.ACT_DATE, L.END_DATE, 
+			L.HONOR, L.TARGET, L.TARGETNOA, 
+			L.RESIGN_WHY, L.IS_ACTIVE, L.ALAMAT, 
+			L.GETNO, L.TGL_UPDATE, L.NIK_INPUT, 
+			L.NO_IDENTITAS, L.NOREK, L.KET_JBT, 
+			L.LCB_NO, L.LUS_ID, L.CREATE_DATE, L.POSISI
+		FROM
+			HRD.LST_FAT@eb L
+		WHERE
+			l.fatid = #fatid#
+	</select>
+
+	<select id="selectSequenceLstFat" resultClass="int" parameterClass="string">
+		select nvl(max(getno)+1,1) from hrd.lst_fat@eb where upper(trim(ket_jbt)) = upper(trim(#value#))
+	</select>
+
+	<select id="selectFatHistory" parameterClass="string" resultClass="fatHist">
+		select fatid, posisi, lus_id, nik_input, tanggal, keterangan 
+		from hrd.lst_fat_history@eb where fatid = #value# order by tanggal	
+	</select>
+
+	<select id="selectSequenceLstFatLetter" resultClass="int">
+		select nvl(max(no_surat_generate), 0)+1 from hrd.lst_fat_letter@eb
+		where bulan = to_char(sysdate, 'mm') and tahun = to_char(sysdate, 'yyyy')
+	</select>
+
+	<select id="selectCountFatLetter" parameterClass="string" resultClass="int">
+		select count(*) 
+		from hrd.lst_fat_letter@eb where fatid = #value#
+	</select>
+	
+	<select id="selectRomanMonthYear" resultClass="string">
+		select trim(to_char(sysdate, 'RM')) || '/' || trim(to_char(sysdate, 'yyyy')) roman from dual
+	</select>
+	
+	<select id="selectSeluruhEmailCabBsm" resultClass="string" parameterClass="string">
+		select * from (           
+		    select email_cab from eka.lst_cabang_bii where lcb_no = RPAD (#value#, 5, ' ')
+		    union
+		    select lus_email from eka.lst_user where cab_bank = #value# and lus_active = 1
+		) where email_cab is not null
+	</select>
+
+	<select id="selectValidasiInputFatDouble" parameterClass="hashMap" resultClass="string">
+		select fatid from hrd.lst_fat@eb where upper(nama) = upper(trim(#nama#)) and tgl_lahir = #tgl_lahir# and posisi not in (6,7)
+	</select>
+	
+	<select id="selectCountFatCetakHist" parameterClass="string" resultClass="int">
+		select count(keterangan)
+		from hrd.lst_fat_history@eb
+		where fatid = #value#
+			and keterangan like 'CETAK PENGAJUAN FAT'
+			or keterangan like 'CETAK PENGAJUAN BST'
+	</select>
+	
+	<select id="selectCountFatNameTagHist" parameterClass="string" resultClass="int">
+		select count(keterangan)
+		from hrd.lst_fat_history@eb
+		where fatid = #value#
+			and keterangan like 'CETAK NAMETAG'
+	</select>
+
+	<!-- Pengajuan FAT -->
+	
+</sqlMap>

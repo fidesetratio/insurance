@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using an evaluation version of JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="endorse_cetak_waris_lama" language="java" pageWidth="500" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="500" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.DataSource" value="EkaTest"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.Grid" value="true"/>
+	<import value="net.sf.jasperreports.engine.xml.JRXmlLoader"/>
+	<import value="com.ibatis.common.resources.Resources"/>
+	<import value="net.sf.jasperreports.engine.design.JRJdtCompiler"/>
+	<reportFont name="Verdana" isDefault="false" fontName="Verdana" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Verdana" pdfEncoding="Cp1252" isPdfEmbedded="true"/>
+	<reportFont name="Tahoma" isDefault="false" fontName="Tahoma" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Tahoma" pdfEncoding="Cp1252" isPdfEmbedded="true"/>
+	<parameter name="no" class="java.lang.String">
+		<defaultValueExpression><![CDATA["102004E00013"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lsje" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[new Integer(17)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="endorseno" class="java.lang.String">
+		<defaultValueExpression><![CDATA["102004E00013"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ketHeader" class="java.lang.String">
+	</parameter>
+	<parameter name="props" class="java.util.Properties">
+	</parameter>
+	<queryString><![CDATA[SELECT a.lsre_id_old, a.msbee_persen_old, b.lsre_relation,
+          TRIM (a.msbee_first_old)
+       || ' '
+       || TRIM (a.msbee_middle_old)
+       || ' '
+       || TRIM (a.msbee_last_old) AS nama,
+       a.msbee_first_old, a.msbee_birth_old, a.msen_endors_no, 0 AS flag_tgl
+  FROM eka.mst_benefeciary_endors a,
+eka.lst_relation b
+ WHERE a.msen_endors_no = $P{no}
+and a.lsre_id_old = b.lsre_id(+)]]></queryString>
+	<field name="FLAG_TGL" class="java.math.BigDecimal">
+	</field>
+	<field name="LSRE_ID_OLD" class="java.math.BigDecimal">
+	</field>
+	<field name="LSRE_RELATION" class="java.lang.String">
+	</field>
+	<field name="MSBEE_BIRTH_OLD" class="java.sql.Timestamp">
+	</field>
+	<field name="MSBEE_FIRST_OLD" class="java.lang.String">
+	</field>
+	<field name="MSBEE_PERSEN_OLD" class="java.math.BigDecimal">
+	</field>
+	<field name="MSEN_ENDORS_NO" class="java.lang.String">
+	</field>
+	<field name="NAMA" class="java.lang.String">
+	</field>
+	<detail>
+		<band height="15">
+			<textField>
+				<reportElement positionType="Float" x="50" y="0" width="210" height="15" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean($F{NAMA}!=null)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="30" y="0" width="20" height="15" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean($F{NAMA}!=null)]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font reportFont="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{REPORT_COUNT} + "."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="260" y="0" width="126" height="15" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean($F{NAMA}!=null)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSRE_RELATION}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="385" y="0" width="80" height="15">
+					<printWhenExpression><![CDATA[new Boolean($F{NAMA}!=null && $F{FLAG_TGL}.intValue()==0)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSBEE_PERSEN_OLD}!=null?($F{MSBEE_PERSEN_OLD}.intValue()>0?($P{REPORT_SCRIPTLET}.format2Digit($F{MSBEE_PERSEN_OLD})+" %"):""):""]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="385" y="0" width="80" height="15" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean($F{NAMA}!=null && $F{FLAG_TGL}.intValue()==1)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateStripes($F{MSBEE_BIRTH_OLD})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="40">
+			<textField>
+				<reportElement positionType="Float" x="145" y="10" width="195" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" isStyledText="true">
+					<font reportFont="Verdana"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["<style isBold=\"true\">D I U B A H   M E N J A D I</style>"]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

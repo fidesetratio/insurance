@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="print_medis" pageWidth="595" pageHeight="842" columnWidth="565" leftMargin="10" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="nospaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["37200901237"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="print" class="java.util.Date">
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT a.reg_spaj no_spaj, a.mspo_no_blanko, b1.mcl_first pemegang, a.mspo_age umur_pemegang, b2.mcl_first tertanggung, c.mste_age umur_tertanggung,
+		   		  e.lsdbs_name plan, d.mspr_tsi up, d.mspr_premium premi, f.lscb_pay_mode cara_bayar, 
+				  h.msdm_input_date, h.msdm_desc, g.lku_symbol,
+				  i.msdhr_input_date, i.msdhr_alasan,
+				  j.lsre_nama, i.msdhr_keputusan,
+				  (case
+				  	   when i.msdhr_keputusan = 1 then 'STANDARD'
+				  	   when i.msdhr_keputusan = 2 then 'SUBSTANDARD'
+					   when i.msdhr_keputusan = 3 then 'DECLINE'
+					   when i.msdhr_keputusan = 4 then 'POSTPONE'
+					   when i.msdhr_keputusan = 5 then 'BORDERLINE STANDARD'
+				  end) keputusan, i.msdhr_em
+		    FROM eka.mst_policy a,
+		   		 eka.mst_client_new b1,
+				 eka.mst_client_new b2,
+				 eka.mst_insured c,
+				 eka.mst_product_insured d,
+				 eka.lst_det_bisnis e,
+		         eka.lst_pay_mode f,
+		         eka.lst_kurs g,				 
+		   		 eka.mst_det_medical h,
+				 eka.mst_det_hsl_reas i,
+				 eka.lst_reinsurer j
+		   WHERE b1.mcl_id = a.mspo_policy_holder 
+		     AND b2.mcl_id = c.mste_insured
+		     AND a.reg_spaj = c.reg_spaj
+		     AND (e.lsbs_id(+) = d.lsbs_id)
+		     AND (e.lsdbs_number(+) = d.lsdbs_number)
+		     AND (d.reg_spaj = a.reg_spaj)
+		     AND (a.lscb_id = f.lscb_id(+))
+		     AND a.lku_id = g.lku_id (+)
+		     AND (d.lsbs_id < 300)	
+		     AND d.mspr_active = 1
+		     AND c.reg_spaj = h.reg_spaj(+)
+		     AND c.mste_insured_no = d.mste_insured_no
+		     AND c.mste_insured_no = h.mste_insured_no(+)
+		     AND c.reg_spaj = i.reg_spaj(+)	
+			 AND c.mste_insured_no = i.mste_insured_no(+)	
+			 AND i.lsrei_id = j.lsrei_id(+)
+		     AND a.reg_spaj = $P{nospaj}]]>
+	</queryString>
+	<field name="CARA_BAYAR" class="java.lang.String"/>
+	<field name="KEPUTUSAN" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSRE_NAMA" class="java.lang.String"/>
+	<field name="MSDHR_ALASAN" class="java.lang.String"/>
+	<field name="MSDHR_EM" class="java.math.BigDecimal"/>
+	<field name="MSDHR_INPUT_DATE" class="java.util.Date"/>
+	<field name="MSDHR_KEPUTUSAN" class="java.lang.String"/>
+	<field name="MSDM_DESC" class="java.lang.String"/>
+	<field name="MSDM_INPUT_DATE" class="java.util.Date"/>
+	<field name="MSPO_NO_BLANKO" class="java.lang.String"/>
+	<field name="NO_SPAJ" class="java.lang.String"/>
+	<field name="PEMEGANG" class="java.lang.String"/>
+	<field name="PLAN" class="java.lang.String"/>
+	<field name="PREMI" class="java.math.BigDecimal"/>
+	<field name="TERTANGGUNG" class="java.lang.String"/>
+	<field name="UMUR_PEMEGANG" class="java.math.BigDecimal"/>
+	<field name="UMUR_TERTANGGUNG" class="java.math.BigDecimal"/>
+	<field name="UP" class="java.math.BigDecimal"/>
+	<pageHeader>
+		<band height="125">
+			<staticText>
+				<reportElement x="127" y="54" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="460" y="39" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="0" width="412" height="27"/>
+				<textElement verticalAlignment="Top">
+					<font size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PT Asuransi Jiwa Sinarmas MSIG Tbk. - Data Medis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="127" y="39" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="466" y="39" width="100" height="15"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CARA_BAYAR}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="460" y="54" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="333" y="54" width="79" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[UP]]></text>
+			</staticText>
+			<subreport>
+				<reportElement x="134" y="105" width="150" height="20"/>
+				<subreportParameter name="nospaj">
+					<subreportParameterExpression><![CDATA[$P{nospaj}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.uw.sub_print_medis1")+".jasper"]]></subreportExpression>
+			</subreport>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="203" y="39" width="80" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_NO_BLANKO}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="39" width="125" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No. SPAJ / No. Blanko ]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="133" y="54" width="150" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PEMEGANG} + " /  " + $F{UMUR_PEMEGANG} + " tahun"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="333" y="84" width="126" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SAR ( total risk basic + rider )]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="193" y="39" width="10" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[ / ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="127" y="69" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="466" y="54" width="100" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_SYMBOL},$F{UP})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="460" y="84" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="134" y="90" width="150" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PLAN}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="128" y="105" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="133" y="39" width="60" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NO_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1" y="105" width="79" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Rider "]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="333" y="69" width="79" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="460" y="69" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="54" width="126" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Pemegang Polis / usia]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="466" y="69" width="100" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_SYMBOL},$F{PREMI})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="1" y="90" width="79" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Plan
+]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="133" y="69" width="150" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TERTANGGUNG} + " /  " + $F{UMUR_TERTANGGUNG} + " tahun"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="333" y="39" width="79" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Cara Bayar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="128" y="90" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="69" width="126" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Tertanggung / usia]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="531" y="0" width="20" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[of]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="517" y="0" width="14" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" hyperlinkType="None">
+				<reportElement x="551" y="0" width="14" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="415" y="15" width="70" height="15"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="10">
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Tanggal Print]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="486" y="15" width="79" height="15"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$P{print}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="415" y="0" width="70" height="15"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="10">
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Halaman ]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="226">
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="5" y="20" width="545" height="206"/>
+				<box padding="5">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSDM_DESC}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="5" y="5" width="80" height="15"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{MSDM_INPUT_DATE})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<lastPageFooter>
+		<band height="96">
+			<staticText>
+				<reportElement x="0" y="51" width="126" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Alasan
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="127" y="36" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="36" width="126" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Hasil Keputusan
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="127" y="6" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="21" width="126" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Oleh
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="6" width="126" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Keputusan Reas tanggal
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="127" y="51" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="127" y="21" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="133" y="6" width="220" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{MSDHR_INPUT_DATE})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="133" y="21" width="220" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSRE_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="133" y="36" width="110" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KEPUTUSAN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="133" y="51" width="220" height="45"/>
+				<box topPadding="2" leftPadding="0" bottomPadding="0" rightPadding="0">
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Top">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSDHR_ALASAN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="243" y="36" width="110" height="15"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSDHR_KEPUTUSAN}.equals("2")?"EM : "+$F{MSDHR_EM}+" %" : ""]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
+</jasperReport>

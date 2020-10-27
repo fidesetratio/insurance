@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<update id="elions.uw_reinstate.updateMstTransHistory" parameterClass="java.util.HashMap">
+		UPDATE eka.mst_trans_history tuj
+		   SET $kolom_tanggal$ = #tanggal#,
+		       $user_tanggal$ = #lus_id#
+		 WHERE reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ')
+		   AND jenis = #jenis#
+		   AND trans_ke = (select max(trans_ke) from eka.mst_trans_history where jenis = tuj.jenis and reg_spaj = tuj.reg_spaj)
+		   AND trans_ke2 = (select max(trans_ke2) from eka.mst_trans_history where jenis = tuj.jenis and reg_spaj = tuj.reg_spaj)
+	</update>
+
+	<!-- update reas dan lapse date diisi null -->
+	<update id="elions.uw_reinstate.update.mst_reins" parameterClass="java.util.HashMap">
+ 		UPDATE EKA.MST_REINS  
+ 		SET LSPD_ID = #lspd_id#,   
+ 		    MSRE_LAPSE_DATE = #lapse_date#, 
+    	 	MSRE_NEXT_PRM_DATE = SYSDATE
+	   	WHERE EKA.MST_REINS.REG_SPAJ = rpad(replace(#spaj#,'.'),11,' ')  
+   	
+	</update>
+
+	<update id="elions.uw_reinstate.update.mst_uw_reinstate" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_UW_REINSTATE  
+		SET LSPD_ID = #lspd_id#,
+		    LUS_ID = #lus_id#,
+			MSUR_REAS_BLN_LAPSE = #bln_lapse#  
+		WHERE EKA.MST_UW_REINSTATE.REG_SPAJ = rpad(replace(#spaj#,'.'),11,' ')
+		 	AND EKA.MST_UW_REINSTATE.MSRT_REINSTATE_NO = rpad(#no_reins#,11,' ')
+  	
+	</update>
+
+	<update id="elions.uw_reinstate.update.mst_uw_reinstate.lspd_id" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_UW_REINSTATE  
+		SET LSPD_ID = #lspd_id#
+		WHERE EKA.MST_UW_REINSTATE.REG_SPAJ = rpad(replace(#spaj#,'.'),11,' ')
+		 	AND EKA.MST_UW_REINSTATE.MSRT_REINSTATE_NO = rpad(#no_reins#,11,' ')
+  	
+	</update>
+
+	<update id="elions.uw_reinstate.update.mst_policy.lspd_id" parameterClass="java.util.HashMap">
+		 UPDATE EKA.MST_POLICY  
+		     SET LSPD_ID = #lspd_id#
+		   WHERE EKA.MST_POLICY.REG_SPAJ = rpad(replace(#spaj#,'.'),11,' ')   
+ 	
+	</update>
+
+	<update id="elions.uw_reinstate.update.mst_insured.lspd_id" parameterClass="java.util.HashMap">
+		 UPDATE EKA.MST_INSURED  
+		     SET LSPD_ID = #lspd_id#  
+		   WHERE EKA.MST_INSURED.REG_SPAJ = rpad(replace(#spaj#,'.'),11,' ')   
+ 	
+	</update>
+	
+	<!-- untuk back to reinstate(tidak pake no reins tapi reas pake kondisi spaj dan reins no (sesuai PB)-->
+	<update id="elions.uw_reinstate.update.mst_reinstate" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_REINSTATE  
+		SET LSPD_ID = #lspd_id# 
+		WHERE EKA.MST_REINSTATE.REG_SPAJ = rpad(replace(#spaj#,'.'),11,' ')   
+		<isNotEmpty property="no_reins">
+		 	AND EKA.MST_REINSTATE.MSRT_REINSTATE_NO = rpad(#no_reins#,11,' ')
+		 </isNotEmpty>	
+  	</update>
+	
+	<update id="elions.uw_reinstate.update.mst_reins1" parameterClass="java.util.HashMap">
+  		UPDATE EKA.MST_REINS  
+     		SET LSPD_ID = #lspd_id#,   
+         	 MSRE_LAPSE_DATE = #lapse_date#,
+				 MSRE_NEXT_PRM_DATE = SYSDATE
+   	 WHERE EKA.MST_REINS.REG_SPAJ = #spaj#
+  	</update>
+	
+	<update id="elions.uw_reinstate.update.mst_reins2" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_REINS  
+	     SET  MSRE_NEXT_PRM_DATE = Trunc(SYSDATE), 
+		  		 LSPD_ID = #lspd_id#
+	   WHERE ( EKA.MST_REINS.REG_SPAJ = rpad(replace(#spaj#,'.'),11,' ') ) AND  
+	         ( EKA.MST_REINS.MSTE_INSURED_NO = #no_insured# )   
+
+  	</update>
+	
+  	<!-- proses edit Surat Konfirmasi-->	
+	<update id="elions.uw_reinstate.update.mst_uw_reinstate.accept" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_UW_REINSTATE  
+	      SET   MSUR_ACCEPT=#accept#,
+	      		<isNotEmpty property="accept_note">MSUR_ACCEPT_NOTE = #accept_note#,</isNotEmpty>
+				<isNotEmpty property="tgl_accept">MSUR_TANGGAL_ACC=#tgl_accept#,</isNotEmpty>
+				<isNotEmpty property="kondisi_polis">MSUR_KONDISI_POLIS=#kondisi_polis#,</isNotEmpty>
+				<isNotEmpty property="kondisi_note">MSUR_KONDISI_NOTE=#kondisi_note#,</isNotEmpty>
+				MSUR_TOTAL_UNBAYAR=#tot_premi#,
+	      		MSUR_TOTAL_BUNGA_UNBAYAR=#tot_bunga#,
+	      		MSUR_TGL_BATAS_PAID=#tgl_paid#
+		    WHERE EKA.MST_UW_REINSTATE.REG_SPAJ = rpad(replace(#spaj#,'.'),11,' ')   and
+		    	  EKA.MST_UW_REINSTATE.MSRT_REINSTATE_NO = rpad(#reinsNo#,11,' ')
+  	</update>
+
+	<update id="elions.uw_reinstate.update.mst_uw_reinstate.msur_print" parameterClass="java.util.HashMap">
+	  	UPDATE EKA.MST_UW_REINSTATE  
+	      SET MSUR_PRINT = #msur_print#,
+				 MSUR_PRINT_DATE = SYSDATE,
+				 LUS_ID = #lus_id#
+	    WHERE EKA.MST_UW_REINSTATE.REG_SPAJ = rpad(replace(#spaj#,'.'),11,' ')   
+	   	AND EKA.MST_UW_REINSTATE.MSRT_REINSTATE_NO =rpad(#reins#,11,' ')
+  	</update>
+
+	<update id="elions.uw_reinstate.update.mst_uw_reinstate.reedit" parameterClass="java.util.HashMap">
+		 UPDATE EKA.MST_UW_REINSTATE  
+			  SET MSUR_PRINT = #msur_print#,
+		  			MSUR_PRINT_DATE = #msur_print_date#,
+					MSUR_REPRINT_NOTE = #desc#  
+			WHERE EKA.MST_UW_REINSTATE.REG_SPAJ = rpad(replace(#spaj#,'.'),11,' ')
+			  AND EKA.MST_UW_REINSTATE.MSRT_REINSTATE_NO = rpad(#reins#,11,' ')
+  	</update>
+
+<!-- 	<update id="elions.uw_reinstate.update.mst_uw_reinstate.kondisi_note" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_UW_REINSTATE  
+   			SET MSUR_KONDISI_NOTE = #kondisi_note#
+			    WHERE EKA.MST_UW_REINSTATE.REG_SPAJ = #spaj#   
+
+  	</update>
+	
+	<update id="elions.uw_reinstate.update.mst_uw_reinstate.accept_note" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_UW_REINSTATE  
+	      SET MSUR_ACCEPT_NOTE = #accept_note#
+		    WHERE EKA.MST_UW_REINSTATE.REG_SPAJ = #spaj#   
+  	</update>
+	
+	<update id="elions.uw_reinstate.update.mst_uw_reinstate.kondisi_polis" parameterClass="java.util.HashMap">
+	  	UPDATE EKA.MST_UW_REINSTATE  
+		   	SET MSUR_KONDISI_POLIS = #kondisi_polis#,
+				 MSUR_KONDISI_NOTE = #kondisi_note#
+			 WHERE EKA.MST_UW_REINSTATE.REG_SPAJ = #spaj#
+
+  	</update>
+	
+update id="elions.uw_reinstate.update.mst_uw_reinstate_lspd_id" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_UW_REINSTATE  
+		SET LSPD_ID = #lspd_id#
+		WHERE EKA.MST_UW_REINSTATE.REG_SPAJ = #spaj#
+		 	AND EKA.MST_UW_REINSTATE.MSRT_REINSTATE_NO = #no_reins#
+  	
+	</update>   -->
+
+
+
+</sqlMap>

@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="reportAkseptasiKhusus" pageWidth="1610" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="1570" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.VGuides.Title" value="36,50"/>
+	<property name="com.jasperassistant.designer.VGuides.Column Header" value="12,28"/>
+	<property name="com.jasperassistant.designer.HGuides" value="5,29,120,210,287,370,475,475,573,679,791,1010,1113,1194"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="tanggalAwal" class="java.lang.String">
+		<defaultValueExpression><![CDATA["17/12/2006"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.lang.String">
+		<defaultValueExpression><![CDATA["17/12/2007"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<queryString>
+		<![CDATA[SELECT /*+ first_rows */
+       a.reg_spaj, a.mspo_policy_no, a.mspo_date_print, b.mste_tgl_aksep,
+       c.lku_id, c.mspr_premium, (e.msco_comm - e.msco_tax) komisi, d.msag_id,
+       j.lca_id, j.lca_nama, k.lscb_pay_mode, l.lsdbs_name,
+       f.mcl_first nama_pp, g.mcl_first nama_tt, i.mcl_first nama_penutup,m.MSDD_DEDUCT,m.msdd_tax
+FROM eka.mst_policy a,
+       eka.mst_insured b,
+       eka.mst_product_insured c,
+       eka.mst_agent_prod d,
+       eka.mst_commission e,
+       eka.mst_client_new f,
+       eka.mst_client_new g,
+       eka.mst_agent h,
+       eka.mst_client_new i,
+       eka.lst_cabang j,
+       eka.lst_pay_mode k,
+       eka.lst_det_bisnis l,
+	   EKA.MST_DEDUCT M
+ WHERE a.lstb_id = 1
+   AND a.lspd_id IN (2, 4, 6)
+   AND a.reg_spaj = b.reg_spaj
+   AND b.lssa_id = 10
+   AND a.reg_spaj = c.reg_spaj
+   AND c.lsbs_id < 300
+   AND a.reg_spaj = d.reg_spaj
+   AND d.lsle_id = 4
+   AND d.reg_spaj = e.reg_spaj
+   AND e.msbi_premi_ke=1
+   AND e.msbi_tahun_ke=1
+   AND e.lev_comm=4
+   AND b.mste_flag_komisi=0
+   AND d.msag_id = e.msag_id
+   AND a.mspo_policy_holder = f.mcl_id
+   AND b.mste_insured = g.mcl_id
+   AND d.msag_id = h.msag_id
+   AND h.mcl_id = i.mcl_id
+   AND a.lca_id = j.lca_id
+   AND a.lscb_id = k.lscb_id
+   AND c.lsbs_id = l.lsbs_id 
+   AND c.lsdbs_number = l.lsdbs_number
+	and trunc(b.mste_tgl_aksep) >=to_date($P{tanggalAwal},'dd/mm/yyyy')
+			   and trunc(b.mste_tgl_aksep) <=to_date($P{tanggalAkhir},'dd/mm/yyyy')
+   AND E.MSCO_ID=M.MSCO_ID(+)
+ORDER BY SUBSTR (a.reg_spaj, 1, 2), SUBSTR (a.reg_spaj, 3, 4), SUBSTR (a.reg_spaj, 7)]]>
+	</queryString>
+	<field name="KOMISI" class="java.math.BigDecimal"/>
+	<field name="LCA_ID" class="java.lang.String"/>
+	<field name="LCA_NAMA" class="java.lang.String"/>
+	<field name="LKU_ID" class="java.lang.String"/>
+	<field name="LSCB_PAY_MODE" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="MSAG_ID" class="java.lang.String"/>
+	<field name="MSDD_DEDUCT" class="java.math.BigDecimal"/>
+	<field name="MSDD_TAX" class="java.math.BigDecimal"/>
+	<field name="MSPO_DATE_PRINT" class="java.util.Date"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="MSTE_TGL_AKSEP" class="java.util.Date"/>
+	<field name="NAMA_PENUTUP" class="java.lang.String"/>
+	<field name="NAMA_PP" class="java.lang.String"/>
+	<field name="NAMA_TT" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<title>
+		<band height="59">
+			<staticText>
+				<reportElement x="5" y="12" width="1130" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[LIST  PENDING KOMISI  KARENA  AKSEPTASI  KHUSUS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="417" y="36" width="80" height="14"/>
+				<textElement/>
+				<text><![CDATA[Periode]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="510" y="37" width="96" height="14"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggalAwal}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="622" y="36" width="80" height="15"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggalAkhir}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="30">
+			<line>
+				<reportElement x="30" y="1" width="1" height="28"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="5" y="1" width="1442" height="2"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="5" y="28" width="1444" height="2"/>
+				<graphicElement/>
+			</line>
+			<staticText>
+				<reportElement x="212" y="3" width="74" height="25"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Cabang]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="373" y="4" width="101" height="24"/>
+				<textElement/>
+				<text><![CDATA[Pemegang Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="477" y="3" width="95" height="25"/>
+				<textElement/>
+				<text><![CDATA[Produk]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="574" y="3" width="103" height="25"/>
+				<textElement/>
+				<text><![CDATA[Tgl. Efektif]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="681" y="3" width="109" height="26"/>
+				<textElement/>
+				<text><![CDATA[Tgl. Akseptasi Khusus]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="793" y="3" width="128" height="25"/>
+				<textElement/>
+				<text><![CDATA[Alasan akseptasi khusus]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1012" y="1" width="101" height="27"/>
+				<textElement>
+					<font pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Cara bayar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1113" y="2" width="80" height="25"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1196" y="2" width="76" height="27"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Komisi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1275" y="1" width="167" height="27"/>
+				<textElement verticalAlignment="Middle">
+					<font pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Pemotongan Komisi (utk beli Polis)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="123" y="3" width="86" height="27"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Kode Penutup]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="290" y="3" width="79" height="26"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[No. Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="6" y="2" width="22" height="27"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="32" y="2" width="88" height="27"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Nama Penutup]]></text>
+			</staticText>
+			<line>
+				<reportElement x="5" y="0" width="1" height="29"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="121" y="3" width="1" height="24"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="288" y="2" width="1" height="27"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="211" y="1" width="1" height="28"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="371" y="0" width="1" height="29"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="475" y="0" width="1" height="29"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="573" y="0" width="1" height="29"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="679" y="0" width="1" height="29"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="1113" y="0" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="1010" y="1" width="1" height="28"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="791" y="6" width="1" height="24"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="1194" y="1" width="1" height="28"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="1274" y="2" width="1" height="27"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="1447" y="2" width="1" height="27"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="38">
+			<line>
+				<reportElement x="1447" y="0" width="1" height="38"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="1274" y="-4" width="1" height="41"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="1194" y="-2" width="1" height="39"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="1113" y="-2" width="1" height="39"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="1010" y="-2" width="1" height="38"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="791" y="-1" width="1" height="37"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="679" y="-4" width="1" height="39"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="573" y="-4" width="1" height="40"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="475" y="-4" width="1" height="39"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="371" y="-4" width="1" height="40"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="288" y="-4" width="1" height="39"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="211" y="-4" width="1" height="39"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="121" y="-4" width="1" height="39"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="29" y="-2" width="1" height="38"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="5" y="-3" width="1" height="38"/>
+				<graphicElement/>
+			</line>
+			<textField>
+				<reportElement x="6" y="-1" width="23" height="21"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="30" y="-1" width="90" height="21"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PENUTUP}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="123" y="-1" width="87" height="21"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSAG_ID}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="212" y="-1" width="75" height="21"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LCA_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="290" y="-1" width="80" height="21"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REG_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="371" y="-1" width="103" height="21"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PP}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="478" y="-1" width="96" height="21"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="684" y="1" width="107" height="19"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSTE_TGL_AKSEP}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1012" y="-1" width="103" height="21"/>
+				<textElement>
+					<font pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSCB_PAY_MODE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1114" y="-1" width="79" height="21"/>
+				<textElement textAlignment="Right">
+					<font pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSPR_PREMIUM}]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement x="792" y="2" width="215" height="29"/>
+				<subreportParameter name="spaj">
+					<subreportParameterExpression><![CDATA[$F{REG_SPAJ}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.uw.sub_list_akseptasi_khusus")+".jasper"]]></subreportExpression>
+			</subreport>
+			<textField>
+				<reportElement x="1194" y="2" width="80" height="15"/>
+				<textElement textAlignment="Right">
+					<font pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{KOMISI}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1277" y="2" width="132" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSDD_DEDUCT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="577" y="1" width="99" height="17"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSTE_TGL_AKSEP}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="5" y="37" width="1443" height="1"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="90">
+			<textField>
+				<reportElement positionType="Float" x="1056" y="1" width="141" height="10"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement positionType="Float" x="1200" y="2" width="25" height="10" isPrintWhenDetailOverflows="true"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

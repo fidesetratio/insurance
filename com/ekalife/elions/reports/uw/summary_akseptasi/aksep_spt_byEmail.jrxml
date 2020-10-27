@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="aksep_spt_byEmail" pageWidth="1200" pageHeight="595" columnWidth="1160" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<parameter name="tanggalAwal" class="java.util.Date"/>
+	<parameter name="tanggalAkhir" class="java.util.Date"/>
+	<queryString>
+		<![CDATA[select distinct
+    a.reg_spaj spaj,
+    eka.utils.pemegang (a.reg_spaj) Pemegang_Polis,
+    eka.utils.tertanggung (a.reg_spaj) Tertanggung,
+    TO_CHAR (c.mspr_beg_date, 'dd/MM/yyyy') Tanggal,
+    d.lsdbs_name Produk,
+      (  CASE
+                when d.lsbs_id in(086,094,123,124,142,143,144,155,175,176,177) then (select distinct to_char(mpr_jangka_invest) from eka.mst_powersave_ro where reg_spaj = a.reg_spaj and msbi_premi_ke='1' and msbi_tahun_ke='1')||'bln'
+                 when d.lsbs_id =158 then (select distinct to_char(mpr_jangka_invest) from eka.mst_powersave_ro where reg_spaj = a.reg_spaj and msbi_premi_ke='1' and msbi_tahun_ke='1')||'bln MIP'
+                 when d.lsbs_id = 188 then ((case when (select flag_bulanan from eka.mst_psave where reg_spaj = a.reg_spaj)=1 then (select distinct to_char(mps_mgi) from eka.mst_psave where reg_spaj = a.reg_spaj and mps_premi_ke='1' and mps_tahun_ke='1')|| ' bln MIP' else (select distinct to_char(mps_mgi) from eka.mst_psave where reg_spaj = a.reg_spaj and mps_premi_ke='1')||' bln' end))
+                 when d.lsdbs_name like '%STABLE LINK%' then((case when (select distinct flag_bulanan from eka.mst_slink where reg_spaj = a.reg_spaj and msl_no = '1')=1 then (select distinct to_char(msl_mgi) from eka.mst_slink where reg_spaj = a.reg_spaj and msl_no = '1'and msl_premi_ke='1' and msl_tahun_ke='1')|| ' bln MIP' else (select distinct to_char(msl_mgi) from eka.mst_slink where reg_spaj = a.reg_spaj and msl_no = '1'and msl_premi_ke='1' and msl_tahun_ke='1')||' bln' end))
+                 when d.lsdbs_name like '%STABLE SAVE%' then((case when (select distinct flag_bulanan from eka.mst_ssave where reg_spaj = a.reg_spaj and mss_no = '1')=1 then (select distinct to_char(mss_mgi) from eka.mst_ssave where reg_spaj = a.reg_spaj and mss_no = '1')|| ' bln MIP' else (select distinct to_char(mss_mgi) from eka.mst_ssave where reg_spaj = a.reg_spaj and mss_no = '1')||' bln' end))
+                  ELSE '' END)MGI,
+                TO_CHAR ( (select distinct e.msps_date from eka.mst_position_spaj e where e.reg_spaj = a.reg_spaj and e.msps_desc='SPT DIKIRIM KE DIREKSI'),'dd/MM/yyyy')terimaSPT,
+               TO_CHAR ( (select distinct e.msps_date from eka.mst_position_spaj e  where lus_id = '65' and e.reg_spaj = a.reg_spaj and e.msps_desc='SPT Telah Di Setujui'),'dd/MM/yyyy')terimaHH,
+                TO_CHAR( (select distinct msps_date from eka.mst_position_spaj where lus_id = '543' and reg_spaj = a.reg_spaj and msps_desc='SPT Telah Di Setujui'),'dd/MM/yyyy')terimaCK,
+                 TO_CHAR((select distinct msps_date from eka.mst_position_spaj where lus_id = '65' and reg_spaj = a.reg_spaj and msps_desc='SPT Tidak Di Setujui'),'dd/MM/yyyy')tolakHH,
+                TO_CHAR( (select distinct msps_date from eka.mst_position_spaj where lus_id = '543' and reg_spaj = a.reg_spaj and msps_desc='SPT Tidak Di Setujui'),'dd/MM/yyyy')tolakCK,     
+                (select lus_full_name from eka.lst_user where lus_id = (select lus_id from eka.mst_position_spaj where reg_spaj=A.REG_SPAJ and msps_desc='SPT DIKIRIM KE DIREKSI'))usr
+from
+    eka.mst_policy a,
+    eka.mst_position_spaj b,
+    eka.mst_product_insured c,
+    eka.lst_det_bisnis d,
+    eka.lst_user e
+where
+    a.reg_spaj = b.reg_spaj    
+    and a.reg_spaj = c.reg_spaj	
+    and c.lsbs_id = d.lsbs_id
+    and c.lsdbs_number = d.lsdbs_number and
+    B.JENIS='WAITING APPROVAL SPT'
+    and c.lsbs_id <300
+	 AND TRUNC(b.msps_date) >= $P{tanggalAwal} 
+    AND TRUNC(b.msps_date)<=$P{tanggalAkhir}
+    order by terimaSPT]]>
+	</queryString>
+	<field name="SPAJ" class="java.lang.String"/>
+	<field name="PEMEGANG_POLIS" class="java.lang.String"/>
+	<field name="TERTANGGUNG" class="java.lang.String"/>
+	<field name="TANGGAL" class="java.lang.String"/>
+	<field name="PRODUK" class="java.lang.String"/>
+	<field name="MGI" class="java.lang.String"/>
+	<field name="TERIMASPT" class="java.lang.String"/>
+	<field name="TERIMAHH" class="java.lang.String"/>
+	<field name="TERIMACK" class="java.lang.String"/>
+	<field name="TOLAKHH" class="java.lang.String"/>
+	<field name="TOLAKCK" class="java.lang.String"/>
+	<field name="USR" class="java.lang.String"/>
+	<group name="Group_1"/>
+	<columnHeader>
+		<band height="90">
+			<staticText>
+				<reportElement x="0" y="65" width="20" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="20" y="65" width="100" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No.SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="120" y="65" width="115" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Pemegang Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="235" y="65" width="106" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tertanggung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="341" y="65" width="65" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tanggal Berlaku Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="406" y="65" width="112" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Produk]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="518" y="65" width="80" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[MGI/MTI]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="688" y="65" width="94" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tanggal Disetujui HH]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="4" width="340" height="23"/>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Report Akseptasi SPT by Email"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="29" width="964" height="15"/>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Periode Kirim SPT: "  + $P{REPORT_SCRIPTLET}.formatDateIndonesian($P{tanggalAwal}) + " s/d " + $P{REPORT_SCRIPTLET}.formatDateIndonesian($P{tanggalAkhir})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="782" y="65" width="94" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tanggal Disetujui CK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="876" y="65" width="94" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tanggal Tolak HH]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="970" y="65" width="94" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tanggal Tolak CK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1064" y="65" width="94" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[User UW]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="598" y="65" width="90" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tanggal Kirim SPT]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15">
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="0" y="0" width="20" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="20" y="0" width="100" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="120" y="0" width="115" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PEMEGANG_POLIS}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="235" y="0" width="106" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TERTANGGUNG}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="341" y="0" width="65" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TANGGAL}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="406" y="0" width="112" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PRODUK}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="518" y="0" width="80" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MGI}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="688" y="0" width="94" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TERIMAHH}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="782" y="0" width="94" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TERIMACK}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="876" y="0" width="94" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TOLAKHH}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="970" y="0" width="94" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TOLAKCK}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1064" y="0" width="94" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{USR}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="598" y="0" width="90" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TERIMASPT}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

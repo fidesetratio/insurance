@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ekasarman" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.Grid" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["02200800039"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT e.lku_symbol, (c.mspr_premium  * decode(rownum,1,1,0.9)) premi_tahunan, rownum tahun, decode(rownum,1,'','discount 10%') diskon, a.lscb_id, decode(a.lscb_id,1,'Per Triwulan untuk', 2, 'Per Semester untuk', 3, '', 6, 'Per Bulan untuk') cara_bayar
+  FROM eka.mst_policy a, eka.mst_insured b, eka.mst_product_insured c, (select rownum no from all_objects) d, eka.lst_kurs e
+ WHERE a.reg_spaj = rpad($P{spaj},11,' ')
+   AND a.reg_spaj = b.reg_spaj
+   AND b.reg_spaj = c.reg_spaj
+   AND b.mste_insured_no = c.mste_insured_no
+   AND c.lsbs_id < 800
+   AND d.no <= a.mspo_pay_period
+   AND a.lku_id = e.lku_id]]>
+	</queryString>
+	<field name="CARA_BAYAR" class="java.lang.String"/>
+	<field name="DISKON" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSCB_ID" class="java.math.BigDecimal"/>
+	<field name="PREMI_TAHUNAN" class="java.math.BigDecimal"/>
+	<field name="TAHUN" class="java.math.BigDecimal"/>
+	<detail>
+		<band height="11">
+			<staticText>
+				<reportElement positionType="Float" x="0" y="0" width="115" height="11">
+					<printWhenExpression><![CDATA[new Boolean($F{TAHUN}.intValue()==1)]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Tahoma" size="9"/>
+				</textElement>
+				<text><![CDATA[Premi Plan Pokok ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="116" y="0" width="5" height="11"/>
+				<textElement>
+					<font fontName="Tahoma" size="9"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="125" y="0" width="26" height="11"/>
+				<textElement>
+					<font fontName="Tahoma" size="9" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="155" y="0" width="73" height="11"/>
+				<textElement textAlignment="Right">
+					<font fontName="Tahoma" size="9" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("", $F{PREMI_TAHUNAN})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="240" y="0" width="176" height="11">
+					<printWhenExpression><![CDATA[new Boolean($F{LSCB_ID}.intValue() != 0)]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Tahoma" size="9" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{CARA_BAYAR}==null?"": $F{CARA_BAYAR}) + " Tahun ke-" + $F{TAHUN}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

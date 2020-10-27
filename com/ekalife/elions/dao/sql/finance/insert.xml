@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<insert id="elions.finance.insertBonds" parameterClass="java.util.HashMap">
+		INSERT INTO eka.inv_bond_price
+		            (invcode, kode_bond, ibp_month, lus_id, ibp_input, ibp_price,
+		             ibp_rate, ibp_outstd, ibp_bond_rate)
+		   SELECT invcode, kode_bond, #ibp_month# ibp_month, #lus_id# lus_id,
+		          SYSDATE ibp_input, #ibp_price# ibp_price, ibp_rate, ibp_outstd,
+		          ibp_bond_rate
+		     FROM eka.inv_bond_price a
+		    WHERE invcode = '02'
+		      AND kode_bond = RPAD (#kode_bond#, 10, ' ')
+		      AND ibp_month = (SELECT MAX (ibp_month)
+		                         FROM eka.inv_bond_price
+		                        WHERE invcode = a.invcode AND kode_bond = a.kode_bond)
+	</insert>
+
+	<insert id="elions.finance.insertSaham" parameterClass="java.util.HashMap">
+		INSERT INTO eka.inv_stock_price
+		            (isp_stock_id, ims_stock_id, lus_id, isp_input_date,
+		             isp_trans_date, isp_total, isp_price)
+		   SELECT   MAX (sp.isp_stock_id) + 1, sm.ims_stock_id, #lus_id# lus_id,
+		            sysdate isp_input_date, #isp_trans_date# isp_trans_date, isp_total, #isp_price# isp_price
+		       FROM eka.inv_stock_price sp, eka.inv_stock_master sm
+		      WHERE sp.ims_stock_id = sm.ims_stock_id
+		        AND sm.ks_stock = #ks_stock#
+		        AND sp.isp_trans_date = (SELECT MAX (isp_trans_date)
+		                                   FROM eka.inv_stock_price
+		                                  WHERE ims_stock_id = sm.ims_stock_id)
+		   GROUP BY sm.ims_stock_id, isp_total
+	</insert>
+
+	<insert id="elions.finance.insertReksadana" parameterClass="java.util.HashMap">
+		INSERT INTO eka.inv_reksa_det
+		            (ire_reksa_no, mrd_trans_id, lus_id, ird_reksa_trans,
+		             ird_trans_date, ird_process, ird_nav, ird_value, ird_unit,
+		             ird_last_30d, ird_last_oney, ird_last_oneyr)
+		   SELECT   r.ire_reksa_no, MAX (rd.mrd_trans_id) + 1, #lus_id# lus_id,
+		            NULL ird_reksa_trans, #ird_trans_date# ird_trans_date, SYSDATE ird_process,
+		            #ird_nav# ird_nav, #ird_unit# * #ird_nav# ird_value, #ird_unit# ird_unit, #ird_last_30d# ird_last_30d,
+		            #ird_last_oney# ird_last_oney, #ird_last_oneyr# ird_last_oneyr
+		       FROM eka.inv_reksadana r, eka.inv_reksa_det rd
+		      WHERE r.ire_reksa_no = #ire_reksa_no#
+		        AND r.ire_reksa_no = rd.ire_reksa_no
+		   GROUP BY r.ire_reksa_no	
+	</insert>
+
+	<insert id="elions.finance.insertDetailReksadana" parameterClass="com.ekalife.elions.model.Reksadana">
+		insert into eka.inv_reksa_det (
+			   ire_reksa_no, mrd_trans_id, ird_value, ird_unit, lus_id, ird_trans_date, ird_process, 
+			   ird_nav, ird_last_30d, ird_last_oney, ird_last_oneyr, ird_nab_up, ird_last_1d, ird_last_7d, ird_last_3yr)
+		values(
+			   #ire_reksa_no#, 
+			   (select max(mrd_trans_id)+1 from eka.inv_reksa_det where ire_reksa_no = #ire_reksa_no#), 
+			   #ird_unit# * #ird_nav#, #ird_unit#,
+			   #lus_id#, #ird_trans_date#, sysdate, 
+			   #ird_nav#, #ird_last_30d#, #ird_last_oney#, #ird_last_oneyr#, #ird_nab_up#, #ird_last_1d#, #ird_last_7d#, #ird_last_3yr#)
+	</insert>
+
+	<insert id="elions.finance.insertTransaksiReksadana" parameterClass="com.ekalife.elions.model.Reksadana">
+		INSERT INTO eka.inv_reksa_transaksi
+		            (irt_rtrans_jn, irt_input_date,
+		             irt_trans_date, irt_effective_date,
+		             irt_cost, irt_amount, irt_nav,
+		             irt_subscribe_unit, irt_subs_redem_fee,
+		             irt_note, irt_total_cost,
+		             irt_average_cost, irt_rtrans_id,
+		             ire_reksa_no, lku_id,
+		             lus_id)
+		     VALUES (#irt_rtrans_jn:INTEGER#, #irt_input_date:TIMESTAMP#,
+		             #irt_trans_date:TIMESTAMP#, #irt_effective_date:TIMESTAMP#,
+		             #irt_cost:DOUBLE#, #irt_amount:DOUBLE#, #irt_nav:DOUBLE#,
+		             #irt_subscribe_unit:DOUBLE#, #irt_subs_redem_fee:DOUBLE#,
+		             UPPER (#irt_note:VARCHAR#), #irt_total_cost:DOUBLE#,
+		             #irt_average_cost:DOUBLE#, 
+		             (SELECT NVL(MAX (irt_rtrans_id) + 1, 1) FROM eka.inv_reksa_transaksi WHERE ire_reksa_no = UPPER(#ire_reksa_no#)),
+		             UPPER (#ire_reksa_no:VARCHAR#), UPPER (#lku_id:CHAR#),
+		             #lus_id:INTEGER#)	
+	</insert>
+
+	<insert id="elions.finance.insertMstTts" parameterClass="com.ekalife.elions.model.tts.Tts">
+	    insert into eka.mst_tts  
+	         ( lst_kd_cab,mst_no,mst_ket,mst_tgl_input,   
+	           mst_tgl_rk,   
+	           mst_flag_batal,   
+		           mst_nm_pemegang,flag_print,lus_id,mst_no_reff_new,mst_no_reff_btl,mst_no_telp )  
+		  values   ( #lst_kd_cab#,#mst_no#,#mst_ket#,sysdate,   
+		           #mst_tgl_rk#,   
+		           #mst_flag_batal#,   
+		           #mst_nm_pemegang#,#flag_print#,#lus_id#,#mst_no_reff_new#,#mst_no_reff_btl#,#mst_no_telp# )  
+	</insert>
+
+	<insert id="elions.finance.insertMstPolicyTts" parameterClass="com.ekalife.elions.model.tts.PolicyTts">
+		  insert into eka.mst_policy_tts  
+		         ( no_urut,mst_no,mst_no_polis,   
+		           mst_periode,mst_kurs,mst_jumlah,beg_date,end_date,
+		           lsbun_bunga,mst_discount,mst_premium,mst_jumlah_byr_rp,
+		           mst_jumlah_byr_dlr,mst_jumlah_tahapan,mst_jum_hari,premi_ke,lku_id_tahapan )  
+		  values ( #no_urut#,#mst_no#,#mst_no_polis#,   
+		           #mst_periode#,#mst_kurs#,#mst_jumlah#,#beg_date#,#end_date#,
+		           #lsbun_bunga#,#mst_discount#,#mst_premium#,#mst_jumlah_byr_rp#,
+		           #mst_jumlah_byr_dlr#,#mstah_jumlah#,#mst_jum_hari#,#premi_ke#,#lku_id_tahapan# )  
+	</insert>
+
+	<insert id="elions.finance.insertMstCaraBayar" parameterClass="com.ekalife.elions.model.tts.CaraBayar">
+		  insert into eka.mst_cara_byr  
+		         ( no_urut, mst_no,   
+		           tgl_jth_tempo,mst_no_rekening,   
+		           mst_nama_bank,lsjb_id )  
+		  values ( #no_urut#,#mst_no#,   
+		           #tgl_jth_tempo#,#mst_no_rekening#,   
+		           #mst_nama_bank#,#lsjb_id# )  
+	</insert>
+
+	<insert id="elions.finance.insertLstHistoryPrintTts" parameterClass="java.util.HashMap">
+		insert into eka.lst_history_print_tts 
+				(ke,mst_no,kd_cab,tgl_print,ket_print)
+		values	(#ke#,#mst_no#,#kd_cab#,sysdate,#ket_print#) 
+	</insert>
+	
+	<insert id="elions.finance.insertMstHistoryTts" parameterClass="java.util.HashMap">
+		insert into eka.mst_history_tts(mst_no,mst_tgl,lus_id,mst_desc)
+		values(#mst_no#,sysdate,#lus_id#,#mst_desc#)
+	</insert>
+
+	<insert id="elions.finance.insertLstNabUlink" parameterClass="java.util.HashMap">
+		insert into eka.lst_nab_ulink(lji_id, lnu_type, lnu_tgl, lnu_nilai, lnu_tgl_input)
+		values(#lji_id#, #lnu_type#, #lnu_tgl#, #lnu_nilai#, sysdate)
+	</insert>
+
+</sqlMap>

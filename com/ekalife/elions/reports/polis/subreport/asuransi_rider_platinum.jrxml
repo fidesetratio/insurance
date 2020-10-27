@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="asuransi_rider_platinum" pageWidth="480" pageHeight="842" columnWidth="480" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<reportFont name="Tahoma" isDefault="false" fontName="Tahoma" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Tahoma" pdfEncoding="Cp1252" isPdfEmbedded="true"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["09200579202"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT a.mspr_premium, d.lku_symbol, 
+		case
+            when a.lsbs_id = 828 and (a.lsdbs_number = 2 or a.lsdbs_number = 3) then 
+                   (select NVL(a.mu_jlh_premi + NVL(a.mu_jlh_tu, 0), 0) mspr_tsi
+                   from eka.mst_ulink a 
+                             inner join eka.mst_product_insured b on (b.reg_spaj = a.reg_spaj and b.lsbs_id = 134 and b.lsdbs_number = 13)
+                   where a.reg_spaj = rpad($P{spaj},11,' ')
+                   and   a.mu_ke = 1 
+                   and   a.lt_id = 1)
+            else 
+                    a.mspr_tsi
+       end mspr_tsi,
+		b.mste_beg_date, b.mste_end_date,
+       a.mspr_end_pay, c.lsbs_id, c.lsdbs_number, c.lsdbs_name, a.mspr_beg_date, a.mspr_end_date
+  FROM eka.mst_product_insured a, eka.mst_insured b, eka.lst_det_bisnis c, eka.lst_kurs d
+ WHERE a.reg_spaj = b.reg_spaj
+   AND a.lsbs_id = c.lsbs_id
+   AND a.lsdbs_number = c.lsdbs_number
+   AND a.reg_spaj = rpad($P{spaj},11,' ')
+   AND a.mste_insured_no = 1
+   AND a.lsbs_id >= 800
+   AND a.lsbs_id < 900
+   AND a.mspr_active = 1   
+   AND a.lku_id = d.lku_id
+   order by lsdbs_name]]>
+	</queryString>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="MSPR_BEG_DATE" class="java.util.Date"/>
+	<field name="MSPR_END_DATE" class="java.util.Date"/>
+	<field name="MSPR_END_PAY" class="java.util.Date"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="MSPR_TSI" class="java.math.BigDecimal"/>
+	<field name="MSTE_BEG_DATE" class="java.util.Date"/>
+	<field name="MSTE_END_DATE" class="java.util.Date"/>
+	<title>
+		<band height="10">
+			<staticText>
+				<reportElement positionType="Float" x="0" y="0" width="135" height="10"/>
+				<textElement verticalAlignment="Bottom">
+					<font reportFont="Tahoma" size="7" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<text><![CDATA[Asuransi Tambahan]]></text>
+			</staticText>
+		</band>
+	</title>
+	<detail>
+		<band height="10">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="135" height="10"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[/*
+"- "+ $F{LSDBS_NAME}
+*/
+/*
++
+((
+($F{LSBS_ID}.intValue()==814 && $F{LSDBS_NUMBER}.intValue()==5)
+||
+($F{LSBS_ID}.intValue()==815 && $F{LSDBS_NUMBER}.intValue()==5)
+||
+($F{LSBS_ID}.intValue()==816 && $F{LSDBS_NUMBER}.intValue()==3)
+||
+($F{LSBS_ID}.intValue()==817 && $F{LSDBS_NUMBER}.intValue()==3)
+) ? " *)" : "") */
+($F{LSBS_ID}.intValue()==814 || $F{LSBS_ID}.intValue()==815 || $F{LSBS_ID}.intValue()==816 || $F{LSBS_ID}.intValue()==817)? "- "+ $F{LSDBS_NAME} + " **)" : "- "+ $F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="150" y="0" width="75" height="10"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="7" isBold="false" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null, $F{MSPR_TSI})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="225" y="0" width="85" height="10"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="7" isBold="false" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSPR_BEG_DATE})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="310" y="0" width="85" height="10"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="7" isBold="false" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSPR_END_DATE})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="395" y="0" width="85" height="10"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="7" isBold="false" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSPR_END_PAY})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="135" y="0" width="15" height="10"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="7" isBold="false" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

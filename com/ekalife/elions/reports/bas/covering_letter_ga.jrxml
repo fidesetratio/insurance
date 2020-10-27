@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="covering_letter_ga" pageWidth="624" pageHeight="312" orientation="Landscape" columnWidth="584" leftMargin="20" rightMargin="20" topMargin="55" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<property name="com.jasperassistant.designer.VGuides.Page Header" value="21,33,90"/>
+	<parameter name="msf_id" class="java.lang.String">
+		<defaultValueExpression><![CDATA["06C0700007"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT   a.msf_id, a.mss_jenis, a.lca_id, a.lsjs_id, a.msab_id, a.msf_amount,
+		         a.msf_amount_req, a.start_no_blanko, a.end_no_blanko,
+		         NVL (a.posisi, 0) posisi, b.lsjs_desc, b.lsjs_prefix, c.lca_nama,
+		         (CASE WHEN (posisi = 0 OR posisi = NULL) THEN 'REQUESTED' WHEN posisi = 1 THEN 'APPROVED'
+		             WHEN posisi = 2 THEN 'CANCELLED' WHEN posisi = 3 THEN 'REJECTED'
+		             WHEN posisi = 4 THEN 'SENT' WHEN posisi = 5 THEN 'RECEIVED'
+		             WHEN posisi = 6 THEN 'ACKNOWLEDGED' ELSE 'ERROR'
+		          END) status_form,
+		         a.status_permintaan,a.no_blanko_req
+		    FROM eka.mst_form a,
+		         eka.lst_jenis_spaj b,
+		         eka.lst_cabang c
+		   WHERE a.msf_id = $P{msf_id}
+		     AND a.lsjs_id = b.lsjs_id
+		     AND a.lca_id = c.lca_id
+and msf_amount !=0
+		ORDER BY b.lsjs_desc]]>
+	</queryString>
+	<field name="END_NO_BLANKO" class="java.lang.String"/>
+	<field name="LCA_NAMA" class="java.lang.String"/>
+	<field name="LSJS_DESC" class="java.lang.String"/>
+	<field name="LSJS_PREFIX" class="java.lang.String"/>
+	<field name="MSF_AMOUNT" class="java.math.BigDecimal"/>
+	<field name="MSF_AMOUNT_REQ" class="java.math.BigDecimal"/>
+	<field name="NO_BLANKO_REQ" class="java.lang.String"/>
+	<field name="START_NO_BLANKO" class="java.lang.String"/>
+	<field name="STATUS_FORM" class="java.lang.String"/>
+	<pageHeader>
+		<band height="109">
+			<textField>
+				<reportElement x="62" y="33" width="283" height="58"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Branch Admin "+$F{LCA_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="432" y="2" width="128" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Jakarta, "+$P{REPORT_SCRIPTLET}.formatDateIndonesian(new Date())]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="501" y="70" width="81" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{msf_id}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="17">
+			<textField>
+				<reportElement x="19" y="3" width="557" height="14"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["- "+$F{MSF_AMOUNT}+" Lembar SPAJ "+$F{LSJS_DESC}+ " No ="+$F{NO_BLANKO_REQ}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="register_spaj" pageWidth="1060" pageHeight="803" orientation="Landscape" columnWidth="1040" leftMargin="10" rightMargin="10" topMargin="20" bottomMargin="20" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.HGuides" value="30,155,256,394,494,593,729,827,1035"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="lus_id" class="java.lang.String">
+		<defaultValueExpression><![CDATA["14"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tglAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("03/11/2008")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tglAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("04/11/2008")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT   b.lus_login_name, e.msps_date, a.reg_spaj, c.mspo_policy_no,
+         c.lspd_position posisi_akhir, d.mcl_first pemegangpolis,
+         DECODE (a.mste_medical, 0, 'Non_Medical', 'Medical') medical,
+         DECODE (a.lssa_id, 5, 'Accepted', ' ') aksep,
+		 g.mspr_tsi UP, g.mspr_premium premi,
+         h.lku_symbol
+    FROM (select a.*, b.lspd_position from eka.mst_policy a, eka.lst_document_position b where a.lspd_id = b.lspd_id) c,
+         eka.mst_insured a,
+         eka.mst_product_insured g,
+         eka.mst_client_new d,
+         eka.lst_kurs h,
+         eka.mst_position_spaj e,
+         eka.lst_user b
+   WHERE c.reg_spaj = a.reg_spaj
+     AND a.reg_spaj = g.reg_spaj
+     AND a.mste_insured_no = g.mste_insured_no
+     AND g.lsbs_id < 300
+     AND b.lus_id = $P{lus_id}
+     AND c.mspo_policy_holder = d.mcl_id
+     AND c.lku_id = h.lku_id
+     AND a.reg_spaj = e.reg_spaj
+	 AND e.lus_id = b.lus_id
+	 AND e.msps_desc in( 'TRANSFER KE U/W','TRANSFER KE UNDERWRITING')
+and e.msps_date BETWEEN TO_DATE ( TO_CHAR ($P{tglAwal}, 'dd/mm/yyyy') || ' 00:00:00', 'dd/mm/yyyy hh24:mi:ss') 
+                          AND TO_DATE ( TO_CHAR ($P{tglAkhir}, 'dd/mm/yyyy') || ' 23:59:59', 'dd/mm/yyyy hh24:mi:ss') 
+order by pemegangpolis]]>
+	</queryString>
+	<field name="AKSEP" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LUS_LOGIN_NAME" class="java.lang.String"/>
+	<field name="MEDICAL" class="java.lang.String"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSPS_DATE" class="java.util.Date"/>
+	<field name="PEMEGANGPOLIS" class="java.lang.String"/>
+	<field name="POSISI_AKHIR" class="java.lang.String"/>
+	<field name="PREMI" class="java.math.BigDecimal"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="UP" class="java.math.BigDecimal"/>
+	<title>
+		<band height="50">
+			<staticText>
+				<reportElement positionType="Float" x="11" y="6" width="1019" height="39"/>
+				<textElement textAlignment="Center">
+					<font size="20"/>
+				</textElement>
+				<text><![CDATA[DAFTAR REGISTER SPAJ]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="45">
+			<staticText>
+				<reportElement x="0" y="1" width="41" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<text><![CDATA[User :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="25" width="122" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<text><![CDATA[Periode Transfer UW :]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="43" y="1" width="155" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LUS_LOGIN_NAME}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="127" y="25" width="244" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[( new SimpleDateFormat("dd/MM/yyyy") ).format($P{tglAwal})+" s/d " +( new SimpleDateFormat("dd/MM/yyyy") ).format($P{tglAkhir})]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="22">
+			<staticText>
+				<reportElement x="1" y="1" width="31" height="21"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="31" y="1" width="125" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<text><![CDATA[Tgl Input/Transfer]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="155" y="1" width="102" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<text><![CDATA[No SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="256" y="1" width="138" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<text><![CDATA[Pemegang Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="394" y="1" width="100" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<text><![CDATA[UP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="494" y="1" width="99" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<text><![CDATA[Premi
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="593" y="1" width="137" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<text><![CDATA[Medical / Non Medical]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="0" width="1036" height="1"/>
+				<graphicElement/>
+			</line>
+			<staticText>
+				<reportElement x="729" y="1" width="98" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<text><![CDATA[Status Aksep]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="827" y="1" width="209" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<text><![CDATA[Posisi Doc]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="21" width="1036" height="1"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="23">
+			<textField>
+				<reportElement x="0" y="0" width="30" height="21"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{REPORT_COUNT}+"."]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yy">
+				<reportElement x="31" y="0" width="125" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSPS_DATE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="155" y="0" width="102" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REG_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="255" y="0" width="140" height="20"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PEMEGANGPOLIS}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="394" y="0" width="101" height="20"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($F{UP})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="494" y="0" width="100" height="20"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($F{PREMI})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="593" y="0" width="137" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MEDICAL}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="729" y="0" width="99" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{AKSEP}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="827" y="0" width="209" height="20"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{POSISI_AKHIR}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

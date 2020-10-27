@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="tolak_bank_muamalat" pageWidth="1350" pageHeight="842" columnWidth="1310" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<property name="com.jasperassistant.designer.VGuides.Page Header" value="116"/>
+	<property name="com.jasperassistant.designer.VGuides.Group_1Footer" value="125,207"/>
+	<property name="com.jasperassistant.designer.HGuides" value="34,138,149,276,369,513,561,661,755,913,932,1070"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("01/01/2009")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("01/03/2009")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select no_seri, reg_spaj, kode_agen, lca_nama, nama_plan, no_kartu, nama, beg_date , premi, grup_status, lssa_id, status_accept, cara_bayar, no_kartu, biaya_kartu, harga_paket, saldo_share, perihal, keterangan, selisih_biaya, total_share from(
+	select a.no_seri, g.msag_id kode_agen,a.reg_spaj reg_spaj, h.lca_nama,
+		decode (a.no_seri, 15, 'AJS-IKHLAS', 16, 'AJS-SAKINAH',17, 'AJS-MABRUR')    as nama_plan, 
+		b.mspo_nasabah_acc no_kartu, a.nama, 
+	  	c.mste_beg_date beg_date, a.premi, f.lscb_pay_mode cara_bayar,c.lssa_id,
+		25000 as biaya_kartu, 
+		(decode (a.no_seri, 15, 350000, 16, 400000, 17, 600000) - 25000 )as selisih_biaya,
+	  	decode (a.no_seri, 15, 350000, 16, 400000, 17, 600000) as harga_paket,
+	  	decode (a.no_seri, 15, 125000, 16, 175000, 17, 150000) as saldo_share,
+		(select sum(decode (bmi.no_seri, 15, 350000, 16, 400000, 17, 600000) - 25000)
+			 from eka.mst_data_bmi bmi, eka.mst_insured ins 
+			 where bmi.reg_spaj = ins.reg_spaj and ins.lssa_id = 2 and ins.mste_beg_date between $P{tanggalAwal} and $P{tanggalAkhir}) as total_share,
+		decode (c.lssa_id, 5, 'SPAJ YANG DIAKSEP', 2, 'SPAJ YANG DITOLAK', '') as grup_status,
+		decode (c.lssa_id, 5, 'AKSEP', 2, 'TOLAK', '') as status_accept,
+		decode (c.lssa_id, 5, 'Instruksi Pendebetan Rekening ( untuk Polis Baru )', 2, 'Instruksi Pendebetan Rekening ( karena SPAJ ditolak )', '') as perihal,
+		decode (c.lssa_id, 5, 'Mohon dilakukan pendebetan total saldo awal tabungan share atas nama terlampir dari Rekening  kami sbb : ', 2, 'Mohon dilakukan pendebetan total selisih harga paket dikurangi biaya kartu atas nama terlampir dari Rekening kami sbb:', '') as keterangan
+	  from eka.mst_data_bmi a,
+		eka.mst_policy b,
+		eka.mst_insured c,
+		eka.lst_status_accept d,
+		eka.lst_det_bisnis e,
+		eka.lst_pay_mode f,
+		eka.mst_agent_prod g,
+		eka.lst_cabang h
+	   where a.reg_spaj = b.reg_spaj
+	   and b.reg_spaj = g.reg_spaj
+	   and a.reg_spaj = c.reg_spaj
+	   and c.lssa_id = d.lssa_id
+	   and a.no_seri = e.kodex
+	   and b.lscb_id = f.lscb_id
+	   and b.lca_id = h.lca_id
+	   and c.lssa_id = 2
+	   and g.lsle_id = 4
+	   and c.mste_beg_date between $P{tanggalAwal} and $P{tanggalAkhir}
+	   order by   grup_status, a.no_seri
+)]]>
+	</queryString>
+	<field name="BEG_DATE" class="java.util.Date"/>
+	<field name="BIAYA_KARTU" class="java.math.BigDecimal"/>
+	<field name="CARA_BAYAR" class="java.lang.String"/>
+	<field name="GRUP_STATUS" class="java.lang.String"/>
+	<field name="HARGA_PAKET" class="java.math.BigDecimal"/>
+	<field name="KETERANGAN" class="java.lang.String"/>
+	<field name="KODE_AGEN" class="java.lang.String"/>
+	<field name="LCA_NAMA" class="java.lang.String"/>
+	<field name="LSSA_ID" class="java.math.BigDecimal"/>
+	<field name="NAMA" class="java.lang.String"/>
+	<field name="NAMA_PLAN" class="java.lang.String"/>
+	<field name="NO_KARTU" class="java.lang.String"/>
+	<field name="NO_SERI" class="java.lang.String"/>
+	<field name="PERIHAL" class="java.lang.String"/>
+	<field name="PREMI" class="java.math.BigDecimal"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="SALDO_SHARE" class="java.math.BigDecimal"/>
+	<field name="SELISIH_BIAYA" class="java.math.BigDecimal"/>
+	<field name="STATUS_ACCEPT" class="java.lang.String"/>
+	<field name="TOTAL_SHARE" class="java.math.BigDecimal"/>
+	<variable name="totalpaket" class="java.math.BigDecimal" resetType="Group" resetGroup="Group_1" calculation="Sum">
+		<variableExpression><![CDATA[$F{HARGA_PAKET}]]></variableExpression>
+	</variable>
+	<variable name="totalpremi" class="java.math.BigDecimal" resetType="Group" resetGroup="Group_1" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI}]]></variableExpression>
+	</variable>
+	<variable name="totalshare" class="java.math.BigDecimal" resetType="Group" resetGroup="Group_1" calculation="Sum">
+		<variableExpression><![CDATA[$F{SALDO_SHARE}]]></variableExpression>
+	</variable>
+	<variable name="totalbiayakartu" class="java.math.BigDecimal" resetType="Group" resetGroup="Group_1" calculation="Sum">
+		<variableExpression><![CDATA[$F{BIAYA_KARTU}]]></variableExpression>
+	</variable>
+	<variable name="totalselisihbiaya" class="java.math.BigDecimal" resetType="Group" resetGroup="Group_1" calculation="Sum">
+		<variableExpression><![CDATA[$F{SELISIH_BIAYA}]]></variableExpression>
+	</variable>
+	<group name="Group_1" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{GRUP_STATUS}]]></groupExpression>
+		<groupHeader>
+			<band height="26">
+				<textField hyperlinkType="None">
+					<reportElement x="1" y="3" width="213" height="21"/>
+					<textElement>
+						<font size="12" isBold="true" isItalic="true" pdfFontName="Helvetica-BoldOblique"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{GRUP_STATUS}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="254">
+				<staticText>
+					<reportElement x="0" y="10" width="213" height="20"/>
+					<textElement>
+						<font size="12" isBold="true" isItalic="true" pdfFontName="Helvetica-BoldOblique"/>
+					</textElement>
+					<text><![CDATA[TOTAL :]]></text>
+				</staticText>
+				<textField hyperlinkType="None">
+					<reportElement x="798" y="11" width="101" height="20"/>
+					<textElement textAlignment="Right">
+						<font size="10" isBold="true" isItalic="true" pdfFontName="Helvetica-BoldOblique"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($V{totalpaket})]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="993" y="11" width="158" height="20"/>
+					<textElement textAlignment="Right">
+						<font size="10" isBold="true" isItalic="true" pdfFontName="Helvetica-BoldOblique"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($V{totalselisihbiaya})]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement positionType="Float" mode="Transparent" x="898" y="11" width="95" height="20" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Right">
+						<font size="10" isBold="true" isItalic="true" pdfFontName="Helvetica-BoldOblique"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($V{totalbiayakartu})]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="1" y="69" width="393" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Jakarta"+", "+$P{REPORT_SCRIPTLET}.formatDateIndonesian(new Date())]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="2" y="91" width="414" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<text><![CDATA[PT. Asuransi Jiwa SINARMAS]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="10" y="207" width="149" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<text><![CDATA[Ingrid Trisnawati Kurniawan]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="258" y="207" width="127" height="20"/>
+					<textElement textAlignment="Center">
+						<font size="12"/>
+					</textElement>
+					<text><![CDATA[dr. Asri Wulan, AAAIJ, CPLHI]]></text>
+				</staticText>
+				<line>
+					<reportElement x="2" y="5" width="1304" height="1"/>
+				</line>
+				<image hAlign="Center" hyperlinkType="None">
+					<reportElement x="34" y="125" width="102" height="63"/>
+					<imageExpression class="java.lang.String"><![CDATA["com/ekalife/utils/images/ingrid.png"]]></imageExpression>
+				</image>
+				<image hAlign="Center" hyperlinkType="None">
+					<reportElement x="271" y="125" width="102" height="63"/>
+					<imageExpression class="java.lang.String"><![CDATA["com/ekalife/utils/images/asri_wulan_ttd.gif"]]></imageExpression>
+				</image>
+				<staticText>
+					<reportElement x="10" y="226" width="149" height="20"/>
+					<textElement textAlignment="Center">
+						<font size="12"/>
+					</textElement>
+					<text><![CDATA[Underwriting Dept.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="258" y="226" width="127" height="20"/>
+					<textElement textAlignment="Center">
+						<font size="12"/>
+					</textElement>
+					<text><![CDATA[Underwriting Dept.]]></text>
+				</staticText>
+			</band>
+		</groupFooter>
+	</group>
+	<pageHeader>
+		<band height="238">
+			<staticText>
+				<reportElement x="0" y="1" width="248" height="23"/>
+				<textElement>
+					<font size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[DATA AJS - BANK MUAMALAT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1" y="25" width="280" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[Kepada : Bank Muamalat]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1" y="45" width="280" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[Dari       : Underwriting Dept.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1" y="65" width="50" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[Hal        :]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="53" y="65" width="474" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PERIHAL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="99" width="756" height="18"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KETERANGAN}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="116" width="91" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[NAMA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="91" y="116" width="10" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="100" y="116" width="272" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[PT ASURANSI JIWA SINARMAS MSIG Tbk.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="135" width="91" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[NO. REKENING]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="90" y="135" width="11" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="100" y="135" width="378" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[301.02081.10]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="154" width="91" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[BANK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="90" y="154" width="11" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="100" y="154" width="358" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[MUAMALAT CABANG SUDIRMAN, JAKARTA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="180" width="91" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[SEBESAR]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="89" y="180" width="11" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField evaluationTime="Report" hyperlinkType="None">
+				<reportElement x="100" y="180" width="388" height="20"/>
+				<textElement textAlignment="Left">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Rp."+$P{REPORT_SCRIPTLET}.format2Digit($V{totalshare})]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="67">
+			<staticText>
+				<reportElement x="1169" y="26" width="139" height="34"/>
+				<textElement textAlignment="Center">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[STATUS]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="25" width="1306" height="1"/>
+			</line>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="898" y="26" width="95" height="34" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true"/>
+				<textElement textAlignment="Right">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["BIAYA KARTU"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="33" y="25" width="106" height="34"/>
+				<textElement textAlignment="Center">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[NOMOR URUT PLAN ASURANSI]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="629" y="26" width="169" height="34"/>
+				<textElement textAlignment="Center">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[NAMA CALON PEMEGANG POLIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="149" y="25" width="128" height="34"/>
+				<textElement textAlignment="Left">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[NAMA PLAN ASURANSI]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="513" y="26" width="116" height="34"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[NO KARTU]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="25" width="34" height="34"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[NO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="992" y="26" width="177" height="34"/>
+				<textElement textAlignment="Center">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[SELISIH HARGA PAKET - BIAYA KARTU]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="798" y="26" width="101" height="34"/>
+				<textElement textAlignment="Right">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[HARGA PAKET]]></text>
+			</staticText>
+			<line>
+				<reportElement x="4" y="63" width="1304" height="1"/>
+			</line>
+			<staticText>
+				<reportElement x="276" y="25" width="93" height="34"/>
+				<textElement textAlignment="Left">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[KODE AGEN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="369" y="25" width="145" height="34"/>
+				<textElement textAlignment="Left">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[CABANG]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="25">
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="0" width="34" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{REPORT_COUNT}+"."]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="33" y="0" width="106" height="20"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NO_SERI}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="149" y="0" width="128" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PLAN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="513" y="1" width="118" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NO_KARTU}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="630" y="1" width="169" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="798" y="1" width="101" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($F{HARGA_PAKET})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="993" y="1" width="158" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($F{SELISIH_BIAYA})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" mode="Transparent" x="898" y="1" width="95" height="20" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($F{BIAYA_KARTU})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1169" y="2" width="139" height="19"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{STATUS_ACCEPT}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="276" y="0" width="94" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KODE_AGEN}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="369" y="0" width="145" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LCA_NAMA}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

@@ -1,0 +1,1818 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="service_polis_issued" pageWidth="1100" pageHeight="1600" orientation="Landscape" columnWidth="1060" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="3"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="3"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<property name="com.jasperassistant.designer.HGuides" value="351,526,560,690,1037"/>
+	<property name="com.jasperassistant.designer.VGuides.Summary" value="306,489,528,747,936,1032"/>
+	<parameter name="props" class="java.lang.String"/>
+	<parameter name="user_id" class="java.lang.String"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("1/2/2013")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("28/2/2013")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT   *
+    FROM   (SELECT   dist,
+                     reg_spaj,
+                     lsdbs_name,
+                     mste_tgl_terima_spaj,
+                     mste_tgl_spaj_doc,
+                     mste_tgl_aksep,
+                     mste_tgl_valid_print,
+                     mspo_date_print,
+                     mste_tgl_kirim_polis,
+                     lsrg_nama,
+                     (CASE
+                         WHEN lama_proses_nab <= 0 THEN 0
+                         ELSE lama_proses_nab
+                      END)
+                        lama_proses_nab,
+                     jn_bank,
+                     NVL (lama_nab_harian, 0) lama_nab_harian,
+                     NVL (
+                        (CASE
+                            WHEN TO_NUMBER (SUBSTR (lama_nab_harian, 1, 2)) < 0
+                            THEN
+                               0
+                            ELSE
+                               TO_NUMBER (SUBSTR (lama_nab_harian, 1, 2))
+                         END),
+                        0
+                     )
+                        jam_nab_harian,
+                     NVL (mspo_provider, 0) mspo_provider,
+                     lama_proses_nab1,
+                     lama_pending,
+                     SYSDATE,
+                     lsbs_id,
+                     lsdbs_number,
+                     lca_id,
+                     flag_ws
+              FROM   (SELECT   DECODE (
+                                  b.lca_id,
+                                  '09',
+                                  'Bancassurance',
+                                  '08',
+                                  'Worksite',
+                                  '42',
+                                  'Worksite',
+                                  '58',
+                                  'MallAssurance',
+                                  '62',
+                                  'MNC',
+                                  '65',
+                                  'FCD',
+                                  DECODE (g.lsgb_id,
+                                          17, 'Agency (UNIT LINK)',
+                                          'Agency')
+                               )
+                                  dist,
+                               b.reg_spaj,
+                               (CASE
+                                   WHEN     h.jn_bank = 2
+                                        AND c.lsbs_id = 142
+                                        AND c.lsdbs_number = 2
+                                   THEN
+                                      'SIMAS PRIMA'
+                                   WHEN     h.jn_bank = 2
+                                        AND c.lsbs_id = 158
+                                        AND c.lsdbs_number = 6
+                                   THEN
+                                      'SIMAS PRIMA MANFAAT BULANAN'
+                                   WHEN     h.jn_bank = 2
+                                        AND c.lsbs_id = 175
+                                        AND c.lsdbs_number = 2
+                                   THEN
+                                      'SIMAS PRIMA SYARIAH'
+                                   ELSE
+                                      d.lsdbs_name
+                                END)
+                                  lsdbs_name,
+                               a.mste_tgl_terima_spaj,
+                               a.mste_tgl_valid_print,
+                               a.mste_tgl_spaj_doc,
+                               a.mste_tgl_aksep,
+                               b.mspo_date_print,
+                               a.mste_tgl_kirim_polis,
+                               e.lsrg_nama,
+                               (SELECT   eka.workdays (
+                                            (CASE
+                                                WHEN a.mste_tgl_terima_spaj IS NULL
+                                                THEN
+                                                   a.mste_tgl_spaj_doc
+                                                WHEN a.mste_tgl_spaj_doc IS NULL
+                                                THEN
+                                                   a.mste_tgl_spaj_doc
+                                                WHEN (a.mste_tgl_terima_spaj >=
+                                                         TO_DATE (
+                                                            TO_CHAR (
+                                                               mste_tgl_terima_spaj,
+                                                               'dd/mm/yyyy'
+                                                            )
+                                                            || ' 12:00:00',
+                                                            'dd/mm/yyyy hh24:mi:ss'
+                                                         )
+                                                      AND TO_CHAR (
+                                                            a.mste_tgl_terima_spaj,
+                                                            'dd/mm/yyyy'
+                                                         ) =
+                                                            TO_CHAR (
+                                                               a.mste_tgl_kirim_polis
+                                                               + 1,
+                                                               'dd/mm/yyyy'
+                                                            )
+                                                      AND TO_CHAR (
+                                                            a.mste_tgl_terima_spaj,
+                                                            'dd/mm/yyyy'
+                                                         ) =
+                                                            TO_CHAR (
+                                                               a.mste_tgl_spaj_doc,
+                                                               'dd/mm/yyyy'
+                                                            ))
+                                                     OR (a.mste_tgl_terima_spaj >=
+                                                            TO_DATE (
+                                                               TO_CHAR (
+                                                                  mste_tgl_terima_spaj,
+                                                                  'dd/mm/yyyy'
+                                                               )
+                                                               || ' 12:00:00',
+                                                               'dd/mm/yyyy hh24:mi:ss'
+                                                            )
+                                                         AND TO_CHAR (
+                                                               a.mste_tgl_terima_spaj,
+                                                               'dd/mm/yyyy'
+                                                            ) =
+                                                               TO_CHAR (
+                                                                  a.mste_tgl_kirim_polis
+                                                                  + 1,
+                                                                  'dd/mm/yyyy'
+                                                               )
+                                                         AND TO_CHAR (
+                                                               a.mste_tgl_terima_spaj,
+                                                               'dd/mm/yyyy'
+                                                            ) =
+                                                               TO_CHAR (
+                                                                  a.mste_tgl_spaj_doc
+                                                                  + 1,
+                                                                  'dd/mm/yyyy'
+                                                               ))
+                                                     OR (a.mste_tgl_terima_spaj <=
+                                                            TO_DATE (
+                                                               TO_CHAR (
+                                                                  mste_tgl_terima_spaj,
+                                                                  'dd/mm/yyyy'
+                                                               )
+                                                               || ' 12:00:00',
+                                                               'dd/mm/yyyy hh24:mi:ss'
+                                                            )
+                                                         AND TO_CHAR (
+                                                               a.mste_tgl_terima_spaj,
+                                                               'dd/mm/yyyy'
+                                                            ) =
+                                                               TO_CHAR (
+                                                                  a.mste_tgl_kirim_polis,
+                                                                  'dd/mm/yyyy'
+                                                               )
+                                                         AND TO_CHAR (
+                                                               a.mste_tgl_terima_spaj,
+                                                               'dd/mm/yyyy'
+                                                            ) =
+                                                               TO_CHAR (
+                                                                  a.mste_tgl_spaj_doc,
+                                                                  'dd/mm/yyyy'
+                                                               ))
+                                                     OR (a.mste_tgl_terima_spaj >=
+                                                            TO_DATE (
+                                                               TO_CHAR (
+                                                                  mste_tgl_terima_spaj,
+                                                                  'dd/mm/yyyy'
+                                                               )
+                                                               || ' 12:00:00',
+                                                               'dd/mm/yyyy hh24:mi:ss'
+                                                            ))
+                                                THEN
+                                                   a.mste_tgl_spaj_doc + 1
+                                                ELSE
+                                                   a.mste_tgl_spaj_doc
+                                             END),
+                                            (CASE
+                                                WHEN h.jn_bank = 2
+                                                THEN
+                                                   (SELECT   MIN (msps_date)
+                                                                msps_date
+                                                      FROM   eka.mst_position_spaj
+                                                     WHERE   reg_spaj =
+                                                                a.reg_spaj
+                                                             AND lssa_id IN
+                                                                      ('5',
+                                                                       '10'))
+                                                ELSE
+                                                   NVL (a.mste_tgl_valid_print,
+                                                        a.mste_tgl_kirim_polis)
+                                             END)
+                                         )
+                                         - 1
+                                  FROM   DUAL)
+                                  lama_proses_nab,
+                               (SELECT   eka.hourworkdays (
+                                            (CASE
+                                                WHEN (h.jn_bank = 2
+                                                      OR h.jn_bank = 3)
+                                                THEN
+                                                   DECODE (
+                                                      (SELECT   MIN (msps_date)
+                                                         FROM   eka.mst_position_spaj
+                                                        WHERE   (msps_desc =
+                                                                    TRIM('PRINT SERTIFIKAT SIMAS PRIMA')
+                                                                 OR msps_desc =
+                                                                      TRIM('PRINT POLIS (E-LIONS)'))
+                                                                AND reg_spaj =
+                                                                      a.reg_spaj),
+                                                      NULL,
+                                                      (SELECT   MIN (msps_date)
+                                                         FROM   eka.mst_position_spaj
+                                                        WHERE   (msps_desc =
+                                                                    TRIM('PRINT SERTIFIKAT SIMAS PRIMA')
+                                                                 OR msps_desc =
+                                                                      TRIM('PRINT POLIS (E-LIONS)'))
+                                                                AND reg_spaj =
+                                                                      a.reg_spaj),
+                                                      TO_DATE (
+                                                         TO_CHAR (
+                                                            (SELECT   MIN(msps_date)
+                                                               FROM   eka.mst_position_spaj
+                                                              WHERE   (msps_desc =
+                                                                          TRIM('PRINT SERTIFIKAT SIMAS PRIMA')
+                                                                       OR msps_desc =
+                                                                            TRIM('PRINT POLIS (E-LIONS)'))
+                                                                      AND reg_spaj =
+                                                                            a.reg_spaj)
+                                                            + (SELECT   (CASE
+                                                                            WHEN TO_CHAR (
+                                                                                    (SELECT   MIN(msps_date)
+                                                                                                 date_tes
+                                                                                       FROM   eka.mst_position_spaj
+                                                                                      WHERE   (msps_desc =
+                                                                                                  TRIM('PRINT SERTIFIKAT SIMAS PRIMA')
+                                                                                               OR msps_desc =
+                                                                                                    TRIM('PRINT POLIS (E-LIONS)'))
+                                                                                              AND reg_spaj =
+                                                                                                    a.reg_spaj),
+                                                                                    'Dy'
+                                                                                 ) =
+                                                                                    'Fri'
+                                                                            THEN
+                                                                               3
+                                                                            ELSE
+                                                                               1
+                                                                         END)
+                                                                           tambahan
+                                                                 FROM   DUAL),
+                                                            'dd/mm/yyyy'
+                                                         )
+                                                         || ' 8:00:00',
+                                                         'dd/mm/yyyy hh24:mi:ss'
+                                                      )
+                                                   )
+                                                ELSE
+                                                   a.mste_tgl_spaj_doc
+                                             END),
+                                            (CASE
+                                                WHEN (h.jn_bank = 2
+                                                      OR h.jn_bank = 3)
+                                                THEN
+                                                   (SELECT   MAX (msps_date)
+                                                      FROM   eka.mst_position_spaj
+                                                     WHERE   msps_desc =
+                                                                TRIM('TRANSFER KE PRINT POLIS')
+                                                             AND reg_spaj =
+                                                                   a.reg_spaj)
+                                                WHEN (b.lca_id IN ('37', '52')
+                                                      AND a.mste_flag_cc = 5)
+                                                THEN
+                                                   (SELECT   MAX (msps_date)
+                                                      FROM   eka.mst_position_spaj
+                                                     WHERE   msps_desc =
+                                                                TRIM('TRANSFER LANGSUNG KE KOMISI (FINANCE)')
+                                                             AND reg_spaj =
+                                                                   a.reg_spaj)
+                                                WHEN (b.lca_id IN ('37', '52')
+                                                      AND a.mste_flag_cc <> 5)
+                                                THEN
+                                                   NVL (a.mste_tgl_valid_print,
+                                                        a.mste_tgl_kirim_polis)
+                                                WHEN b.lca_id = '40'
+                                                THEN
+                                                   a.mste_tgl_kirim_polis
+                                                ELSE
+                                                   NVL (a.mste_tgl_valid_print,
+                                                        a.mste_tgl_kirim_polis)
+                                             END)
+                                         )
+                                  FROM   DUAL)
+                                  lama_nab_harian,
+                               b.mspo_provider,
+                               (SELECT   eka.workdays (
+                                            b.mspo_next_bill,
+                                            (CASE
+                                                WHEN h.jn_bank = 2
+                                                THEN
+                                                   (SELECT   MIN (msps_date)
+                                                                msps_date
+                                                      FROM   eka.mst_position_spaj
+                                                     WHERE   reg_spaj =
+                                                                a.reg_spaj
+                                                             AND lssa_id IN
+                                                                      ('5',
+                                                                       '10'))
+                                                ELSE
+                                                   NVL (a.mste_tgl_valid_print,
+                                                        a.mste_tgl_kirim_polis)
+                                             END)
+                                         )
+                                  FROM   DUAL)
+                                  lama_proses_nab1,
+                               (SELECT   eka.workdays (a.mste_tgl_terima_spaj,
+                                                       SYSDATE)
+                                  FROM   DUAL)
+                                  lama_pending,
+                               SYSDATE,
+                               d.lsbs_id,
+                               d.lsdbs_number,
+                               h.jn_bank,
+                               b.lca_id,
+                               DECODE (b.lca_id, '42', 1, 0) flag_ws
+                        FROM   eka.mst_insured a,
+                               eka.mst_policy b,
+                               eka.mst_product_insured c,
+                               eka.lst_det_bisnis d,
+                               eka.lst_region e,
+                               eka.lst_bisnis g,
+                               eka.lst_user h
+                       WHERE       b.reg_spaj = a.reg_spaj
+                               AND a.reg_spaj = c.reg_spaj
+                               AND a.mste_insured_no = c.mste_insured_no
+                               AND d.lsbs_id = c.lsbs_id
+                               AND d.lsdbs_number = c.lsdbs_number
+                               AND e.lca_id = b.lca_id
+                               AND e.lwk_id = b.lwk_id
+                               AND e.lsrg_id = b.lsrg_id
+                               AND c.lsbs_id < 300
+                               AND (a.mste_tgl_kirim_polis BETWEEN $P{tanggalAwal} AND $P{tanggalAkhir})
+                               AND b.lstb_id = 1
+                               AND c.lsbs_id = g.lsbs_id
+                               AND b.lus_id = h.lus_id)
+            UNION ALL
+            SELECT   dist,
+                     reg_spaj,
+                     lsdbs_name,
+                     mste_tgl_terima_spaj,
+                     mste_tgl_spaj_doc,
+                     mste_tgl_aksep,
+                     mste_tgl_valid_print,
+                     mspo_date_print,
+                     mste_tgl_kirim_polis,
+                     lsrg_nama,
+                     (CASE
+                         WHEN lama_proses_nab <= 0 THEN 0
+                         ELSE lama_proses_nab
+                      END)
+                        lama_proses_nab,
+                     jn_bank,
+                     NVL (lama_nab_harian, 0) lama_nab_harian,
+                     NVL (
+                        (CASE
+                            WHEN TO_NUMBER (SUBSTR (lama_nab_harian, 1, 2)) < 0
+                            THEN
+                               0
+                            ELSE
+                               TO_NUMBER (SUBSTR (lama_nab_harian, 1, 2))
+                         END),
+                        0
+                     )
+                        jam_nab_harian,
+                     NVL (mspo_provider, 0) mspo_provider,
+                     lama_proses_nab1,
+                     lama_pending,
+                     SYSDATE,
+                     lsbs_id,
+                     lsdbs_number,
+                     lca_id,
+                     flag_ws
+              FROM   (SELECT   DECODE (
+                                  b.lca_id,
+                                  '09',
+                                  'Bancassurance',
+                                  '08',
+                                  'Worksite',
+                                  '42',
+                                  'Worksite',
+                                  '58',
+                                  'MallAssurance',
+                                  '62',
+                                  'MNC',
+                                  '65',
+                                  'FCD',
+                                  DECODE (g.lsgb_id,
+                                          17, 'Agency (UNIT LINK)',
+                                          'Agency')
+                               )
+                                  dist,
+                               b.reg_spaj,
+                               (CASE
+                                   WHEN     h.jn_bank = 2
+                                        AND c.lsbs_id = 142
+                                        AND c.lsdbs_number = 2
+                                   THEN
+                                      'SIMAS PRIMA'
+                                   WHEN     h.jn_bank = 2
+                                        AND c.lsbs_id = 158
+                                        AND c.lsdbs_number = 6
+                                   THEN
+                                      'SIMAS PRIMA MANFAAT BULANAN'
+                                   WHEN     h.jn_bank = 2
+                                        AND c.lsbs_id = 175
+                                        AND c.lsdbs_number = 2
+                                   THEN
+                                      'SIMAS PRIMA SYARIAH'
+                                   ELSE
+                                      d.lsdbs_name
+                                END)
+                                  lsdbs_name,
+                               a.mste_tgl_terima_spaj,
+                               a.mste_tgl_valid_print,
+                               a.mste_tgl_spaj_doc,
+                               a.mste_tgl_aksep,
+                               b.mspo_date_print,
+                               a.mste_tgl_kirim_polis,
+                               e.lsrg_nama,
+                               (SELECT   eka.workdays (
+                                            (CASE
+                                                WHEN a.mste_tgl_terima_spaj IS NULL
+                                                THEN
+                                                   a.mste_tgl_spaj_doc
+                                                WHEN a.mste_tgl_spaj_doc IS NULL
+                                                THEN
+                                                   a.mste_tgl_spaj_doc
+                                                WHEN (a.mste_tgl_terima_spaj >=
+                                                         TO_DATE (
+                                                            TO_CHAR (
+                                                               mste_tgl_terima_spaj,
+                                                               'dd/mm/yyyy'
+                                                            )
+                                                            || ' 12:00:00',
+                                                            'dd/mm/yyyy hh24:mi:ss'
+                                                         )
+                                                      AND TO_CHAR (
+                                                            a.mste_tgl_terima_spaj,
+                                                            'dd/mm/yyyy'
+                                                         ) =
+                                                            TO_CHAR (
+                                                               a.mste_tgl_kirim_polis
+                                                               + 1,
+                                                               'dd/mm/yyyy'
+                                                            )
+                                                      AND TO_CHAR (
+                                                            a.mste_tgl_terima_spaj,
+                                                            'dd/mm/yyyy'
+                                                         ) =
+                                                            TO_CHAR (
+                                                               a.mste_tgl_spaj_doc,
+                                                               'dd/mm/yyyy'
+                                                            ))
+                                                     OR (a.mste_tgl_terima_spaj >=
+                                                            TO_DATE (
+                                                               TO_CHAR (
+                                                                  mste_tgl_terima_spaj,
+                                                                  'dd/mm/yyyy'
+                                                               )
+                                                               || ' 12:00:00',
+                                                               'dd/mm/yyyy hh24:mi:ss'
+                                                            )
+                                                         AND TO_CHAR (
+                                                               a.mste_tgl_terima_spaj,
+                                                               'dd/mm/yyyy'
+                                                            ) =
+                                                               TO_CHAR (
+                                                                  a.mste_tgl_kirim_polis
+                                                                  + 1,
+                                                                  'dd/mm/yyyy'
+                                                               )
+                                                         AND TO_CHAR (
+                                                               a.mste_tgl_terima_spaj,
+                                                               'dd/mm/yyyy'
+                                                            ) =
+                                                               TO_CHAR (
+                                                                  a.mste_tgl_spaj_doc
+                                                                  + 1,
+                                                                  'dd/mm/yyyy'
+                                                               ))
+                                                     OR (a.mste_tgl_terima_spaj <=
+                                                            TO_DATE (
+                                                               TO_CHAR (
+                                                                  mste_tgl_terima_spaj,
+                                                                  'dd/mm/yyyy'
+                                                               )
+                                                               || ' 12:00:00',
+                                                               'dd/mm/yyyy hh24:mi:ss'
+                                                            )
+                                                         AND TO_CHAR (
+                                                               a.mste_tgl_terima_spaj,
+                                                               'dd/mm/yyyy'
+                                                            ) =
+                                                               TO_CHAR (
+                                                                  a.mste_tgl_kirim_polis,
+                                                                  'dd/mm/yyyy'
+                                                               )
+                                                         AND TO_CHAR (
+                                                               a.mste_tgl_terima_spaj,
+                                                               'dd/mm/yyyy'
+                                                            ) =
+                                                               TO_CHAR (
+                                                                  a.mste_tgl_spaj_doc,
+                                                                  'dd/mm/yyyy'
+                                                               ))
+                                                     OR (a.mste_tgl_terima_spaj >=
+                                                            TO_DATE (
+                                                               TO_CHAR (
+                                                                  mste_tgl_terima_spaj,
+                                                                  'dd/mm/yyyy'
+                                                               )
+                                                               || ' 12:00:00',
+                                                               'dd/mm/yyyy hh24:mi:ss'
+                                                            ))
+                                                THEN
+                                                   a.mste_tgl_spaj_doc + 1
+                                                ELSE
+                                                   a.mste_tgl_spaj_doc
+                                             END),
+                                            (CASE
+                                                WHEN h.jn_bank = 2
+                                                THEN
+                                                   (SELECT   MIN (msps_date)
+                                                                msps_date
+                                                      FROM   eka.mst_position_spaj
+                                                     WHERE   reg_spaj =
+                                                                a.reg_spaj
+                                                             AND lssa_id IN
+                                                                      ('5',
+                                                                       '10'))
+                                                ELSE
+                                                   NVL (a.mste_tgl_valid_print,
+                                                        a.mste_tgl_kirim_polis)
+                                             END)
+                                         )
+                                         - 1
+                                  FROM   DUAL)
+                                  lama_proses_nab,
+                               (SELECT   eka.hourworkdays (
+                                            (CASE
+                                                WHEN (h.jn_bank = 2
+                                                      OR h.jn_bank = 3)
+                                                THEN
+                                                   DECODE (
+                                                      (SELECT   MIN (msps_date)
+                                                         FROM   eka.mst_position_spaj
+                                                        WHERE   (msps_desc LIKE
+                                                                    '%PRINT SERTIFIKAT SIMAS PRIMA%'
+                                                                 OR msps_desc LIKE
+                                                                      '%PRINT POLIS (E-LIONS)%')
+                                                                AND reg_spaj =
+                                                                      a.reg_spaj),
+                                                      NULL,
+                                                      (SELECT   MIN (msps_date)
+                                                         FROM   eka.mst_position_spaj
+                                                        WHERE   (msps_desc LIKE
+                                                                    '%PRINT SERTIFIKAT SIMAS PRIMA%'
+                                                                 OR msps_desc LIKE
+                                                                      '%PRINT POLIS (E-LIONS)%')
+                                                                AND reg_spaj =
+                                                                      a.reg_spaj),
+                                                      TO_DATE (
+                                                         TO_CHAR (
+                                                            (SELECT   MIN(msps_date)
+                                                               FROM   eka.mst_position_spaj
+                                                              WHERE   (msps_desc LIKE
+                                                                          '%PRINT SERTIFIKAT SIMAS PRIMA%'
+                                                                       OR msps_desc LIKE
+                                                                            '%PRINT POLIS (E-LIONS)%')
+                                                                      AND reg_spaj =
+                                                                            a.reg_spaj)
+                                                            + (SELECT   (CASE
+                                                                            WHEN TO_CHAR (
+                                                                                    (SELECT   MIN(msps_date)
+                                                                                                 date_tes
+                                                                                       FROM   eka.mst_position_spaj
+                                                                                      WHERE   (msps_desc LIKE
+                                                                                                  '%PRINT SERTIFIKAT SIMAS PRIMA%'
+                                                                                               OR msps_desc LIKE
+                                                                                                    '%PRINT POLIS (E-LIONS)%')
+                                                                                              AND reg_spaj =
+                                                                                                    a.reg_spaj),
+                                                                                    'Dy'
+                                                                                 ) =
+                                                                                    'Fri'
+                                                                            THEN
+                                                                               3
+                                                                            ELSE
+                                                                               1
+                                                                         END)
+                                                                           tambahan
+                                                                 FROM   DUAL),
+                                                            'dd/mm/yyyy'
+                                                         )
+                                                         || ' 8:00:00',
+                                                         'dd/mm/yyyy hh24:mi:ss'
+                                                      )
+                                                   )
+                                                ELSE
+                                                   a.mste_tgl_spaj_doc
+                                             END),
+                                            (CASE
+                                                WHEN (h.jn_bank = 2
+                                                      OR h.jn_bank = 3)
+                                                THEN
+                                                   (SELECT   MAX (msps_date)
+                                                      FROM   eka.mst_position_spaj
+                                                     WHERE   msps_desc LIKE
+                                                                '%TRANSFER KE PRINT POLIS%'
+                                                             AND reg_spaj =
+                                                                   a.reg_spaj)
+                                                WHEN (b.lca_id IN ('37', '52')
+                                                      AND a.mste_flag_cc = 5)
+                                                THEN
+                                                   (SELECT   MAX (msps_date)
+                                                      FROM   eka.mst_position_spaj
+                                                     WHERE   msps_desc LIKE
+                                                                '%TRANSFER LANGSUNG KE KOMISI (FINANCE)%'
+                                                             AND reg_spaj =
+                                                                   a.reg_spaj)
+                                                WHEN (b.lca_id IN ('37', '52')
+                                                      AND a.mste_flag_cc <> 5)
+                                                THEN
+                                                   NVL (a.mste_tgl_valid_print,
+                                                        a.mste_tgl_kirim_polis)
+                                                WHEN b.lca_id = '40'
+                                                THEN
+                                                   a.mste_tgl_kirim_polis
+                                                ELSE
+                                                   NVL (a.mste_tgl_valid_print,
+                                                        a.mste_tgl_kirim_polis)
+                                             END)
+                                         )
+                                  FROM   DUAL)
+                                  lama_nab_harian,
+                               b.mspo_provider,
+                               (SELECT   eka.workdays (
+                                            b.mspo_next_bill,
+                                            (CASE
+                                                WHEN h.jn_bank = 2
+                                                THEN
+                                                   (SELECT   MIN (msps_date)
+                                                                msps_date
+                                                      FROM   eka.mst_position_spaj
+                                                     WHERE   reg_spaj =
+                                                                a.reg_spaj
+                                                             AND lssa_id IN
+                                                                      ('5',
+                                                                       '10'))
+                                                ELSE
+                                                   NVL (a.mste_tgl_valid_print,
+                                                        a.mste_tgl_kirim_polis)
+                                             END)
+                                         )
+                                  FROM   DUAL)
+                                  lama_proses_nab1,
+                               (SELECT   eka.workdays (a.mste_tgl_terima_spaj,
+                                                       SYSDATE)
+                                  FROM   DUAL)
+                                  lama_pending,
+                               SYSDATE,
+                               d.lsbs_id,
+                               d.lsdbs_number,
+                               h.jn_bank,
+                               b.lca_id,
+                               DECODE (b.lca_id, '42', 1, 0) flag_ws
+                        FROM   eka.mst_insured a,
+                               eka.mst_policy b,
+                               eka.mst_product_insured c,
+                               eka.lst_det_bisnis d,
+                               eka.lst_region e,
+                               eka.lst_bisnis g,
+                               eka.lst_user h
+                       WHERE       b.reg_spaj = a.reg_spaj
+                               AND a.reg_spaj = c.reg_spaj
+                               AND a.mste_insured_no = c.mste_insured_no
+                               AND d.lsbs_id = c.lsbs_id
+                               AND d.lsdbs_number = c.lsdbs_number
+                               AND e.lca_id = b.lca_id
+                               AND e.lwk_id = b.lwk_id
+                               AND e.lsrg_id = b.lsrg_id
+                               AND c.lsbs_id < 300
+                               AND (a.mste_tgl_kirim_polis BETWEEN $P{tanggalAwal} AND $P{tanggalAkhir})
+                               AND b.lstb_id = 1
+                               AND c.lsbs_id = g.lsbs_id
+                               AND b.lus_id = h.lus_id
+                               AND A.REG_SPAJ NOT IN
+                                        (SELECT   reg_spaj
+                                           FROM   (SELECT   b.reg_spaj
+                                                     FROM   eka.mst_insured a,
+                                                            eka.mst_policy b,
+                                                            eka.mst_product_insured c,
+                                                            eka.lst_det_bisnis d,
+                                                            eka.lst_region e,
+                                                            eka.lst_bisnis g,
+                                                            eka.lst_user h
+                                                    WHERE   b.reg_spaj =
+                                                               a.reg_spaj
+                                                            AND a.reg_spaj =
+                                                                  c.reg_spaj
+                                                            AND a.mste_insured_no =
+                                                                  c.mste_insured_no
+                                                            AND d.lsbs_id =
+                                                                  c.lsbs_id
+                                                            AND d.lsdbs_number =
+                                                                  c.lsdbs_number
+                                                            AND e.lca_id =
+                                                                  b.lca_id
+                                                            AND e.lwk_id =
+                                                                  b.lwk_id
+                                                            AND e.lsrg_id =
+                                                                  b.lsrg_id
+                                                            AND c.lsbs_id < 300
+                                                            AND (a.mste_tgl_kirim_polis BETWEEN $P{tanggalAwal} AND $P{tanggalAkhir})
+                                                            AND b.lstb_id = 1
+                                                            AND c.lsbs_id =
+                                                                  g.lsbs_id
+                                                            AND b.lus_id =
+                                                                  h.lus_id))))
+ORDER BY   DECODE (lca_id,
+                   '09', 'Bancassurance',
+                   '08', 'Worksite',
+                   '42', 'Worksite',
+                   '58', 'MallAssurance',
+                   '62', 'MNC',
+                   '65', 'FCD',
+                   'Agency-Regional'),
+           (CASE
+               WHEN jn_bank = 2 AND lsbs_id = 142 AND lsdbs_number = 2
+               THEN
+                  'SIMAS PRIMA'
+               WHEN jn_bank = 2 AND lsbs_id = 158 AND lsdbs_number = 6
+               THEN
+                  'SIMAS PRIMA MANFAAT BULANAN'
+               WHEN jn_bank = 2 AND lsbs_id = 175 AND lsdbs_number = 2
+               THEN
+                  'SIMAS PRIMA SYARIAH'
+               ELSE
+                  lsdbs_name
+            END),
+           reg_spaj,
+           mspo_provider]]>
+	</queryString>
+	<field name="DIST" class="java.lang.String"/>
+	<field name="FLAG_WS" class="java.math.BigDecimal"/>
+	<field name="JAM_NAB_HARIAN" class="java.lang.Integer"/>
+	<field name="JN_BANK" class="java.math.BigDecimal"/>
+	<field name="LAMA_NAB_HARIAN" class="java.lang.String"/>
+	<field name="LAMA_PENDING" class="java.math.BigDecimal"/>
+	<field name="LAMA_PROSES_NAB" class="java.math.BigDecimal"/>
+	<field name="LAMA_PROSES_NAB1" class="java.math.BigDecimal"/>
+	<field name="LCA_ID" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="LSRG_NAMA" class="java.lang.String"/>
+	<field name="MSPO_DATE_PRINT" class="java.util.Date"/>
+	<field name="MSPO_PROVIDER" class="java.math.BigDecimal"/>
+	<field name="MSTE_TGL_AKSEP" class="java.util.Date"/>
+	<field name="MSTE_TGL_KIRIM_POLIS" class="java.sql.Timestamp"/>
+	<field name="MSTE_TGL_SPAJ_DOC" class="java.sql.Timestamp"/>
+	<field name="MSTE_TGL_TERIMA_SPAJ" class="java.sql.Timestamp"/>
+	<field name="MSTE_TGL_VALID_PRINT" class="java.sql.Timestamp"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="SYSDATE" class="java.util.Date"/>
+	<variable name="indikator_link" class="java.lang.String">
+		<variableExpression><![CDATA[$P{REPORT_SCRIPTLET}.isUnitLink($F{LSBS_ID}.toString())]]></variableExpression>
+	</variable>
+	<variable name="warna1" class="java.lang.String">
+		<variableExpression><![CDATA[$V{indikator_link}.equals("1") ? 
+ ($V{proses_nab_link}.equals("0")  ?  "0" : "1")
+ :
+ ($V{proses_nab_nonlink}.equals("1")  ?  "1" : "0")]]></variableExpression>
+	</variable>
+	<variable name="proses_nab_link" class="java.lang.String">
+		<variableExpression><![CDATA[$V{lama_proses} != null ? ($V{lama_proses}.intValue() > 2 ? "1" : "0" ) : "0"]]></variableExpression>
+	</variable>
+	<variable name="proses_nab_nonlink" class="java.lang.String">
+		<variableExpression><![CDATA[$V{lama_proses} != null ? ($V{lama_proses}.intValue() > 1 ? "1" : "0" ) : "0"]]></variableExpression>
+	</variable>
+	<variable name="warna" class="java.lang.String">
+		<variableExpression><![CDATA[$V{indikator_link}.equals("1") ? 
+ ($V{proses_nab_link}.equals("0")  ?  "0" : "1")
+ :
+ ($V{proses_nab_nonlink}.equals("1")  ?  "1" : "0")]]></variableExpression>
+	</variable>
+	<variable name="nab_ws" class="java.lang.Integer">
+		<variableExpression><![CDATA[$F{LAMA_PROSES_NAB1} == null ?  new Integer(0) :
+ ( $F{LAMA_PROSES_NAB1}.intValue() < 0  ? new Integer(0) :  new Integer($F{LAMA_PROSES_NAB1}.intValue()) )]]></variableExpression>
+	</variable>
+	<variable name="lama_proses" class="java.lang.Integer">
+		<variableExpression><![CDATA[$F{FLAG_WS}.intValue() == 1 ?
+(
+	$V{nab_ws}.intValue() ==0 ? new Integer($F{LAMA_PROSES_NAB}.intValue()) :
+		( $V{nab_ws}.intValue() < $F{LAMA_PROSES_NAB}.intValue() ? new Integer($V{nab_ws}.intValue()) : new Integer($F{LAMA_PROSES_NAB}.intValue())  )	
+ )	 : new Integer($F{LAMA_PROSES_NAB}.intValue())]]></variableExpression>
+	</variable>
+	<group name="Group_1" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{DIST}]]></groupExpression>
+		<groupHeader>
+			<band height="13">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="0" y="0" width="405" height="13" isPrintWhenDetailOverflows="true" forecolor="#000000"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Arial" size="9" isItalic="true" isUnderline="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{DIST}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<title>
+		<band height="27">
+			<staticText>
+				<reportElement x="0" y="6" width="802" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="12" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[SERVICE LEVEL (SL)  POLICY ISSUE]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="73">
+			<staticText>
+				<reportElement x="0" y="0" width="99" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PERIODE :]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="99" y="0" width="460" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($P{tanggalAwal})
++ " s/d " + 
+$P{REPORT_SCRIPTLET}.formatDateIndonesian($P{tanggalAkhir})
++ " (Tanggal Kirim Polis) "]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="12" width="99" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SERVICE LEVEL :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="99" y="12" width="96" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Link         :   1,5 hari]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="99" y="24" width="163" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Non Link :   6 Jam Kerja]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="99" y="36" width="436" height="28"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[Lama Proses NB : jumlah hari kerja sejak SPAJ lengkap s/d tgl.polis dikirim ke GA / Branch Admin 
+                             atau s/d proses Klik Valid (untuk polis yang di print di Cabang)]]></text>
+			</staticText>
+			<elementGroup/>
+			<staticText>
+				<reportElement x="247" y="12" width="142" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Provider :  5 Hari]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="23">
+			<staticText>
+				<reportElement x="0" y="1" width="24" height="21" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="24" y="1" width="165" height="21" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[BRANCH]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="189" y="1" width="75" height="21" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO. SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="264" y="1" width="192" height="21" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NAMA PRODUK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="456" y="1" width="90" height="21" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TANGGAL
+TERIMA SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="546" y="1" width="90" height="21" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TANGGAL
+SPAJ LENGKAP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="636" y="1" width="90" height="21" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TANGGAL
+POLIS DIKIRIM]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="816" y="1" width="75" height="21" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[LAMA PROSES (hk)]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="21" width="1049" height="2"/>
+			</line>
+			<line>
+				<reportElement x="0" y="0" width="1048" height="1"/>
+			</line>
+			<staticText>
+				<reportElement x="726" y="0" width="90" height="21" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TANGGAL
+VALID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="891" y="1" width="118" height="21" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[LAMA PROSES (jam) 
+(Non Link & Non Provider)]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="16">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="264" y="0" width="192" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() >= 2)
+:
+($F{MSPO_PROVIDER}.intValue()==2 ?
+	new Boolean($V{lama_proses}.intValue() >5)
+	:
+	new Boolean (false)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement x="0" y="0" width="24" height="14" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() >= 2)
+:
+($F{MSPO_PROVIDER}.intValue()==2 ?
+	new Boolean($V{lama_proses}.intValue() >5)
+	:
+	new Boolean (false)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="456" y="0" width="90" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() >= 2)
+:
+($F{MSPO_PROVIDER}.intValue()==2 ?
+	new Boolean($V{lama_proses}.intValue() >5)
+	:
+	new Boolean (false)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_TERIMA_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="189" y="0" width="75" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() >= 2)
+:
+($F{MSPO_PROVIDER}.intValue()==2 ?
+	new Boolean($V{lama_proses}.intValue() >5)
+	:
+	new Boolean (false)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatSPAJ($F{REG_SPAJ})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="816" y="0" width="75" height="14" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() >= 2)
+:
+($F{MSPO_PROVIDER}.intValue()==2 ?
+	new Boolean($V{lama_proses}.intValue() >5)
+	:
+	new Boolean (false)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{LAMA_PROSES_NAB}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="546" y="0" width="90" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() >= 2)
+:
+($F{MSPO_PROVIDER}.intValue()==2 ?
+	new Boolean($V{lama_proses}.intValue() >5)
+	:
+	new Boolean (false)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_SPAJ_DOC}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="636" y="0" width="90" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() >= 2)
+:
+($F{MSPO_PROVIDER}.intValue()==2 ?
+	new Boolean($V{lama_proses}.intValue() >5)
+	:
+	new Boolean (false)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_KIRIM_POLIS}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="24" y="0" width="165" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() >= 2)
+:
+($F{MSPO_PROVIDER}.intValue()==2 ?
+	new Boolean($V{lama_proses}.intValue() >5)
+	:
+	new Boolean (false)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSRG_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement x="0" y="0" width="24" height="14">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() < 2)
+:
+($F{MSPO_PROVIDER}.intValue()==2 ?
+	new Boolean($V{lama_proses}.intValue() <=5)
+	:
+	new Boolean (false)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="24" y="0" width="165" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() < 2)
+:
+($F{MSPO_PROVIDER}.intValue()==2 ?
+	new Boolean($V{lama_proses}.intValue() <=5)
+	:
+	new Boolean (false)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSRG_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="189" y="0" width="75" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() < 2)
+:
+($F{MSPO_PROVIDER}.intValue()==2 ?
+	new Boolean($V{lama_proses}.intValue() <=5)
+	:
+	new Boolean (false)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatSPAJ($F{REG_SPAJ})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="264" y="0" width="192" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() < 2)
+:
+($F{MSPO_PROVIDER}.intValue()==2 ?
+	new Boolean($V{lama_proses}.intValue() <=5)
+	:
+	new Boolean (false)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="816" y="0" width="75" height="14">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() < 2)
+:
+($F{MSPO_PROVIDER}.intValue()==2 ?
+	new Boolean($V{lama_proses}.intValue() <=5)
+	:
+	new Boolean (false)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{LAMA_PROSES_NAB}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="456" y="0" width="90" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() < 2)
+:
+($F{MSPO_PROVIDER}.intValue()==2 ?
+	new Boolean($V{lama_proses}.intValue() <=5)
+	:
+	new Boolean (false)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_TERIMA_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="546" y="0" width="90" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() < 2)
+:
+($F{MSPO_PROVIDER}.intValue()==2 ?
+	new Boolean($V{lama_proses}.intValue() <=5)
+	:
+	new Boolean (false)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_SPAJ_DOC}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="636" y="0" width="90" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() < 2)
+:
+($F{MSPO_PROVIDER}.intValue()==2 ?
+	new Boolean($V{lama_proses}.intValue() <=5)
+	:
+	new Boolean (false)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_KIRIM_POLIS}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="726" y="0" width="90" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() < 2)
+:
+($F{MSPO_PROVIDER}.intValue()==2 ?
+	new Boolean($V{lama_proses}.intValue() <=5)
+	:
+	new Boolean (false)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_VALID_PRINT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="726" y="0" width="90" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() >= 2)
+:
+($F{MSPO_PROVIDER}.intValue()==2 ?
+	new Boolean($V{lama_proses}.intValue() >5)
+	:
+	new Boolean (false)
+)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_VALID_PRINT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="264" y="0" width="192" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("0") && $F{MSPO_PROVIDER}.intValue()!=2 ?
+new Boolean ($F{JAM_NAB_HARIAN}.intValue() >= 6)
+:
+new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement x="0" y="0" width="24" height="14" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("0") && $F{MSPO_PROVIDER}.intValue()!=2 ?
+new Boolean ($F{JAM_NAB_HARIAN}.intValue() >= 6)
+:
+new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="456" y="0" width="90" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("0") && $F{MSPO_PROVIDER}.intValue()!=2 ?
+new Boolean ($F{JAM_NAB_HARIAN}.intValue() >= 6)
+:
+new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_TERIMA_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="189" y="0" width="75" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("0") && $F{MSPO_PROVIDER}.intValue()!=2 ?
+new Boolean ($F{JAM_NAB_HARIAN}.intValue() >= 6)
+:
+new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatSPAJ($F{REG_SPAJ})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="891" y="0" width="113" height="14" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("0") && $F{MSPO_PROVIDER}.intValue()!=2 ?
+new Boolean ($F{JAM_NAB_HARIAN}.intValue() >= 6)
+:
+new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{JAM_NAB_HARIAN}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="546" y="0" width="90" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("0") && $F{MSPO_PROVIDER}.intValue()!=2 ?
+new Boolean ($F{JAM_NAB_HARIAN}.intValue() >= 6)
+:
+new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_SPAJ_DOC}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="636" y="0" width="90" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("0") && $F{MSPO_PROVIDER}.intValue()!=2 ?
+new Boolean ($F{JAM_NAB_HARIAN}.intValue() >= 6)
+:
+new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_KIRIM_POLIS}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="24" y="0" width="165" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("0") && $F{MSPO_PROVIDER}.intValue()!=2 ?
+new Boolean ($F{JAM_NAB_HARIAN}.intValue() >= 6)
+:
+new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSRG_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="726" y="0" width="90" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("0") && $F{MSPO_PROVIDER}.intValue()!=2 ?
+new Boolean ($F{JAM_NAB_HARIAN}.intValue() >= 6)
+:
+new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_VALID_PRINT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement x="0" y="0" width="24" height="14">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("0") && $F{MSPO_PROVIDER}.intValue()!=2 ?
+new Boolean ($F{JAM_NAB_HARIAN}.intValue() < 6)
+:
+new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="24" y="0" width="165" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("0") && $F{MSPO_PROVIDER}.intValue()!=2 ?
+new Boolean ($F{JAM_NAB_HARIAN}.intValue() < 6)
+:
+new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSRG_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="189" y="0" width="75" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("0") && $F{MSPO_PROVIDER}.intValue()!=2 ?
+new Boolean ($F{JAM_NAB_HARIAN}.intValue() < 6)
+:
+new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatSPAJ($F{REG_SPAJ})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="264" y="0" width="192" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("0") && $F{MSPO_PROVIDER}.intValue()!=2 ?
+new Boolean ($F{JAM_NAB_HARIAN}.intValue() < 6)
+:
+new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="891" y="0" width="113" height="14">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("0") && $F{MSPO_PROVIDER}.intValue()!=2 ?
+new Boolean ($F{JAM_NAB_HARIAN}.intValue() < 6)
+:
+new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{JAM_NAB_HARIAN}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="456" y="0" width="90" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("0") && $F{MSPO_PROVIDER}.intValue()!=2 ?
+new Boolean ($F{JAM_NAB_HARIAN}.intValue() < 6)
+:
+new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_TERIMA_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="546" y="0" width="90" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("0") && $F{MSPO_PROVIDER}.intValue()!=2 ?
+new Boolean ($F{JAM_NAB_HARIAN}.intValue() < 6)
+:
+new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_SPAJ_DOC}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="636" y="0" width="90" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("0") && $F{MSPO_PROVIDER}.intValue()!=2 ?
+new Boolean ($F{JAM_NAB_HARIAN}.intValue() < 6)
+:
+new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_KIRIM_POLIS}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="726" y="0" width="90" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("0") && $F{MSPO_PROVIDER}.intValue()!=2 ?
+new Boolean ($F{JAM_NAB_HARIAN}.intValue() < 6)
+:
+new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_VALID_PRINT}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<lastPageFooter>
+		<band height="21">
+			<textField hyperlinkType="None">
+				<reportElement x="3" y="6" width="749" height="14"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Printed date : "+$P{REPORT_SCRIPTLET}.formatDateWithTime(new Date()) +"  by User :  "+$P{user_id}]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="1318">
+			<subreport>
+				<reportElement x="26" y="84" width="325" height="183"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_issued_agencyreg_new")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="366" y="84" width="325" height="183"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_issued_bancass_new")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="202" y="528" width="325" height="183"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_issued_worksite_new")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="560" y="528" width="325" height="183"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_issued_new")+".jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement x="0" y="0" width="99" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PERIODE :]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="99" y="0" width="460" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($P{tanggalAwal})
++ " s/d " + 
+$P{REPORT_SCRIPTLET}.formatDateIndonesian($P{tanggalAkhir})
++ " (Tanggal Kirim Polis) "]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="99" y="24" width="142" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Non Link :   6 Jam Kerja]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="99" y="12" width="96" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Link         :   2 hari]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="12" width="99" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SERVICE LEVEL :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="99" y="36" width="459" height="28"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[Lama Proses NB : jumlah hari kerja sejak SPAJ lengkap s/d tgl.polis dikirim ke GA / Branch Admin 
+                             atau s/d proses Klik Valid (untuk polis yang di print di Cabang)]]></text>
+			</staticText>
+			<subreport>
+				<reportElement x="713" y="84" width="325" height="183"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_issued_bancass2_new")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="27" y="747" width="325" height="250"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_non_link")+".jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement x="247" y="13" width="142" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Provider :  5 Hari]]></text>
+			</staticText>
+			<subreport>
+				<reportElement x="366" y="747" width="325" height="250"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_non_link_b")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="27" y="306" width="325" height="183"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_issued_mall")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="366" y="306" width="325" height="183"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_issued_mnc")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="713" y="306" width="325" height="183"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_issued_fcd")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="713" y="747" width="325" height="250"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_non_link_w")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="27" y="1032" width="325" height="250"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_non_link_mall")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="366" y="1032" width="325" height="250"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_non_link_mnc")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="713" y="1032" width="325" height="250"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_non_link_fcd")+".jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</summary>
+</jasperReport>

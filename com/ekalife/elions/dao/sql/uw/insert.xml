@@ -1,0 +1,2064 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<insert id="elions.uw.insertMstVoidPayment" parameterClass="com.ekalife.elions.model.VoidPayment">
+		INSERT INTO eka.mst_void_payment
+				(mvp_payment_id, reg_spaj, mspo_policy_no, lku_id, msdp_number,
+				 mvp_pay_date, mvp_payment, input_date_uw, lus_id, mvp_no_acc,
+				 mvp_no_pre, mvp_no_voucher, flag, jn_revisi
+				)
+		VALUES	(#mvp_payment_id#, #reg_spaj#, #mspo_policy_no#, #lku_id#, #msdp_number#,
+				 #mvp_pay_date#, #mvp_payment#, #input_date_uw#, #lus_id#, #mvp_no_acc#,
+				 #mvp_no_pre#, #mvp_no_voucher#, #flag#, #jn_revisi#
+				)
+	</insert>
+	
+	<insert id="elions.uw.insertMstPositionSpajWithSubId" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_position_spaj (reg_spaj, msps_date, lspd_id, lssp_id, lssa_id, lus_id, msps_desc,sub_id)
+		   SELECT a.reg_spaj, SYSDATE, a.lspd_id, lssp_id, lssa_id, #lus_id#, #msps_desc#, #sub_id#
+		     FROM eka.mst_policy a, eka.mst_insured b
+		    WHERE a.reg_spaj = RPAD (REPLACE (#reg_spaj#, '.'), 11, ' ')
+		      AND a.reg_spaj = b.reg_spaj
+	</insert>
+
+	<insert id="elions.uw.insertMstPositionSpaj" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_position_spaj (reg_spaj, msps_date, lspd_id, lssp_id, lssa_id, lus_id, msps_desc)
+		   SELECT a.reg_spaj, SYSDATE + (#addSecond# * (1/115200)), a.lspd_id, lssp_id, lssa_id, #lus_id#, #msps_desc#
+		     FROM eka.mst_policy a, eka.mst_insured b
+		    WHERE a.reg_spaj = RPAD (REPLACE (#reg_spaj#, '.'), 11, ' ')
+		      AND a.reg_spaj = b.reg_spaj
+		      AND ROWNUM = 1
+	</insert>
+	<insert id="elions.uw.insertMstPositionSpajSpt" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_position_spaj (reg_spaj, msps_date, lspd_id, lssp_id, lssa_id, lus_id, msps_desc,jenis)
+		   SELECT a.reg_spaj, SYSDATE + (#addSecond# * (1/115200)), a.lspd_id, lssp_id, lssa_id, #lus_id#, #msps_desc#,#jenis#
+		     FROM eka.mst_policy a, eka.mst_insured b
+		    WHERE a.reg_spaj = RPAD (REPLACE (#reg_spaj#, '.'), 11, ' ')
+		      AND a.reg_spaj = b.reg_spaj
+		      AND ROWNUM = 1
+	</insert>
+	<insert id="elions.uw.insertMstPositionSpajRenewal" parameterClass="java.util.HashMap">
+        INSERT INTO eka.mst_position_spaj (reg_spaj, msps_date, lspd_id, lssp_id, lssa_id, lus_id, msps_desc)
+           SELECT a.reg_spaj, SYSDATE, a.lspd_id, lssp_id, lssa_id, #lus_id#, #msps_desc#
+             FROM eka.mst_policy a, eka.mst_insured b
+            WHERE a.reg_spaj = RPAD (REPLACE (#reg_spaj#, '.'), 11, ' ')
+              AND a.reg_spaj = b.reg_spaj
+	</insert>
+	
+	<insert id="elions.uw.insertMstPositionSpajRedFlag" parameterClass="java.util.HashMap">
+        INSERT INTO eka.mst_position_spaj (reg_spaj, msps_date, lspd_id, lssp_id, lssa_id, lus_id, msps_desc,jenis)
+           SELECT a.reg_spaj, SYSDATE + (#addSecond# * (1/115200)), a.lspd_id, lssp_id, lssa_id, #lus_id#, #msps_desc#,#jenis#
+             FROM eka.mst_policy a, eka.mst_insured b
+            WHERE a.reg_spaj = RPAD (REPLACE (#reg_spaj#, '.'), 11, ' ')
+              AND a.reg_spaj = b.reg_spaj
+              AND ROWNUM = 1
+    </insert>
+    
+    <insert id="elions.uw.insertMstPositionSpajRedFlagTU" parameterClass="java.util.HashMap">
+        INSERT INTO eka.mst_position_spaj (reg_spaj, msps_date, lspd_id, lssp_id, lssa_id, lus_id, msps_desc,jenis)
+           SELECT a.reg_spaj, SYSDATE + (#addSecond# * (1/115200)), a.lspd_id, lssp_id, lssa_id, #lus_id#, #msps_desc#,#jenis#
+             FROM eka.mst_policy a, eka.mst_insured b
+            WHERE a.reg_spaj = RPAD (REPLACE (#reg_spaj#, '.'), 11, ' ')
+              AND a.reg_spaj = b.reg_spaj
+              AND ROWNUM = 1
+    </insert>
+	
+	<insert id="elions.uw.insertMstPositionSpajPas" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_position_spaj_pas (reg_id, msps_date, lspd_id, lssp_id, lus_id, msps_desc)
+		   SELECT a.msp_fire_id, SYSDATE + (#addSecond# * (1/115200)), a.lspd_id, a.lssp_id, #lus_id#, #msps_desc#
+		     FROM eka.mst_pas_sms a
+		    WHERE a.msp_fire_id = #reg_id#
+		      AND ROWNUM = 1
+	</insert>
+	
+	<insert id="elions.uw.insertMstPositionSpajPasBySpaj" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_position_spaj_pas (reg_id, msps_date, lspd_id, lssp_id, lus_id, msps_desc)
+		   SELECT a.msp_fire_id, SYSDATE + (#addSecond# * (1/115200)), a.lspd_id, a.lssp_id, #lus_id#, #msps_desc#
+		     FROM eka.mst_pas_sms a
+		    WHERE a.reg_spaj = #reg_spaj#
+		      AND ROWNUM = 1
+	</insert>
+	
+	<insert id="elions.uw.insertMstPositionSpajKustodi" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_position_spaj (reg_spaj, msps_date, lspd_id, lssp_id, lssa_id, lus_id, msps_desc,sub_id)
+		   SELECT a.reg_spaj, #tgl_kirim#, a.lspd_id, lssp_id, lssa_id, #lus_id#, #msps_desc#, #sub_id#
+		     FROM eka.mst_policy a, eka.mst_insured b
+		    WHERE a.reg_spaj = RPAD (REPLACE (#reg_spaj#, '.'), 11, ' ')
+		      AND a.reg_spaj = b.reg_spaj
+	</insert>
+
+	<insert id="elions.uw.insertPowersaveUbah" parameterClass="com.ekalife.elions.model.PowersaveUbah">
+		INSERT INTO eka.mst_powersave_ubah
+		            (mpu_print_date, mpu_print_reg,
+		             mpu_no_reg, reg_spaj,
+		             mpu_jenis, mpu_tgl_awal,
+		             mpu_awal, mpu_akhir, lus_id,
+		             mpu_input, mpu_note,
+		             mpu_confirm_date, mpu_mature_date,
+		             mpu_deposit, mpu_interest, mpu_print
+		            )
+		     VALUES (#mpu_print_date:TIMESTAMP#, #mpu_print_reg:INTEGER#,
+		             UPPER (#mpu_no_reg:CHAR#), UPPER (#reg_spaj:CHAR#),
+		             #mpu_jenis:INTEGER#, #mpu_tgl_awal:TIMESTAMP#,
+		             #mpu_awal:DOUBLE#, #mpu_akhir:DOUBLE#, #lus_id:INTEGER#,
+		             #mpu_input:TIMESTAMP#, UPPER (#mpu_note:VARCHAR#),
+		             #mpu_confirm_date:TIMESTAMP#, #mpu_mature_date:TIMESTAMP#,
+		             #mpu_deposit:DOUBLE#, #mpu_interest:DOUBLE#, #mpu_print:INTEGER#
+		            )	
+	</insert>
+
+	<insert id="elions.uw.insertPbp" parameterClass="com.ekalife.elions.model.Pbp">
+		INSERT INTO eka.mst_pbp
+		            (premi_ke, reg_spaj,
+		             spaj_bayar, tgl_jttempo,
+		             flag_cair
+		            )
+		     VALUES (#premi_ke:INTEGER#, UPPER (#reg_spaj:CHAR#),
+		             UPPER (#spaj_bayar:CHAR#), #tgl_jttempo:TIMESTAMP#,
+		             #flag_cair:INTEGER#
+		            )	
+	</insert>
+
+	<insert id="elions.uw.insertUpp" parameterClass="com.ekalife.elions.model.Upp">
+		INSERT INTO eka.tmp_yosep
+			(lstb_id, reg_spaj, mspro_prod_date, mspro_prod_ke, upp_eva, upp_kontes, upp_lain)
+		VALUES 
+			(#lstb_id#, #reg_spaj#, #mspro_prod_date#, #mspro_prod_ke#, #upp_eva#, #upp_kontes#, #upp_lain#)
+	</insert>
+
+	<insert id="elions.uw.insertMstCommRider" parameterClass="com.ekalife.elions.model.CommRider">
+		INSERT INTO eka.mst_comm_rider
+		            (reg_spaj, msbi_tahun_ke,
+		             msbi_premi_ke, msdb_det_ke,
+		             lsbs_id, lsdbs_number, level_id,
+		             flag_reward, msag_id, komisi,
+		             pajak, tgl_komisi, flag_bayar,
+		             nilai_kurs,
+		             tgl_proses, nama,
+		             no_account, lbn_id
+		            )
+		     VALUES (UPPER (#reg_spaj:CHAR#), #msbi_tahun_ke:INTEGER#,
+		             #msbi_premi_ke:INTEGER#, #msdb_det_ke:INTEGER#,
+		             #lsbs_id:INTEGER#, #lsdbs_number:INTEGER#, #level_id:INTEGER#,
+		             #flag_reward:INTEGER#, UPPER (#msag_id:CHAR#), #komisi:DOUBLE#,
+		             #pajak:DOUBLE#, TRUNC(sysdate), #flag_bayar:INTEGER#,
+		             #nilai_kurs:INTEGER#,
+		             TRUNC(sysdate), UPPER (#nama:VARCHAR#),
+		             UPPER (#no_account:VARCHAR#), #lbn_id:INTEGER#)		
+	</insert>
+
+	<insert id="elions.uw.insertMstAgencyBonus" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_agency_bonus
+		            (reg_spaj, msbi_tahun_ke,
+		             msbi_premi_ke, flag_jenis,
+		             lsabt_id, msag_id,
+		             nama, no_account,
+		             lbn_id, msco_comm, msco_tax,
+		             msco_date, msco_pay_date,
+		             msco_paid, msco_active,
+		             msco_no_pre, msco_jurnal,
+		             lus_id, msco_nilai_kurs,
+		             flag_upload
+		            )
+		     VALUES (UPPER (#reg_spaj:CHAR#), #msbi_tahun_ke:INTEGER#,
+		             #msbi_premi_ke:INTEGER#, #flag_jenis:INTEGER#,
+		             #lsabt_id:INTEGER#, UPPER (#msag_id:CHAR#),
+		             UPPER (#nama:VARCHAR#), UPPER (#no_account:VARCHAR#),
+		             #lbn_id:INTEGER#, #msco_comm:DOUBLE#, #msco_tax:DOUBLE#,
+		             trunc(sysdate), #msco_pay_date:TIMESTAMP#,
+		             #msco_paid:INTEGER#, #msco_active:INTEGER#,
+		             UPPER (#msco_no_pre:VARCHAR#), #msco_jurnal:INTEGER#,
+		             #lus_id:INTEGER#, #msco_nilai_kurs:INTEGER#,
+		             #flag_upload:INTEGER#
+		            )	
+	</insert>
+
+	<insert id="elions.uw.insertHistoryBeaMeterai" parameterClass="com.ekalife.elions.model.Meterai">
+		INSERT INTO eka.mst_stamp_hist (mstm_kode, msth_ref_no, msth_jenis, msth_jumlah, msth_desc, msth_tgl_bayar, msth_tipe )
+		     VALUES (#mstm_kode#, #msth_ref_no#, #msth_jenis#, #msth_jumlah#, #msth_desc#, 
+							(select mspo_date_print from eka.mst_policy where reg_spaj = rpad(replace(#msth_ref_no#,'.'),11,' ')),1
+							)	
+	</insert>
+
+	<insert id="elions.uw.insertRekeningNasabah" parameterClass="com.ekalife.elions.model.Rekening_client">
+		INSERT INTO EKA.MST_REK_CLIENT (                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+		LUS_ID                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+		, TGL_CHANGE                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+		, MRC_KUASA                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+		, TGL_SURAT                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+		, MRC_KURS                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+		, MRC_KOTA                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+		, REG_SPAJ                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+		, LSBP_ID                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+		, MRC_CABANG                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+		, MRC_NAMA                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+		, MRC_NO_AC                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+		, MRC_JENIS                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+		, MRC_JN_NASABAH                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+		) values (                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+		#lus_id:INTEGER#                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+		, #tgl_change:TIMESTAMP#                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+		, #mrc_kuasa:INTEGER#                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+		, #tgl_surat:TIMESTAMP#                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+		, #mrc_kurs:CHAR#                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+		, #mrc_kota:VARCHAR#                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+		, #reg_spaj:CHAR#                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+		, #lsbp_id:INTEGER#                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+		, #mrc_cabang:VARCHAR#                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+		, #mrc_nama:VARCHAR#                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+		, #mrc_no_ac:VARCHAR#                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+		, #mrc_jenis:INTEGER#                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+		, #mrc_jn_nasabah:INTEGER#                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+		)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+	</insert>
+
+	<insert id="elions.uw.insertSimasCard" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_simcard
+		            (msc_jenis, no_kartu, nama, tgl_akhir, mcl_id, reg_spaj,
+		             tgl_lahir, alamat, kota, kode_pos, tgl_proses, flag_print,
+		             flag_aktif, flag_roll, lus_id, polis, total_premi, kartu_ke,
+		             tgl_input, flag_nb, lca_id, lca_cabang, notes)
+		   SELECT #jenis#, #polis#, 
+		   		  decode(instr(b.mcl_first,'QQ'),0,b.mcl_first,TRIM(SUBSTR(b.mcl_first, 0, INSTR(b.mcl_first,'QQ')-1))), 
+		   		  d.mste_end_date, b.mcl_id, a.reg_spaj,
+		          b.mspe_date_birth, e.msap_address, NVL (e.kota, g.lska_note),
+		          e.msap_zip_code, TRUNC (SYSDATE), #flag_print#, #flag_aktif#, 0, #lus_id#, #jumlahPolis#,
+		          #totalPremi#, 1, SYSDATE, 0, a.lca_id, f.lca_nama, #notes#
+		     FROM eka.mst_policy a,
+		          eka.mst_client_new b,
+		          eka.mst_address_new c,
+		          eka.mst_insured d,
+		          eka.mst_address_billing e,
+		          eka.lst_cabang f,
+		          eka.lst_kabupaten g
+		    WHERE a.mspo_policy_holder = b.mcl_id
+		      AND b.mcl_id = c.mcl_id
+		      AND a.reg_spaj = d.reg_spaj
+		      AND a.reg_spaj = e.reg_spaj
+		      AND a.lca_id = f.lca_id
+		      AND e.lska_id = g.lska_id(+)
+		      AND a.reg_spaj = rpad(replace(#spaj#,'.'),11,' ')
+	</insert>
+	
+	<insert id="elions.uw.insert.mst_rek_hist" parameterClass="com.ekalife.elions.model.Rekening_client">
+		INSERT INTO eka.mst_rek_hist
+		            (reg_spaj, tgl, lus_id,
+		             notes, mrc_no_ac, mrc_no_ac_lama, jenis
+		            )
+		     VALUES (#reg_spaj:CHAR#, sysdate, #lus_id:INTEGER#,
+		             #keterangan:VARCHAR#, #mrc_no_ac:VARCHAR#, #mrc_no_ac_lama:VARCHAR#, #typeRek:INTEGER# 
+		            )                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+	</insert>
+
+	<insert id="elions.uw.insertProductionFromCancel" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_production
+			(lstb_id, reg_spaj, mspro_prod_ke, mspro_prod_date, msbi_tahun_ke,
+			 msbi_premi_ke, mspro_jn_prod, lku_id, mspro_nilai_kurs,
+			 mspro_beg_date, mspro_end_date, mspro_policy_cost,
+			 mspro_card_cost, mspro_stamp, mspro_jml_member, lca_id, lwk_id,
+			 lsrg_id, tgl_input, upp_eva, upp_kontes, upp_lain, com_eva, upp_bonus, ape_kontes, ape_eva, ape_prod)					 
+		SELECT a.lstb_id, a.reg_spaj, (a.mspro_prod_ke + (select count(reg_spaj) from eka.mst_production where reg_spaj = a.reg_spaj)), #prodDate#,
+		    a.msbi_tahun_ke, a.msbi_premi_ke, 3 mspro_jn_prod, a.lku_id, a.mspro_nilai_kurs,
+		    a.mspro_beg_date, a.mspro_end_date, a.mspro_policy_cost, a.mspro_card_cost,
+		    a.mspro_stamp, a.mspro_jml_member, a.lca_id, a.lwk_id, a.lsrg_id, sysdate tgl_input, 
+		    (-1*a.upp_eva), (-1*a.upp_kontes), (-1*a.upp_lain), (-1*a.com_eva), (-1*a.upp_bonus), (-1*a.ape_kontes), (-1*a.ape_eva), (-1*a.ape_prod)
+		FROM eka.mst_production a, eka.mst_billing b
+		WHERE a.reg_spaj = b.reg_spaj
+		    AND a.msbi_tahun_ke = b.msbi_tahun_ke
+		    AND a.msbi_premi_ke = b.msbi_premi_ke
+		    AND a.lstb_id = 1
+		    AND a.mspro_jn_prod = 1
+		    AND b.msbi_nb = 1
+		    AND a.reg_spaj = rpad(replace(#spaj#,'.'),11,' ')
+	</insert>
+
+    <!--<insert id="elions.uw.insertProductionFromCancel" parameterClass="java.util.HashMap">-->
+		<!--INSERT INTO eka.mst_production-->
+		            <!--(lstb_id, reg_spaj, mspro_prod_ke, mspro_prod_date, msbi_tahun_ke,-->
+		             <!--msbi_premi_ke, mspro_jn_prod, lku_id, mspro_nilai_kurs,-->
+		             <!--mspro_beg_date, mspro_end_date, mspro_policy_cost,-->
+		             <!--mspro_card_cost, mspro_stamp, mspro_jml_member, lca_id, lwk_id,-->
+		             <!--lsrg_id, tgl_input, upp_eva, upp_kontes, upp_lain, com_eva, upp_bonus)					 -->
+		   <!--SELECT /*+ first_rows */ a.lstb_id, a.reg_spaj, (a.mspro_prod_ke + b.tambah), #prodDate#, a.msbi_tahun_ke,-->
+		          <!--a.msbi_premi_ke, 3 mspro_jn_prod, a.lku_id, a.mspro_nilai_kurs,-->
+		          <!--a.mspro_beg_date, a.mspro_end_date, a.mspro_policy_cost, a.mspro_card_cost,-->
+		          <!--a.mspro_stamp, a.mspro_jml_member, a.lca_id, a.lwk_id, a.lsrg_id, sysdate tgl_input, -->
+		          <!--(-1*a.upp_eva), (-1*a.upp_kontes), (-1*a.upp_lain), (-1*a.com_eva), (-1*a.upp_bonus)-->
+		     <!--FROM eka.mst_production a,-->
+					<!--(select lstb_id, reg_spaj, msbi_tahun_ke, count(*) tambah from eka.mst_production  -->
+					<!--group by lstb_id, reg_spaj, msbi_tahun_ke) b-->
+		    <!--WHERE a.lstb_id = 1 and a.mspro_jn_prod = 1-->
+		      <!--AND a.reg_spaj = rpad(replace(#spaj#,'.'),11,' ')-->
+			  <!--AND a.lstb_id = b.lstb_id AND a.reg_spaj = b.reg_spaj AND a.msbi_tahun_ke = b.msbi_tahun_ke-->
+	<!--</insert>-->
+<!-- 
+		INSERT INTO eka.mst_production
+		            (lstb_id, reg_spaj, mspro_prod_ke, mspro_prod_date, msbi_tahun_ke,
+		             msbi_premi_ke, mspro_jn_prod, lku_id, mspro_nilai_kurs,
+		             mspro_beg_date, mspro_end_date, mspro_policy_cost,
+		             mspro_card_cost, mspro_stamp, mspro_jml_member, lca_id, lwk_id,
+		             lsrg_id)
+		   SELECT lstb_id, reg_spaj, #prodKe#, #prodDate#, msbi_tahun_ke,
+		          msbi_premi_ke, #jenisProd#, lku_id, mspro_nilai_kurs,
+		          mspro_beg_date, mspro_end_date, mspro_policy_cost, mspro_card_cost,
+		          mspro_stamp, mspro_jml_member, lca_id, lwk_id, lsrg_id
+		     FROM eka.mst_production
+		    WHERE (lstb_id = #lstb#)
+		      AND (reg_spaj = (rpad(replace(#spaj#,'.'),11,' '))
+		      AND (mspro_prod_ke = #prodKe2#))
+-->
+	<insert id="elions.uw.insertDetProductionFromCancel" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_det_production (
+			lstb_id, reg_spaj, mspro_prod_ke, mspro_prod_date, lsbs_id, lsdbs_number,
+			msbi_tahun_ke, msbi_premi_ke, msdpr_premium, msdpr_discount, msdpr_tsi
+		)
+		SELECT a.lstb_id, a.reg_spaj,
+			(a.mspro_prod_ke + (select count(reg_spaj) from eka.mst_det_production where reg_spaj = a.reg_spaj and lsbs_id <![CDATA[<]]> 300)) prod_ke, 
+		    #prodDate#, a.lsbs_id, a.lsdbs_number, a.msbi_tahun_ke, a.msbi_premi_ke, a.msdpr_premium, a.msdpr_discount, a.msdpr_tsi
+		FROM eka.mst_det_production a, eka.mst_production b, eka.mst_billing c
+		WHERE a.reg_spaj = b.reg_spaj
+		    AND a.reg_spaj = c.reg_spaj
+		    AND a.mspro_prod_ke = b.mspro_prod_ke
+		    AND a.mspro_prod_date = b.mspro_prod_date
+		    AND a.msbi_tahun_ke = b.msbi_tahun_ke
+		    AND a.msbi_premi_ke = b.msbi_premi_ke
+		    AND a.msbi_tahun_ke = c.msbi_tahun_ke
+		    AND a.msbi_premi_ke = c.msbi_premi_ke
+		    AND a.lstb_id = 1
+		    AND b.mspro_jn_prod = 1
+		    AND c.msbi_nb = 1
+		    AND a.reg_spaj = rpad(replace(#spaj#,'.'),11,' ')
+		ORDER BY a.mspro_prod_ke
+	</insert>
+<!-- 
+		INSERT INTO eka.mst_det_production
+		            (lstb_id, reg_spaj, mspro_prod_ke, mspro_prod_date, lsbs_id,
+		             lsdbs_number, msbi_tahun_ke, msbi_premi_ke, msdpr_premium,
+		             msdpr_discount, msdpr_tsi)
+		   SELECT lstb_id, reg_spaj, #prodKe#, #prodDate#, lsbs_id, lsdbs_number,
+		          msbi_tahun_ke, msbi_premi_ke, msdpr_premium, msdpr_discount,
+		          msdpr_tsi
+		     FROM eka.mst_det_production
+		    WHERE (lstb_id = #lstb#)
+		      AND (reg_spaj = (rpad(replace(#spaj#,'.'),11,' '))
+		      AND (mspro_prod_ke = #prodKe2#))
+ -->
+	<insert id="elions.uw.insertCsfCall" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_csf_dial
+		            (reg_spaj, mscsf_dial_ke, flag_inout, mscsf_beg_tgl_dial,
+		             mscsf_end_tgl_dial, mscsf_tgl_back, mscsf_ket, lus_id,
+		             mscfl_no_ref, flag_finance
+		            )
+		     VALUES (#spaj#, nvl((select max(mscsf_dial_ke)+1 from eka.mst_csf_dial where reg_spaj = rpad(replace(#spaj#,'.'),11,' ')), 1), #inout#, 
+		     	decode(#s_start#,null,sysdate,'',sysdate,to_date(to_char(sysdate,'yyyymmdd')||' '||#s_start#,'yyyymmdd hh24:mi:ss')),
+		        decode(#s_end#,null,sysdate,'',sysdate,to_date(to_char(sysdate,'yyyymmdd')||' '||#s_end#,'yyyymmdd hh24:mi:ss')),
+		        to_date(#s_callback#,'dd/mm/yyyy'), #s_ket#, #lus_id#,
+		        #mscfl_no_ref#, #flag_finance#
+		            )
+	</insert>
+
+	<insert id="elions.uw.insertNilai" parameterClass="com.ekalife.elions.model.Nilai">
+		INSERT INTO eka.mst_nilai
+		            (tahun, nilai, lus_id, create_date, reg_spaj, jenis, flag_proses, flag_fix, persen)
+		     VALUES (#tahun#, #nilai#, #lus_id:NUMBER#, sysdate, #reg_spaj#, #jenis#, #flag_proses#, #flag_fix#, #persen:NUMBER#)
+	</insert>
+
+	<insert id="elions.uw.insert.UlinkPlatinum" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_ulink_plat
+		            (reg_spaj, mu_ke, mtu_ke, mup_beg_lock, mup_end_lock,
+		             mup_jumlah, mup_unit, mup_saldo_unit
+		            )
+		     VALUES (rpad(replace(#spaj#,'.'),11,' '), #li_ke#, #li_mtu#, #ldt_nab#, #ldt_elock#,
+		             #ldec_jumlah#, #ld_unit#, #ld_saldo#
+		            )
+	</insert>
+
+	<insert id="elions.uw.insert.mst_tag_payment" parameterClass="java.util.HashMap">
+		insert into eka.mst_tag_payment
+			(reg_spaj, msbi_tahun_ke, msbi_premi_ke, mspa_payment_id, mstp_value, no_kttp)
+		values
+			(
+				#topup.reg_spaj#, #tahun#, #premi#, #topup.mspa_payment_id#, 
+				#topup.mspa_payment#, #topup.no_kttp#
+			)
+	</insert>
+	
+	<insert id="elions.uw.insert.mst_payment" parameterClass="java.util.HashMap">
+		insert into eka.mst_payment(
+			mspa_payment_id, lku_id, lsjb_id, client_bank, reg_spaj, mspa_no_rek, mspa_pay_date, 
+			mspa_due_date, mspa_date_book, mspa_payment, mspa_input_date, mspa_desc, lus_id,
+			mspa_active, lsrek_id, mspa_nilai_kurs, mspa_old_policy, mspa_no_pre, mspa_flag_merchant
+		)
+		values(
+			#topup.mspa_payment_id#, #topup.lku_id#, #topup.lsjb_id#, #topup.client_bank#, replace(#topup.reg_spaj#,'.'), #topup.mspa_no_rek#,
+			#topup.pay_date#, #topup.mspa_due_date:DATE#, #topup.mspa_date_book#, #topup.mspa_payment#, sysdate, #topup.mspa_desc#,
+			#lus_id#, #topup.mspa_active#, nvl(#topup.lsrek_id#,0), #topup.mspa_nilai_kurs#, (case when #topup.lsjb_id#>=10 then #topup.mspa_old_policy:VARCHAR# else null end),
+			#topup.mspa_no_pre#, #topup.mspa_flag_merchant#
+		)	
+	</insert>
+	
+	<insert id="elions.uw.insert.mst_batal" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_batal
+			( reg_spaj, msb_no_batal, msb_tgl_batal, msb_alasan, lus_id )
+		VALUES ( replace(#spaj#,'.'), #sekuens#, SYSDATE, #alasan#, #lus_id# )	
+	</insert>
+		
+	<insert id="elions.uw.insert.mst_production" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_production
+		            (lstb_id, reg_spaj, mspro_prod_ke, mspro_prod_date, msbi_tahun_ke,
+		             msbi_premi_ke, mspro_jn_prod, lku_id, mspro_nilai_kurs,
+		             mspro_beg_date, mspro_end_date, mspro_policy_cost, mspro_stamp,
+		             lca_id, lwk_id, lsrg_id,agent_1,agent_2,agent_3,agent_4,agent_5)
+		   SELECT a.lstb_id, a.reg_spaj, #prod_ke:NUMBER#, #prodDate:DATE#, #tahun:NUMBER#, #premi:NUMBER#, 1, a.lku_id,
+		          nvl(c.lkh_currency,1) lkh_currency, b.msbi_beg_date, b.msbi_end_date,
+		          b.msbi_policy_cost, b.msbi_stamp, b.lca_id, b.lwk_id, b.lsrg_id,#s_agent_1#,
+		          #s_agent_2#,#s_agent_3#,#s_agent_4#,#s_agent_5#
+		     FROM eka.mst_policy a,
+		          (SELECT *
+		             FROM eka.mst_billing
+		            WHERE msbi_tahun_ke = #tahun:NUMBER# AND msbi_premi_ke = #premi:NUMBER#) b,
+		          (select * from eka.lst_daily_currency where lkh_date = #rkDate:DATE#) c
+		    WHERE a.reg_spaj = RPAD (replace(#spaj:VARCHAR#,'.'), 11, ' ')
+		      AND a.reg_spaj = b.reg_spaj
+		      AND a.lku_id = c.lku_id(+)
+	</insert>
+
+	<insert id="elions.uw.insert.mst_ulink_det_billing" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_ulink_det_bill
+		            (reg_spaj, tahun, pot_ke, lsbs_id, lsdbs_number, premi
+		            )
+		     VALUES (replace(#spaj#,'.'), #tahun#, #pot_ke#, #lsbs_id#, #lsdbs_number#, #premi#
+		            )	
+	</insert>		
+		
+	<insert id="elions.uw.insert.mst_detail_production" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_det_production
+		            (lstb_id, reg_spaj, mspro_prod_ke, mspro_prod_date, lsbs_id,
+		             lsdbs_number, msbi_tahun_ke, msbi_premi_ke, msdpr_premium,
+		             msdpr_discount, msdpr_tsi)
+		   SELECT lstb_id, reg_spaj, #prod_ke#, #prodDate#, #lsbs_id#, #lsdbs_number#,
+		          #tahun#, #premi#, #msdb_premium#, #msdpr_discount#, #mspr_tsi#
+		     FROM eka.mst_policy
+		    WHERE reg_spaj = RPAD (replace(#spaj#,'.'), 11, ' ')
+	</insert>
+		
+	<insert id="elions.uw.insert.mst_ulink_bill" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_ulink_bill
+		            (reg_spaj, tahun, pot_ke, tgl_potong,
+		             usia_pp,
+		             usia_tt,
+		             total_premi,
+		             tgl_proses, flag_pot, tgl_prod, flag_jurnal, flag_bill,
+		             next_bill, lus_id, mu_ke
+		            )
+		     VALUES (RPAD (replace(#spaj#,'.'), 11, ' '), #tahun#, #pot_ke#, SYSDATE,
+		             (SELECT mspo_age
+		                FROM eka.mst_policy
+		               WHERE reg_spaj = rpad(replace(#spaj#,'.'),11,' ')),
+		             (SELECT mste_age
+		                FROM eka.mst_insured
+		               WHERE reg_spaj = rpad(replace(#spaj#,'.'),11,' ')),
+		             #total_premi#,
+		             SYSDATE, #flag_pot#, #prodDate#, #flag_jurnal#, #flag_bill#,
+		             #nextDate#, #lus_id#, #muke#
+		            )	
+	</insert>
+		
+	<insert id="elions.uw.insert.mst_commission" parameterClass="com.ekalife.elions.model.Commission">
+		INSERT INTO eka.mst_commission
+		            (msco_id, reg_spaj, msbi_tahun_ke, msbi_premi_ke, msag_id,
+		             lev_comm, msco_comm, msco_tax, msco_date,
+		             msco_active, msco_paid, lus_id, msco_nilai_kurs, linebus
+		             <isNotEmpty property="msco_flag">
+		             , msco_flag
+		             </isNotEmpty>
+		            )
+		     VALUES (#co_id#, replace(#reg_spaj#,'.'), #msbi_tahun_ke#, #msbi_premi_ke#, #agent_id#,
+		             #lev_kom#, #komisi#, #tax#, #msco_date#,
+		             1, 0, #lus_id#, #nilai_kurs#, #lsbs_linebus#
+		             <isNotEmpty property="msco_flag">
+		             , #msco_flag:NUMBER#
+		             </isNotEmpty>
+		            )		
+	</insert>
+	
+	<insert id="elions.uw.insert.mst_diskon_perusahaan" parameterClass="com.ekalife.elions.model.Commission">
+		insert into eka.mst_diskon_perusahaan 
+					(MCL_ID, PERIODE, JENIS, REG_SPAJ, NOMINAL, 
+					LUS_ID, TAX_AMOUNT, TAHUN_KE, PREMI_KE, CREATE_DATE, 
+					PKHUSUS, PKASIH, PAKM)
+			 VALUES (#mcl_id_kud#, #periode_kud#, #jenis_kud#, replace(#reg_spaj#,'.'), #msco_comm_kud#,
+			 		 #lus_id#, #msco_tax_kud#, #msbi_tahun_ke#, #msbi_premi_ke#, #create_date_kud#, 
+			 		 #pkhusus#, #pkasih#, #pakm#)
+	</insert>		
+		
+	<insert id="elions.uw.insert.mst_deduct" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_deduct
+		            (msco_id, msdd_number, lsjd_id, msdd_date, msdd_deduct, msdd_tax,
+		             msdd_desc, lus_id
+		            )
+		     VALUES (#co_id#, #msdd#, #lsjd#, TRUNC (SYSDATE), #ldec_sisa#, 0,
+		             #desc#, #lus_id#
+		            )	
+	</insert>
+
+	<insert id="elions.uw.insertMstDeduct" parameterClass="com.ekalife.elions.model.Deduct">
+		INSERT INTO eka.mst_deduct
+            (msco_id, msdd_number, lsjd_id, msdd_date, msdd_deduct, msdd_tax,
+             msdd_desc, lus_id, lsbs_id, lsdbs_number, pot_upp, pot_biaya,
+             pot_desc, pot_spaj
+            )
+     VALUES (#msco_id#, (select count(*)+1 from eka.mst_deduct where msco_id=#msco_id#), #lsjd_id#, #msdd_date#, #msdd_deduct#, #msdd_tax#,
+             #msdd_desc#, #lus_id#, #lsbs_id#, #lsdbs_number#, #pot_upp#, #pot_biaya#,
+             #pot_desc#, #pot_spaj#
+            )
+    </insert>
+            
+	<insert id="elions.uw.insert.mst_comm_reff_bii" parameterClass="com.ekalife.elions.model.SpajBill">
+		INSERT INTO eka.mst_comm_reff_bii
+		            (reg_spaj, tahun_ke, premi_ke, mcr_flag,
+		             tgl_komisi, kurs_id, jlh_premi, jlh_komisi, pajak_komisi,
+		             nilai_kurs, refund, mkt_allocation, jlh_insentif
+		            )
+		     VALUES (replace(#no_spaj#,'.'), #tahun_ke#, #premi_ke#, #mcr_flag#,
+		             #ldt_prod#, #lku_id#, #ldec_premi#, #ldec_komisi#, #ldec_tax#,
+		             #ldec_kurs#, #refund#, #mkt_allocation#, #jlh_insentif#
+		            )
+	</insert>
+	
+	<insert id="elions.uw.insert.mst_upload_refund" parameterClass="com.ekalife.elions.model.SpajBill">
+		INSERT INTO eka.mst_upload_refund
+		            (reg_spaj, tahun_ke, premi_ke, mcr_flag,
+		             tgl_refund, no_account, amount, jn_bank 
+		            )
+		     VALUES (REPLACE(REPLACE (#no_spaj#, '.'),'-'), #tahun_ke#, #premi_ke#, #mcr_flag#,
+		             #tgl_refund:TIMESTAMP#, REPLACE(REPLACE (#no_account#, '.'),'-'), #refund#, #jn_bank:NUMBER#
+		            )
+	</insert>
+		
+	<insert id="elions.uw.insert.mst_reward" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_reward
+		            (reg_spaj, msbi_tahun_ke, msbi_premi_ke, jenis, msrk_id, nama,
+		             no_account, lbn_id, msco_comm, msco_tax, msco_date,
+		             msco_pay_date, msco_paid, msco_active, msco_no_pre, msco_jurnal,
+		             lus_id, msco_nilai_kurs, flag_upload, linebus
+		            )
+		     VALUES (replace(#spaj#,'.'), #tahun#, #premi#, #jenis_rekrut#, #msrk_id#, trim(#msrk_name#),
+		             trim(replace(replace(replace(#msrk_no_account#,'.'),'-'),'/')), #lbn_id#, #ldec_reward#, #ldec_tax#, TRUNC (SYSDATE),
+		             NULL, 0, 1, NULL, NULL,
+		             #lus_id#, #ldec_kurs#, 0, #linebus#
+		            )
+	</insert>
+	
+	<insert id="elions.uw.insert.mst_rewardKetinggalan" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_reward
+		            (reg_spaj, msbi_tahun_ke, msbi_premi_ke, jenis, msrk_id, nama,
+		             no_account, lbn_id, msco_comm, msco_tax, msco_date,
+		             msco_paid, msco_active, msco_no_pre, msco_jurnal,
+		             lus_id, msco_nilai_kurs, flag_upload, linebus, msco_pay_date, msco_trf_date, msco_no
+		            )
+		     VALUES (replace(#spaj#,'.'), #tahun#, #premi#, #jenis_rekrut#, #msrk_id#, trim(#msrk_name#),
+		             trim(replace(replace(replace(#msrk_no_account#,'.'),'-'),'/')), #lbn_id#, #ldec_reward#, #ldec_tax#, TRUNC (SYSDATE),
+		             1, 1, NULL, NULL,
+		             #lus_id#, #ldec_kurs#, 0, #linebus#, #msco_pay_date#, #msco_trf_date#, #msco_no#
+		            )
+	</insert>
+
+	<insert id="elions.uw.insert.mst_comm_bonus" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_COMM_BONUS (
+		   REG_SPAJ, MSBI_TAHUN_KE, MSBI_PREMI_KE, TIPE, 
+		   MSAG_ID, NAMA, NO_ACCOUNT, LBN_ID, 
+		   MSCO_ID, MSCO_COMM, MSCO_TAX, MSCO_DATE, 
+		   MSCO_PAY_DATE, MSCO_PAID, MSCO_ACTIVE, LUS_ID, 
+		   MSCO_NILAI_KURS, FLAG_UPLOAD, LINEBUS) 
+	     VALUES (
+	     	replace(#spaj#,'.'), #tahun#, #premi#, #tipe#, 
+	     		#msag_id#, #nama#, #no_account#, #lbn_id#, 
+	     		#msco_id#, #bonus#, #tax#, #msco_date#,
+	             NULL, 0, 1, #lus_id#, 
+	             #kurs#, 0, #linebus#
+	            )
+	</insert>
+
+	<insert id="elions.uw.insert.mst_privasi" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_privasi
+		            (reg_spaj, mp_ke, mp_tgl_input, mp_premi_pokok, mp_premi_rider, mp_tahun_ke, mp_premi_ke, 
+		            mp_tgl_transaksi, mp_jn_transaksi, mp_jlh_transaksi, mp_dk, lspd_id, lus_id, aktif)
+		     VALUES (RPAD (replace(#spaj#,'.'), 11, ' '), #li_ke#, sysdate, #premi#, #rider#, #tahun_ke#, #premi_ke#, sysdate, null, null, #dk#, #lspd#, #lus_id#, 1)	
+	</insert>
+	
+	<insert id="elions.uw.insert.mst_det_privasi" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_det_privasi
+		            (reg_spaj, mp_ke, mdp_jn_premi, mdp_persen, mdp_jumlah_premi,
+		             mdp_tgl_transaksi
+		            )
+		     VALUES (RPAD (replace(#spaj#,'.'), 11, ' '), #li_ke#, #urutan#, #ldec_persen#, #ldec_jlh_premi#,
+		             SYSDATE
+		            )
+	</insert>
+	
+	<insert id="elions.uw.insert.mst_det_deposito" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_det_deposito
+		            (reg_spaj, mp_ke, mdp_jn_premi, mdep_deposit, mdep_rate,
+		             mdep_saldo
+		            )
+		     VALUES (RPAD (replace(#spaj#,'.'), 11, ' '), #li_ke#, #li_insert#, #ldec_depo#, #ldec_persen_dep#,
+		             #ldec_saldo_depo#
+		            )
+	</insert>
+	
+	<insert id="elions.uw.insert.mst_tbank" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_tbank
+		            (no_pre, POSITION, tgl_input, tgl_jurnal, tgl_rk,
+		             no_voucher, kas, jumlah, lus_id, mtb_gl_no
+		            )
+		     VALUES (#ls_no_pre#, #li_pos#, SYSDATE, #ldt_prod#, #ar_tglrk#,
+		             #premi.voucher#, #ls_kas#, #ar_jumlah#, #lus_id#, #premi.accno#
+		            )
+	</insert>
+	
+	<insert id="elions.uw.insert.mst_dbank" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_dbank
+		            (no_pre, no_jurnal, keterangan, kas, jumlah, KEY_JURNAL, type_trx
+		            <isNotEmpty property="kode_cash_flow">
+		            , kode_cash_flow
+		            </isNotEmpty>
+		            )
+		     VALUES (#ls_no_pre#, #li_run#, #ls_ket#, #ls_kas#, #ar_jumlah#, #spaj#, 1
+		     		<isNotEmpty property="kode_cash_flow">, #kode_cash_flow#</isNotEmpty>
+		            )
+	</insert>
+	
+	<insert id="elions.uw.insert.mst_bvoucher" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_bvoucher
+		            (no_pre, no_jurnal, keterangan, debet, kredit,
+		             project_no, budget_no, type_trx, key_jurnal
+		            )
+		     VALUES (#ls_no_pre#, #li_run#, #ls_ket#, #ar_jumlah#, #ldec_kosong#,
+		             #project#, #budget#, 1, #spaj#
+		            )
+	</insert>
+	
+	<insert id="elions.uw.insert.mst_ptc_tm" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_ptc_tm
+		            (no_jm, mtm_position, tgl_jurnal, no_pre, user_input
+		            )
+		     VALUES (#ls_no_jm#, #li_pos#, trunc(#ldt_prod#), #no_pre#, #user_input#
+		            )
+	</insert>
+	
+	<insert id="elions.uw.insert.mst_ptc_jm" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_ptc_jm
+		            (no_jm, no_jurnal, keterangan, mjm_jumlah, mjm_cd, mjm_project,
+		             mjm_budget, type_trx, key_jurnal
+		            )
+		     VALUES (#ls_no_jm#, #li_run#, #ls_ket#, #ar_ldec_bayar#, #kode#, #ls_accno1#,
+		             #ls_accno2#, 1, #spaj#
+		            )
+	</insert>
+
+	<insert id="elions.uw.insert.lst_ulangan" parameterClass="com.ekalife.elions.model.ParameterClass">
+		INSERT INTO eka.lst_ulangan
+		            (reg_spaj, tanggal, jenis, status_polis, lus_id, keterangan
+		            )
+		     VALUES (replace(#reg_spaj#,'.'), #tanggal#, #jenis#, #status#, #lus_id#, #ket#
+		            )
+	</insert>
+
+	<insert id="elions.uw.insert.mst_power_save_proses" parameterClass="java.util.HashMap">
+		  	  INSERT INTO EKA.MST_POWERSAVE_PROSES  
+					( REG_SPAJ,   		  MPS_KODE,   	    MPS_DEPOSIT_DATE,   MPS_BATAS_DATE,   
+					  MPS_ROLL_OVER,     MPS_JANGKA_INV,   MPS_RATE_DATE,   	  MPS_RATE,   
+					  MPS_PRM_DEPOSIT,   MPS_PRM_INTEREST, MPS_PRM_INSURANCE,  MPS_PRM_DEBET,   
+					  MPS_TAX,   		  MPS_EMPLOYEE,		 MPS_INPUT_DATE,   	LUS_ID )  
+		  VALUES ( replace(#spaj#,'.'), #mps_kode#, #idt_begin#, #ldt_next#,
+		  		   #li_auto#, #ii_jamin#, #ldt_ps_int#, #ldec_bunga#,
+		  		   #ldec_inv#, #ldec_intrs#, #mps_prm_insurance#, #mps_prm_debet#,
+		  		   #mps_tax#, #li_employ#, SYSDATE, #gl_lus_id# )  
+	</insert>
+
+	<insert id="elions.uw.insert.mst_power_save_proses_ro" parameterClass="java.util.HashMap">
+		  	    INSERT INTO EKA.MST_POWERSAVE_RO  
+						( REG_SPAJ,   		  MPS_KODE,   	  MPS_DEPOSIT_DATE,     MPR_MATURE_DATE,   
+						  MPR_JANGKA_INVEST, MPR_RATE,   	  MPR_DEPOSIT,   		  MPR_INTEREST,   
+						  MPR_TAX,   		  MPR_INSURANCE,  MPR_DEBET,   			  MPR_PRINT,   
+						  MPR_INPUT_DATE,    LUS_ID, MPR_BREAKABLE)  
+			  VALUES ( replace(#spaj#,'.'),   	  #mps_kode#,   #idt_begin#,   #ldt_last#,   
+					   #ii_jamin#,    #ldec_bunga#, #ldec_inv#,   #ldec_intrs#,   
+					   #mpr_tax#,   	  	  #mpr_insurance#,   	 	#mpr_debet#,   		  #mpr_print#,   
+					   SYSDATE,   	  #gl_lus_id#, "mpr_breakable" )
+	</insert>
+
+	<insert id="elions.uw.insert.mst_productInsured" parameterClass="com.ekalife.elions.model.Rider">
+  	    INSERT INTO EKA.MST_PRODUCT_INSURED(
+			REG_SPAJ, MSTE_INSURED_NO, LSBS_ID, LSDBS_NUMBER,
+			LKU_ID, MSPR_BEG_DATE, MSPR_END_DATE, MSPR_TSI,
+			MSPR_TSI_PA_A, MSPR_TSI_PA_B, MSPR_TSI_PA_C,
+			MSPR_TSI_PA_D, MSPR_TSI_PA_M, 
+			<isNotEmpty property="msprClass">MSPR_CLASS,</isNotEmpty>
+			<isNotEmpty property="msprUnit">MSPR_UNIT,</isNotEmpty>
+			MSPR_RATE, MSPR_PERSEN, MSPR_PREMIUM,
+			MSPR_DISCOUNT, MSPR_ACTIVE, MSPR_EXTRA,
+			MSPR_INS_PERIOD,
+			MSPR_END_PAY, MSPR_TT 
+		)
+		VALUES(
+			#noSpaj#, #insuredNo#, #bisnisId#, #bisnisNumber#, 
+			#kursId#, #begDate#, #endDate#, #msprTsi#,
+			#msprTsiA#, #msprTsiB#, #msprTsiC#,
+			#msprTsiD#, #msprTsiM#, 
+			<isNotEmpty property="msprClass">#msprClass#,</isNotEmpty>
+			<isNotEmpty property="msprUnit">#msprUnit#,</isNotEmpty>
+			#msprRate#,#msprPersen#,#msprPremium#,
+			#msprDiscount#, #msprActive#, #msprExtra#, 
+			#msprInsPeriod#,
+			#msprEndPay#, #msprTt#
+		)
+	</insert>
+	
+	<insert id="elions.uw.insert.mst_det_medical" parameterClass="com.ekalife.elions.model.Medical">
+		  INSERT INTO EKA.MST_DET_MEDICAL  
+		         ( REG_SPAJ,   
+		           MSTE_INSURED_NO,   
+		           MPA_NUMBER,   
+		           LSMC_ID,   
+		           MSDM_STATUS,   
+		           MSDM_DESC,MSDM_LUS_ID,MSDM_INPUT_DATE )  
+		  VALUES ( #reg_spaj#,   
+		           #mste_insured_no#,   
+		           #mpa_number#,   
+		           #lsmc_id#,   
+		           #msdm_status#,   
+		           #msdm_desc#,#msdm_lus_id#,#msdm_input_date#)   
+	</insert>
+
+	<insert id="elions.uw.insert.mst_det_icd" parameterClass="com.ekalife.elions.model.Icd">
+		  INSERT INTO EKA.MST_DET_ICD 
+		         ( REG_SPAJ,   
+		           MPA_NUMBER,   
+		           LIC_ID,   
+		           MSDI_LUS_ID,   
+		           MSDI_INPUT_DATE, MSTE_INSURED_NO)  
+		  VALUES ( #reg_spaj#,   
+		           #mpa_number#,   
+		           #lic_id#,   
+		           #msdi_lus_id#,#msdi_input_date#,
+		           #mste_insured_no:INTEGER#)   
+	</insert>
+	
+	<insert id="elions.uw.insert.mst_det_hsl_reas" parameterClass="com.ekalife.elions.model.HslReas">
+		INSERT INTO EKA.MST_DET_HSL_REAS 
+			   ( REG_SPAJ, MSTE_INSURED_NO, 
+			     MPA_NUMBER, LSREI_ID, MSDHR_KEPUTUSAN, 
+			     MSDHR_ALASAN, MSDHR_LUS_ID, MSDHR_INPUT_DATE, MSDHR_EM,
+			     MSDHR_EXPIRED_DAY, MSDHR_EXPIRED_DATE, MSDHR_CATATAN) 
+		VALUES (upper(#reg_spaj:CHAR#), #mste_insured_no:INTEGER#, 
+		 		#mpa_number:INTEGER#, #lsrei_id:INTEGER#, 
+		 		upper(#msdhr_keputusan:VARCHAR#), #msdhr_alasan:VARCHAR#, 
+		 		#msdhr_lus_id:INTEGER#, to_date(#msdhr_input_date#,'dd/mm/yyyy'), #msdhr_em:INTEGER#,
+		 		#msdhr_expired_day#, to_date(#msdhr_expired_date#,'dd/mm/yyyy'), #msdhr_catatan#) 
+	</insert>	
+
+	<insert id="elions.uw.insert.mst_benefeciary" parameterClass="com.ekalife.elions.model.Benefeciary">
+		  insert into eka.mst_benefeciary  
+		         ( reg_spaj,   
+		           mste_insured_no,   
+		           msaw_number,   
+		           msaw_first,   
+		           msaw_middle,   
+		           msaw_last,   
+		           msaw_birth,   
+		           lsre_id,   
+		           msaw_persen,
+		           msaw_sex )  
+		  values(  #reg_spaj#,   
+		           #mste_insured_no#,   
+		           #msaw_number#,   
+		           #msaw_first#,   
+		           #msaw_middle#,   
+		           #msaw_last#,   
+		           to_date(#smsaw_birth#,'dd/MM/yyyy'),   
+		           #lsre_id#,   
+		           #msaw_persen#,
+		           #msaw_sex# )  
+	</insert>
+
+	<insert id="elions.uw.insert.lst_ulangan2" parameterClass="com.ekalife.elions.model.Ulangan">
+			INSERT INTO eka.lst_ulangan
+			            (reg_spaj, tanggal, jenis, status_polis, lus_id, keterangan, id_ticket
+			            )
+			     VALUES (#reg_spaj#, sysdate, #jenis#, #status_polis#, #lus_id#, upper(#keterangan#), #id_ticket#
+			            )
+	</insert>
+	
+	<insert id="elions.uw.insertmststamp" parameterClass="com.ekalife.elions.model.Stamp">
+		INSERT INTO EKA.MST_STAMP (                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+		MSTM_KODE                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+		,MSTM_LUS_ID                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+		, MSTM_CREATE_DT                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+		, MSTM_SALDO_AKHIR                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+		, MSTM_SALDO_AWAL                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+		, MSTM_BULAN                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+		, MSTM_KODE_DIRJEN                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+		) values (                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+		#mstm_kode#                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+		, #mstm_lus_id#
+		, #mstm_create_dt#
+		, #mstm_saldo_akhir#
+		, #mstm_saldo_awal#
+		, #mstm_bulan#
+		, #mstm_kode_dirjen#                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+		)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+	</insert>
+	
+	<insert id="elions.uw.insertmststamp_hist" parameterClass="com.ekalife.elions.model.Stamp">
+		INSERT INTO EKA.MST_STAMP_HIST (                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+			MSTM_KODE,
+			MSTH_REF_NO,
+			MSTH_JENIS,
+			MSTH_JUMLAH,
+			MSTH_DESC,
+			MSTH_TGL_BAYAR, 
+			MSTH_TIPE 
+ 		) values (                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+			#mstm_kode#,
+			#msth_ref_no#,
+			#msth_jenis#,
+			#msth_jumlah#,
+			#msth_desc# ,
+			#msth_tgl_bayar#,
+			1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+		)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+	</insert>
+	<insert id="elions.uw.inserthighrisk_cust" parameterClass="string">
+		INSERT INTO eka.lst_highrisk_cust
+	            (lshc_id, lshc_desc
+	            )
+	     VALUES ((SELECT MAX (lshc_id) + 1
+	                FROM eka.lst_highrisk_cust), upper(#value#)
+	            )
+	</insert>
+
+	<insert id="elions.uw.insertLstHighRiskCust" parameterClass="com.ekalife.elions.model.kyc.Hrc">
+		INSERT INTO eka.lst_highrisk_cust
+	            (lshc_id, lshc_desc
+	            )
+	     VALUES ((SELECT MAX (lshc_id) + 1
+	                FROM eka.lst_highrisk_cust), upper(#lshc_desc#)
+	            )
+	</insert>
+	
+	
+	<insert id="elions.uw.insertLstCekValid" parameterClass="com.ekalife.elions.model.CekValidPrintPolis">
+		INSERT INTO EKA.LST_CEK_VALID (
+ 		  REG_SPAJ,CEK_POLIS_UTAMA ,CEK_MANFAAT,CEK_ALO_DANA, TTP,SSU,SPPP,KP ) 
+		 VALUES ( #reg_spaj#, #cek_polis_utama#, #cek_manfaat#, 
+  		 #cek_alo_dana# , #ttp#,#ssu#,#sppp#,#kp#)
+	</insert>
+
+	<insert id="elions.uw.insert.lst_black_list" parameterClass="com.ekalife.elions.model.BlackList">
+		INSERT INTO EKA.LST_BLACK_LIST (                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+  			LBL_ID, LBL_NAMA, LBL_TEMPAT, 
+  			LBL_TGL_LAHIR, LBL_ALAMAT, LBL_ASURANSI, 
+  			LBL_FLAG_ALASAN, LBL_ALASAN, LBL_TGL_INPUT, LUS_ID, 
+  			MCL_ID, LBL_SUMBER_INFO, LBL_SUMBER_INFO2, LBL_SUMBER_INFORMASI,
+  			LBL_TGL_KEJADIAN, LBL_TGL_KEJADIAN_TO, LBL_DIAGNOSA, LBL_STS_CUST, REG_SPAJ, LBL_NB_PROCESS, LBL_NO_IDENTITY,
+  			LBL_NAMA_ALIAS_1, LBL_NAMA_ALIAS_2, LBL_NAMA_ALIAS_3, LBL_NAMA_ALIAS_4, LBL_NAMA_ALIAS_5, 
+  			LBL_NO_IDENTITY_SIM, LBL_NO_IDENTITY_PASPOR, LBL_NO_IDENTITY_AKTE_LAHIR, LBL_NO_IDENTITY_KIMS_KITAS                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+		) values (                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+			 (#lbl_id:INTEGER#), upper(#lbl_nama:VARCHAR#), upper(#lbl_tempat:VARCHAR#)
+			, #lbl_tgl_lahir#, upper(#lbl_alamat:VARCHAR#), upper(#lbl_asuransi:VARCHAR#)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+			, (#lbl_flag_alasan:INTEGER#), upper(#lbl_alasan:VARCHAR#), (#lbl_tgl_input:TIMESTAMP#), (#lus_id:INTEGER#) 
+			, (#mcl_id:INTEGER#), (#lbl_sumber_info:INTEGER#), (#lbl_sumber_info2:INTEGER#), upper(#lbl_sumber_informasi:VARCHAR#)  
+			, #lbl_tgl_kejadian#, #lbl_tgl_kejadian_to#, upper(#lbl_diagnosa:VARCHAR#), (#lbl_sts_cust:INTEGER#), #reg_spaj#, (#lbl_nb_process:INTEGER#), upper(#lbl_no_identity:VARCHAR#)
+			, upper(#lbl_nama_alias_1:VARCHAR#), upper(#lbl_nama_alias_2:VARCHAR#), upper(#lbl_nama_alias_3:VARCHAR#), upper(#lbl_nama_alias_4:VARCHAR#), upper(#lbl_nama_alias_5:VARCHAR#)
+			, upper(#lbl_no_identity_sim:VARCHAR#), upper(#lbl_no_identity_paspor:VARCHAR#), upper(#lbl_no_identity_akte_lahir:VARCHAR#), upper(#lbl_no_identity_kims_kitas:VARCHAR#)                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+		)                       
+	</insert>
+	
+	<insert id="elions.uw.insert.lst_det_black_list" parameterClass="com.ekalife.elions.model.DetBlackList">
+		INSERT INTO EKA.LST_DET_BLACK_LIST (                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+  			LBL_ID, LDBL_NUMBER, LUS_ID, 
+  			LDBL_TGL_KEJADIAN, LDBL_TGL_KEJADIAN_TO, LDBL_DIAGNOSA                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+		) values (                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+			 (#lbl_id:INTEGER#), upper(#ldbl_number:INTEGER#), (#lus_id:INTEGER#) 
+			, #ldbl_tgl_kejadian#, #ldbl_tgl_kejadian_to#, upper(#ldbl_diagnosa:VARCHAR#)                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+		)                       
+	</insert>
+	
+	<insert id="elions.uw.insert.lst_black_list_family" parameterClass="com.ekalife.elions.model.BlackListFamily">
+		INSERT INTO EKA.LST_BLACK_LIST_FAMILY (                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+  			LBLF_ID, LBL_ID, LSRE_ID
+  			, LBLF_NAMA, LBLF_TGL_LAHIR, LBLf_TGL_INPUT, LUS_ID                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+		) values (                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+			 (#lblf_id:INTEGER#), (#lbl_id:INTEGER#), (#lsre_id:INTEGER#)
+			, upper(#lblf_nama:VARCHAR#), #lblf_tgl_lahir#, (#lblf_tgl_input:TIMESTAMP#), (#lus_id:INTEGER#)
+		)                       
+	</insert>
+	
+	<insert id="elions.uw.insert.insertMstDrekDet" parameterClass="java.util.HashMap">
+		insert into eka.mst_drek_det(no_trx,tahun_ke,premi_ke,jumlah,no_urut,no_spaj, no_ke, payment_id, create_id, create_date, flag_active, no_pre, norek_ajs, jenis, tgl_trx)
+		values(#noTrx#,#tahunKe#,#premiKe#,#jumlah#, #noUrut#,#regSpaj#, #transKe#, #paymentId#, #createId#, #createDate#, 1,#no_pre#, #norek_ajs#, #jenis#, #tgl_trx#)                      
+	</insert>
+	
+	<insert id="elions.uw.insertMstWorksheet" parameterClass="com.ekalife.elions.model.worksheet.UwWorkSheet">
+		INSERT INTO EKA.MST_WORKSHEET (REG_SPAJ, INSURED_NO, MCL_ID, MSW_MEDIS, MSW_CREATE_DT, MSW_LUS_ID,NON_MED_TB, 
+									   NON_MED_BB, NON_MED_BMI_KELAINAN, NON_MED_OCCUPATION, NON_MED_HABITS, NON_MED_HABITS_KELAINAN, 
+									   NON_MED_HOBBY, NON_MED_KELAINAN, NON_MED_KELAINAN_KELAINAN, SUMBER_MCU, JENIS_MEDIS, 
+									   NON_MED_OCCUPATION_DESC, NON_MED_HOBBY_DESC, POSITION, MODE_SIM, MSW_SEX) 
+		VALUES (upper(#reg_spaj:VARCHAR#), #insured_no:INTEGER#, upper(#mcl_id:VARCHAR#), #msw_medis:INTEGER#, sysdate, #msw_lus_id:INTEGER#,
+				#nonMedisTb:INTEGER#, #nonMedisBb:INTEGER#, upper(#nonMedisBmiKelainan:VARCHAR#), #nonMedisOccupation:INTEGER#, 
+				upper(#nonMedisHabits:VARCHAR#), upper(#nonMedisHabitsKelainan:VARCHAR#), #nonMedisHobby:INTEGER#, 
+				upper(#nonMedisKelainan:VARCHAR#), upper(#nonMedisKelainanKelainan:VARCHAR#), #sumMCU:INTEGER#, upper(#jenisMedis:VARCHAR#),
+				upper(#nonMedisOccDesc:VARCHAR#), upper(#nonMedisHobbyDesc:VARCHAR#), #position:INTEGER#, #modeSim:INTEGER#, #msw_sex:INTEGER#)		
+	</insert>
+	
+	<insert id="elions.uw.insertMstDetNonMedis" parameterClass="com.ekalife.elions.model.worksheet.UwWorkSheet">
+		INSERT INTO EKA.MST_DET_NON_MEDIS (REG_SPAJ, INSURED_NO, NON_MEDIS_TB, NON_MEDIS_BB, 
+										   NON_MEDIS_BMI_KELAINAN, NON_MEDIS_OCCUPATION, NON_MEDIS_HABITS, 
+										   NON_MEDIS_HABITS_KELAINAN, NON_MEDIS_HOBBY, NON_MEDIS_KELAINAN, NON_MEDIS_KELAINAN_KELAINAN,
+										   NON_MEDIS_OCCUPATION_DESC, NON_MEDIS_HOBBY_DESC) 
+	    VALUES (upper(#reg_spaj:VARCHAR#), #insured_no:INTEGER#, #nonMedisTb:INTEGER#, #nonMedisBb:INTEGER#, 
+			    upper(#nonMedisBmiKelainan:VARCHAR#), #nonMedisOccupation:INTEGER#, upper(#nonMedisHabits:VARCHAR#), 
+			    upper(#nonMedisHabitsKelainan:VARCHAR#), #nonMedisHobby:INTEGER#, upper(#nonMedisKelainan:VARCHAR#), upper(#nonMedisKelainanKelainan:VARCHAR#))                                                                               
+	</insert>
+	
+	<insert id="elions.uw.insertLstWorksheetQuestionnaire" parameterClass="com.ekalife.elions.model.worksheet.UwQuestionnaire">
+		INSERT INTO EKA.LST_WORKSHEET_QUESTIONNAIRE (REG_SPAJ, INSURED_NO, URUT, LW_ID, KESIMPULAN) 
+		VALUES (upper(#reg_spaj:VARCHAR#), #insured_no:INTEGER#, #urut:INTEGER#, #lw_id:INTEGER#, upper(#kesimpulan:VARCHAR#))               	
+	</insert>
+	
+	<insert id="elions.uw.insertMstWorkDec" parameterClass="com.ekalife.elions.model.worksheet.UwDecision">
+		INSERT INTO EKA.MST_WORK_DEC (REG_SPAJ, INSURED_NO, MWD_URUT, PENYAKIT, LSBS_ID, LSDBS_NUMBER, PROD_UTAMA_PERSEN, 
+												PROD_UTAMA_PERMIL, LIC_ID, URUTAN_PENYAKIT, URUTAN_DECISION, CATATAN, LUS_ID, INPUT_DATE) 
+		VALUES (upper(#reg_spaj:VARCHAR#), #insured_no:INTEGER#, #mwd_urut:INTEGER#, upper(#penyakit:VARCHAR#), 
+				#lsbs_id:INTEGER#, #lsdbs_number:INTEGER#, #prod_utama_persen:DOUBLE#, #prod_utama_permil:DOUBLE#, 
+				upper(#lic_id:VARCHAR#), #urutan_penyakit:INTEGER#, #urutan_decision:INTEGER#, upper(#catatan:VARCHAR#), 
+				#lus_id:INTEGER#, to_date(#input_date#,'dd/mm/yyyy'))		
+	</insert>
+	
+	<insert id="elions.uw.insertMstWorkDecRider" parameterClass="com.ekalife.elions.model.worksheet.UwDecisionRider">
+		INSERT INTO EKA.MST_WORK_DEC_RIDER (REG_SPAJ, INSURED_NO, MWD_URUT, MWDR_URUT, LSBS_ID, LSDBS_NUMBER, URUTAN_PENYAKIT, URUTAN_DECISION, RATE_PERSEN, RATE_PERMIL) 
+		VALUES (upper(#reg_spaj:VARCHAR#), #insured_no:INTEGER#, #mwd_urut:INTEGER#, 
+					  #mwdr_urut:INTEGER#, #lsbs_id:INTEGER#, #lsdbs_number:INTEGER#, #urutan_penyakit:INTEGER#, 
+					  #urutan_decision:INTEGER#, #rate_persen:DOUBLE#, #rate_permil:DOUBLE#)	
+	</insert>
+	
+	<insert id="elions.uw.insertMstFinancialStat" parameterClass="com.ekalife.elions.model.worksheet.UwWorkSheet">
+		INSERT INTO EKA.MST_FINANCIAL_STAT (REG_SPAJ, INSURED_NO, FLAG_FS, FS_DATE, FS_COPY_REK_BANK, FS_COPY_NPWP, 
+											FS_SPT_PRIBADI, FS_COPY_NERACA_PERSH, FS_LAIN, FS_LAIN_DESC) 
+		VALUES (upper(#reg_spaj:VARCHAR#), #insured_no:INTEGER#, #flag_fs:INTEGER#, to_date(#fs_date#,'dd/mm/yyyy'), 
+				#fs_copy_rek_bank:INTEGER#, #fs_copy_npwp:INTEGER#, #fs_spt_pribadi:INTEGER#, #fs_copy_neraca_persh:INTEGER#, 
+				#fs_lain:INTEGER#, upper(#fs_lain_desc:VARCHAR#))	
+	</insert>
+	
+	<insert id="elions.uw.insertMedLpk" parameterClass="com.ekalife.elions.model.worksheet.UwLpk">
+		INSERT INTO EKA.MST_MED_LPK (REG_SPAJ, INSURED_NO, URUTAN_LPK, TGL_MCU_LPK, TMP_MCU_LPK, LPK_TB, 
+									 LPK_BB, LPK_BMI_KELAINAN, LPK_SYSTOLIC, LPK_DIASTOLIC, LPK_DENYUT_NADI, 
+									 LPK_RPD, LPK_RPS, LPK_RPK, LPK_KELAINAN, NV_DENYUT_NADI) 
+		VALUES (upper(#reg_spaj:VARCHAR#), #insured_no:INTEGER#, #urutanLpk:INTEGER#, to_date(#tglMcuLpk#,'dd/mm/yyyy'), 
+				upper(#tmpMcuLpk:VARCHAR#), #lpkTb:INTEGER#, #lpkBb:INTEGER#, upper(#lpkBmiKelainan:VARCHAR#), 
+				#lpkSystolic:INTEGER#, #lpkDiastolic:INTEGER#, #lpkDeyutNadi:INTEGER#, #lpkRPD:INTEGER#, 
+				#lpkRPS:INTEGER#, #lpkRPK:INTEGER#, #lpkKelainan:INTEGER#,upper(#nv_lpk_deyut_nadi:VARCHAR#))                                                        
+	</insert>
+	
+	<insert id="elions.uw.insertLstRiwPenyakit" parameterClass="com.ekalife.elions.model.worksheet.UwRiwPenyakit">
+		INSERT INTO EKA.LST_RIW_PENYAKIT (REG_SPAJ, INSURED_NO, URUTAN_LPK, RP_TYPE, RP_URUTAN, RP_DESC) 
+		VALUES (upper(#reg_spaj:VARCHAR#), #insured_no:INTEGER#, #urutanLpk:INTEGER#, #rp_type:INTEGER#, 
+				#rp_urutan:INTEGER#, upper(#rp_desc:VARCHAR#))	
+	</insert>	
+	
+	<insert id="elions.uw.insertMedUrin" parameterClass="com.ekalife.elions.model.worksheet.UwUrin">
+		INSERT INTO EKA.MST_MED_URIN (REG_SPAJ, INSURED_NO, URUTAN_URIN, TGL_MCU_URIN, TMP_MCU_URIN, FLAG_WARNA, 
+									  WARNA, WARNA_KELAINAN, WARNA_LIC_ID, FLAG_KEJERNIHAN, KEJERNIHAN, KEJERNIHAN_KELAINAN, 
+									  KEJERNIHAN_LIC_ID, FLAG_BJ, BJ, BJ_KELAINAN, BJ_LIC_ID, FLAG_PH, PH, PH_KELAINAN, PH_LIC_ID, 
+									  FLAG_PROTEIN, PROTEIN, PROTEIN_KELAINAN, PROTEIN_LIC_ID, FLAG_GLUKOSA, GLUKOSA, 
+									  GLUKOSA_KELAINAN, GLUKOSA_LIC_ID, FLAG_KETON, KETON, KETON_KELAINAN, KETON_LIC_ID, FLAG_BILIRUBIN, 
+									  BILIRUBIN, BILIRUBIN_KELAINAN, BILIRUBIN_LIC_ID, FLAG_UROBILINOGEN, UROBILINOGEN, 
+									  UROBILINOGEN_KELAINAN, UROBILINOGEN_LIC_ID, FLAG_NITRIT, NITRIT, NITRIT_KELAINAN, NITRIT_LIC_ID, 
+									  FLAG_DARAH_SAMAR, DARAH_SAMAR, DARAH_SAMAR_KELAINAN, DARAH_SAMAR_LIC_ID, FLAG_LEUKOSIT_ESTERASE, 
+									  LEUKOSIT_ESTERASE, LEUKOSIT_ESTERASE_KELAINAN, LEUKOSIT_ESTERASE_LIC_ID, FLAG_SEDIMEN_ERITROSIT,  
+									  SEDIMEN_ERITROSIT, SEDIMEN_ERITROSIT_KELAINAN, SEDIMEN_ERITROSIT_LIC_ID, FLAG_SEDIMEN_LEUKOSIT, SEDIMEN_LEUKOSIT, 
+									  SEDIMEN_LEUKOSIT_KELAINAN, SEDIMEN_LEUKOSIT_LIC_ID, FLAG_SEDIMEN_EPITEL, SEDIMEN_EPITEL, SEDIMEN_EPITEL_KELAINAN, 
+									  SEDIMEN_EPITEL_LIC_ID, FLAG_SEDIMEN_SILINDER, SEDIMEN_SILINDER, SEDIMEN_SILINDER_KELAINAN, SEDIMEN_SILINDER_LIC_ID, 
+									  FLAG_SEDIMEN_KRISTAL, SEDIMEN_KRISTAL, SEDIMEN_KRISTAL_KELAINAN, SEDIMEN_KRISTAL_LIC_ID, NV_WARNA, NV_KEJERNIHAN, 
+									  NV_BERAT_JENIS, NV_PH, NV_PROTEIN, NV_GLUKOSA, NV_KETON, NV_BILIRUBIN, NV_UROBILINOGEN, NV_NITRIT, 
+									  NV_DARAH_SAMAR, NV_LEKOSIT_ESTERASE, NV_ERITROSIT, NV_LEKOSIT, NV_EPITEL, NV_SILINDER, NV_BAKTERI, NV_KRISTAL,
+									  FLAG_BAKTERI, BAKTERI, BAKTERI_KELAINAN, BAKTERI_LIC_ID) 
+		VALUES (upper(#reg_spaj:VARCHAR#), #insured_no:INTEGER#, #urutanUrin:INTEGER#, to_date(#tglMcuUrin#,'dd/mm/yyyy'), upper(#tmpMcuUrin:VARCHAR#), 
+				#flagWarna:INTEGER#, upper(#warna:VARCHAR#), upper(#warna_kelainan:VARCHAR#), upper(#warna_lic_id:VARCHAR#), 
+				#flagkejernihan:INTEGER#, upper(#kejernihan:VARCHAR#), upper(#kejernihan_kelainan:VARCHAR#), upper(#kejernihan_lic_id:VARCHAR#), 
+				#flagBj:INTEGER#, upper(#bj:VARCHAR#), upper(#bj_kelainan:VARCHAR#), upper(#bj_lic_id:VARCHAR#), #flagPh:INTEGER#, 
+				upper(#ph:VARCHAR#), upper(#ph_kelainan:VARCHAR#), upper(#ph_lic_id:VARCHAR#), #flagProtein:INTEGER#, upper(#protein:VARCHAR#), 
+				upper(#protein_kelainan:VARCHAR#), upper(#protein_lic_id:VARCHAR#), #flagGlukosa:INTEGER#, upper(#glukosa:VARCHAR#), 
+				upper(#glukosa_kelainan:VARCHAR#), upper(#glukosa_lic_id:VARCHAR#), #flagKeton:INTEGER#, 
+				upper(#keton:VARCHAR#), upper(#keton_kelainan:VARCHAR#), upper(#keton_lic_id:VARCHAR#), #flagBilirubin:INTEGER#, 
+				upper(#bilirubin:VARCHAR#), upper(#bilirubin_kelainan:VARCHAR#), upper(#bilirubin_lic_id:VARCHAR#), 
+				#flagUrobilinogen:INTEGER#, upper(#urobilinogen:VARCHAR#), upper(#urobilinogen_kelainan:VARCHAR#), 
+				upper(#urobilinogen_lic_id:VARCHAR#), #flagNitrit:INTEGER#, upper(#nitrit:VARCHAR#), upper(#nitrit_kelainan:VARCHAR#), 
+				upper(#nitrit_lic_id:VARCHAR#), #flagDarah_samar:INTEGER#, upper(#darah_samar:VARCHAR#), upper(#darah_samar_kelainan:VARCHAR#), 
+				upper(#darah_samar_lic_id:VARCHAR#), #flagLeukosit_esterase:INTEGER#, upper(#lekosit_esterase:VARCHAR#),
+				upper(#lekosit_esterase_kelainan:VARCHAR#), upper(#lekosit_esterase_lic_id:VARCHAR#),
+				#flagSedimen_eritrosit:INTEGER#, upper(#sedimen_eritrosit:VARCHAR#),  
+				upper(#sedimen_eritrosit_kelainan:VARCHAR#), upper(#sedimen_eritrosit_lic_id:VARCHAR#), 
+				#flagSedimen_leukosit:INTEGER#, upper(#sedimen_leukosit:VARCHAR#), upper(#sedimen_leukosit_kelainan:VARCHAR#), 
+				upper(#sedimen_leukosit_lic_id:VARCHAR#), #flagSedimen_epitel:INTEGER#, 
+				upper(#sedimen_epitel:VARCHAR#), upper(#sedimen_epitel_kelainan:VARCHAR#), upper(#sedimen_epitel_lic_id:VARCHAR#), 
+				#flagSedimen_silinder:INTEGER#, upper(#sedimen_silinder:VARCHAR#), upper(#sedimen_silinder_kelainan:VARCHAR#), 
+				upper(#sedimen_silinder_lic_id:VARCHAR#), #flagSedimen_kristal:INTEGER#, upper(#sedimen_kristal:VARCHAR#), 
+				upper(#sedimen_kristal_kelainan:VARCHAR#), upper(#sedimen_kristal_lic_id:VARCHAR#), #nv_urin_warna:VARCHAR#, 
+				#nv_urin_kejernihan:VARCHAR#, #nv_urin_berat_jenis:VARCHAR#, #nv_urin_ph:VARCHAR#, #nv_urin_protein:VARCHAR#, 
+				#nv_urin_glukosa:VARCHAR#, #nv_urin_keton:VARCHAR#, #nv_urin_bilirubin:VARCHAR#, #nv_urin_urobilinogen:VARCHAR#, 
+				#nv_urin_nitrit:VARCHAR#, #nv_urin_darah_samar:VARCHAR#, #nv_urin_lekosit_esterase:VARCHAR#, #nv_urin_eritrosit:VARCHAR#, 
+				#nv_urin_lekosit:VARCHAR#, #nv_urin_epitel:VARCHAR#, #nv_urin_silinder:VARCHAR#, #nv_urin_bakteri:VARCHAR#, 
+				#nv_urin_kristal:VARCHAR#,#flagBakteri:INTEGER#, 
+				upper(#bakteri:VARCHAR#), upper(#bakteri_kelainan:VARCHAR#), upper(#bakteri_lic_id:VARCHAR#))	
+	</insert>
+	
+	<insert id="elions.uw.insertMedAda" parameterClass="com.ekalife.elions.model.worksheet.UwAda">
+		INSERT INTO EKA.MST_MED_ADA (ALBUMIN, ALBUMIN_KELAINAN, ALBUMIN_LIC_ID, FLAG_GLOBULIN, GLOBULIN, GLOBULIN_KELAINAN, GLOBULIN_LIC_ID, 
+									 FLAG_TOTAL_PROTEIN, TOTAL_PROTEIN, TOTAL_PROTEIN_KELAINAN, TOTAL_PROTEIN_LIC_ID, FLAG_HBS_AG, HBS_AG, 
+									 HBS_AG_KELAINAN, HBS_AG_LIC_ID, FLAG_HBE_AG, HBE_AG, HBE_AG_KELAINAN, HBE_AG_LIC_ID, FLAG_CREATININ, 
+									 CREATININ, CREATININ_KELAINAN, CREATININ_LIC_ID, FLAG_UREUM, UREUM, UREUM_KELAINAN, UREUM_LIC_ID, 
+									 FLAG_ASAM_URAT, ASAM_URAT, ASAM_URAT_KELAINAN, ASAM_URAT_LIC_ID, NV_HEMOGLOBIN, NV_LEUKOSIT, NV_TROMBOSIT, 
+									 NV_ERITROSIT, NV_HEMOTOKRIT, NV_LED, NV_MCV, NV_MCH, NV_MCHC, NV_RDW, NV_EOSINOFIL, NV_BASOFIL, NV_NEUTROFIL_BATANG, 
+									 NV_NEUTROFIL_SEGMEN, NV_LIMFOSIT, NV_MONOSIT, NV_GLUKOSA_DARAH_PUASA, NV_GLUKOSA_HBA1C, NV_TOTAL_CHOLESTEROL, 
+									 NV_HDL_CHOLESTEROL, NV_LDL_CHOLESTEROL, NV_RATIO_TOTAL_CHOL_HDL, NV_RATIO_LDL_HDL, NV_TRIGILISERIDA, 
+									 NV_SGOT_AST, NV_SGPT_ALT, NV_GAMMA_GT_GGTP, NV_ALKALI_FOSFATASE, NV_BILIRUBIN_DIREK, NV_BILIRUBIN_INDIREK, 
+									 NV_BILIRUBIN_TOTAL, NV_ALBUMIN, NV_GLOBULIN, NV_TOTAL_PROTEIN, NV_HBSAG, NV_HBEAG, NV_UREUM, NV_CREATININ, 
+									 NV_ASAM_URAT, FOSFATASE_ALKALI, NEUTROFIL_SEGMEN, REG_SPAJ, INSURED_NO, URUTAN_ADA, FLAG_ADA, TGL_MCU_ADA, 
+									 TMP_MCU_ADA, FLAG_HEMOGLOBIN, HEMOGLOBIN, HEMOGLOBIN_KELAINAN, HEMOGLOBIN_LIC_ID, FLAG_LEUKOSIT, LEUKOSIT, 
+									 LEUKOSIT_KELAINAN, LEUKOSIT_LIC_ID, FLAG_EOSINOFIL, EOSINOFIL, EOSINOFIL_KELAINAN, EOSINOFIL_LIC_ID, 
+									 FLAG_BASOFIL, BASOFIL, BASOFIL_KELAINAN, BASOFIL_LIC_ID, FLAG_NEUTROFIL_BATANG, NEUTROFIL_BATANG, 
+									 NEUTROFIL_BATANG_KELAINAN, NEUTROFIL_BATANG_LIC_ID, FLAG_NEUTROFIL_SEGMEN, NEUTROFIL_SEGMEN_KELAINAN, 
+									 NEUTROFIL_SEGMEN_LIC_ID, FLAG_LIMFOSIT, LIMFOSIT, LIMFOSIT_KELAINAN, LIMFOSIT_LIC_ID, FLAG_MONOSIT, MONOSIT, 
+									 MONOSIT_KELAINAN, MONOSIT_LIC_ID, FLAG_TROMBOSIT, TROMBOSIT, TROMBOSIT_KELAINAN, TROMBOSIT_LIC_ID, 
+									 FLAG_ERITROSIT, ERITROSIT, ERITROSIT_KELAINAN, ERITROSIT_LIC_ID, FLAG_HEMATOKRIT, HEMATOKRIT, 
+									 HEMATOKRIT_KELAINAN, HEMATOKRIT_LIC_ID, FLAG_LED, LED, LED_KELAINAN, LED_LIC_ID, FLAG_MCV, MCV, MCV_KELAINAN, 
+									 MCV_LIC_ID, FLAG_MCH, MCH, MCH_KELAINAN, MCH_LIC_ID, FLAG_MCHC, MCHC, MCHC_KELAINAN, MCHC_LIC_ID, FLAG_RDW, 
+									 RDW, RDW_KELAINAN, RDW_LIC_ID, FLAG_GULA_DARAH_PUASA, GULA_DARAH_PUASA, GULA_DARAH_PUASA_KELAINAN, 
+									 GULA_DARAH_PUASA_LIC_ID, FLAG_HB1C, HB1C, HB1C_KELAINAN, HB1C_LIC_ID, SATUAN_CHOL, TOTAL_CHOLESTEROL, 
+									 HDL_CHOLESTEROL, LDL_CHOLESTEROL, TRIGILISERIDA, FLAG_SGOT, SGOT, SGOT_KELAINAN, 
+									 SGOT_LIC_ID, FLAG_SGPT, SGPT, SGPT_KELAINAN, SGPT_LIC_ID, FLAG_GGT, GGT, GGT_KELAINAN, GGT_LIC_ID, 
+									 FLAG_FOSFATASE_ALKALI, FOSFATASE_ALKALI_KELAINAN, FOSFATASE_ALKALI_LIC_ID, FLAG_BILIRUBIN_DIREK, 
+									 BILIRUBIN_DIREK, BILIRUBIN_DIREK_KELAINAN, BILIRUBIN_DIREK_LIC_ID, FLAG_BILIRUBIN_INDIREK, BILIRUBIN_INDIREK , 
+									 BILIRUBIN_INDIREK_KELAINAN, BILIRUBIN_INDIREK_LIC_ID, FLAG_BILIRUBIN_TOTAL, BILIRUBIN_TOTAL, 
+									 BILIRUBIN_TOTAL_KELAINAN, BILIRUBIN_TOTAL_LIC_ID, FLAG_ALBUMIN, NV_GLUKOSA_DARAH_PP, FLAG_GULA_DARAH_PP, 
+									 GULA_DARAH_PP, GULA_DARAH_PP_KELAINAN, GULA_DARAH_PP_LIC_ID) 
+		VALUES (upper(#albumin:VARCHAR#), upper(#albumin_kelainan:VARCHAR#), upper(#albumin_lic_id:VARCHAR#), #flagGlobulin:INTEGER#, 
+				upper(#globulin:VARCHAR#), upper(#globulin_kelainan:VARCHAR#), upper(#globulin_lic_id:VARCHAR#), #flagTotal_protein:INTEGER#, 
+				upper(#total_protein:VARCHAR#), upper(#total_protein_kelainan:VARCHAR#), upper(#total_protein_lic_id:VARCHAR#), 
+				#flagHbs_ag:INTEGER#, upper(#hbs_ag:VARCHAR#), upper(#hbs_ag_kelainan:VARCHAR#), upper(#hbs_ag_lic_id:VARCHAR#), 
+				#flagHbe_ag:INTEGER#, upper(#hbe_ag:VARCHAR#), upper(#hbe_ag_kelainan:VARCHAR#), upper(#hbe_ag_lic_id:VARCHAR#), 
+				#flagCreatinin:INTEGER#, upper(#creatinin:VARCHAR#), upper(#creatinin_kelainan:VARCHAR#), upper(#creatinin_lic_id:VARCHAR#), 
+				#flagUreum:INTEGER#, upper(#ureum:VARCHAR#), upper(#ureum_kelainan:VARCHAR#), upper(#ureum_lic_id:VARCHAR#), 
+				#flagAsam_urat:INTEGER#, upper(#asam_urat:VARCHAR#), upper(#asam_urat_kelainan:VARCHAR#), upper(#asam_urat_lic_id:VARCHAR#), 
+				#nv_darah_rutin_hemoglobin:VARCHAR#, #nv_darah_rutin_leukosit:VARCHAR#, #nv_darah_rutin_trombosit:VARCHAR#, #nv_darah_rutin_eritrosit:VARCHAR#, 
+				#nv_darah_rutin_hematokrit:VARCHAR#, #nv_darah_rutin_led:VARCHAR#, #nv_darah_rutin_mcv:VARCHAR#, #nv_darah_rutin_mch:VARCHAR#, #nv_darah_rutin_mchc:VARCHAR#, 
+				#nv_darah_rutin_rdw:VARCHAR#, #nv_darah_rutin_eosinofil:VARCHAR#, #nv_darah_rutin_basofil:VARCHAR#, #nv_darah_rutin_neutrofil_batang:VARCHAR#, 
+				#nv_darah_rutin_neutrofil_segmen:VARCHAR#, #nv_darah_rutin_limfosit:VARCHAR#, #nv_darah_rutin_monosit:VARCHAR#, 
+				#nv_gula_darah_glukosa_darah_puasa:VARCHAR#, #nv_gula_darah_glukosa_hba1c:VARCHAR#, #nv_lemak_darah_total_cholesterol:VARCHAR#, 
+				#nv_lemak_darah_hdl_cholesterol:VARCHAR#, #nv_lemak_darah_ldl_cholesterol:VARCHAR#, #nv_lemak_darah_ratio_total_chol_hdl:VARCHAR#, 
+				#nv_lemak_darah_ratio_ldl_hdl:VARCHAR#, #nv_lemak_darah_trigliserida:VARCHAR#, #nv_fungsi_hati_sgot_ast:VARCHAR#, #nv_fungsi_hati_sgpt_alt:VARCHAR#, 
+				#nv_fungsi_hati_gamma_gt_ggtp:VARCHAR#, #nv_fungsi_hati_alkali_fosfatase:VARCHAR#, #nv_fungsi_hati_bilirubin_direk:VARCHAR#, 
+				#nv_fungsi_hati_bilirubin_indirek:VARCHAR#, #nv_fungsi_hati_bilirubin_total:VARCHAR#, #nv_fungsi_hati_albumin:VARCHAR#, 
+				#nv_fungsi_hati_globulin:VARCHAR#, #nv_fungsi_hati_total_protein:VARCHAR#, #nv_hepatitis_hbsag:VARCHAR#, #nv_hepatitis_hbeag:VARCHAR#, 
+				#nv_fungsi_ginjal_ureum:VARCHAR#, #nv_fungsi_ginjal_creatinin:VARCHAR#, #nv_fungsi_ginjal_asam_urat:VARCHAR#, upper(#fosfatase_alkali:VARCHAR#), 
+				upper(#neutrofil_segmen:VARCHAR#), upper(#reg_spaj:VARCHAR#), #insured_no:INTEGER#, #urutanAda:INTEGER#, #flagAda:INTEGER#, 
+				to_date(#tglMcuAda#,'dd/mm/yyyy'), upper(#tmpMcuAda:VARCHAR#), #flagHemoglobin:INTEGER#, upper(#hemoglobin:VARCHAR#), 
+				upper(#hemoglobin_kelainan:VARCHAR#), upper(#hemoglobin_lic_id:VARCHAR#), #flagLeukosit:INTEGER#, upper(#leukosit:VARCHAR#), 
+				upper(#leukosit_kelainan:VARCHAR#), upper(#leukosit_lic_id:VARCHAR#), #flagEosinofil:INTEGER#, upper(#eosinofil:VARCHAR#), 
+				upper(#eosinofil_kelainan:VARCHAR#), upper(#eosinofil_lic_id:VARCHAR#), #flagBasofil:INTEGER#, upper(#basofil:VARCHAR#), 
+				upper(#basofil_kelainan:VARCHAR#), upper(#basofil_lic_id:VARCHAR#), #flagNeutrofil_batang:INTEGER#, 
+				upper(#neutrofil_batang:VARCHAR#), upper(#neutrofil_batang_kelainan:VARCHAR#), upper(#neutrofil_batang_lic_id:VARCHAR#), 
+				#flagNeutrofil_segmen:INTEGER#, upper(#neutrofil_segmen_kelainan:VARCHAR#), upper(#neutrofil_segmen_lic_id:VARCHAR#), 
+				#flagLimfosit:INTEGER#, upper(#limfosit:VARCHAR#), upper(#limfosit_kelainan:VARCHAR#), upper(#limfosit_lic_id:VARCHAR#), 
+				#flagMonosit:INTEGER#, upper(#monosit:VARCHAR#), upper(#monosit_kelainan:VARCHAR#), upper(#monosit_lic_id:VARCHAR#), 
+				#flagTrombosit:INTEGER#, upper(#trombosit:VARCHAR#), upper(#trombosit_kelainan:VARCHAR#), upper(#trombosit_lic_id:VARCHAR#), 
+				#flagEritrosit:INTEGER#, upper(#eritrosit:VARCHAR#), upper(#eritrosit_kelainan:VARCHAR#), upper(#eritrosit_lic_id:VARCHAR#), 
+				#flagHematokrit:INTEGER#, upper(#hematokrit:VARCHAR#), upper(#hematokrit_kelainan:VARCHAR#), upper(#hematokrit_lic_id:VARCHAR#), 
+				#flagLed:INTEGER#, upper(#led:VARCHAR#), upper(#led_kelainan:VARCHAR#), upper(#led_lic_id:VARCHAR#), #flagMcv:INTEGER#, 
+				upper(#mcv:VARCHAR#), upper(#mcv_kelainan:VARCHAR#), upper(#mcv_lic_id:VARCHAR#), #flagMch:INTEGER#, upper(#mch:VARCHAR#), 
+				upper(#mch_kelainan:VARCHAR#), upper(#mch_lic_id:VARCHAR#), #flagMchc:INTEGER#, upper(#mchc:VARCHAR#), 
+				upper(#mchc_kelainan:VARCHAR#), upper(#mchc_lic_id:VARCHAR#), #flagRdw:INTEGER#, upper(#rdw:VARCHAR#), 
+				upper(#rdw_kelainan:VARCHAR#), upper(#rdw_lic_id:VARCHAR#), #flagGulaDarahPuasa:INTEGER#, upper(#gula_darah_puasa:VARCHAR#), 
+				upper(#gula_darah_puasa_kelainan:VARCHAR#), upper(#gula_darah_puasa_lic_id:VARCHAR#), #flagHb1c:INTEGER#, upper(#hba1c:VARCHAR#), 
+				upper(#hba1c_kelainan:VARCHAR#), upper(#hba1c_lic_id:VARCHAR#), #satuanChol:INTEGER#, #total_cholesterol:INTEGER#, 
+				#hdl_cholesterol:INTEGER#, #ldl_cholesterol:INTEGER#, 
+				upper(#trigiliserida:VARCHAR#), #flagSgot:INTEGER#, upper(#sgot:VARCHAR#), upper(#sgot_kelainan:VARCHAR#), 
+				upper(#sgot_lic_id:VARCHAR#), #flagSgpt:INTEGER#, upper(#sgpt:VARCHAR#), upper(#sgpt_kelainan:VARCHAR#), 
+				upper(#sgpt_lic_id:VARCHAR#), #flagGgt:INTEGER#, upper(#ggt:VARCHAR#), upper(#ggt_kelainan:VARCHAR#), upper(#ggt_lic_id:VARCHAR#), 
+				#flagFosfatase_alkali:INTEGER#, upper(#fosfatase_alkali_kelainan:VARCHAR#), upper(#fosfatase_alkali_lic_id:VARCHAR#), 
+				#flagBilirubin_direk:INTEGER#, upper(#bilirubin_direk:VARCHAR#), upper(#bilirubin_direk_kelainan:VARCHAR#), 
+				upper(#bilirubin_direk_lic_id:VARCHAR#), #flagBilirubin_indirek:INTEGER#, upper(#bilirubin_indirek:VARCHAR#), 
+				upper(#bilirubin_indirek_kelainan:VARCHAR#), upper(#bilirubin_indirek_lic_id:VARCHAR#), #flagBilirubin_total:INTEGER#, 
+				upper(#bilirubin_total:VARCHAR#), upper(#bilirubin_total_kelainan:VARCHAR#), upper(#bilirubin_total_lic_id:VARCHAR#), 
+				#flagAlbumin:INTEGER#, #nv_gula_darah_glukosa_pp:VARCHAR#, 
+			    #flagGulaDarahPp:INTEGER#, #gula_darah_pp:VARCHAR#, #gula_darah_pp_kelainan:VARCHAR#, #gula_darah_pp_lic_id:VARCHAR#)	
+	</insert>
+	
+	<insert id="elions.uw.insertMedHiv" parameterClass="com.ekalife.elions.model.worksheet.UwHiv">
+		INSERT INTO EKA.MST_MED_HIV (REG_SPAJ, INSURED_NO, URUTAN_HIV, TGL_MCU_HIV, TMP_MCU_HIV, ANTI_HIV, NV_ANTI_HIV) 
+		VALUES (upper(#reg_spaj:VARCHAR#), #insured_no:INTEGER#, #urutanHiv:INTEGER#, 
+				  to_date(#tglMcuHiv#,'dd/mm/yyyy'), upper(#tmpMcuHiv:VARCHAR#), upper(#antiHiv:VARCHAR#), 
+				  upper(#nv_anti_hiv_anti_hiv:VARCHAR#))	
+	</insert>
+	
+	<insert id="elions.uw.insertMedTumor" parameterClass="com.ekalife.elions.model.worksheet.UwTumor">
+		INSERT INTO EKA.MST_MED_TUMOR (REG_SPAJ, INSURED_NO, URUTAN_TUMOR, TGL_MCU_TUMOR, TMP_MCU_TUMOR, 
+									   CEA, AFP, PSA, CA_15_3, NV_CEA, NV_AFP, NV_PSA, NV_CA_15_3) 
+		VALUES (upper(#reg_spaj:VARCHAR#), #insured_no:INTEGER#, #urutanTumor:INTEGER#, to_date(#tglMcuTumor#,'dd/mm/yyyy'), 
+				upper(#tmpMcuTumor:VARCHAR#), upper(#cea:VARCHAR#), upper(#afp:VARCHAR#), upper(#psa:VARCHAR#), 
+				upper(#ca_15_3:VARCHAR#), #nv_tumor_marker_cea:VARCHAR#, #nv_tumor_marker_afp:VARCHAR#, 
+				#nv_tumor_marker_psa:VARCHAR#, #nv_tumor_marker_ca_15_3:VARCHAR#)	
+	</insert>
+	
+	<insert id="elions.uw.insertMedAbdomen" parameterClass="com.ekalife.elions.model.worksheet.UwAbdomen">
+		INSERT INTO EKA.MST_MED_ABDOMEN (REG_SPAJ, INSURED_NO, URUTAN_ABDOMEN, TGL_MCU_ABDOMEN, 
+										 TMP_MCU_ABDOMEN, FLAG_ABDOMEN, ABDOMEN_KELAINAN, ABDOMEN_LIC_ID) 
+		VALUES (upper(#reg_spaj:VARCHAR#), #insured_no:INTEGER#, #urutanAbdomen:INTEGER#, 
+				to_date(#tglMcuAbdomen#,'dd/mm/yyyy'), upper(#tmpMcuAbdomen:VARCHAR#), #flagAbdomen:INTEGER#, 
+				upper(#abdomen_kelainan:VARCHAR#), upper(#abdomen_lic_id:VARCHAR#))                                                              
+	</insert>
+	
+	<insert id="elions.uw.insertMedDadaPa" parameterClass="com.ekalife.elions.model.worksheet.UwDadaPa">
+		INSERT INTO EKA.MST_MED_DADA_PA (REG_SPAJ, INSURED_NO, URUTAN_DADA_PA, TGL_MCU_DADA_PA, TMP_MCU_DADA_PA, FLAG_DADA_PA, 
+										 DADA_PA_KELAINAN, DADA_PA_LIC_ID) 
+		VALUES (upper(#reg_spaj:VARCHAR#), #insured_no:INTEGER#, #urutanDadaPA:INTEGER#, to_date(#tglMcuDadaPA#,'dd/mm/yyyy'), 
+				upper(#tmpMcuDadaPA:VARCHAR#), #flagDadaPa:INTEGER#, upper(#dada_pa_kelainan:VARCHAR#), upper(#dada_pa_lic_id:VARCHAR#))	
+	</insert>
+	
+	<insert id="elions.uw.insertMedEkg" parameterClass="com.ekalife.elions.model.worksheet.UwEkg">
+		INSERT INTO EKA.MST_MED_EKG (REG_SPAJ, INSURED_NO, URUTAN_EKG, TGL_MCU_EKG, TMP_MCU_EKG, FLAG_EKG, EKG_KELAINAN, EKG_LIC_ID) 
+		VALUES (upper(#reg_spaj:VARCHAR#), #insured_no:INTEGER#, #urutanEkg:INTEGER#, to_date(#tglMcuEkg#,'dd/mm/yyyy'), 
+				upper(#tmpMcuEkg:VARCHAR#), #flagEkg:INTEGER#, upper(#ekg_kelainan:VARCHAR#), upper(#ekg_lic_id:VARCHAR#))               	
+	</insert>
+	
+	<insert id="elions.uw.insertMedTreadmill" parameterClass="com.ekalife.elions.model.worksheet.UwTreadmill">
+		INSERT INTO EKA.MST_MED_TREADMILL (REG_SPAJ, INSURED_NO, URUTAN_TREADMILL, TGL_MCU_TREADMILL, TMP_MCU_TREADMILL, 
+										   DURATION_MEN, DURATION_DET, METS, REASON_OF_TERMINATION, MAX_ST_DEPRESI, 
+										   RESTING_BP, MAX_BP, MAX_HEART_RATE, INTERPRETASI, TREADMILL_LIC_ID) 
+		VALUES (upper(#reg_spaj:VARCHAR#), #insured_no:INTEGER#, #urutanTreadmill:INTEGER#, to_date(#tglMcuTreadmill#,'dd/mm/yyyy'), 
+				upper(#tmpMcuTreadmill:VARCHAR#), #duration_men:INTEGER#, #duration_det:INTEGER#, upper(#mets:VARCHAR#), 
+				upper(#reason_of_termination:VARCHAR#), upper(#max_st_depresi:VARCHAR#), upper(#resting_bp:VARCHAR#), 
+				upper(#max_bp:VARCHAR#), #max_heart_rate:INTEGER#, upper(#interpretasi:VARCHAR#), upper(#treadmill_lic_id:VARCHAR#))	
+	</insert>
+	
+	<insert id="elions.uw.insertMedLain" parameterClass="com.ekalife.elions.model.worksheet.UwMedisLain">
+		INSERT INTO EKA.MST_MED_LAIN (REG_SPAJ, INSURED_NO, URUTAN_MED_LAIN, TGL_MCU_MED_LAIN, TMP_MCU_MED_LAIN, KET_MED_LAIN) 
+		VALUES (upper(#reg_spaj:VARCHAR#), #insured_no:INTEGER#, #urutanMedisLain:INTEGER#, 
+				to_date(#tglMcuMedisLain#,'dd/mm/yyyy'), upper(#tmpMcuMedisLain:VARCHAR#), upper(#ketMedisLain:VARCHAR#))	
+	</insert>
+	
+	<insert id="elions.uw.insertPas" parameterClass="com.ekalife.elions.model.Pas">
+		INSERT INTO eka.mst_pas_sms(msp_kode_sts_sms, msp_desc_sts_sms, msp_mobile, msp_mobile2, msp_text, msp_message_date, msp_receive_date, msp_full_name, msp_identity_no, msp_identity_no_tt, msp_date_of_birth, msp_pas_nama_pp, msp_pas_dob_pp, msp_pas_tmp_lhr_pp, msp_pas_email, msp_pas_tmp_lhr_tt, produk, msp_tgl_debet, msp_tgl_valid, kode_ao,
+			msp_address_1, msp_address_2, msp_city, msp_rek_nama, msp_rek_nama_autodebet, msp_rek_kota, msp_rek_cabang, msp_postal_code, dist, pin, no_kartu, lspd_id, lssp_id, lsbp_id, lsbp_id_autodebet, msp_pas_accept_date, msp_pas_beg_date, msp_pas_end_date, msp_fire_accept_date, lsre_id,
+			msp_fire_beg_date, msp_fire_end_date, msp_fire_policy_no, msp_fire_code_name, msp_fire_name, msp_fire_identity, msp_fire_id, msp_fire_occupation, msp_fire_type_business, msp_fire_source_fund, msp_fire_address_1, 
+			msp_fire_phone_number, msp_fire_email, msp_fire_okupasi, msp_fire_postal_code, msp_fire_mobile, msp_fire_insured_addr_code, msp_fire_addr_code, msp_fire_insured_addr, msp_fire_insured_postal_code, msp_fire_insured_addr_no, msp_flag_cc, msp_sex_pp, msp_sex_tt,
+			msp_fire_insured_addr_envir, msp_fire_date_of_birth, msp_no_rekening, msp_no_rekening_autodebet, msag_id, msp_age, lus_id, mspo_policy_no, reg_spaj, msp_fire_insured_city, msp_fire_insured_phone_number, msp_pas_phone_number, msp_fire_okupasi_else, msp_fire_ins_addr_envir_else, lscb_id, msp_flag_aksep, msp_flag_pas, msp_fire_create_date, msp_pas_create_date, msp_fire_jenis, pribadi, msag_id_pp, msp_exist_bp,
+			msp_warga, msp_warga_else, msp_status_nikah, msp_agama, msp_pendidikan, msp_pendidikan_else, msp_occupation, msp_occupation_else, msp_company_name, msp_company_usaha,
+			msp_company_jabatan, msp_company_address, msp_company_postal_code, msp_company_phone_number, msp_cek_ktp, msp_cek_srt_keterangan, msp_cek_kk, msp_cek_npwp, msp_cek_bukti_bayar, msp_cek_rekening, msp_cek_ktp_uw, msp_cek_srt_keterangan_uw, msp_cek_kk_uw, msp_cek_npwp_uw, msp_cek_bukti_bayar_uw, msp_cek_rekening_uw, lsag_id, msp_exist_bp_name, msp_area_code_rumah, lside_id, msp_company_area_code, lrb_id, msp_admin_date, mspo_plan_provider, jenis_pas, msp_up, msp_premi, flag_val_send,msp_cek_akte_kelahiran,msp_cek_akte_kelahiran_uw, msp_cek_tandatangan, msp_cek_tandatangan_uw,
+			product_code, mcl_id_pp, mcl_id_tt, msp_still_bp, msp_partner_exist_bp, msp_partner_still_bp, lju_id, application_id, reff_id, lcb_no, lcb_reff,no_va,no_temp)
+		VALUES(upper(trim(#msp_kode_sts_sms#)), upper(trim(#msp_desc_sts_sms#)), trim(#msp_mobile#), trim(#msp_mobile2#), upper(trim(#msp_text#)), #msp_message_date#, #msp_receive_date#, upper(trim(#msp_full_name#)), trim(#msp_identity_no#), trim(#msp_identity_no_tt#), #msp_date_of_birth#, upper(trim(#msp_pas_nama_pp#)), #msp_pas_dob_pp#, upper(trim(#msp_pas_tmp_lhr_pp#)), upper(trim(#msp_pas_email#)), upper(trim(#msp_pas_tmp_lhr_tt#)), #produk#, #msp_tgl_debet#, #msp_tgl_valid#, #kode_ao#,
+			upper(trim(#msp_address_1#)), upper(trim(#msp_address_2#)), upper(trim(#msp_city#)), upper(trim(#msp_rek_nama#)), upper(trim(#msp_rek_nama_autodebet#)), upper(trim(#msp_rek_kota#)), upper(trim(#msp_rek_cabang#)), upper(trim(#msp_postal_code#)), #dist#, #pin#, #no_kartu#, #lspd_id#, #lssp_id#, #lsbp_id#, #lsbp_id_autodebet#, #msp_pas_accept_date#, #msp_pas_beg_date#, #msp_pas_end_date#, #msp_fire_accept_date#, #lsre_id#,
+			#msp_fire_beg_date#, #msp_fire_end_date#, #msp_fire_policy_no#, upper(trim(#msp_fire_code_name#)), upper(trim(#msp_fire_name#)), upper(trim(#msp_fire_identity#)), #msp_fire_id#, upper(trim(#msp_fire_occupation#)), upper(trim(#msp_fire_type_business#)), upper(trim(#msp_fire_source_fund#)), upper(trim(#msp_fire_address_1#)),
+			trim(#msp_fire_phone_number#), upper(trim(#msp_fire_email#)), upper(trim(#msp_fire_okupasi#)), trim(#msp_fire_postal_code#), trim(#msp_fire_mobile#), upper(trim(#msp_fire_insured_addr_code#)), upper(trim(#msp_fire_addr_code#)), upper(trim(#msp_fire_insured_addr#)), trim(#msp_fire_insured_postal_code#), upper(trim(#msp_fire_insured_addr_no#)), #msp_flag_cc#, #msp_sex_pp#, #msp_sex_tt#,
+			upper(trim(#msp_fire_insured_addr_envir#)), #msp_fire_date_of_birth#, #msp_no_rekening#, #msp_no_rekening_autodebet#, #msag_id#, #msp_age#, #lus_id#, #mspo_policy_no#, #reg_spaj#, upper(trim(#msp_fire_insured_city#)), trim(#msp_fire_insured_phone_number#), trim(#msp_pas_phone_number#), upper(trim(#msp_fire_okupasi_else#)), upper(trim(#msp_fire_ins_addr_envir_else#)), #lscb_id#, 0, #msp_flag_pas#, #msp_fire_create_date#, #msp_pas_create_date#, 0, #pribadi#, #msag_id_pp#, #msp_exist_bp#,
+			#msp_warga#, upper(trim(#msp_warga_else#)), #msp_status_nikah#, #msp_agama#, #msp_pendidikan#, upper(trim(#msp_pendidikan_else#)), #msp_occupation#, upper(trim(#msp_occupation_else#)), upper(trim(#msp_company_name#)), #msp_company_usaha#,
+			upper(trim(#msp_company_jabatan#)), upper(trim(#msp_company_address#)), upper(trim(#msp_company_postal_code#)), #msp_company_phone_number#, #msp_cek_ktp#, #msp_cek_srt_keterangan#, #msp_cek_kk#, #msp_cek_npwp#, #msp_cek_bukti_bayar#, #msp_cek_rekening#, #msp_cek_ktp_uw#, #msp_cek_srt_keterangan_uw#, #msp_cek_kk_uw#, #msp_cek_npwp_uw#, #msp_cek_bukti_bayar_uw#, #msp_cek_rekening_uw#, #lsag_id#, upper(trim(#msp_exist_bp_name#)), #msp_area_code_rumah#, #lside_id#, #msp_company_area_code#, #lrb_id#, #msp_admin_date#, #mspo_plan_provider#, #jenis_pas#, #msp_up#, #msp_premi#, 1,#msp_cek_akte_kelahiran#,#msp_cek_akte_kelahiran_uw#, #msp_cek_tandatangan#, #msp_cek_tandatangan_uw#,
+			#product_code#, #mcl_id_pp#, #mcl_id_tt#, #msp_still_bp#, #msp_partner_exist_bp#, #msp_partner_still_bp#, #lju_id#, #application_id#, #reff_id#, #lcb_no#, #lcb_reff#,#no_va#,#msp_fire_id#) 
+		</insert>
+	
+	<insert id="elions.uw.insertFire" parameterClass="com.ekalife.elions.model.Pas">
+		INSERT INTO eka.mst_pas_sms(msp_fire_accept_date, 
+			msp_fire_beg_date, msp_fire_end_date, msp_fire_policy_no, msp_fire_code_name, msp_fire_name, msp_fire_identity, msp_fire_id, msp_fire_occupation, msp_fire_type_business, msp_fire_source_fund, msp_fire_address_1, 
+			msp_fire_phone_number, msp_fire_email, msp_fire_okupasi, msp_fire_postal_code, msp_fire_mobile, msp_fire_insured_addr_code, msp_fire_insured_addr, msp_fire_insured_postal_code, msp_fire_insured_addr_no, msp_flag_cc,
+			msp_fire_insured_addr_envir, msp_fire_date_of_birth, lus_id, msp_fire_insured_city, msp_fire_insured_phone_number, msp_pas_phone_number, msp_fire_okupasi_else, msp_fire_ins_addr_envir_else, lscb_id, msp_flag_aksep, msp_fire_jenis, mspo_plan_provider) 
+		VALUES(#msp_fire_accept_date#, 
+			to_date(sysdate, 'dd/mm/yy'), #msp_fire_end_date#, #msp_fire_policy_no#, #msp_fire_code_name#, #msp_fire_name#, #msp_fire_identity#, #msp_fire_id#, #msp_fire_occupation#, #msp_fire_type_business#, #msp_fire_source_fund#, #msp_fire_address_1#,
+			#msp_fire_phone_number#, #msp_fire_email#, #msp_fire_okupasi#, #msp_fire_postal_code#, #msp_fire_mobile#, #msp_fire_insured_addr_code#, #msp_fire_insured_addr#, #msp_fire_insured_postal_code#, #msp_fire_insured_addr_no#, #msp_flag_cc#,
+			#msp_fire_insured_addr_envir#, #msp_fire_date_of_birth#, #lus_id#, #msp_fire_insured_city#, #msp_fire_insured_phone_number#, #msp_pas_phone_number#, #msp_fire_okupasi_else#, #msp_fire_ins_addr_envir_else#, #lscb_id#, 0, 0, #mspo_plan_provider#) 
+	</insert>
+	
+	<insert id="elions.uw.insertCplan" parameterClass="com.ekalife.elions.model.Cplan">
+		insert into eka.mst_cplan@eb
+			(no_id, jenis_cp, no_rek, lsbp_id, full_name, lku_id, total_premi, lump_sum, mcp_insper, mcp_umur, 
+			mcp_tgl_lahir, mcp_beg_date, mcp_end_date, lssp_id, mcp_sts_aksep, mcp_tgl_aksep, lspd_id, lscb_id,
+			address1, city, postal_code, reg_spaj, no_sertifikat)
+		values
+			(#no_id#, #jenis_cp#, #no_rek#, #lsbp_id#, upper(#full_name#), #lku_id#, #total_premi#, #lump_sum#, #mcp_insper#, #mcp_umur#, 
+			#mcp_tgl_lahir#, #mcp_beg_date#, #mcp_end_date#, #lssp_id#, #mcp_sts_aksep#, #mcp_tgl_aksep#, #lspd_id#, #lscb_id#,
+			#address1#, #city#, #postal_code#, #reg_spaj#, #no_sertifikat#)
+	</insert>
+	
+	<insert id="elions.uw.insertCplanDet" parameterClass="com.ekalife.elions.model.CplanDet">
+		insert into eka.mst_cplan_det@eb
+			(no_id, urut, nama_peserta, tmp_lahir_peserta, bod_peserta, umur, product_code, plan, beg_aktif, end_aktif, 
+			beg_date, flag_aksep, flag_aktif, flag_batal, tgl_aksep, user_aksep, premi)
+		values
+			(#no_id#, #urut#, upper(#nama_peserta#), #tmp_lahir_peserta#, #bod_peserta#, #umur#, #product_code#, #plan#, #beg_aktif#, #end_aktif#, 
+			#beg_date#, #flag_aksep#, #flag_aktif#, #flag_batal#, #tgl_aksep#, #user_aksep#, #premi#)
+	</insert>
+	
+	<insert id="elions.uw.insertNewReinsurer" parameterClass="com.ekalife.elions.model.Reinsurer">
+		insert into eka.lst_reinsurer(lsrei_id,lsre_nama,lsre_alamat,lsre_telpon,lsre_fax,lsre_contact,lsre_account_gl,lsre_email)
+		select max(lsrei_id)+1,#lsre_nama#,#lsre_alamat#,#lsre_telpon#,#lsre_fax#,#lsre_contact#,#lsre_account_gl#,#lsre_email# 
+		  from eka.lst_reinsurer	
+	</insert>
+	
+		<insert id="elions.uw.insertMstHistoryUT" parameterClass="java.util.Map">
+        INSERT INTO eka.mst_history_ut
+        (
+            MCL_ID,
+            PERIODE,
+            JENIS,
+            NO,
+            REG_SPAJ,
+            TAHUN_KE,
+            PREMI_KE,
+            LUS_ID,
+            DESCR,
+            CREATE_DATE,
+            FILE_NAME
+        )
+        VALUES
+        (
+            UPPER (#MCL_ID:CHAR#),
+            #PERIODE:CHAR#,
+            #JENIS:INTEGER#,
+            #NO:INTEGER#,
+            UPPER (#REG_SPAJ:CHAR#),
+            #TAHUN_KE:INTEGER#,
+            #PREMI_KE:INTEGER#,
+            #LUS_ID:INTEGER#,
+            UPPER (#DESCR:CHAR#),
+            #CREATE_DATE:TIMESTAMP#,
+            LOWER (#FILE_NAME:CHAR#)
+        )
+    </insert>
+    
+    <insert id="elions.uw.insertMstInbox" parameterClass="com.ekalife.elions.model.MstInbox">
+    INSERT INTO eka.mst_inbox
+    (
+    	MI_ID,
+    	LJJ_ID,
+    	LSPD_ID,
+    	LSPD_ID_PENDING,
+    	LSPD_ID_FROM,
+    	USER_APP_1,
+    	USER_APP_2,
+    	REG_SPAJ,
+    	NO_REFF,
+    	MI_DESC,
+    	MI_POS,
+    	TGL_BERKAS_MASUK,
+    	TGL_BERKAS_LENGKAP,
+    	TRANS_ID,
+    	TRANS_DATE,
+    	CREATE_ID,
+    	CREATE_DATE,
+    	FLAG_VALIDASI,
+		FLAG_CABANG
+    )
+    VALUES
+    (
+    	UPPER (#mi_id#),
+    	#ljj_id#,
+    	#lspd_id#,
+    	#lspd_id_pending#,
+    	#lspd_id_from#,
+    	#user_app1#,
+    	#user_app2#,
+    	#reg_spaj#,
+    	#no_reff#,
+    	#mi_desc#,
+    	#mi_pos#,
+    	#tgl_berkas_masuk#,
+    	#tgl_berkas_lengkap#,
+    	#trans_id#,
+    	#trans_date#,
+    	#create_id#,
+    	#create_date#,
+    	#flag_validasi#,
+		#flag_cabang#
+    	
+    	
+    )
+    </insert>
+    
+    <insert id="elions.uw.insertMstInboxHist" parameterClass="com.ekalife.elions.model.MstInboxHist">
+    insert into eka.mst_inbox_hist(
+  		mi_id, 
+	  	lspd_before, 
+	  	lspd_after, 
+	  	mi_desc,
+	  	create_id,
+	  	create_date,
+	  	lock_id, 
+	  	lspd_pending,
+	  	flag_kategori,
+	  	flag_validasi
+    )
+    values(
+    	#mi_id#, 
+	  	#lspd_before#, 
+	  	#lspd_after#, 
+	  	upper(#mi_desc#),
+	  	#create_id#,
+	  	#create_date#,
+	  	#lock_id#,
+	  	#pending_after#,
+	  	#flag_kategori#,
+	  	#flag_validasi#
+    )
+    </insert>
+    
+    <insert id="elions.uw.insertMstJobList" parameterClass="com.ekalife.elions.model.MstInboxChecklist">
+    insert into eka.mst_joblist(
+    	ljj_id,
+    	lc_id,
+    	active,
+    	create_id,
+    	create_date
+    )
+    values(
+    	#ljj_id#,
+    	#lc_id#,
+    	1,
+    	#create_id#,
+    	#create_date#
+    )
+    </insert>
+    
+    <insert id="elions.uw.insertMstInboxChecklist" parameterClass="com.ekalife.elions.model.MstInboxChecklist">
+    insert into eka.mst_inbox_checklist(
+	 	mi_id, 
+		ljj_id, 
+		lc_id, 
+		mi_flag, 
+		mi_desc,
+		create_id,
+		create_date
+    )
+    values(
+    	#mi_id#, 
+		#ljj_id#, 
+		#lc_id#, 
+		#mi_flag#, 
+		#mi_desc#,
+		#create_id#,
+		#create_date#
+    )
+    </insert>
+    
+    <insert id="elions.uw.insertMstCompanyWs" parameterClass="java.util.Map">
+        INSERT INTO eka.mst_company_ws
+        (
+            MCL_ID,
+            TGL_INVOICE,
+            TGL_BAYAR,
+            JUMLAH_INVOICE,
+            JUMLAH_BAYAR,
+            PERIODE,
+            NOMOR,
+            LKU_ID
+        )
+        VALUES
+        (
+            UPPER (#mcl_id#),
+            #tgl_invoice#,
+            #tgl_bayar#,
+            #jumlah_invoice#,
+         	#jumlah_bayar#,
+            #periode#,
+            #nomor#,
+            #lku_id#
+        )
+    </insert>
+    
+    <insert id="elions.uw.insertMedQuest" parameterClass="com.ekalife.elions.model.MedQuest">
+		INSERT INTO EKA.MST_ADDITIONAL_DESC_INSURED (MSTE_INSURED_NO, MSADM_BERAT, MSADM_TINGGI, MSADM_SEHAT, MSADM_SEHAT_DESC, 
+													 MSADM_OPERASI, MSADM_OPERASI_DESC, MSADM_BERAT_BERUBAH, MSADM_BERUBAH_DESC, 
+													 MSADM_PENYAKIT, MSADM_PENYAKIT_DESC, MSADM_MEDIS, MSADM_MEDIS_DESC, MSADD_DRINK_BEER_DESC, 
+													 REG_SPAJ, MSADD_LIFE_INS, MSADD_LIFE_INS_DESC, MSADD_SMOKE, NSADD_MANY_CIG, 
+													 MSADD_DRINK_BEER, MSADD_TYPE_BEER, MSADD_TIME_DRINK, MSADD_MANY_DRINK, MSADD_LONG_DRINK, 
+													 MSADD_DRUGS, MSADD_TYPE_DRUGS, MSADD_MANY_DRUGS, MSADD_REASON_DRUGS, MSADD_HOBBY, 
+													 MSADD_FLIGHT, MSADD_DESC_FLIGHT, MSADD_DEAD, MSADD_ILL, MSADM_PREGNANT, MSADM_PREGNANT_DESC,
+													 MSADM_MEDIS_ALT, MSADM_MEDIS_ALT_DESC, MSADM_ABORTION, MSADM_ABORTION_DESC,
+													 MSADM_USG, MSADM_USG_DESC, MSADM_FAMILY_SICK, MSADM_FAMILY_SICK_DESC, MSADM_CLEAR_CASE,
+													 MSADM_SEHAT_STD, MSADM_PENYAKIT_STD, MSADM_PREGNANT_TIME, MSADM_USG_MCU, MSADM_USG_MCU_STD, MSADM_EM_LIFE) 
+		VALUES (#mste_insured_no:INTEGER#, #msadm_berat:INTEGER#, #msadm_tinggi:INTEGER#, #msadm_sehat:INTEGER#, upper(#msadm_sehat_desc:VARCHAR#), 
+				#msadm_operasi:INTEGER#, upper(#msadm_operasi_desc:VARCHAR#), #msadm_berat_berubah:INTEGER#, upper(#msadm_berubah_desc:VARCHAR#), 
+				#msadm_penyakit:INTEGER#, upper(#msadm_penyakit_desc:VARCHAR#), #msadm_medis:INTEGER#, upper(#msadm_medis_desc:VARCHAR#), 
+				upper(#msadd_drink_beer_desc:VARCHAR#), upper(#reg_spaj:CHAR#), #msadd_life_ins:INTEGER#, upper(#msadd_life_ins_desc:VARCHAR#), 
+				#msadd_smoke:INTEGER#, #nsadd_many_cig:INTEGER#, #msadd_drink_beer:INTEGER#, #msadd_type_beer:INTEGER#, #msadd_time_drink:INTEGER#, 
+				#msadd_many_drink:INTEGER#, #msadd_long_drink:INTEGER#, #msadd_drugs:INTEGER#, upper(#msadd_type_drugs:VARCHAR#), 
+				#msadd_many_drugs:INTEGER#, upper(#msadd_reason_drugs:VARCHAR#), upper(#msadd_hobby:VARCHAR#), #msadd_flight:INTEGER#, 
+				upper(#msadd_desc_flight:VARCHAR#), #msadd_dead:INTEGER#, #msadd_ill:INTEGER#, #msadm_pregnant:INTEGER#, upper(#msadm_pregnant_desc:VARCHAR#),
+				#msadm_medis_alt:INTEGER#, upper(#msadm_medis_alt_desc:VARCHAR#), #msadm_abortion:INTEGER#, upper(#msadm_abortion_desc:VARCHAR#),
+				#msadm_usg:INTEGER#, upper(#msadm_usg_desc:VARCHAR#), #msadm_family_sick:INTEGER#, upper(#msadm_family_sick_desc:VARCHAR#), #msadm_clear_case:INTEGER#,
+				#msadm_sehat_std:INTEGER#, #msadm_penyakit_std:INTEGER#, #msadm_pregnant_time:INTEGER#, #msadm_usg_mcu:INTEGER# , #msadm_usg_mcu_std:INTEGER#, #msadm_em_life:INTEGER# )                                                  
+    </insert>
+    
+    <!-- insert id="insertEinsFlagWs" parameterClass="cPlan">
+			INSERT INTO eka.mst_eins_flag_ws@EB
+		            (no_id, flag_bill, history_bill, hit_count, lus_id,flag_email
+		            )
+		     VALUES (UPPER (#no_id:CHAR#),0, SYSDATE, 0, #lus_id:INTEGER#,0
+		            )
+	</insert -->
+	
+	<insert id="elions.uw.insertTmms" parameterClass="com.ekalife.elions.model.Tmms">
+		INSERT INTO eka.mst_tmms@EB
+	            (bod_tempat, no_identitas,
+	             bank_atasnama,
+	             application_id,
+	             address_kores1,
+	             address_kores2, city_kores,
+	             postcode_kores, ip_ttp_email,
+	             lside_id, call_date,
+	             tm_code, flag_cek, posisi,
+	             status_polis, beg_date,
+	             end_date, flag_edit,
+	             flag_next_bill, tgl_next_bill,
+	             tgl_input, tgl_export,
+	             tgl_print, tgl_ttp,
+	             address1, address2,
+	             city, postal_code,
+	             home_area, home_phone,
+	             work_are, work_phone,
+	             fax_area, fax_no,
+	             fax_warea, fax_wno,
+	             mobile_no, email,
+	             card_type, tgl_awal,
+	             kd_agent, flag_bonus,
+	             tgl_bonus, bank_pusat,
+	             kode_cc, tm_id,
+	             product_code, mst_id,
+	             tgl_surat, bank,
+	             bank_cabang, bank_kota,
+	             no_rekening, flag_endors,
+	             cover_letter, lump_sum,
+	             flag_pa, no_sertifikat_pa,
+	             beg_date_pa, end_date_pa,
+	             tgl_print_pa, tgl_upload,
+	             tgl_kirim_polis, ID,
+	             bank_id, campaign,
+	             cust_no, no_sertifikat,
+	             holder_name, sex,
+	             bod_holder, status, bill_freq,
+	             bill_mode, card_no,
+	             expired,mgs_nik,IP,FLAG_KORESP_SAMA,
+	             flag_disc,virtual_account,flag_db,tm_premi, mspo_plan_provider
+	            )
+	     VALUES (UPPER (#bod_tempat#), UPPER (#no_identitas#),
+	             UPPER (#bank_atasnama#),
+	             UPPER (#application_id#),
+	             UPPER (#address_kores1#),
+	             UPPER (#address_kores2#), UPPER (#city_kores#),
+	             UPPER (#postcode_kores#), UPPER (#ip_ttp_email#),
+	             #lside_id#, #call_date#,
+	             UPPER (#tm_code#), #flag_cek#, #posisi#,
+	             #status_polis#, #beg_date#,
+	             #end_date#, #flag_edit#,
+	             #flag_next_bill#, #tgl_next_bill#,
+	             #tgl_input#, #tgl_export#,
+	             #tgl_print#, #tgl_ttp#,
+	             UPPER (#address1#), UPPER (#address2#),
+	             UPPER (#city#), UPPER (#postal_code#),
+	             UPPER (#home_area#), UPPER (#home_phone#),
+	             UPPER (#work_are#), UPPER (#work_phone#),
+	             UPPER (#fax_area#), UPPER (#fax_no#),
+	             UPPER (#fax_warea#), UPPER (#fax_wno#),
+	             UPPER (#mobile_no#), UPPER (#email#),
+	             UPPER (#card_type#), #tgl_awal#,
+	             UPPER (#kd_agent#), #flag_bonus#,
+	             #tgl_bonus#, #bank_pusat#,
+	             UPPER (#kode_cc#), UPPER (#tm_id#),
+	             UPPER (#product_code#), UPPER (#mst_id#),
+	             #tgl_surat#, #bank#,
+	             UPPER (#bank_cabang#), UPPER (#bank_kota#),
+	             UPPER (#no_rekening#), #flag_endors#,
+	             UPPER (#cover_letter#), #lump_sum#,
+	             #flag_pa#, UPPER (#no_sertifikat_pa#),
+	             #beg_date_pa#, #end_date_pa#,
+	             #tgl_print_pa#, #tgl_upload#,
+	             #tgl_kirim_polis#, UPPER (#id#),
+	             UPPER (#bank_id#), UPPER (#campaign#),
+	             UPPER (#cust_no#), UPPER (#no_sertifikat#),
+	             UPPER (#holder_name#), #sex#,
+	             #bod_holder#, #status#, #bill_freq#,
+	             UPPER (#bill_mode#), UPPER (#card_no#),
+	             UPPER (#expired#),upper(#mgs_nik#),
+	             upper(#ip#),#flag_koresp_sama#,
+	             #flag_disc#,#virtual_account#,#flag_db#,#tm_premi#, #mspo_plan_provider#
+	            )
+	</insert>
+	
+	<insert id="elions.uw.insertTmmsDet" parameterClass="com.ekalife.elions.model.TmmsDet">
+		INSERT INTO eka.mst_tmms_det@EB
+	            (bod_tempat, no_identitas,
+	             konfirmasi_peserta, nama_ibu,
+	             ID, urut,
+	             nama_peserta, sex,
+	             bod_peserta, usia, relasi,
+	             product_code, PLAN,
+	             beg_aktif, end_aktif,
+	             beg_date, flag_aksep,
+	             user_aksep, notes,
+	             flag_aktif, flag_claim, flag_pk,
+	             flag_batal, tgl_batal,
+	             user_batal, alasan_batal,
+	             tgl_aksep, flag_spouse,
+	             flag_renew
+	            )
+	     VALUES (UPPER (#bod_tempat#), UPPER (#no_identitas#),
+	             #konfirmasi_peserta#, UPPER (#nama_ibu#),
+	             UPPER (#id#), #urut#,
+	             UPPER (#nama_peserta#), #sex#,
+	             #bod_peserta#, #usia#, #relasi#,
+	             UPPER (#product_code#), #plan#,
+	             #beg_aktif#, #end_aktif#,
+	             #beg_date#, #flag_aksep#,
+	             #user_aksep#, UPPER (#notes#),
+	             #flag_aktif#, #flag_claim#, #flag_pk#,
+	             #flag_batal#, #tgl_batal#,
+	             #user_batal#, UPPER (#alasan_batal#),
+	             #tgl_aksep#, #flag_spouse#,
+	             #flag_renew#
+	            )    
+	</insert>
+	
+	<!-- insert id="insertTmmsBenef" parameterClass="tmmsBenef">
+		INSERT INTO eka.mst_tmms_benef@EB
+	            (ID, urut, benef,
+	             bod_benef, benef_rel
+	            )
+	     VALUES (UPPER (#id#), #urut#, UPPER (#benef#),
+	             #bod_benef#, #benef_rel#
+	            )   
+	</insert>
+	
+	<insert id="insertTmmsBill" parameterClass="tmmsBill">
+		INSERT INTO eka.mst_tmms_bill@EB
+	            (tgl_input_bayar_refund,
+	             tgl_input_refund, user_refund,
+	             flag_refund, flag_biaya_ref1,
+	             ket_biaya_ref1, biaya_ref1,
+	             flag_biaya_ref2, ket_biaya_ref2,
+	             biaya_ref2, tgl_bayar_refund,
+	             ID, premi_ke, tahun_ke,
+	             beg_date, end_date,
+	             jumlah_premi, jumlah_disc,
+	             flag_paid, posisi, tgl_bayar,
+	             tgl_prod, tgl_input,
+	             user_bayar_refund, flag_aktif,
+	             tgl_bsb, tgl_refund,
+	             no_kwitansi, jumlah_komisi,
+	             bill_mode, jumlah_bayar,
+	             tgl_input_bayar, user_input,
+	             tgl_rk2, jumlah_bayar2,
+	             tgl_rk3, jumlah_bayar3, flag_db,
+	             tgl_paid, flag_recur,
+	             flag_db_note
+	            )
+	     VALUES (#tgl_input_bayar_refund#,
+	             #tgl_input_refund#, #user_refund#,
+	             #flag_refund#, #flag_biaya_ref1#,
+	             UPPER (#ket_biaya_ref1#), #biaya_ref1#,
+	             #flag_biaya_ref2#, UPPER (#ket_biaya_ref2#),
+	             #biaya_ref2#, #tgl_bayar_refund#,
+	             UPPER (#id#), #premi_ke#, #tahun_ke#,
+	             #beg_date#, #end_date#,
+	             #jumlah_premi#, #jumlah_disc#,
+	             #flag_paid#, #posisi#, #tgl_bayar#,
+	             #tgl_prod#, #tgl_input#,
+	             #user_bayar_refund#, #flag_aktif#,
+	             #tgl_bsb#, #tgl_refund#,
+	             UPPER (#no_kwitansi#), #jumlah_komisi#,
+	             UPPER (#bill_mode#), #jumlah_bayar#,
+	             #tgl_input_bayar#, #user_input#,
+	             #tgl_rk2#, #jumlah_bayar2#,
+	             #tgl_rk3#, #jumlah_bayar3#, #flag_db#,
+	             #tgl_paid#, #flag_recur#,
+	             UPPER (#flag_db_note#)
+	            )
+	</insert>
+	
+	< insert id="inserTmmsDBill" parameterClass="tmmsDBill">
+		INSERT INTO eka.mst_tmms_dbill@EB
+	            (ID, urut, premi_ke,
+	             tahun_ke, product_code, PLAN,
+	             rate_premi, premi, diskon,
+	             komisi, usia
+	            )
+	     VALUES (UPPER (#id#), #urut#, #premi_ke#,
+	             #tahun_ke#, UPPER (#product_code#), #plan#,
+	             #rate_premi#, #premi#, #diskon#,
+	             #komisi#, #usia#
+	            )
+	</insert -->
+	
+	<!-- Questionare DMTM -->
+	<insert id="elions.uw.insertMedQuestDMTM" parameterClass="com.ekalife.elions.model.MedQuest">
+		INSERT INTO EKA.MST_ADDITIONAL_DESC_INSURED 
+			(MSTE_INSURED_NO, MSADM_BERAT, MSADM_TINGGI, MSADM_SEHAT, MSADM_SEHAT_DESC, 
+			MSADM_BERAT_BERUBAH, MSADM_BERUBAH_DESC, 
+			MSADM_PENYAKIT, MSADM_PENYAKIT_DESC, MSADM_MEDIS, MSADM_MEDIS_DESC, MSADD_DRINK_BEER_DESC, 
+			REG_SPAJ, MSADD_LIFE_INS, MSADD_LIFE_INS_DESC, MSADD_SMOKE, NSADD_MANY_CIG, 
+			MSADD_DRINK_BEER, MSADD_TYPE_BEER, MSADD_TIME_DRINK, MSADD_MANY_DRINK, MSADD_LONG_DRINK, 
+			MSADD_DRUGS, MSADD_TYPE_DRUGS, MSADD_MANY_DRUGS, MSADD_REASON_DRUGS, MSADD_HOBBY, 
+			MSADD_FLIGHT, MSADD_DESC_FLIGHT, MSADD_DEAD, MSADD_ILL, MSADM_PREGNANT, MSADM_PREGNANT_DESC,
+			MSADM_MEDIS_ALT, MSADM_MEDIS_ALT_DESC, MSADM_ABORTION, MSADM_ABORTION_DESC,
+			MSADM_USG, MSADM_USG_DESC, MSADM_FAMILY_SICK, MSADM_FAMILY_SICK_DESC, MSADM_CLEAR_CASE,
+			MSADM_SEHAT_STD, MSADM_PENYAKIT_STD, MSADM_PREGNANT_TIME, MSADM_USG_MCU, MSADM_USG_MCU_STD, MSADM_EM_LIFE) 
+		VALUES (#mste_insured_no:INTEGER#, #msadm_berat:INTEGER#, #msadm_tinggi:INTEGER#, #msadm_sehat:INTEGER#, upper(#msadm_sehat_desc:VARCHAR#), 
+				#msadm_berat_berubah:INTEGER#, upper(#msadm_berubah_desc:VARCHAR#), 
+				#msadm_penyakit:INTEGER#, upper(#msadm_penyakit_desc:VARCHAR#), #msadm_medis:INTEGER#, upper(#msadm_medis_desc:VARCHAR#), 
+				upper(#msadd_drink_beer_desc:VARCHAR#), upper(#reg_spaj:CHAR#), #msadd_life_ins:INTEGER#, upper(#msadd_life_ins_desc:VARCHAR#), 
+				#msadd_smoke:INTEGER#, #nsadd_many_cig:INTEGER#, #msadd_drink_beer:INTEGER#, #msadd_type_beer:INTEGER#, #msadd_time_drink:INTEGER#, 
+				#msadd_many_drink:INTEGER#, #msadd_long_drink:INTEGER#, #msadd_drugs:INTEGER#, upper(#msadd_type_drugs:VARCHAR#), 
+				#msadd_many_drugs:INTEGER#, upper(#msadd_reason_drugs:VARCHAR#), upper(#msadd_hobby:VARCHAR#), #msadd_flight:INTEGER#, 
+				upper(#msadd_desc_flight:VARCHAR#), #msadd_dead:INTEGER#, #msadd_ill:INTEGER#, #msadm_pregnant:INTEGER#, upper(#msadm_pregnant_desc:VARCHAR#),
+				#msadm_medis_alt:INTEGER#, upper(#msadm_medis_alt_desc:VARCHAR#), #msadm_abortion:INTEGER#, upper(#msadm_abortion_desc:VARCHAR#),
+				#msadm_usg:INTEGER#, upper(#msadm_usg_desc:VARCHAR#), #msadm_family_sick:INTEGER#, upper(#msadm_family_sick_desc:VARCHAR#), #msadm_clear_case:INTEGER#,
+				#msadm_sehat_std:INTEGER#, #msadm_penyakit_std:INTEGER#, #msadm_pregnant_time:INTEGER#, #msadm_usg_mcu:INTEGER# , #msadm_usg_mcu_std:INTEGER#, #msadm_em_life:INTEGER# )                                                  
+    </insert>
+    
+    <insert id="elions.uw.insertMedQuestDMTM_tertanggung" parameterClass="com.ekalife.elions.model.MedQuest_tertanggung">
+		INSERT INTO EKA.MST_ADDITIONAL_DESC_INSURED 
+			(MSTE_INSURED_NO, MSADM_BERAT, MSADM_TINGGI, MSADM_SEHAT, MSADM_SEHAT_DESC, 
+			MSADM_BERAT_BERUBAH, MSADM_BERUBAH_DESC, 
+			MSADM_PENYAKIT, MSADM_PENYAKIT_DESC, MSADM_MEDIS, MSADM_MEDIS_DESC, MSADD_DRINK_BEER_DESC, 
+			REG_SPAJ, MSADD_LIFE_INS, MSADD_LIFE_INS_DESC, MSADD_SMOKE, NSADD_MANY_CIG, 
+			MSADD_DRINK_BEER, MSADD_TYPE_BEER, MSADD_TIME_DRINK, MSADD_MANY_DRINK, MSADD_LONG_DRINK, 
+			MSADD_DRUGS, MSADD_TYPE_DRUGS, MSADD_MANY_DRUGS, MSADD_REASON_DRUGS, MSADD_HOBBY, 
+			MSADD_FLIGHT, MSADD_DESC_FLIGHT, MSADD_DEAD, MSADD_ILL, MSADM_PREGNANT, MSADM_PREGNANT_DESC,
+			MSADM_MEDIS_ALT, MSADM_MEDIS_ALT_DESC, MSADM_ABORTION, MSADM_ABORTION_DESC,
+			MSADM_USG, MSADM_USG_DESC, MSADM_FAMILY_SICK, MSADM_FAMILY_SICK_DESC, MSADM_CLEAR_CASE,
+			MSADM_SEHAT_STD, MSADM_PENYAKIT_STD, MSADM_PREGNANT_TIME, MSADM_USG_MCU, MSADM_USG_MCU_STD, MSADM_EM_LIFE) 
+		VALUES (#mste_insured_no:INTEGER#, #msadm_berat:INTEGER#, #msadm_tinggi:INTEGER#, #msadm_sehat:INTEGER#, upper(#msadm_sehat_desc:VARCHAR#), 
+				#msadm_berat_berubah:INTEGER#, upper(#msadm_berubah_desc:VARCHAR#), 
+				#msadm_penyakit:INTEGER#, upper(#msadm_penyakit_desc:VARCHAR#), #msadm_medis:INTEGER#, upper(#msadm_medis_desc:VARCHAR#), 
+				upper(#msadd_drink_beer_desc:VARCHAR#), upper(#reg_spaj:CHAR#), #msadd_life_ins:INTEGER#, upper(#msadd_life_ins_desc:VARCHAR#), 
+				#msadd_smoke:INTEGER#, #nsadd_many_cig:INTEGER#, #msadd_drink_beer:INTEGER#, #msadd_type_beer:INTEGER#, #msadd_time_drink:INTEGER#, 
+				#msadd_many_drink:INTEGER#, #msadd_long_drink:INTEGER#, #msadd_drugs:INTEGER#, upper(#msadd_type_drugs:VARCHAR#), 
+				#msadd_many_drugs:INTEGER#, upper(#msadd_reason_drugs:VARCHAR#), upper(#msadd_hobby:VARCHAR#), #msadd_flight:INTEGER#, 
+				upper(#msadd_desc_flight:VARCHAR#), #msadd_dead:INTEGER#, #msadd_ill:INTEGER#, #msadm_pregnant:INTEGER#, upper(#msadm_pregnant_desc:VARCHAR#),
+				#msadm_medis_alt:INTEGER#, upper(#msadm_medis_alt_desc:VARCHAR#), #msadm_abortion:INTEGER#, upper(#msadm_abortion_desc:VARCHAR#),
+				#msadm_usg:INTEGER#, upper(#msadm_usg_desc:VARCHAR#), #msadm_family_sick:INTEGER#, upper(#msadm_family_sick_desc:VARCHAR#), #msadm_clear_case:INTEGER#,
+				#msadm_sehat_std:INTEGER#, #msadm_penyakit_std:INTEGER#, #msadm_pregnant_time:INTEGER#, #msadm_usg_mcu:INTEGER# , #msadm_usg_mcu_std:INTEGER#, #msadm_em_life:INTEGER# )                                                  
+    </insert>
+    
+    <insert id="elions.uw.insertMedQuestDMTM_tambah" parameterClass="com.ekalife.elions.model.MedQuest_tambah">
+		INSERT INTO EKA.MST_ADDITIONAL_DESC_INSURED 
+			(MSTE_INSURED_NO, MSADM_BERAT, MSADM_TINGGI, MSADM_SEHAT, MSADM_SEHAT_DESC, 
+			MSADM_BERAT_BERUBAH, MSADM_BERUBAH_DESC, 
+			MSADM_PENYAKIT, MSADM_PENYAKIT_DESC, MSADM_MEDIS, MSADM_MEDIS_DESC, MSADD_DRINK_BEER_DESC, 
+			REG_SPAJ, MSADD_LIFE_INS, MSADD_LIFE_INS_DESC, MSADD_SMOKE, NSADD_MANY_CIG, 
+			MSADD_DRINK_BEER, MSADD_TYPE_BEER, MSADD_TIME_DRINK, MSADD_MANY_DRINK, MSADD_LONG_DRINK, 
+			MSADD_DRUGS, MSADD_TYPE_DRUGS, MSADD_MANY_DRUGS, MSADD_REASON_DRUGS, MSADD_HOBBY, 
+			MSADD_FLIGHT, MSADD_DESC_FLIGHT, MSADD_DEAD, MSADD_ILL, MSADM_PREGNANT, MSADM_PREGNANT_DESC,
+			MSADM_MEDIS_ALT, MSADM_MEDIS_ALT_DESC, MSADM_ABORTION, MSADM_ABORTION_DESC,
+			MSADM_USG, MSADM_USG_DESC, MSADM_FAMILY_SICK, MSADM_FAMILY_SICK_DESC, MSADM_CLEAR_CASE,
+			MSADM_SEHAT_STD, MSADM_PENYAKIT_STD, MSADM_PREGNANT_TIME, MSADM_USG_MCU, MSADM_USG_MCU_STD, MSADM_EM_LIFE) 
+		VALUES (#mste_insured_no:INTEGER#, #msadm_berat:INTEGER#, #msadm_tinggi:INTEGER#, #msadm_sehat:INTEGER#, upper(#msadm_sehat_desc:VARCHAR#), 
+				#msadm_berat_berubah:INTEGER#, upper(#msadm_berubah_desc:VARCHAR#), 
+				#msadm_penyakit:INTEGER#, upper(#msadm_penyakit_desc:VARCHAR#), #msadm_medis:INTEGER#, upper(#msadm_medis_desc:VARCHAR#), 
+				upper(#msadd_drink_beer_desc:VARCHAR#), upper(#reg_spaj:CHAR#), #msadd_life_ins:INTEGER#, upper(#msadd_life_ins_desc:VARCHAR#), 
+				#msadd_smoke:INTEGER#, #nsadd_many_cig:INTEGER#, #msadd_drink_beer:INTEGER#, #msadd_type_beer:INTEGER#, #msadd_time_drink:INTEGER#, 
+				#msadd_many_drink:INTEGER#, #msadd_long_drink:INTEGER#, #msadd_drugs:INTEGER#, upper(#msadd_type_drugs:VARCHAR#), 
+				#msadd_many_drugs:INTEGER#, upper(#msadd_reason_drugs:VARCHAR#), upper(#msadd_hobby:VARCHAR#), #msadd_flight:INTEGER#, 
+				upper(#msadd_desc_flight:VARCHAR#), #msadd_dead:INTEGER#, #msadd_ill:INTEGER#, #msadm_pregnant:INTEGER#, upper(#msadm_pregnant_desc:VARCHAR#),
+				#msadm_medis_alt:INTEGER#, upper(#msadm_medis_alt_desc:VARCHAR#), #msadm_abortion:INTEGER#, upper(#msadm_abortion_desc:VARCHAR#),
+				#msadm_usg:INTEGER#, upper(#msadm_usg_desc:VARCHAR#), #msadm_family_sick:INTEGER#, upper(#msadm_family_sick_desc:VARCHAR#), #msadm_clear_case:INTEGER#,
+				#msadm_sehat_std:INTEGER#, #msadm_penyakit_std:INTEGER#, #msadm_pregnant_time:INTEGER#, #msadm_usg_mcu:INTEGER# , #msadm_usg_mcu_std:INTEGER#, #msadm_em_life:INTEGER# )                                                  
+    </insert>
+    
+    <insert id="elions.uw.insertMedQuestDMTM_tambah2" parameterClass="com.ekalife.elions.model.MedQuest_tambah2">
+		INSERT INTO EKA.MST_ADDITIONAL_DESC_INSURED 
+			(MSTE_INSURED_NO, MSADM_BERAT, MSADM_TINGGI, MSADM_SEHAT, MSADM_SEHAT_DESC, 
+			MSADM_BERAT_BERUBAH, MSADM_BERUBAH_DESC, 
+			MSADM_PENYAKIT, MSADM_PENYAKIT_DESC, MSADM_MEDIS, MSADM_MEDIS_DESC, MSADD_DRINK_BEER_DESC, 
+			REG_SPAJ, MSADD_LIFE_INS, MSADD_LIFE_INS_DESC, MSADD_SMOKE, NSADD_MANY_CIG, 
+			MSADD_DRINK_BEER, MSADD_TYPE_BEER, MSADD_TIME_DRINK, MSADD_MANY_DRINK, MSADD_LONG_DRINK, 
+			MSADD_DRUGS, MSADD_TYPE_DRUGS, MSADD_MANY_DRUGS, MSADD_REASON_DRUGS, MSADD_HOBBY, 
+			MSADD_FLIGHT, MSADD_DESC_FLIGHT, MSADD_DEAD, MSADD_ILL, MSADM_PREGNANT, MSADM_PREGNANT_DESC,
+			MSADM_MEDIS_ALT, MSADM_MEDIS_ALT_DESC, MSADM_ABORTION, MSADM_ABORTION_DESC,
+			MSADM_USG, MSADM_USG_DESC, MSADM_FAMILY_SICK, MSADM_FAMILY_SICK_DESC, MSADM_CLEAR_CASE,
+			MSADM_SEHAT_STD, MSADM_PENYAKIT_STD, MSADM_PREGNANT_TIME, MSADM_USG_MCU, MSADM_USG_MCU_STD, MSADM_EM_LIFE) 
+		VALUES (#mste_insured_no:INTEGER#, #msadm_berat:INTEGER#, #msadm_tinggi:INTEGER#, #msadm_sehat:INTEGER#, upper(#msadm_sehat_desc:VARCHAR#), 
+				#msadm_berat_berubah:INTEGER#, upper(#msadm_berubah_desc:VARCHAR#), 
+				#msadm_penyakit:INTEGER#, upper(#msadm_penyakit_desc:VARCHAR#), #msadm_medis:INTEGER#, upper(#msadm_medis_desc:VARCHAR#), 
+				upper(#msadd_drink_beer_desc:VARCHAR#), upper(#reg_spaj:CHAR#), #msadd_life_ins:INTEGER#, upper(#msadd_life_ins_desc:VARCHAR#), 
+				#msadd_smoke:INTEGER#, #nsadd_many_cig:INTEGER#, #msadd_drink_beer:INTEGER#, #msadd_type_beer:INTEGER#, #msadd_time_drink:INTEGER#, 
+				#msadd_many_drink:INTEGER#, #msadd_long_drink:INTEGER#, #msadd_drugs:INTEGER#, upper(#msadd_type_drugs:VARCHAR#), 
+				#msadd_many_drugs:INTEGER#, upper(#msadd_reason_drugs:VARCHAR#), upper(#msadd_hobby:VARCHAR#), #msadd_flight:INTEGER#, 
+				upper(#msadd_desc_flight:VARCHAR#), #msadd_dead:INTEGER#, #msadd_ill:INTEGER#, #msadm_pregnant:INTEGER#, upper(#msadm_pregnant_desc:VARCHAR#),
+				#msadm_medis_alt:INTEGER#, upper(#msadm_medis_alt_desc:VARCHAR#), #msadm_abortion:INTEGER#, upper(#msadm_abortion_desc:VARCHAR#),
+				#msadm_usg:INTEGER#, upper(#msadm_usg_desc:VARCHAR#), #msadm_family_sick:INTEGER#, upper(#msadm_family_sick_desc:VARCHAR#), #msadm_clear_case:INTEGER#,
+				#msadm_sehat_std:INTEGER#, #msadm_penyakit_std:INTEGER#, #msadm_pregnant_time:INTEGER#, #msadm_usg_mcu:INTEGER# , #msadm_usg_mcu_std:INTEGER#, #msadm_em_life:INTEGER# )                                                  
+    </insert>
+    
+    <insert id="elions.uw.insertMedQuestDMTM_tambah3" parameterClass="com.ekalife.elions.model.MedQuest_tambah3">
+		INSERT INTO EKA.MST_ADDITIONAL_DESC_INSURED 
+			(MSTE_INSURED_NO, MSADM_BERAT, MSADM_TINGGI, MSADM_SEHAT, MSADM_SEHAT_DESC, 
+			MSADM_BERAT_BERUBAH, MSADM_BERUBAH_DESC, 
+			MSADM_PENYAKIT, MSADM_PENYAKIT_DESC, MSADM_MEDIS, MSADM_MEDIS_DESC, MSADD_DRINK_BEER_DESC, 
+			REG_SPAJ, MSADD_LIFE_INS, MSADD_LIFE_INS_DESC, MSADD_SMOKE, NSADD_MANY_CIG, 
+			MSADD_DRINK_BEER, MSADD_TYPE_BEER, MSADD_TIME_DRINK, MSADD_MANY_DRINK, MSADD_LONG_DRINK, 
+			MSADD_DRUGS, MSADD_TYPE_DRUGS, MSADD_MANY_DRUGS, MSADD_REASON_DRUGS, MSADD_HOBBY, 
+			MSADD_FLIGHT, MSADD_DESC_FLIGHT, MSADD_DEAD, MSADD_ILL, MSADM_PREGNANT, MSADM_PREGNANT_DESC,
+			MSADM_MEDIS_ALT, MSADM_MEDIS_ALT_DESC, MSADM_ABORTION, MSADM_ABORTION_DESC,
+			MSADM_USG, MSADM_USG_DESC, MSADM_FAMILY_SICK, MSADM_FAMILY_SICK_DESC, MSADM_CLEAR_CASE,
+			MSADM_SEHAT_STD, MSADM_PENYAKIT_STD, MSADM_PREGNANT_TIME, MSADM_USG_MCU, MSADM_USG_MCU_STD, MSADM_EM_LIFE) 
+		VALUES (#mste_insured_no:INTEGER#, #msadm_berat:INTEGER#, #msadm_tinggi:INTEGER#, #msadm_sehat:INTEGER#, upper(#msadm_sehat_desc:VARCHAR#), 
+				#msadm_berat_berubah:INTEGER#, upper(#msadm_berubah_desc:VARCHAR#), 
+				#msadm_penyakit:INTEGER#, upper(#msadm_penyakit_desc:VARCHAR#), #msadm_medis:INTEGER#, upper(#msadm_medis_desc:VARCHAR#), 
+				upper(#msadd_drink_beer_desc:VARCHAR#), upper(#reg_spaj:CHAR#), #msadd_life_ins:INTEGER#, upper(#msadd_life_ins_desc:VARCHAR#), 
+				#msadd_smoke:INTEGER#, #nsadd_many_cig:INTEGER#, #msadd_drink_beer:INTEGER#, #msadd_type_beer:INTEGER#, #msadd_time_drink:INTEGER#, 
+				#msadd_many_drink:INTEGER#, #msadd_long_drink:INTEGER#, #msadd_drugs:INTEGER#, upper(#msadd_type_drugs:VARCHAR#), 
+				#msadd_many_drugs:INTEGER#, upper(#msadd_reason_drugs:VARCHAR#), upper(#msadd_hobby:VARCHAR#), #msadd_flight:INTEGER#, 
+				upper(#msadd_desc_flight:VARCHAR#), #msadd_dead:INTEGER#, #msadd_ill:INTEGER#, #msadm_pregnant:INTEGER#, upper(#msadm_pregnant_desc:VARCHAR#),
+				#msadm_medis_alt:INTEGER#, upper(#msadm_medis_alt_desc:VARCHAR#), #msadm_abortion:INTEGER#, upper(#msadm_abortion_desc:VARCHAR#),
+				#msadm_usg:INTEGER#, upper(#msadm_usg_desc:VARCHAR#), #msadm_family_sick:INTEGER#, upper(#msadm_family_sick_desc:VARCHAR#), #msadm_clear_case:INTEGER#,
+				#msadm_sehat_std:INTEGER#, #msadm_penyakit_std:INTEGER#, #msadm_pregnant_time:INTEGER#, #msadm_usg_mcu:INTEGER# , #msadm_usg_mcu_std:INTEGER#, #msadm_em_life:INTEGER# )                                                  
+    </insert>
+   
+   <insert id="elions.uw.insertMedQuestDMTM_tambah4" parameterClass="com.ekalife.elions.model.MedQuest_tambah4">
+		INSERT INTO EKA.MST_ADDITIONAL_DESC_INSURED 
+			(MSTE_INSURED_NO, MSADM_BERAT, MSADM_TINGGI, MSADM_SEHAT, MSADM_SEHAT_DESC, 
+			MSADM_BERAT_BERUBAH, MSADM_BERUBAH_DESC, 
+			MSADM_PENYAKIT, MSADM_PENYAKIT_DESC, MSADM_MEDIS, MSADM_MEDIS_DESC, MSADD_DRINK_BEER_DESC, 
+			REG_SPAJ, MSADD_LIFE_INS, MSADD_LIFE_INS_DESC, MSADD_SMOKE, NSADD_MANY_CIG, 
+			MSADD_DRINK_BEER, MSADD_TYPE_BEER, MSADD_TIME_DRINK, MSADD_MANY_DRINK, MSADD_LONG_DRINK, 
+			MSADD_DRUGS, MSADD_TYPE_DRUGS, MSADD_MANY_DRUGS, MSADD_REASON_DRUGS, MSADD_HOBBY, 
+			MSADD_FLIGHT, MSADD_DESC_FLIGHT, MSADD_DEAD, MSADD_ILL, MSADM_PREGNANT, MSADM_PREGNANT_DESC,
+			MSADM_MEDIS_ALT, MSADM_MEDIS_ALT_DESC, MSADM_ABORTION, MSADM_ABORTION_DESC,
+			MSADM_USG, MSADM_USG_DESC, MSADM_FAMILY_SICK, MSADM_FAMILY_SICK_DESC, MSADM_CLEAR_CASE,
+			MSADM_SEHAT_STD, MSADM_PENYAKIT_STD, MSADM_PREGNANT_TIME, MSADM_USG_MCU, MSADM_USG_MCU_STD, MSADM_EM_LIFE) 
+		VALUES (#mste_insured_no:INTEGER#, #msadm_berat:INTEGER#, #msadm_tinggi:INTEGER#, #msadm_sehat:INTEGER#, upper(#msadm_sehat_desc:VARCHAR#), 
+				#msadm_berat_berubah:INTEGER#, upper(#msadm_berubah_desc:VARCHAR#), 
+				#msadm_penyakit:INTEGER#, upper(#msadm_penyakit_desc:VARCHAR#), #msadm_medis:INTEGER#, upper(#msadm_medis_desc:VARCHAR#), 
+				upper(#msadd_drink_beer_desc:VARCHAR#), upper(#reg_spaj:CHAR#), #msadd_life_ins:INTEGER#, upper(#msadd_life_ins_desc:VARCHAR#), 
+				#msadd_smoke:INTEGER#, #nsadd_many_cig:INTEGER#, #msadd_drink_beer:INTEGER#, #msadd_type_beer:INTEGER#, #msadd_time_drink:INTEGER#, 
+				#msadd_many_drink:INTEGER#, #msadd_long_drink:INTEGER#, #msadd_drugs:INTEGER#, upper(#msadd_type_drugs:VARCHAR#), 
+				#msadd_many_drugs:INTEGER#, upper(#msadd_reason_drugs:VARCHAR#), upper(#msadd_hobby:VARCHAR#), #msadd_flight:INTEGER#, 
+				upper(#msadd_desc_flight:VARCHAR#), #msadd_dead:INTEGER#, #msadd_ill:INTEGER#, #msadm_pregnant:INTEGER#, upper(#msadm_pregnant_desc:VARCHAR#),
+				#msadm_medis_alt:INTEGER#, upper(#msadm_medis_alt_desc:VARCHAR#), #msadm_abortion:INTEGER#, upper(#msadm_abortion_desc:VARCHAR#),
+				#msadm_usg:INTEGER#, upper(#msadm_usg_desc:VARCHAR#), #msadm_family_sick:INTEGER#, upper(#msadm_family_sick_desc:VARCHAR#), #msadm_clear_case:INTEGER#,
+				#msadm_sehat_std:INTEGER#, #msadm_penyakit_std:INTEGER#, #msadm_pregnant_time:INTEGER#, #msadm_usg_mcu:INTEGER# , #msadm_usg_mcu_std:INTEGER#, #msadm_em_life:INTEGER# )                                                  
+    </insert>
+    
+    <insert id="elions.uw.insertMedQuestDMTM_tambah5" parameterClass="com.ekalife.elions.model.MedQuest_tambah5">
+		INSERT INTO EKA.MST_ADDITIONAL_DESC_INSURED 
+			(MSTE_INSURED_NO, MSADM_BERAT, MSADM_TINGGI, MSADM_SEHAT, MSADM_SEHAT_DESC, 
+			MSADM_BERAT_BERUBAH, MSADM_BERUBAH_DESC, 
+			MSADM_PENYAKIT, MSADM_PENYAKIT_DESC, MSADM_MEDIS, MSADM_MEDIS_DESC, MSADD_DRINK_BEER_DESC, 
+			REG_SPAJ, MSADD_LIFE_INS, MSADD_LIFE_INS_DESC, MSADD_SMOKE, NSADD_MANY_CIG, 
+			MSADD_DRINK_BEER, MSADD_TYPE_BEER, MSADD_TIME_DRINK, MSADD_MANY_DRINK, MSADD_LONG_DRINK, 
+			MSADD_DRUGS, MSADD_TYPE_DRUGS, MSADD_MANY_DRUGS, MSADD_REASON_DRUGS, MSADD_HOBBY, 
+			MSADD_FLIGHT, MSADD_DESC_FLIGHT, MSADD_DEAD, MSADD_ILL, MSADM_PREGNANT, MSADM_PREGNANT_DESC,
+			MSADM_MEDIS_ALT, MSADM_MEDIS_ALT_DESC, MSADM_ABORTION, MSADM_ABORTION_DESC,
+			MSADM_USG, MSADM_USG_DESC, MSADM_FAMILY_SICK, MSADM_FAMILY_SICK_DESC, MSADM_CLEAR_CASE,
+			MSADM_SEHAT_STD, MSADM_PENYAKIT_STD, MSADM_PREGNANT_TIME, MSADM_USG_MCU, MSADM_USG_MCU_STD, MSADM_EM_LIFE) 
+		VALUES (#mste_insured_no:INTEGER#, #msadm_berat:INTEGER#, #msadm_tinggi:INTEGER#, #msadm_sehat:INTEGER#, upper(#msadm_sehat_desc:VARCHAR#), 
+				#msadm_berat_berubah:INTEGER#, upper(#msadm_berubah_desc:VARCHAR#), 
+				#msadm_penyakit:INTEGER#, upper(#msadm_penyakit_desc:VARCHAR#), #msadm_medis:INTEGER#, upper(#msadm_medis_desc:VARCHAR#), 
+				upper(#msadd_drink_beer_desc:VARCHAR#), upper(#reg_spaj:CHAR#), #msadd_life_ins:INTEGER#, upper(#msadd_life_ins_desc:VARCHAR#), 
+				#msadd_smoke:INTEGER#, #nsadd_many_cig:INTEGER#, #msadd_drink_beer:INTEGER#, #msadd_type_beer:INTEGER#, #msadd_time_drink:INTEGER#, 
+				#msadd_many_drink:INTEGER#, #msadd_long_drink:INTEGER#, #msadd_drugs:INTEGER#, upper(#msadd_type_drugs:VARCHAR#), 
+				#msadd_many_drugs:INTEGER#, upper(#msadd_reason_drugs:VARCHAR#), upper(#msadd_hobby:VARCHAR#), #msadd_flight:INTEGER#, 
+				upper(#msadd_desc_flight:VARCHAR#), #msadd_dead:INTEGER#, #msadd_ill:INTEGER#, #msadm_pregnant:INTEGER#, upper(#msadm_pregnant_desc:VARCHAR#),
+				#msadm_medis_alt:INTEGER#, upper(#msadm_medis_alt_desc:VARCHAR#), #msadm_abortion:INTEGER#, upper(#msadm_abortion_desc:VARCHAR#),
+				#msadm_usg:INTEGER#, upper(#msadm_usg_desc:VARCHAR#), #msadm_family_sick:INTEGER#, upper(#msadm_family_sick_desc:VARCHAR#), #msadm_clear_case:INTEGER#,
+				#msadm_sehat_std:INTEGER#, #msadm_penyakit_std:INTEGER#, #msadm_pregnant_time:INTEGER#, #msadm_usg_mcu:INTEGER# , #msadm_usg_mcu_std:INTEGER#, #msadm_em_life:INTEGER# )                                                  
+    </insert>
+	<!-- End Questionare DMTM -->
+    
+    <insert id="elions.uw.insertMstScan" parameterClass="com.ekalife.elions.model.Scan">
+    	INSERT INTO EKA.MST_SCAN
+    		(KD_SCAN, LUS_ID, LDE_ID, NO_INDEK, TGL_INPUT, FILES_AD, TIPE_FILE, JML_PAGE, FLAG_AKTIF, JENIS)
+    	VALUES (#kd_scan#, #lus_id#, #lde_id#, #no_indek#, #tgl_input#, #files_ad#, #tipe_file#, #jml_page#, #flag_aktif#, #jenis#)
+    </insert>
+    
+    <insert id="elions.uw.insertMstEmail" parameterClass="com.ekalife.elions.model.Email" >
+    	insert into eka.mst_email
+    	(me_id, me_system, me_show_system, me_show_footer,
+    	 me_from, me_from_alias, me_to, me_cc,
+    	 me_bcc, me_subject, me_message, mec_id,
+    	 me_html, me_status, me_status_message, me_count,
+    	 me_lus_id, me_input_date, me_sent_date, me_reg_spaj, lje_id, priority)
+    	 values(
+    	 #me_id#, #me_system#, #me_show_system#, #me_show_footer#,
+    	 #me_from#, #me_from_alias#, #me_to#, #me_cc#,
+    	 #me_bcc#, #me_subject#, #me_message#, #mec_id#,
+    	 #me_html#, #me_status#, #me_status_message#, #me_count#,
+    	 #me_lus_id#, #me_input_date#, #me_sent_date#, #me_reg_spaj#,#lje_id#, 30
+    	 )
+    </insert>
+    
+    <insert id="elions.uw.insertVipCard" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_simcard
+		            (msc_jenis, no_kartu, nama, tgl_akhir, mcl_id, reg_spaj,
+		             tgl_lahir, alamat, kota, kode_pos, tgl_proses, flag_print,
+		             flag_aktif, flag_roll, lus_id, polis, total_premi, kartu_ke,
+		             tgl_input, flag_nb, lca_id, lca_cabang, notes, tgl_naktif)
+		   SELECT #jenis#, #polis#, 
+		   		  decode(instr(b.mcl_first,'QQ'),0,b.mcl_first,TRIM(SUBSTR(b.mcl_first, 0, INSTR(b.mcl_first,'QQ')-1))), 
+		   		  d.mste_end_date, b.mcl_id, a.reg_spaj,
+		          b.mspe_date_birth, e.msap_address, NVL (e.kota, g.lska_note), 
+		          e.msap_zip_code, TRUNC (SYSDATE), #flag_print#, #flag_aktif#, 0, #lus_id#, #jumlahPolis#,
+		          #totalPremi#, 1, SYSDATE, 0, a.lca_id, f.lca_nama, #notes#, #tgl_naktif#
+		     FROM eka.mst_policy a,
+		          eka.mst_client_new b,
+		          eka.mst_address_new c,
+		          eka.mst_insured d,
+		          eka.mst_address_billing e,
+		          eka.lst_cabang f,
+		          eka.lst_kabupaten g
+		    WHERE a.mspo_policy_holder = b.mcl_id
+		      AND b.mcl_id = c.mcl_id
+		      AND a.reg_spaj = d.reg_spaj
+		      AND a.reg_spaj = e.reg_spaj
+		      AND a.lca_id = f.lca_id
+		      AND e.lska_id = g.lska_id(+)
+		      AND a.reg_spaj = rpad(replace(#spaj#,'.'),11,' ')
+	</insert>
+	
+	<insert id="elions.uw.insertMstCancel" parameterClass="java.util.HashMap"> 
+		INSERT INTO EKA.MST_CANCEL (
+		   REG_SPAJ, MSCAN_TGL_BATAL, MSCAN_SPAJ_BARU, 
+		   LUS_ID) 
+		VALUES ( #kopi_spaj#, sysdate, #reg_spaj#, #lus_id#);
+	</insert>
+	
+	<insert id="elions.uw.insertPosisiSkDebetKredit" parameterClass="java.util.HashMap">
+	   INSERT INTO eka.mst_position_spaj 
+	   (reg_spaj, msps_date, lspd_id, lssp_id, lssa_id, lus_id, msps_desc, sub_id, lspd_before, jenis)
+	   (
+	       SELECT 
+	           reg_spaj, (select sysdate from dual) msps_date, lspd_id, lssp_id, '' lssa_id, 
+	           #lus_id# lus_id, upper(#msps_desc#) msps_desc, '' sub_id, '' lspd_before, '' jenis 
+	       FROM 
+	           eka.mst_policy 
+	       WHERE 
+	           reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ')
+	           AND ROWNUM = 1
+	   )
+	</insert>
+	
+	<insert id="elions.uw.insertMstVA" parameterClass="com.ekalife.elions.model.VirtualAccount">
+		insert into eka.mst_va(msv_id, create_date, user_create, jenis_va, jenis_syariah, jenis_link, msv_amount_req, 
+										start_no_va_req, end_no_va_req, start_no_va_cetak, end_no_va_cetak, lsbp_id)
+			values(#msv_id#, sysdate, #user_create#, #jenis_va#, #jenis_syariah#, #jenis_link#, #msv_amount_req#,
+					#start_no_va_req#, #end_no_va_req#, #start_no_va_cetak#, #end_no_va_cetak#, #j_bank#)
+	</insert>
+	
+	<insert id="elions.uw.insertMstDetVA" parameterClass="com.ekalife.elions.model.VirtualAccount">
+		insert into eka.mst_det_va(no_va, msv_id, create_date, jenis_va, jenis_syariah, jenis_link, user_create, flag_active)
+			values(#no_va#, #msv_id#, sysdate, #jenis_va#, #jenis_syariah#, #jenis_link#, #user_create#, #flag_active#)
+	</insert>
+	
+	<insert id="elions.uw.insert.mst_upload_admedika" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_UPLOAD_ADMEDIKA
+		            (mua_tgl_proses, mua_policy_no, mua_product_name, mua_jumlah, mua_status, mua_kloter, mua_tax
+		            )
+		     VALUES (#tgl_proses#, #no_polis#, #lsdbs_name#, #jml#, #status#,#noKLoter#, #tax#
+		            )	
+	</insert>
+	
+	<insert id="elions.uw.insert.mst_visa_camp" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_VISA_CAMP (
+                          REG_SPAJ, FLAG_NB, NAMA_PP, 
+                          NO_HP, ALAMAT, KOTA, 
+                          FLAG_CC, FLAG_SMED, KODE_AGENT, 
+                          KODE_TM, TOTAL_PREMI, NILAI_VOUCHER, 
+                          SISA_VOUCHER, USER_CS, TGL_INPUT, 
+                          TGL_KIRIM, STS_KIRIM) 
+		(
+			select a.reg_spaj, #flag_nb#, c.mcl_first, b.no_hp, b.msap_address, b.kota, 0, #flag_med#, d.msag_id, null, eka.pacpolis.get_premi_total(a.reg_spaj), 
+                           #nominal#,  #nominal#, #lus_id#, sysdate, null, null
+			from eka.mst_policy a, eka.mst_address_billing b, eka.mst_client c, eka.mst_agent_prod d
+			where a.reg_spaj = b.reg_spaj
+				and a.mspo_policy_holder = c.mcl_id
+          		and a.reg_spaj = d.reg_spaj
+          		and d.lsle_id = 4
+          		and a.reg_spaj = #spaj#
+		)
+	</insert>
+	
+	<insert id="elions.uw.insertMstPositionSpajWithSubIdBas" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_position_spaj (reg_spaj, msps_date, lspd_id, lssp_id, lssa_id, lus_id, msps_desc,sub_id_bas,lssa_id_bas)
+		   SELECT a.reg_spaj, SYSDATE, a.lspd_id, lssp_id, lssa_id, #lus_id#, #msps_desc#, #sub_id#, #lssa_id_bas#
+		     FROM eka.mst_policy a, eka.mst_insured b
+		    WHERE a.reg_spaj = RPAD (REPLACE (#reg_spaj#, '.'), 11, ' ')
+		      AND a.reg_spaj = b.reg_spaj
+	</insert>		
+	
+	<insert id="elions.uw.insertMstPrintHistory" parameterClass="java.util.HashMap"> 
+		INSERT INTO EKA.MST_PRINT_HISTORY (reg_spaj, print_date, print_desc, page_count, lus_id)
+		VALUES ( #reg_spaj#, sysdate, #print_desc# , #page_count# , #lus_id#)
+	</insert>
+	
+	<insert id="elions.uw.insertComment" parameterClass="java.util.HashMap"> 
+		INSERT INTO EKA.OFAC_COMMENT
+		   (COMM_MOFS_ID, COMM_SPAJ, COMM_TYPE, COMM_COMMENT, COMM_TGL_INPUT, COMM_ADD_NUM, COMM_NAMA)
+		 VALUES
+		   (#mofs_id#, #spaj#, #type#, #comment#, sysdate, #add_num#, #nama#)
+	</insert>
+	
+	<insert id="elions.uw.insertMstTransHistory" parameterClass="java.util.HashMap"> 
+		INSERT INTO eka.mst_trans_history
+			( reg_spaj, jenis, trans_ke, trans_ke2, $kolom_tgl$
+			<isNotNull property="kolom_user">, $kolom_user$</isNotNull>
+			)
+		VALUES
+			( #reg_spaj#, 23, 1, 1, #tgl#
+			<isNotNull property="kolom_user">, #lus_id#</isNotNull>
+			)
+	</insert>
+	
+	<insert id="elions.uw.insertLstUlangan3" parameterClass="java.util.HashMap"> 
+		INSERT INTO EKA.LST_ULANGAN (reg_spaj, tanggal, jenis, lus_id, keterangan)
+		VALUES ( #reg_spaj#, SYSDATE + (#addSecond# * (1/115200)), upper(#jenis#), #lus_id#, upper(#keterangan#))
+	</insert>	
+	
+	<insert id="elions.uw.insertTmSales" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_TMSALES@EB (
+				              tgl_sales,
+				              campaign,
+				              no_sertifikat,
+				              card_type,
+				              card_no,
+				              cust_no,
+				              holder_name,
+				              sex,
+				              bod_holder,
+				              age,
+				              mobile_no,
+				              product_code,
+				              premium,
+				              sum_insured,
+				              beg_date,
+				              end_date,
+				              bill_mode,
+			                  bill_freq,
+				              tgl_input,
+				              flag_cek,
+				              posisi,
+				              status,
+				              application_id,
+				              email,
+				              no_akun,
+				              tipe_akun,
+				              id_customer,
+				              tgl_buka_akun,
+				              sts_nikah,
+				              kd_cabang,
+				              pekerjaan,
+				              tempat_lahir,
+				              address1,
+				              address2,
+				              home_phone,
+				              work_phone)
+		 VALUES (sysdate, #campaign#, #no_sertifikat#, #card_type#, #card_no#, #cust_no#, #holder_name#, #sex#, #bod_holder#, #age#, #mobile_no#, #product_code#,
+		 #premium#, #sum_insured#, #beg_date#, #end_date#, #bill_mode#, #bill_freq#, sysdate, #flag_cek#, #posisi#, #status#, #application_id#, #email#,
+		 #no_akun#, #tipe_akun#, #id_customer#, #tgl_buka_akun#, #sts_nikah#, #kd_cabang#, #pekerjaan#, #tempat_lahir#, #address1#, #address2#, #home_phone#, #work_phone#)
+	</insert>
+		
+	<insert id="elions.uw.insertMstUrlSecure" parameterClass="java.util.HashMap"> 
+		INSERT INTO EKA.MST_URL_SECURE (
+			                id_secure_1,
+							id_secure_2,
+				            id_encrypt_1,
+				            id_encrypt_2,
+				            key_id,
+				            link,
+				            create_date)
+	 	VALUES   (#id_secure_1#, #id_secure_2#, #id_encrypt_1#, #id_encrypt_2#, #key_id#, #link#, sysdate)
+	</insert>	
+	
+	<insert id="elions.uw.insertMstSpeedyHistory" parameterClass="java.util.HashMap"> 
+		insert into eka.mst_speedy_history (key_id, row_num, input_date, description, lus_id)
+    		values (#spaj#, (select nvl(max(row_num),0)+1 from eka.mst_speedy_history where key_id = #spaj#), sysdate, upper(#keterangan#), #lus_id#)
+	</insert>
+	
+	<insert id="elions.uw.insertMstCheckPhone" parameterClass="java.util.HashMap">
+		insert into eka.mst_check_pn
+			(mcpn_hp,
+			 mcpn_no_blanko,
+			 mcpn_nama_pemegang,
+			 mcpn_tgl_lahir_pp,
+			 mcpn_tgl_input,
+			 mcpn_flag_approve,
+			 mcpn_nama_pemegang_lama,
+			 mcpn_tgl_lahir_pp_lama,mcpn_flag_agen,mcpn_no_polis_sebelumnya)
+		values
+		 (		  
+		  #hp#,
+		  #no_blanko#,
+		  upper(#nama_pp#),
+		  to_date(#bdate#,'dd/MM/yyyy'),
+		  sysdate,
+		  0,
+		  upper(#namaPpSebelumnya#),
+		  to_date(#tgl_lahir_pp_sebelumnya#,'dd/MM/yyyy'),
+		  #flag#,
+		  #no_polis#		
+		 )		 	 
+	</insert>
+	
+	<insert id="elions.uw.insertMstRefferal" parameterClass="java.lang.String">
+		INSERT INTO eka.mst_refferal
+            (reg_spaj, nama_pp, no_hp, email, alamat, kota_rumah, tgl_mulai_as,
+            tgl_input_spaj, premi, paket, id_member, id_sponsor, id_place, tgl_hit)
+        (
+            select a.reg_spaj, c.mcl_first nama_pp, d.no_hp, d.email, d.alamat_rumah, d.kota_rumah, b.mste_beg_date tgl_mulai_as,
+                a.mspo_input_date tgl_input_spaj, e.mspr_premium premi, b.flag_packet, a.mspo_nasabah_dcif id_member, 
+                a.mspo_id_sponsor id_sponsor, a.mspo_id_place id_place, (case when a.mspo_nasabah_dcif is not null then sysdate else null end) tgl_hit
+            from eka.mst_policy a, eka.mst_insured b, eka.mst_client_new c, eka.mst_address_new d, eka.mst_product_insured e
+            where a.reg_spaj = b.reg_spaj
+                and a.reg_spaj = e.reg_spaj
+                and a.mspo_policy_holder = c.mcl_id
+                and a.lstb_id = 1
+                and a.lca_id = '37'
+                and a.lwk_id = 'M1'
+                and b.mste_insured_no = e.mste_insured_no
+                and c.mcl_id = d.mcl_id
+			    and e.lsbs_Id <![CDATA[<]]> 300
+			    and a.reg_spaj = #value#
+        )
+	</insert>
+	
+	<insert id="elions.uw.insert.mst_eksternal_print" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_EKSTERNAL_PRINT(REG_SPAJ,FLAG_KONFIRMASI,FOLDER,LCA_ID,TGL_GENERATE,LUS_ID)
+		VALUES (#reg_spaj#,null,#path#,#lcaId#,sysdate,#lusId#)
+	</insert>	
+	
+	<!-- Added by Nana 20191202 -->
+	<insert id="elions.uw.insert.insertLstHistActvWsOut" parameterClass="java.util.HashMap" >
+    	insert into EKA.LST_HIST_ACTIVITY_WS_OUT
+					(ID, 
+					 CLIENT_ID, 
+					 JENIS_ID, 
+					 PROCESS_API, 
+					 PROCESS_DESC, 
+					 HTTP_STATUS, 
+					 RESULT, 
+					 METHOD, 
+					 INPUT_DATE)
+		VALUES 
+					(#ID#,
+					 #CLIENT_ID#,
+					 #JENIS_ID#,
+					 #PROCESS_API#,
+					 #PROCESS_DESC#,
+					 #HTTP_STATUS#,
+					 #RESULT#,
+					 #METHOD#,
+					 #INPUT_DATE#)
+    </insert>
+	
+</sqlMap>

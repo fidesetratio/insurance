@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- cek simultan-->
+	<select id="elions.uw.select.simultan" resultClass="java.util.HashMap"
+		parameterClass="java.util.HashMap">
+		
+SELECT (ROWNUM-1) AS BRS,B.* FROM(SELECT A.* FROM(SELECT   SUBSTR (EKA.MST_CLIENT_NEW.MCL_ID, 1, 2) AS SYMBOL, 
+		 EKA.MST_CLIENT_NEW.MCL_ID MCL_ID,     
+ 		 EKA.MST_CLIENT_NEW.MCL_FIRST,     
+		 EKA.MST_CLIENT_NEW.MCL_BLACKLIST,     
+		 EKA.MST_CLIENT_NEW.MCL_GELAR,     
+		 EKA.MST_CLIENT_NEW.MSPE_MOTHER,     
+		 EKA.MST_CLIENT_NEW.MSPE_NO_IDENTITY,     
+		 EKA.MST_CLIENT_NEW.LSIDE_ID,     
+		 EKA.MST_CLIENT_NEW.MSPE_DATE_BIRTH,     
+		 EKA.MST_CLIENT_NEW.MSPE_PLACE_BIRTH,     
+		 EKA.MST_CLIENT_NEW.MSPE_SEX,     
+		 EKA.MST_CLIENT_NEW.MSPE_STS_MRT,     
+		 EKA.MST_CLIENT_NEW.MPN_JOB_DESC,     
+		 EKA.MST_ADDRESS_NEW.ALAMAT_RUMAH,     
+		 EKA.MST_ADDRESS_NEW.KD_POS_RUMAH,     
+		 EKA.MST_ADDRESS_NEW.AREA_CODE_RUMAH,     
+		 EKA.MST_ADDRESS_NEW.TELPON_RUMAH    
+		 FROM EKA.MST_ADDRESS_NEW,     
+		 	EKA.MST_CLIENT_NEW    
+			WHERE ( EKA.MST_CLIENT_NEW.MCL_ID = EKA.MST_ADDRESS_NEW.MCL_ID ) and    
+			( EKA.MST_CLIENT_NEW.MCL_ID in (  
+			SELECT DISTINCT EKA.MST_POLICY.MSPO_POLICY_HOLDER    
+				 FROM EKA.MST_POLICY,     
+					 EKA.LST_POLICY_STATUS    
+			 WHERE ( EKA.LST_POLICY_STATUS.LSSP_ID = EKA.MST_POLICY.LSSP_ID ) and    
+					 ( ( EKA.MST_POLICY.LSTB_ID in (1,2) ) AND    
+		    			( EKA.LST_POLICY_STATUS.LMS_ID in (1,2,6) ) AND    
+					   ( EKA.MST_POLICY.MSPO_POLICY_HOLDER in (    
+							SELECT EKA.MST_CLIENT_NEW.MCL_ID  
+							FROM   EKA.MST_CLIENT_NEW    
+			  	   		WHERE (( SUBSTR(EKA.MST_CLIENT_NEW.MCL_ID,1,2)  <![CDATA[<>]]>  'XX' ) AND   
+									 ( SUBSTR(EKA.MST_CLIENT_NEW.MCL_ID,1,2)  <![CDATA[<>]]>  'WW' ) AND   
+							 		 ( upper(EKA.MST_CLIENT_NEW.MCL_FIRST) like UPPER( '%'||#nama#||'%' )  ) AND    
+		       				    ( EKA.MST_CLIENT_NEW.MSPE_DATE_BIRTH = TO_DATE(#tgl_lhr#,'DD-MM-YYYY')))  		
+						 )))  
+			UNION  
+			  SELECT DISTINCT EKA.MST_INSURED.MSTE_INSURED    
+				FROM   EKA.LST_POLICY_STATUS,     
+		       		 EKA.MST_INSURED,     
+		     		 EKA.MST_POLICY    
+			   WHERE ( EKA.MST_POLICY.REG_SPAJ = EKA.MST_INSURED.REG_SPAJ ) and    
+		  			( EKA.MST_POLICY.LSSP_ID = EKA.LST_POLICY_STATUS.LSSP_ID ) and    
+		  			( ( EKA.MST_POLICY.LSTB_ID in (1,2) ) AND    
+		    			( EKA.LST_POLICY_STATUS.LMS_ID in (1,2,6) ) AND    
+		    			( EKA.MST_INSURED.MSTE_INSURED in (   
+							 SELECT EKA.MST_CLIENT_NEW.MCL_ID  
+							 FROM   EKA.MST_CLIENT_NEW    
+			  	   		 WHERE (( SUBSTR(EKA.MST_CLIENT_NEW.MCL_ID,1,2) <![CDATA[<>]]> 'XX' ) AND   
+									 ( SUBSTR(EKA.MST_CLIENT_NEW.MCL_ID,1,2) <![CDATA[<>]]> 'WW' ) AND  
+							 		 ( upper(EKA.MST_CLIENT_NEW.MCL_FIRST) like UPPER( '%'||#nama#||'%' )  ) AND     
+		       				    ( EKA.MST_CLIENT_NEW.MSPE_DATE_BIRTH = TO_DATE(#tgl_lhr#,'DD-MM-YYYY')) )  
+							  )))  
+		)) 
+		UNION  
+		SELECT SUBSTR(EKA.MST_CLIENT_NEW.MCL_ID,1,2) as SYMBOL ,
+		EKA.MST_CLIENT_NEW.MCL_ID MCL_ID,     
+		EKA.MST_CLIENT_NEW.MCL_FIRST,     
+		EKA.MST_CLIENT_NEW.MCL_BLACKLIST,     
+		EKA.MST_CLIENT_NEW.MCL_GELAR,     
+		EKA.MST_CLIENT_NEW.MSPE_MOTHER,     
+		EKA.MST_CLIENT_NEW.MSPE_NO_IDENTITY,     
+		EKA.MST_CLIENT_NEW.LSIDE_ID,     
+		EKA.MST_CLIENT_NEW.MSPE_DATE_BIRTH,     
+		EKA.MST_CLIENT_NEW.MSPE_PLACE_BIRTH,     
+		EKA.MST_CLIENT_NEW.MSPE_SEX,     
+		EKA.MST_CLIENT_NEW.MSPE_STS_MRT,     
+		EKA.MST_CLIENT_NEW.MPN_JOB_DESC,     
+		EKA.MST_ADDRESS_NEW.ALAMAT_RUMAH,     
+		EKA.MST_ADDRESS_NEW.KD_POS_RUMAH,     
+		EKA.MST_ADDRESS_NEW.AREA_CODE_RUMAH,     
+		EKA.MST_ADDRESS_NEW.TELPON_RUMAH  
+		FROM EKA.MST_ADDRESS_NEW,     
+		EKA.MST_CLIENT_NEW    
+	WHERE (EKA.MST_CLIENT_NEW.MCL_ID = EKA.MST_ADDRESS_NEW.MCL_ID)
+     AND (EKA.MST_CLIENT_NEW.MCL_ID = #mcl_id#)
+ ) A ORDER BY MCL_ID DESC)   B
+		
+	</select>
+
+	<select id="elions.uw.selectViewSimultan" resultClass="java.util.HashMap"
+		parameterClass="java.util.HashMap">
+		
+SELECT (ROWNUM-1) AS BRS,B.* FROM(SELECT A.* FROM(SELECT   SUBSTR (EKA.MST_CLIENT_NEW.MCL_ID, 1, 2) AS SYMBOL, 
+		 EKA.MST_CLIENT_NEW.MCL_ID MCL_ID,     
+ 		 EKA.MST_CLIENT_NEW.MCL_FIRST,     
+		 EKA.MST_CLIENT_NEW.MCL_BLACKLIST,     
+		 EKA.MST_CLIENT_NEW.MCL_GELAR,     
+		 EKA.MST_CLIENT_NEW.MSPE_MOTHER,     
+		 EKA.MST_CLIENT_NEW.MSPE_NO_IDENTITY,     
+		C.LSIDE_NAME,
+		 EKA.MST_CLIENT_NEW.MSPE_DATE_BIRTH,     
+		 EKA.MST_CLIENT_NEW.MSPE_PLACE_BIRTH,     
+		 CASE 
+		 	  		WHEN	 EKA.MST_CLIENT_NEW.MSPE_SEX=1 THEN
+							 			'Pria'
+					ELSE
+										'Wanita'
+		END mspe_sex, 
+		 EKA.MST_CLIENT_NEW.MSPE_STS_MRT,     
+		 EKA.MST_CLIENT_NEW.MPN_JOB_DESC,     
+		 EKA.MST_ADDRESS_NEW.ALAMAT_RUMAH,     
+		 EKA.MST_ADDRESS_NEW.KD_POS_RUMAH,     
+		 EKA.MST_ADDRESS_NEW.AREA_CODE_RUMAH,     
+		 EKA.MST_ADDRESS_NEW.TELPON_RUMAH    
+		 FROM EKA.MST_ADDRESS_NEW,     
+		 	  		  EKA.LST_IDENTITY C,
+		 	EKA.MST_CLIENT_NEW    
+			WHERE EKA.MST_CLIENT_NEW.LSIDE_ID=C.LSIDE_ID(+) AND 
+				  ( EKA.MST_CLIENT_NEW.MCL_ID = EKA.MST_ADDRESS_NEW.MCL_ID ) AND    
+			( EKA.MST_CLIENT_NEW.MCL_ID IN (  
+			SELECT DISTINCT EKA.MST_POLICY.MSPO_POLICY_HOLDER    
+				 FROM EKA.MST_POLICY,     
+					 EKA.LST_POLICY_STATUS    
+			 WHERE ( EKA.LST_POLICY_STATUS.LSSP_ID = EKA.MST_POLICY.LSSP_ID ) AND    
+					 ( ( EKA.MST_POLICY.LSTB_ID IN (1,2) ) AND    
+		    			( EKA.LST_POLICY_STATUS.LMS_ID IN (1,2,6) ) AND    
+					   ( EKA.MST_POLICY.MSPO_POLICY_HOLDER IN (    
+							SELECT EKA.MST_CLIENT_NEW.MCL_ID  
+							FROM   EKA.MST_CLIENT_NEW    
+			  	   		WHERE (( SUBSTR(EKA.MST_CLIENT_NEW.MCL_ID,1,2)  <![CDATA[<>]]>  'XX' ) AND   
+									 ( SUBSTR(EKA.MST_CLIENT_NEW.MCL_ID,1,2)  <![CDATA[<>]]>  'WW' ) AND   
+							 		 ( upper(EKA.MST_CLIENT_NEW.MCL_FIRST) LIKE UPPER( '%'||#nama#||'%' ) )AND    
+		       				    ( EKA.MST_CLIENT_NEW.MSPE_DATE_BIRTH = TO_DATE(#tgl_lahir#,'DD-MM-YYYY')))  		
+						 )))  
+			UNION  
+			  SELECT DISTINCT EKA.MST_INSURED.MSTE_INSURED    
+				FROM   EKA.LST_POLICY_STATUS,     
+		       		 EKA.MST_INSURED,     
+		     		 EKA.MST_POLICY    
+			   WHERE ( EKA.MST_POLICY.REG_SPAJ = EKA.MST_INSURED.REG_SPAJ ) AND    
+		  			( EKA.MST_POLICY.LSSP_ID = EKA.LST_POLICY_STATUS.LSSP_ID ) AND    
+		  			( ( EKA.MST_POLICY.LSTB_ID IN (1,2) ) AND    
+		    			( EKA.LST_POLICY_STATUS.LMS_ID IN (1,2,6) ) AND    
+		    			( EKA.MST_INSURED.MSTE_INSURED IN (   
+							 SELECT EKA.MST_CLIENT_NEW.MCL_ID  
+							 FROM   EKA.MST_CLIENT_NEW    
+			  	   		 WHERE (( SUBSTR(EKA.MST_CLIENT_NEW.MCL_ID,1,2) <![CDATA[<>]]> 'XX' ) AND   
+									 ( SUBSTR(EKA.MST_CLIENT_NEW.MCL_ID,1,2) <![CDATA[<>]]> 'WW' ) AND  
+							 		 ( upper(EKA.MST_CLIENT_NEW.MCL_FIRST) LIKE UPPER( '%'||#nama#||'%' )  ) AND     
+		       				    ( EKA.MST_CLIENT_NEW.MSPE_DATE_BIRTH = TO_DATE(#tgl_lahir#,'DD-MM-YYYY')) )  
+							  )))  
+		)) 	
+ ) A ORDER BY MCL_ID DESC)   B
+		
+	</select>
+	
+	<!-- cek Counter-->
+	<select id="elions.uw.select.mst_counter" resultClass="java.util.HashMap"
+		parameterClass="java.util.HashMap">
+		SELECT EKA.MST_COUNTER.MSCO_VALUE, 
+				 EKA.MST_COUNTER.MSCO_MAX   
+		FROM EKA.MST_COUNTER 
+		WHERE ( EKA.MST_COUNTER.MSCO_NUMBER =#msco_number# ) AND 
+						 ( EKA.MST_COUNTER.LCA_ID = #lca_id# )
+		
+	</select>
+ 
+ 	<!-- cek eka.mst_client_new-->
+	<select id="elions.uw.select.eka.mst_client_new" resultClass="com.ekalife.elions.model.Client"
+		parameterClass="java.util.HashMap">
+			select #mcl_id_new# as mcl_id_new,eka.mst_client_new.lti_id,
+		         eka.mst_client_new.mcl_jenis,   
+		         eka.mst_client_new.mcl_first,   
+		         eka.mst_client_new.mcl_blacklist,   
+		         eka.mst_client_new.mcl_tgl_input,   
+		         eka.mst_client_new.lus_id,   
+		         eka.mst_client_new.mcl_data_salah,   
+		         eka.mst_client_new.mcl_gelar,   
+		         eka.mst_client_new.lside_id,   
+		         eka.mst_client_new.mspe_no_identity,   
+		         eka.mst_client_new.lsed_id,   
+		         eka.mst_client_new.lgj_id,   
+		         eka.mst_client_new.ljb_id,   
+		         eka.mst_client_new.mpn_job_desc,   
+		         eka.mst_client_new.mspe_mother,   
+		         eka.mst_client_new.mspe_sex,   
+		         eka.mst_client_new.mspe_date_birth,   
+		         eka.mst_client_new.mspe_place_birth,   
+		         eka.mst_client_new.lsag_id,   
+		         eka.mst_client_new.mspe_sts_mrt,   
+		         eka.mst_client_new.lsne_id,   
+		         eka.mst_client_new.mspe_lama_kerja,   
+		         eka.mst_client_new.mspe_email,   
+		         eka.mst_client_new.mkl_tujuan,   
+		         eka.mst_client_new.mkl_penghasilan,   
+		         eka.mst_client_new.mkl_pendanaan,   
+		         eka.mst_client_new.mkl_kerja,   
+		         eka.mst_client_new.mkl_industri,
+		         eka.mst_client_new.lti_id,  
+		         eka.mst_client_new.mcl_agama,
+		         eka.mst_client_new.mkl_red_flag
+			from eka.mst_client_new   
+			where eka.mst_client_new.mcl_id = #mcl_id_old#
+		
+	</select>
+	
+ 	<!-- cek eka.mst_address_new-->
+	<select id="elions.uw.select.eka.mst_address_new" resultClass="com.ekalife.elions.model.AddressNew"
+		parameterClass="java.util.HashMap">
+		  select #mcl_id_new# as mcl_id_new,
+		   		 eka.mst_address_new.mcl_id,   
+		         eka.mst_address_new.alamat_rumah,   
+		         eka.mst_address_new.kd_pos_rumah,   
+		         eka.mst_address_new.kota_rumah,   
+		         eka.mst_address_new.area_code_rumah,   
+		         eka.mst_address_new.telpon_rumah,   
+		         eka.mst_address_new.alamat_kantor,   
+		         eka.mst_address_new.kd_pos_kantor,   
+		         eka.mst_address_new.kota_kantor,   
+		         eka.mst_address_new.area_code_kantor,   
+		         eka.mst_address_new.telpon_kantor,   
+		         eka.mst_address_new.email,   
+		         eka.mst_address_new.no_hp,   
+		         eka.mst_address_new.no_hp2,   
+		         eka.mst_address_new.no_fax,   
+		         eka.mst_address_new.area_code_rumah2,   
+		         eka.mst_address_new.telpon_rumah2,   
+		         eka.mst_address_new.area_code_kantor2,   
+		         eka.mst_address_new.telpon_kantor2,   
+		         eka.mst_address_new.area_code_fax  
+		 from eka.mst_address_new   
+		 where eka.mst_address_new.mcl_id =#mcl_id_old# 		
+	</select>
+ 	
+ 	<select id="elions.uw.select.eka.mst_sts_client.msc_active" resultClass="java.lang.Integer"
+		parameterClass="java.util.HashMap">
+		SELECT EKA.MST_STS_CLIENT.MSC_ACTIVE 
+		 FROM EKA.MST_STS_CLIENT
+		WHERE ( EKA.MST_STS_CLIENT.MCL_ID = #mcl_id# ) AND
+				( EKA.MST_STS_CLIENT.LJC_ID = #ljc_id# ) 	
+	</select>
+ 
+	<select id="elions.uw.select.eka.lst_monthly_kurs_lmk_nilai" resultClass="java.lang.Double"
+		parameterClass="java.lang.String">
+		SELECT EKA.LST_MONTHLY_KURS.LMK_NILAI  
+		FROM EKA.LST_MONTHLY_KURS  
+		WHERE   ( EKA.LST_MONTHLY_KURS.LMK_YEAR = TO_CHAR(SYSDATE, 'YYYY') ) AND  
+				( EKA.LST_MONTHLY_KURS.LMK_MONTH = TO_CHAR(SYSDATE, 'MM') ) AND  
+				( EKA.LST_MONTHLY_KURS.LKU_ID = #lku_id# )   
+	</select>
+ 
+ 	<select id="elions.uw.select.cekPremi" resultClass="java.lang.Double"
+		parameterClass="java.util.HashMap">
+		select sum( decode(c.lku_id, #lku_id#, #value#, #ldec_kurs#) * c.mspr_premium)
+		from eka.mst_insured b, eka.mst_product_insured c
+		where b.reg_spaj = c.reg_spaj
+				and b.mste_insured = #mste_insured#
+	</select>
+ 
+ 	<resultMap id="elions.uw.simultan.result" class="java.util.HashMap">
+		<result property="BRS" column="BRS" javaType="int" jdbcType="NUMBER" />                                                                                                                                                                         
+		<result property="REG_SPAJ" column="REG_SPAJ" javaType="string" jdbcType="CHAR" nullValue=""/>                                                                                                                                                  
+		<result property="MSPO_POLICY_NO" column="MSPO_POLICY_NO" javaType="string" jdbcType="VARCHAR2" nullValue=""/>                                                                                                                                  
+		<result property="MSPO_PAY_PERIOD" column="MSPO_PAY_PERIOD" javaType="int" jdbcType="NUMBER" />                                                                                                                                                 
+		<result property="MSPO_INS_PERIOD" column="MSPO_INS_PERIOD" javaType="int" jdbcType="NUMBER" />                                                                                                                                                 
+		<result property="LSCB_ID" column="LSCB_ID" javaType="int" jdbcType="NUMBER" />                                                                                                                                                                 
+		<result property="LSBS_ID" column="LSBS_ID" javaType="int" jdbcType="NUMBER" />                                                                                                                                                                 
+		<result property="LSDBS_NUMBER" column="LSDBS_NUMBER" javaType="int" jdbcType="NUMBER" />                                                                                                                                                                 
+		<result property="MSTE_AGE" column="MSTE_AGE" javaType="int" jdbcType="NUMBER" />                                                                                                                                                               
+		<result property="MEDIS" column="MEDIS" javaType="string" jdbcType="VARCHAR2" nullValue=""/>                                                                                                                                                    
+		<result property="STANDARD" column="STANDARD" javaType="string" jdbcType="VARCHAR2" nullValue=""/>                                                                                                                                              
+		<result property="MSTE_BEG_DATE" column="MSTE_BEG_DATE" javaType="date" jdbcType="DATE" />                                                                                                                                                      
+		<result property="STATUS_ACCEPT" column="STATUS_ACCEPT" javaType="string" jdbcType="VARCHAR2" nullValue=""/>                                                                                                                                    
+		<result property="STATUS_POLIS" column="STATUS_POLIS" javaType="string" jdbcType="VARCHAR2" nullValue=""/>                                                                                                                                      
+		<result property="LSDBS_NAME" column="LSDBS_NAME" javaType="string" jdbcType="VARCHAR2" nullValue=""/>                                                                                                                                          
+		<result property="LKU_ID" column="LKU_ID" javaType="string" jdbcType="CHAR" nullValue=""/>                                                                                                                                                      
+		<result property="MSPR_TSI" column="MSPR_TSI" javaType="double" jdbcType="NUMBER" />                                                                                                                                                            
+		<result property="MSPR_PREMIUM" column="MSPR_PREMIUM" javaType="double" jdbcType="NUMBER" />                                                                                                                                                    
+		<result property="BISNIS_ID" column="BISNIS_ID" javaType="string" jdbcType="VARCHAR2" nullValue=""/>                                                                                                                                            
+		<result property="PEMEGANG" column="PEMEGANG" javaType="string" jdbcType="VARCHAR2" nullValue=""/>                                                                                                                                              
+		<result property="TERTANGGUNG" column="TERTANGGUNG" javaType="string" jdbcType="VARCHAR2" nullValue=""/>                                                                                                                                        
+		<result property="SAR_POLIS" column="SAR_POLIS" javaType="int" jdbcType="NUMBER" />          
+ 	</resultMap>
+ 
+	<select id="elions.uw.simultan" resultMap="elions.uw.simultan.result"
+		parameterClass="java.util.HashMap">
+/* Formatted on 2006/06/29 17:57 (Formatter Plus v4.8.5) */
+SELECT ROWNUM - 1 brs, hasil.*
+  FROM (SELECT x.reg_spaj, x.mspo_policy_no, x.mspo_pay_period,
+               x.mspo_ins_period, x.lscb_id, y.mste_age,
+               DECODE (y.mste_medical, 0, 'No', 'Yes') medis,
+               DECODE (y.mste_standard,
+                       0, 'Standard',
+                       'Non-Standard'
+                      ) STANDARD,
+               y.mste_beg_date, c.status_accept AS status_accept,
+               d.lssp_status status_polis, eka.f_lsdbs(x.reg_spaj, z.lsbs_id, z.lsdbs_number) lsdbs_name, z.lku_id, z.mspr_tsi,
+               z.mspr_premium,
+                  TO_CHAR (z.lsbs_id)
+               || '~X'
+               || TO_CHAR (z.lsdbs_number) AS bisnis_id,
+               a.mcl_first AS pemegang, b.mcl_first AS tertanggung,
+               0 AS sar_polis, z.lsbs_id, z.lsdbs_number
+          FROM eka.mst_policy x,
+               eka.mst_insured y,
+               eka.mst_product_insured z,
+               eka.mst_client_new a,
+               eka.mst_client_new b,
+               eka.lst_status_accept c,
+               eka.lst_policy_status d,
+               eka.lst_det_bisnis e
+         WHERE (y.reg_spaj = x.reg_spaj)
+           AND (z.reg_spaj = y.reg_spaj)
+           AND (z.mste_insured_no = y.mste_insured_no)
+           AND (a.mcl_id = x.mspo_policy_holder)
+           AND (y.mste_insured = b.mcl_id)
+           AND (c.lssa_id = y.lssa_id)
+           AND (d.lssp_id = x.lssp_id)
+           AND ((e.lsbs_id = z.lsbs_id) AND (e.lsdbs_number = z.lsdbs_number)
+               )
+           AND (    (x.lstb_id in (1,2))
+                AND (x.mspo_policy_holder = #nilai#)
+                AND <![CDATA[ ( Z.LSBS_ID < 600 )       ]]>  
+               )
+        UNION
+        SELECT x.reg_spaj, x.mspo_policy_no, x.mspo_pay_period,
+               x.mspo_ins_period, x.lscb_id, y.mste_age,
+               DECODE (y.mste_medical, 0, 'No', 'Yes') medis,
+               DECODE (y.mste_standard,
+                       0, 'Standard',
+                       'Non-Standard'
+                      ) STANDARD,
+               y.mste_beg_date, c.status_accept AS status_accept,
+               d.lssp_status status_polis, eka.f_lsdbs(x.reg_spaj, z.lsbs_id, z.lsdbs_number) lsdbs_name, z.lku_id, z.mspr_tsi,
+               z.mspr_premium,
+                  TO_CHAR (z.lsbs_id)
+               || '~X'
+               || TO_CHAR (z.lsdbs_number) AS bisnis_id,
+               a.mcl_first AS pemegang, b.mcl_first AS tertanggung,
+               0 AS sar_polis, z.lsbs_id, z.lsdbs_number
+          FROM eka.mst_policy x,
+               eka.mst_insured y,
+               eka.mst_product_insured z,
+               eka.mst_client_new a,
+               eka.mst_client_new b,
+               eka.lst_status_accept c,
+               eka.lst_policy_status d,
+               eka.lst_det_bisnis e
+         WHERE (y.reg_spaj = x.reg_spaj)
+           AND (z.reg_spaj = y.reg_spaj)
+           AND (z.mste_insured_no = y.mste_insured_no)
+           AND (a.mcl_id = x.mspo_policy_holder)
+           AND (y.mste_insured = b.mcl_id)
+           AND (c.lssa_id = y.lssa_id)
+           AND (d.lssp_id = x.lssp_id)
+           AND ((e.lsbs_id = z.lsbs_id) AND (e.lsdbs_number = z.lsdbs_number)
+               )
+           AND (    (x.lstb_id in (1,2))
+                AND (y.mste_insured = #nilai#)
+                AND <![CDATA[ ( Z.LSBS_ID < 600 )       ]]>  
+               )) hasil
+	</select>
+	
+	<select id="elions.uw.selectAll.lstIdentity" resultClass="java.util.HashMap"
+		parameterClass="java.util.HashMap">
+		select * from eka.lst_identity
+ 	</select>
+ 	
+	<select id="elions.uw.selectCekSimultanCounter" resultClass="java.util.HashMap" parameterClass="java.util.HashMap">
+			SELECT TO_CHAR (SYSDATE, 'yyyy') tahun, to_char(msco_value+1) msco_value,
+			       CASE
+			          WHEN (SUBSTR (msco_value, 0, 4) = TO_CHAR (SYSDATE, 'yyyy'))
+			             THEN 0
+			          ELSE 1
+			       END flag,
+			       SUBSTR (msco_value, 5, 7) counter_old
+			  FROM eka.mst_counter
+			 WHERE lca_id = #lca_id# AND msco_number = #msco_number# FOR UPDATE
+	</select>	 	
+ 	
+ 	<select id="elions.uw.select.simultan_new" resultClass="java.util.HashMap"
+		parameterClass="java.util.HashMap">
+		SELECT (ROWNUM-1)brs,a.*
+FROM(	SELECT SUBSTR (client.MCL_ID, 1, 2) AS SYMBOL,
+		 	     client.MCL_ID MCL_ID,     
+		 		 client.MCL_FIRST,     
+				client.MCL_BLACKLIST,     
+				 client.MCL_GELAR,     
+				client.MSPE_MOTHER,     
+				client.MSPE_NO_IDENTITY,     
+				 client.LSIDE_ID,     
+				 client.MSPE_DATE_BIRTH,     
+				 client.MSPE_PLACE_BIRTH,     
+				 client.MSPE_SEX,     
+				 client.MSPE_STS_MRT,     
+				client.MPN_JOB_DESC,     
+				 address.ALAMAT_RUMAH,     
+				 address.KD_POS_RUMAH,     
+				 address.AREA_CODE_RUMAH,     
+				 address.TELPON_RUMAH   ,
+				 simultan.id_simultan,
+				 0 CEK_ID
+				 FROM EKA.MST_ADDRESS_NEW address,     
+				 	EKA.MST_CLIENT_NEW   client ,
+					eka.mst_simultaneous simultan
+					WHERE    client.MCL_ID = address.MCL_ID  AND
+							 			   client.mcl_id=simultan.mcl_id AND    
+						   				 client.MCL_ID IN (  
+																				SELECT DISTINCT p.MSPO_POLICY_HOLDER    
+																					 FROM EKA.MST_POLICY p,     
+																						 EKA.LST_POLICY_STATUS ps    
+																				 WHERE ps.LSSP_ID = p.LSSP_ID  AND    
+																						 			p.LSTB_ID IN (1,2) AND    
+																			    			 ps.LMS_ID IN (1,2,6) AND    
+																						   p.MSPO_POLICY_HOLDER IN 
+																						   						(    
+																															SELECT c.MCL_ID  
+																															FROM   EKA.MST_CLIENT_NEW c
+																											  	   		WHERE SUBSTR(c.MCL_ID,1,2)  <![CDATA[<>]]>   'XX'  AND   
+																																	  SUBSTR(c.MCL_ID,1,2)  <![CDATA[<>]]>   'WW'  AND   
+																															 		  UPPER(c.MCL_FIRST) LIKE UPPER( '%'||#nama#||'%' )   AND    
+																										       				     c.MSPE_DATE_BIRTH = TO_DATE(#tgl_lhr#,'dd/MM/yyyy')  		
+																							 						 )
+																					UNION  
+																					  SELECT DISTINCT i2.MSTE_INSURED    
+																						FROM   EKA.LST_POLICY_STATUS ps2,     
+																				       		 EKA.MST_INSURED i2,     
+																				     		 EKA.MST_POLICY p2   
+																					   WHERE p2.REG_SPAJ = i2.REG_SPAJ  AND    
+																				  			p2.LSSP_ID = ps2.LSSP_ID AND    
+																				  			 p2.LSTB_ID IN (1,2) AND    
+																				    			ps2.LMS_ID IN (1,2,6 ) AND    
+																				    			i2.MSTE_INSURED IN (   
+																																				 SELECT c3.MCL_ID  
+																																				 FROM   EKA.MST_CLIENT_NEW c3    
+																																  	   		 WHERE SUBSTR(c3.MCL_ID,1,2) <![CDATA[<>]]>  'XX'  AND   
+																																						 SUBSTR(c3.MCL_ID,1,2) <![CDATA[<>]]>  'WW'  AND  
+																																				 		 UPPER(c3.MCL_FIRST) LIKE UPPER( '%'||#nama#||'%' )   AND     
+																															       				    	  c3.MSPE_DATE_BIRTH = TO_DATE(#tgl_lhr#,'dd/MM/yyyy')  
+																																				  )
+																				) 
+				UNION  
+				SELECT SUBSTR(c4.MCL_ID,1,2) AS SYMBOL ,
+				c4.MCL_ID MCL_ID,     
+				c4.MCL_FIRST,     
+				c4.MCL_BLACKLIST,     
+				c4.MCL_GELAR,     
+				c4.MSPE_MOTHER,     
+				c4.MSPE_NO_IDENTITY,     
+				c4.LSIDE_ID,     
+				c4.MSPE_DATE_BIRTH,     
+				c4.MSPE_PLACE_BIRTH,     
+				c4.MSPE_SEX,     
+				c4.MSPE_STS_MRT,     
+				c4.MPN_JOB_DESC,     
+				a4.ALAMAT_RUMAH,     
+				a4.KD_POS_RUMAH,     
+				a4.AREA_CODE_RUMAH,     
+				a4.TELPON_RUMAH  ,
+				s4.id_simultan,
+				0 CEK_ID 
+				FROM EKA.MST_ADDRESS_NEW a4,     
+				EKA.MST_CLIENT_NEW    c4,
+				eka.mst_simultaneous s4
+			WHERE c4.MCL_ID = a4.MCL_ID
+				  AND c4.mcl_id=s4.mcl_id(+)
+		     AND c4.MCL_ID = #mcl_id#)a
+	</select>
+ 	
+ </sqlMap>

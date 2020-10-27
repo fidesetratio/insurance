@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_aging_followup_user" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<parameter name="pdate" class="java.lang.String"/>
+	<parameter name="a_bdate" class="java.lang.String"/>
+	<parameter name="a_edate" class="java.lang.String"/>
+	<parameter name="f_bdate" class="java.lang.String"/>
+	<parameter name="f_edate" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select
+    tabel.user_input,
+    count(tabel.reg_spaj)jml,
+    sum(case when tabel.lku_id = '01' then tabel.mspr_premium else 0 end)premi_rp,
+    sum(case when tabel.lku_id = '02' then tabel.mspr_premium else 0 end)premi_us
+from
+    (select distinct
+        a.mspo_policy_no, b.reg_spaj, c.lsfu_id, d.lus_full_name user_input,
+        max(c.msbi_tahun_ke)msbi_tahun_ke, max(c.msbi_premi_ke)msbi_premi_ke, c.msfu_create_date,
+        e.mspr_premium, f.lsfu_desc, b.lku_id
+    from
+        eka.lst_aging_followup_temp a,
+        eka.mst_policy b,
+        eka.mst_followup c,
+        eka.lst_user d,
+        eka.mst_product_insured e,
+        eka.lst_followup f
+    where
+        a.mspo_policy_no = b.mspo_policy_no
+        and b.reg_spaj = c.reg_spaj
+        and c.lus_id = d.lus_id
+        and b.reg_spaj = e.reg_spaj
+        and c.lsfu_id = f.lsfu_id
+        and e.mste_insured_no = 1
+        and e.lsbs_id < 300
+        and a.beg_date = to_date('01/02/2015','dd/MM/yyyy') 
+        and a.end_date = to_date('31/03/2015','dd/MM/yyyy')
+        and c.msfu_create_date between to_date('17/03/2015','dd/MM/yyyy') and to_date('09/06/2015','dd/MM/yyyy')+1
+        and c.msfu_create_date = (select max(msfu_create_date) from eka.mst_followup where reg_spaj = c.reg_spaj and msfu_create_date between to_date('17/03/2015','dd/MM/yyyy') and to_date('09/06/2015','dd/MM/yyyy')+1)
+    group by
+        a.mspo_policy_no, b.reg_spaj, c.lsfu_id, d.lus_full_name,c.msfu_create_date, e.mspr_premium, f.lsfu_desc, b.lku_id)tabel,
+    eka.mst_billing mb
+where
+    tabel.reg_spaj = mb.reg_spaj
+    and tabel.msbi_tahun_ke = mb.msbi_tahun_ke
+    and tabel.msbi_premi_ke = mb.msbi_premi_ke 
+group by
+    tabel.user_input]]>
+	</queryString>
+	<field name="JML" class="java.math.BigDecimal"/>
+	<field name="PREMI_RP" class="java.math.BigDecimal"/>
+	<field name="PREMI_US" class="java.math.BigDecimal"/>
+	<field name="USER_INPUT" class="java.lang.String"/>
+	<variable name="sum_jml" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{JML}]]></variableExpression>
+	</variable>
+	<variable name="sum_premi_rp" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_RP}]]></variableExpression>
+	</variable>
+	<variable name="sum_premi_us" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_US}]]></variableExpression>
+	</variable>
+	<columnHeader>
+		<band height="106">
+			<staticText>
+				<reportElement x="0" y="0" width="300" height="20"/>
+				<textElement/>
+				<text><![CDATA[Report Aging Followup Billing Per user]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="20" width="80" height="20"/>
+				<textElement/>
+				<text><![CDATA[Tanggal Aging]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="90" y="20" width="210" height="20"/>
+				<textElement markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{a_bdate} + " s/d " + $P{a_edate}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="80" y="20" width="10" height="20"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="90" y="40" width="210" height="20"/>
+				<textElement markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{f_bdate} + " s/d " + $P{f_edate}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="80" y="40" width="10" height="20"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="40" width="80" height="20"/>
+				<textElement/>
+				<text><![CDATA[Tanggal Followup]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="86" width="150" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[User Input]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="150" y="86" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jumlah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="230" y="86" width="100" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi (Rp.)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="330" y="86" width="100" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi (USD)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="60" width="80" height="20"/>
+				<textElement/>
+				<text><![CDATA[Tanggal Print]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="80" y="60" width="10" height="20"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="90" y="60" width="210" height="20"/>
+				<textElement markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{pdate}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField>
+				<reportElement x="0" y="0" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{USER_INPUT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="150" y="0" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{JML}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="230" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_RP})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="330" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_US})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="20">
+			<staticText>
+				<reportElement x="0" y="0" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="150" y="0" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{sum_jml}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="230" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$V{sum_premi_rp})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="330" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$V{sum_premi_us})]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

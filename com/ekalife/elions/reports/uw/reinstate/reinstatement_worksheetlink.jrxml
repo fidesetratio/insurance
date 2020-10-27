@@ -1,0 +1,594 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="reinstatement_worksheetlink" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="50" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.VGuides.Page Header" value="26,40,67,91"/>
+	<property name="com.jasperassistant.designer.HGuides" value="8,13,187,200,207,240,351,439"/>
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<parameter name="nospaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["37201505963"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="medis_pp" class="java.lang.String">
+		<defaultValueExpression><![CDATA["-"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="medis_tt" class="java.lang.String">
+		<defaultValueExpression><![CDATA["-"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tglBayar" class="java.lang.String">
+		<defaultValueExpression><![CDATA["28/02/2008"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT  distinct b.mste_beg_date,b.mste_end_date, a.mspo_beg_date,a.lssp_id,a.mspo_pay_period,a.mspo_policy_no_format, UPPER(e.lsdbs_name)lsdbs_name, f.lku_symbol,
+d.mspr_tsi, d.mspr_premium,g.lscb_print,
+               UPPER(cp.mcl_first) nama_pp, cp.mspe_date_birth ttl_pp, 
+(select distinct msrt_umur_policy_hld from eka.mst_reinstate a where reg_spaj = RPAD(REPLACE($P{nospaj},'.'),11,' ')
+and msrt_tanggal_aju = (select max(msrt_tanggal_aju) from eka.mst_reinstate where reg_spaj = a.reg_spaj)) mspo_age,
+               UPPER(ct.mcl_first) nama_tt, ct.mspe_date_birth  ttl_tt, 
+(select distinct msrt_umur_insured from eka.mst_reinstate a where reg_spaj = RPAD(REPLACE($P{nospaj},'.'),11,' ')
+and msrt_tanggal_aju = (select max(msrt_tanggal_aju) from eka.mst_reinstate where reg_spaj = a.reg_spaj)) mste_age,
+a.mspo_end_date,
+               a.mspo_ins_period, (TO_DATE($P{tglBayar},'DD/MM/YYYY')  - k.tgl_prod)+1  lama_lapse,k.tgl_prod tgl_lapse,a.lssp_id, rider.NO, i.msbi_aktif_date,
+               UPPER(rider.lsdbs_name) rider_name,h.msps_desc put_uw_old,TO_CHAR(b.mste_tgl_terima_lb,'DD/MM/YYYY') mste_tgl_terima_lb, 
+               TO_CHAR(b.mste_tgl_kirim_lb,'DD/MM/YYYY')mste_tgl_kirim_lb,
+               i.msbi_tahun_ke,j.keterangan put_uw_new, rok.keterangan put_uw_kom
+          FROM eka.MST_POLICY a,
+               eka.MST_INSURED b,
+               eka.MST_CLIENT_NEW cp,
+               eka.MST_CLIENT_NEW ct,
+               eka.MST_PRODUCT_INSURED d,
+               eka.LST_DET_BISNIS e,
+               (SELECT ROWNUM NO, x.*, y.lsdbs_name
+                  FROM eka.MST_PRODUCT_INSURED x, eka.LST_DET_BISNIS y
+                 WHERE x.lsbs_id = y.lsbs_id
+                   AND x.lsdbs_number = y.lsdbs_number
+                   AND (   (x.lsbs_id >=600 AND x.lsbs_id <=   603)
+                        OR (x.lsbs_id >= 800 AND x.lsbs_id <= 826)
+                       )
+                          AND x.reg_spaj  = RPAD(REPLACE($P{nospaj},'.'),11,' '))rider,
+                   eka.LST_KURS f,
+                   eka.LST_PAY_MODE g,
+                (
+                    SELECT tabel1.reg_spaj ,tabel1.msps_desc
+                      FROM eka.MST_POSITION_SPAJ tabel1
+                     WHERE lssa_id = 5
+                       AND lspd_id = 2
+                       AND msps_date IN (
+                                    SELECT MIN (msps_date)
+                                      FROM eka.MST_POSITION_SPAJ tabel2
+                                     WHERE tabel1.lssa_id = tabel2.lssa_id 
+                                            AND tabel1.lspd_id=tabel2.lspd_id
+                                           AND tabel1.reg_spaj = tabel2.reg_spaj)
+                   )h,
+                   (SELECT *
+                          FROM eka.MST_BILLING tabel1
+                         WHERE tabel1.msbi_beg_date IN (
+                                      SELECT MIN (msbi_beg_date)
+                                        FROM eka.MST_BILLING tabel2
+                                       WHERE tabel2.reg_spaj = tabel1.reg_spaj
+                                             AND tabel2.msbi_paid = 0)    )i,
+                   (   SELECT *
+                          FROM eka.LST_ULANGAN tabel1
+                         WHERE tabel1.tanggal IN (SELECT MAX (tabel2.tanggal)
+                                                    FROM eka.LST_ULANGAN tabel2
+                                                   WHERE tabel2.jenis = tabel1.jenis)
+                           AND tabel1.jenis = 'REINSTATEMENT'
+                   )j,
+                   (   SELECT *
+                          FROM eka.LST_ULANGAN tabel1
+                         WHERE tabel1.tanggal IN (SELECT MAX (tabel2.tanggal)
+                                                    FROM eka.LST_ULANGAN tabel2
+                                                   WHERE tabel2.jenis = tabel1.jenis)
+                           AND tabel1.jenis = 'REINSTATEMENT OK'
+                   )rok,
+         (select tgl_prod, reg_spaj from (
+            select reg_spaj, tgl_prod, sum(pot_tunggak) as pot_tunggak, sum(premi_tunggak) as premi_tunggak, mcl_first, tgl_proses,
+            mspo_policy_no, mspo_age as age_pp, tahun, pot_ke, usia_pp, usia_tt, mste_age as age_tt, lku_id, mspr_tsi, lama_lapse,
+            usia_polis, ket_pp, ket_tt, mste_beg_date, lsbs_id, lsre_id, lscb_id, mspo_pay_period, mspr_premium, lsdbs_number, to_date(null) as bill_beg_date,
+            to_date(null) as tgl_bayar
+            from (
+            select a.reg_spaj, 0 as pot_tunggak, (a.mu_jlh_premi + a.mu_jlh_tu) as premi_tunggak, b.tgl_prod, d.mcl_first, b.tgl_proses,
+            c.mspo_policy_no, c.mspo_age, b.tahun, b.pot_ke, b.usia_pp, b.usia_tt, e.mste_age, c.lku_id, f.mspr_tsi,
+            0 as lama_lapse, 0 as usia_polis, ' ' as ket_pp, ' ' as ket_tt, e.mste_beg_date, f.lsbs_id, c.lsre_id, c.lscb_id,
+            c.mspo_pay_period, f.mspr_premium, f.lsdbs_number
+            from eka.mst_ulink a, eka.mst_ulink_bill b, eka.mst_policy c, eka.mst_client_new d, eka.mst_insured e, eka.mst_product_insured f
+            where a.reg_spaj =$P{nospaj} and
+            a.mu_ke = 1 and
+            a.reg_spaj = b.reg_spaj and
+            a.reg_spaj = c.reg_spaj and
+            a.reg_spaj = e.reg_spaj and
+            e.reg_spaj = f.reg_spaj and
+            c.mspo_policy_holder = d.mcl_id and
+            e.mste_insured_no = f.mste_insured_no and
+            f.lsbs_id < 300 and
+            b.tgl_prod > (select max(msbi_beg_date) from eka.mst_billing where reg_spaj = a.reg_spaj and msbi_paid = 1)
+            UNION ALL
+            select a.reg_spaj, b.total_premi, 0 as premi_tunggak, b.tgl_prod, d.mcl_first, b.tgl_proses,
+            c.mspo_policy_no, c.mspo_age, b.tahun, b.pot_ke, b.usia_pp, b.usia_tt, e.mste_age, c.lku_id, f.mspr_tsi,
+            0 as lama_lapse, 0 as usia_polis, ' ' as ket_pp, ' ' as ket_tt, e.mste_beg_date, f.lsbs_id, c.lsre_id, c.lscb_id,
+            c.mspo_pay_period, f.mspr_premium, f.lsdbs_number 
+            from eka.mst_ulink a, eka.mst_ulink_bill b, eka.mst_policy c, eka.mst_client_new d, eka.mst_insured e, eka.mst_product_insured f
+            where a.reg_spaj = $P{nospaj} and
+            a.mu_ke = 1 and
+            a.reg_spaj = b.reg_spaj and
+            a.reg_spaj = c.reg_spaj and
+            a.reg_spaj = e.reg_spaj and
+            e.reg_spaj = f.reg_spaj and
+            c.mspo_policy_holder = d.mcl_id and
+            e.mste_insured_no = f.mste_insured_no and
+            f.lsbs_id < 300 and
+            b.tgl_prod > (select max(msbi_beg_date) from eka.mst_billing where reg_spaj = a.reg_spaj and msbi_paid = 1) and
+            b.flag_kurang = 1 )
+            GROUP BY reg_spaj, tgl_prod, mcl_first, tgl_proses, mspo_policy_no, mspo_age, tahun, pot_ke, usia_pp,
+            usia_tt,mste_age,lku_id,mspr_tsi, lama_lapse, usia_polis, ket_pp, ket_tt, mste_beg_date, lsbs_id,
+            lsre_id, lscb_id, mspo_pay_period, mspr_premium, lsdbs_number
+            order by tgl_prod asc
+            ) where rownum=1)k
+         WHERE a.reg_spaj = b.reg_spaj
+   AND a.mspo_policy_holder = cp.mcl_id
+   AND b.mste_insured = ct.mcl_id
+   AND a.reg_spaj = d.reg_spaj
+   and a.reg_spaj = k.reg_spaj
+   AND a.reg_spaj = i.reg_spaj
+   AND d.reg_spaj = rider.reg_spaj(+)
+   AND a.reg_spaj = h.reg_spaj(+)
+   AND a.reg_spaj = j.reg_spaj(+)
+   AND a.reg_spaj = rok.reg_spaj(+)
+   AND d.lsbs_id < 300
+   AND d.lsbs_id = e.lsbs_id
+   AND d.lsdbs_number = e.lsdbs_number
+   AND d.lku_id = f.lku_id
+   AND a.lscb_id = g.lscb_id
+   AND i.msbi_paid = 0
+           AND a.reg_spaj  = RPAD(REPLACE($P{nospaj},'.'),11,' ')
+ORDER BY rider.no]]>
+	</queryString>
+	<field name="LAMA_LAPSE" class="java.math.BigDecimal"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSCB_PRINT" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSSP_ID" class="java.math.BigDecimal"/>
+	<field name="MSBI_AKTIF_DATE" class="java.util.Date"/>
+	<field name="MSBI_TAHUN_KE" class="java.math.BigDecimal"/>
+	<field name="MSPO_AGE" class="java.math.BigDecimal"/>
+	<field name="MSPO_BEG_DATE" class="java.util.Date"/>
+	<field name="MSPO_END_DATE" class="java.util.Date"/>
+	<field name="MSPO_INS_PERIOD" class="java.math.BigDecimal"/>
+	<field name="MSPO_PAY_PERIOD" class="java.math.BigDecimal"/>
+	<field name="MSPO_POLICY_NO_FORMAT" class="java.lang.String"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="MSPR_TSI" class="java.math.BigDecimal"/>
+	<field name="MSTE_AGE" class="java.math.BigDecimal"/>
+	<field name="MSTE_BEG_DATE" class="java.util.Date"/>
+	<field name="MSTE_END_DATE" class="java.util.Date"/>
+	<field name="MSTE_TGL_KIRIM_LB" class="java.lang.String"/>
+	<field name="MSTE_TGL_TERIMA_LB" class="java.lang.String"/>
+	<field name="NAMA_PP" class="java.lang.String"/>
+	<field name="NAMA_TT" class="java.lang.String"/>
+	<field name="NO" class="java.math.BigDecimal"/>
+	<field name="PUT_UW_KOM" class="java.lang.String"/>
+	<field name="PUT_UW_NEW" class="java.lang.String"/>
+	<field name="PUT_UW_OLD" class="java.lang.String"/>
+	<field name="RIDER_NAME" class="java.lang.String"/>
+	<field name="TGL_LAPSE" class="java.util.Date"/>
+	<field name="TTL_PP" class="java.util.Date"/>
+	<field name="TTL_TT" class="java.util.Date"/>
+	<title>
+		<band height="49">
+			<staticText>
+				<reportElement x="-1" y="1" width="557" height="26"/>
+				<textElement textAlignment="Center">
+					<font fontName="SansSerif" size="14" isBold="true" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[UW  WORK SHEET  -  REINSTATEMENT  POLICY]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="95">
+			<rectangle>
+				<reportElement x="0" y="1" width="551" height="29"/>
+			</rectangle>
+			<textField hyperlinkType="None">
+				<reportElement x="8" y="7" width="146" height="20"/>
+				<textElement>
+					<font fontName="SansSerif" size="11" isBold="false" isItalic="false" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tgl.terima dari Life Benefit 	:"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="338" y="7" width="135" height="20"/>
+				<textElement>
+					<font fontName="SansSerif" size="11" isBold="false" isItalic="false" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tgl. Kirim ke Life Benefit :"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="8" y="41" width="80" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[No Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="8" y="67" width="80" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Produk]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="187" y="40" width="13" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="187" y="67" width="13" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="209" y="40" width="143" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_POLICY_NO_FORMAT}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="207" y="67" width="356" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="154" y="7" width="80" height="20"/>
+				<textElement>
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSTE_TGL_TERIMA_LB}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="472" y="7" width="80" height="20"/>
+				<textElement>
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSTE_TGL_KIRIM_LB}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="15">
+			<textField hyperlinkType="None">
+				<reportElement x="9" y="0" width="80" height="15"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{NO}==null || $F{NO}.intValue()==1) ?
+	("Rider")
+:("")]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="188" y="0" width="13" height="15"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{NO}==null ||$F{NO}.intValue()==1) ?
+	(":")
+:("")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="207" y="0" width="356" height="15"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{NO}==null)?
+"-"
+:$F{NO}+". "+$F{RIDER_NAME}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="555">
+			<staticText>
+				<reportElement x="9" y="0" width="121" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Uang Pertanggungan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="9" y="23" width="121" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="9" y="47" width="121" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Nama Pemegang Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="9" y="70" width="121" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Tanggal lahir PP (Usia)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="9" y="93" width="121" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Nama Tertanggung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="9" y="116" width="121" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Tanggal lahir TTG (Usia)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="9" y="139" width="121" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Masa Asuransi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="8" y="185" width="121" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Tgl. Polis Lapse]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="8" y="208" width="121" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Lama Polis Lapse]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="188" y="208" width="13" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="188" y="185" width="13" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="188" y="139" width="13" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="188" y="116" width="13" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="188" y="93" width="13" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="188" y="70" width="13" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="188" y="47" width="13" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="188" y="23" width="13" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="188" y="0" width="13" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="427" y="185" width="80" height="20"/>
+				<textElement>
+					<font fontName="sansserif" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Lapse Tahun Ke : "]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="207" y="237" width="65" height="20"/>
+				<textElement>
+					<font fontName="sansserif" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tipe Medis :"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="272" y="263" width="88" height="20"/>
+				<textElement>
+					<font fontName="sansserif" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Pemegang Polis"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="9" y="284" width="166" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Keputusan UW  yang lalu]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="188" y="284" width="13" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement x="5" y="349" width="548" height="206"/>
+			</rectangle>
+			<staticText>
+				<reportElement x="13" y="354" width="172" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Komentar / usulan / keputusan UW ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="13" y="518" width="77" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Underwriter :]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="207" y="47" width="356" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PP}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="207" y="94" width="356" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_TT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.###" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="240" y="3" width="145" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSPR_TSI}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="207" y="2" width="29" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="207" y="22" width="29" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="207" y="140" width="341" height="20"/>
+				<textElement>
+					<font isItalic="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_INS_PERIOD} +" Tahun  ( "+$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSTE_BEG_DATE})+" s/d "+$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSTE_END_DATE}) +" )"]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" hyperlinkType="None">
+				<reportElement x="207" y="185" width="157" height="20" forecolor="#000000"/>
+				<textElement>
+					<font fontName="sansserif" size="10" isItalic="false" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{TGL_LAPSE})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="207" y="208" width="215" height="20" forecolor="#000000"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LAMA_LAPSE} +" Hari    ("+ 
+($P{REPORT_SCRIPTLET}.getDay(new Integer($F{LAMA_LAPSE}.intValue()))).get("year")+" tahun  "+
+($P{REPORT_SCRIPTLET}.getDay(new Integer($F{LAMA_LAPSE}.intValue()))).get("month")+" bulan  "+
+($P{REPORT_SCRIPTLET}.getDay(new Integer($F{LAMA_LAPSE}.intValue()))).get("day")+" hari )"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="240" y="22" width="287" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatNumber($F{MSPR_PREMIUM}) +  "  "+$F{LSCB_PRINT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="8" y="162" width="159" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Masa Pembayaran Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="187" y="162" width="13" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="207" y="162" width="80" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_PAY_PERIOD} +" Tahun"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="207" y="285" width="279" height="59"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PUT_UW_OLD}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="507" y="185" width="46" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSBI_TAHUN_KE}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="271" y="238" width="80" height="20"/>
+				<textElement>
+					<font fontName="sansserif" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tertanggung"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="359" y="239" width="206" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{medis_tt}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="359" y="262" width="205" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{medis_pp}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="207" y="354" width="285" height="132"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PUT_UW_NEW}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="187" y="354" width="13" height="20"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="208" y="71" width="184" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{TTL_PP})+"   ( "+$F{MSPO_AGE}+"  tahun)"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="208" y="117" width="186" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{TTL_TT})+"   ( "+$F{MSTE_AGE}+"  tahun)"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="81" y="519" width="461" height="20"/>
+				<textElement markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PUT_UW_KOM}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

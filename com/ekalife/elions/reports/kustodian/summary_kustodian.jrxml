@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="summary_kustodian" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="dk" class="java.lang.String"/>
+	<parameter name="lspd_id" class="java.lang.String"/>
+	<parameter name="tglAwal" class="java.util.Date"/>
+	<parameter name="tglAkhir" class="java.util.Date"/>
+	<queryString>
+		<![CDATA[SELECT a.mspo_policy_no, b.mtu_tgl_trans, b.mtu_jumlah, b.mtu_desc,
+       b.reg_spaj, b.mtu_ke, b.lspd_id, b.mtu_unit, a.lku_id, b.lji_id,
+       c.lji_invest, b.lt_id, d.lku_symbol
+  FROM eka.mst_policy a, eka.mst_trans_ulink b, eka.lst_jenis_invest c, eka.lst_kurs d
+ WHERE a.reg_spaj = b.reg_spaj
+   AND a.lku_id = d.lku_id
+   AND b.lji_id = c.lji_id
+   AND b.mtu_tgl_trans BETWEEN 
+		$P{tglAwal} and $P{tglAkhir}
+   AND b.lspd_id = $P{lspd_id}
+   AND b.mtu_dk = $P{dk}
+ORDER BY b.lji_id, a.mspo_policy_no, b.mtu_ke]]>
+	</queryString>
+	<field name="LJI_ID" class="java.lang.String"/>
+	<field name="LJI_INVEST" class="java.lang.String"/>
+	<field name="LKU_ID" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSPD_ID" class="java.math.BigDecimal"/>
+	<field name="LT_ID" class="java.math.BigDecimal"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MTU_DESC" class="java.lang.String"/>
+	<field name="MTU_JUMLAH" class="java.math.BigDecimal"/>
+	<field name="MTU_KE" class="java.math.BigDecimal"/>
+	<field name="MTU_TGL_TRANS" class="java.util.Date"/>
+	<field name="MTU_UNIT" class="java.math.BigDecimal"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<variable name="total_jumlah" class="java.math.BigDecimal" resetType="Group" resetGroup="jenis_investasi" calculation="Sum">
+		<variableExpression><![CDATA[$F{MTU_JUMLAH}]]></variableExpression>
+	</variable>
+	<variable name="total_unit" class="java.math.BigDecimal" resetType="Group" resetGroup="jenis_investasi" calculation="Sum">
+		<variableExpression><![CDATA[$F{MTU_UNIT}]]></variableExpression>
+	</variable>
+	<variable name="grand_total_jumlah_rp" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01")?$F{MTU_JUMLAH}:(new BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="grand_total_jumlah_dollar" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02")?$F{MTU_JUMLAH}:(new BigDecimal(0))]]></variableExpression>
+	</variable>
+	<group name="jenis_investasi" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{LJI_ID}]]></groupExpression>
+		<groupHeader>
+			<band height="15">
+				<textField hyperlinkType="None">
+					<reportElement x="0" y="0" width="385" height="15"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Arial" size="10" isBold="true" isItalic="true" isUnderline="true" pdfFontName="Arial-BoldItalic"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{LJI_INVEST}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="17">
+				<textField hyperlinkType="None">
+					<reportElement x="390" y="1" width="85" height="15"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null, $V{total_jumlah})]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="365" y="1" width="25" height="15"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="480" y="1" width="70" height="15"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format4Digit($V{total_unit})]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="0" y="0" width="555" height="1"/>
+					<graphicElement/>
+				</line>
+				<textField hyperlinkType="None">
+					<reportElement x="145" y="1" width="215" height="15"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Total Per Investasi"]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<pageHeader>
+		<band height="65">
+			<staticText>
+				<reportElement x="0" y="0" width="385" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="11" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[PT Asuransi Jiwa Sinarmas MSIG Tbk.]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="15" width="385" height="15"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Laporan Kustodian Per " +  ($P{dk}.equalsIgnoreCase("D")?"DEBET":"KREDIT")]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="30" width="385" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tanggal Transaksi: " + 
+$P{REPORT_SCRIPTLET}.formatDateNumber($P{tglAwal})
++ " s/d " + 
+$P{REPORT_SCRIPTLET}.formatDateNumber($P{tglAkhir})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="50" width="385" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tanggal Cetak : " + $P{REPORT_SCRIPTLET}.formatDateWithTime(new Date())]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="465" y="50" width="60" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Page " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" hyperlinkType="None">
+				<reportElement x="525" y="50" width="30" height="15"/>
+				<box border="None"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" of " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="18">
+			<staticText>
+				<reportElement x="5" y="1" width="20" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[No.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="30" y="1" width="110" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="145" y="1" width="215" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[Deskripsi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="365" y="1" width="110" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[Jumlah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="480" y="1" width="70" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[Unit]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="0" width="555" height="1"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="0" y="17" width="555" height="1"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="17">
+			<textField hyperlinkType="None">
+				<reportElement x="480" y="1" width="70" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format4Digit($F{MTU_UNIT})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="390" y="1" width="85" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null, $F{MTU_JUMLAH})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="365" y="1" width="25" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="145" y="1" width="215" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MTU_DESC}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="30" y="1" width="110" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatPolis($F{MSPO_POLICY_NO})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="5" y="1" width="20" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{REPORT_COUNT} + "."]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="32">
+			<textField hyperlinkType="None">
+				<reportElement x="390" y="2" width="85" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null, $V{grand_total_jumlah_rp})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="365" y="2" width="25" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Rp."]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="480" y="2" width="70" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format4Digit($V{total_unit})]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="0" width="555" height="1"/>
+				<graphicElement pen="2Point"/>
+			</line>
+			<textField hyperlinkType="None">
+				<reportElement x="145" y="2" width="215" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Grand Total Investasi (RUPIAH)"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="145" y="17" width="215" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Grand Total Investasi (DOLLAR)"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="365" y="17" width="25" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["US$"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="390" y="17" width="85" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null, $V{grand_total_jumlah_dollar})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="480" y="17" width="70" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format4Digit($V{total_unit})]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

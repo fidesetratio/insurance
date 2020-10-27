@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rider_med_plus" pageWidth="595" pageHeight="500" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="eka"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["01201400038"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="jenis" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select
+ (case 
+                    when (a.flag_jenis_peserta=0) then 'TERTANGGUNG I'
+                    when (a.flag_jenis_peserta=1) then 'TERTANGGUNG II'
+                    when (a.flag_jenis_peserta=2) then 'TERTANGGUNG III'
+                    when (a.flag_jenis_peserta=3) then 'TERTANGGUNG IV' 
+                    when (a.flag_jenis_peserta=4) then 'TERTANGGUNG V'
+                    else 'TERTANGGUNG VI'
+            end) jenis,
+ a.flag_jenis_peserta,a.nama,a.umur,b.mspr_beg_date,b.mspr_end_date,
+ (case 
+        when b.mspr_tsi=0 then null
+        else b.mspr_tsi end)up  ,
+  b.mspr_end_pay ,B.LSBS_ID  ,b.lsdbs_number  ,
+  (case when b.lsbs_id=839 and b.lsdbs_number between 1 and 20 then 'Jaminan Tambahan Rawat Jalan'
+        when b.lsbs_id=839 and b.lsdbs_number between 21 and 40 then 'Jaminan Tambahan Rawat Gigi'
+        when b.lsbs_id=839 and b.lsdbs_number between 41 and 60 then 'Jaminan Tambahan Rawat Bersalin'
+        when b.lsbs_id=839 and b.lsdbs_number between 61 and 80 then 'Jaminan Tambahan Penunjang Kesehatan'
+        else 'Jaminan Dasar Rawat Inap' end
+  )lsdbs_name,c.lku_symbol
+from
+eka.mst_peserta a,
+eka.mst_product_insured b,
+eka.lst_kurs c,
+eka.lst_det_bisnis d
+where
+a.reg_Spaj=b.reg_spaj
+and a.lsbs_id=b.lsbs_id
+and a.lsdbs_number=b.lsdbs_number
+and b.lsdbs_number=d.lsdbs_number
+and b.lsbs_id=d.lsbs_id
+and b.lku_id=c.lku_id
+and a.lsbs_id in(839,838)
+and a.reg_Spaj=rpad($P{spaj},11,' ')
+and a.flag_jenis_peserta=$P{jenis}
+order by a.flag_jenis_peserta,b.lsbs_id,b.lsdbs_number]]>
+	</queryString>
+	<field name="FLAG_JENIS_PESERTA" class="java.math.BigDecimal"/>
+	<field name="JENIS" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="MSPR_BEG_DATE" class="java.util.Date"/>
+	<field name="MSPR_END_DATE" class="java.util.Date"/>
+	<field name="MSPR_END_PAY" class="java.util.Date"/>
+	<field name="NAMA" class="java.lang.String"/>
+	<field name="UMUR" class="java.math.BigDecimal"/>
+	<field name="UP" class="java.math.BigDecimal"/>
+	<detail>
+		<band height="12">
+			<textField hyperlinkType="None">
+				<reportElement x="3" y="0" width="154" height="12"/>
+				<textElement markup="none">
+					<font fontName="Tahoma" size="7" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["        "+"-"+$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="245" y="0" width="72" height="10" isRemoveLineWhenBlank="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Tahoma" size="7" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSPR_BEG_DATE})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="328" y="0" width="85" height="10" isRemoveLineWhenBlank="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Tahoma" size="7" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSPR_END_DATE})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="413" y="0" width="85" height="10" isRemoveLineWhenBlank="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Tahoma" size="7" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSPR_END_PAY})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="198" y="0" width="47" height="10">
+					<printWhenExpression><![CDATA[new Boolean(($F{LSBS_ID}.intValue() != 839 )==true)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Tahoma" size="7" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrencyNoDigit(null, $F{UP})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="173" y="0" width="25" height="10">
+					<printWhenExpression><![CDATA[new Boolean(($F{LSBS_ID}.intValue() != 839 )==true)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Tahoma" size="7" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

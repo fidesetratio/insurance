@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="absensi_agen" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="tanggalAwal" class="java.lang.String">
+		<defaultValueExpression><![CDATA["01/01/2008"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.lang.String">
+		<defaultValueExpression><![CDATA["31/12/2011"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="print" class="java.util.Date">
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lus_id" class="java.lang.String">
+		<defaultValueExpression><![CDATA["837"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="msag_id" class="java.lang.String">
+		<defaultValueExpression><![CDATA["001390"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select a.msag_id, trim(c.mcl_first) mcl_first, to_char(a.tanggal,'dd/mm/yyyy') tanggal, to_char(a.jam_masuk,'dd/mm/yyyy hh:mi:ss AM') jam_masuk, 
+       to_char(a.jam_keluar,'dd/mm/yyyy hh:mi:ss AM') jam_keluar, d.lus_full_name, e.lca_nama
+from eka.mst_agent_absen a,
+     eka.mst_agent b,
+     eka.mst_client_new c,
+     eka.lst_user d,
+     eka.lst_cabang e
+where a.msag_id = b.msag_id
+  and b.mcl_id = c.mcl_id
+  and a.lus_id = d.lus_id    
+  and d.lca_id = e.lca_id 
+  and a.msag_id = $P{msag_id}
+  and a.lus_id = $P{lus_id} 
+  and a.tanggal between to_date($P{tanggalAwal},'dd/mm/yyyy') and to_date($P{tanggalAkhir},'dd/mm/yyyy')
+order by c.mcl_first,a.tanggal]]>
+	</queryString>
+	<field name="JAM_KELUAR" class="java.lang.String"/>
+	<field name="JAM_MASUK" class="java.lang.String"/>
+	<field name="LCA_NAMA" class="java.lang.String"/>
+	<field name="LUS_FULL_NAME" class="java.lang.String"/>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="MSAG_ID" class="java.lang.String"/>
+	<field name="TANGGAL" class="java.lang.String"/>
+	<group name="agent" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{MSAG_ID}]]></groupExpression>
+		<groupHeader>
+			<band height="50">
+				<staticText>
+					<reportElement x="0" y="30" width="80" height="20"/>
+					<box padding="0">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="11" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Tanggal]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="80" y="30" width="130" height="20"/>
+					<box padding="0">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="11" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Jam Masuk]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="210" y="30" width="130" height="20"/>
+					<box padding="0">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="11" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Jam Keluar]]></text>
+				</staticText>
+				<textField hyperlinkType="None">
+					<reportElement x="5" y="10" width="215" height="20"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["[" +$F{MSAG_ID} +"] " +$F{MCL_FIRST}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<pageHeader>
+		<band height="85">
+			<staticText>
+				<reportElement x="4" y="4" width="537" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="13" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PT Asuransi Jiwa Sinarmas MSIG Tbk. - REPORT ABSENSI AGENT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4" y="24" width="145" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[Periode ( Tgl Absensi ) :]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy" hyperlinkType="None">
+				<reportElement x="149" y="24" width="200" height="20"/>
+				<textElement markup="none">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggalAwal} +  " s/d " + $P{tanggalAkhir}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="4" y="70" width="170" height="15"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top" lineSpacing="Single" markup="styled">
+					<font fontName="SansSerif" size="10" pdfFontName="Helvetica" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Nama Admin : <style isBold=\"true\"  pdfFontName=\"Helvetica-Bold\">" + $F{LUS_FULL_NAME}+ "</style>"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="4" y="55" width="170" height="15"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top" lineSpacing="Single" markup="styled">
+					<font fontName="SansSerif" size="10" pdfFontName="Helvetica" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Nama Cabang : <style isBold=\"true\"  pdfFontName=\"Helvetica-Bold\">" + $F{LCA_NAMA} + "</style>"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="20">
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="0" width="80" height="20"/>
+				<box padding="0">
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TANGGAL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="80" y="0" width="130" height="20"/>
+				<box padding="0">
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{JAM_MASUK}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="210" y="0" width="130" height="20"/>
+				<box padding="0">
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{JAM_KELUAR}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

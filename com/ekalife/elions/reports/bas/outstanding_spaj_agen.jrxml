@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="outstanding_spaj_agen" pageWidth="1009" pageHeight="612" orientation="Landscape" columnWidth="969" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<property name="com.jasperassistant.designer.VGuides.Page Header" value="95"/>
+	<property name="com.jasperassistant.designer.HGuides" value="66,132,272,326,350,421,503,714"/>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="tanggalAwal" class="java.lang.String">
+		<defaultValueExpression><![CDATA["04/04/2007"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.lang.String">
+		<defaultValueExpression><![CDATA["25/07/2007"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lca_id" class="java.lang.String">
+		<defaultValueExpression><![CDATA["06"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="msag_id" class="java.lang.String">
+		<defaultValueExpression><![CDATA["500338"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT tabel_1.msf_id,tabel_1.msfh_dt,tabel_3.msag_id,tabel_5.mcl_first,COUNT(*) jumlah  FROM								
+				(SELECT a.msf_id, a.msfh_dt FROM eka.mst_form_hist a,					
+					(SELECT   DISTINCT(a.msf_id)
+		              FROM eka.mst_form a, eka.mst_form_hist b
+		             WHERE a.msf_id = b.msf_id
+		               AND a.mss_jenis = 1
+		               AND a.lca_id =$P{lca_id}
+		               AND b.msf_urut = 1
+		               AND b.posisi = 1
+					   AND TRUNC(b.msfh_dt) >=to_date($P{tanggalAwal},'dd/MM/yyyy')
+					   AND TRUNC(b.msfh_dt) <=to_date($P{tanggalAkhir},'dd/MM/yyyy')) b
+					   WHERE a.msf_id=b.msf_id AND
+					   a.posisi=1 AND a.msf_urut=1) tabel_1,
+					   eka.mst_spaj_det tabel_2,
+					    eka.mst_agent_branch tabel_3,
+					  eka.mst_agent tabel_4,
+					  eka.mst_client_new tabel_5,
+					  eka.lst_jenis_spaj tabel_6,
+					  eka.lst_pertgjwbn tabel_7
+					   WHERE tabel_1.msf_id=tabel_2.msf_id
+					   AND tabel_2.msab_id=tabel_3.msab_id
+									AND tabel_3.msag_id=tabel_4.msag_id
+									AND tabel_4.mcl_id=tabel_5.mcl_id 
+									AND tabel_2.lsjs_id=tabel_6.lsjs_id
+									AND tabel_2.lsp_id=tabel_7.lsp_id
+									AND TABEL_4.msag_id=$P{msag_id}
+									GROUP BY  tabel_1.msf_id,tabel_1.msfh_dt,tabel_3.msag_id,tabel_5.mcl_first]]>
+	</queryString>
+	<field name="JUMLAH" class="java.math.BigDecimal"/>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="MSAG_ID" class="java.lang.String"/>
+	<field name="MSFH_DT" class="java.util.Date"/>
+	<field name="MSF_ID" class="java.lang.String"/>
+	<variable name="jumlah" class="java.math.BigDecimal" resetType="Group" resetGroup="msag_id" calculation="Sum">
+		<variableExpression><![CDATA[$F{JUMLAH}]]></variableExpression>
+	</variable>
+	<group name="msag_id">
+		<groupExpression><![CDATA[$F{MSAG_ID}]]></groupExpression>
+		<groupHeader>
+			<band height="20">
+				<textField>
+					<reportElement x="140" y="1" width="126" height="14"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{MCL_FIRST}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="81" y="1" width="43" height="14"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{MSAG_ID}]]></textFieldExpression>
+				</textField>
+				<textField pattern="dd/MM/yyyy">
+					<reportElement x="8" y="1" width="60" height="14"/>
+					<textElement textAlignment="Left"/>
+					<textFieldExpression class="java.util.Date"><![CDATA[$F{MSFH_DT}]]></textFieldExpression>
+				</textField>
+				<subreport>
+					<reportElement x="1" y="0" width="63" height="20"/>
+					<subreportParameter name="msf_id">
+						<subreportParameterExpression><![CDATA[$F{MSF_ID}]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.bas.sub_outstanding_spaj_agen")+".jasper"]]></subreportExpression>
+				</subreport>
+				<textField evaluationTime="Group" evaluationGroup="msag_id">
+					<reportElement x="285" y="2" width="42" height="16"/>
+					<textElement textAlignment="Center"/>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{jumlah}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<pageHeader>
+		<band height="135">
+			<rectangle>
+				<reportElement x="1" y="86" width="966" height="49"/>
+				<graphicElement/>
+			</rectangle>
+			<staticText>
+				<reportElement x="2" y="2" width="962" height="20"/>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[LAPORAN OUTSTANDING SPAJ AGEN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3" y="88" width="264" height="14"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Permintaan SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="11" y="113" width="46" height="14"/>
+				<textElement textAlignment="Left">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tanggal]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="74" y="113" width="54" height="14"/>
+				<textElement textAlignment="Left">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Kode Agen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="143" y="113" width="82" height="14"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Agen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="277" y="112" width="43" height="14"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jumlah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="356" y="89" width="61" height="39"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tgl PTgJwb]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="426" y="89" width="72" height="39"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[No Seri SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="512" y="90" width="193" height="38"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Status SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="724" y="90" width="103" height="39"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Keterangan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="840" y="88" width="55" height="40"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="907" y="88" width="55" height="40"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[SPAJ]]></text>
+			</staticText>
+			<line>
+				<reportElement x="66" y="110" width="1" height="23"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="2" y="108" width="271" height="1"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="272" y="87" width="1" height="48"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="350" y="87" width="1" height="48"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="421" y="85" width="1" height="50"/>
+				<graphicElement/>
+			</line>
+			<rectangle>
+				<reportElement x="503" y="86" width="1" height="49"/>
+				<graphicElement/>
+			</rectangle>
+			<line>
+				<reportElement x="714" y="88" width="1" height="47"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="832" y="87" width="1" height="47"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="902" y="86" width="1" height="49"/>
+				<graphicElement/>
+			</line>
+			<textField>
+				<reportElement x="3" y="50" width="214" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tanggal : "+$P{tanggalAwal}+" s/d "+$P{tanggalAkhir}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="326" y="86" width="1" height="48"/>
+				<graphicElement/>
+			</line>
+			<staticText>
+				<reportElement x="326" y="95" width="25" height="39"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<line>
+				<reportElement x="132" y="110" width="1" height="23"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</pageHeader>
+</jasperReport>

@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="elions.scheduler">
+
+	<update id="updateRekapReferensi" parameterClass="java.util.HashMap">
+		<!-- UPDATE   eka.mst_referensi
+		   SET   flag_rekap = 1
+		 WHERE   id_seller = #kd_ref#
+		         AND name = #nama#
+		         AND birth_date = to_date(#tgl_lahir#,'dd/MM/yyyy') -->
+		 UPDATE   eka.mst_referensi
+		   SET   flag_rekap = 1
+		 WHERE   flag_rekap = 0
+	</update>
+	
+	<update id="resetMstCounter" parameterClass="java.util.HashMap">
+		update eka.mst_counter
+		set msco_value = 0,
+			msco_month_year = to_char(sysdate,'ddmmyy')
+		where msco_number = #msco_number#
+		and   lca_id = #lca_id#	
+	</update>
+	
+	<update id="updateCountPolicyIssueHours">
+	    MERGE INTO eka.mst_trans_history trans
+		USING (SELECT
+		            reg_spaj,
+		            NVL(lama_proses_terbit, 0) lama_proses_terbit
+		        FROM
+		            (SELECT
+		                a.reg_spaj,
+		                eka.hourworkdays(
+		                    (CASE
+		                        WHEN (h.jn_bank = 2
+		                              OR h.jn_bank = 3)
+		                        THEN
+		                           DECODE (
+		                              (SELECT   MIN (msps_date)
+		                                 FROM   eka.mst_position_spaj
+		                                WHERE   (msps_desc =
+		                                            TRIM('PRINT SERTIFIKAT SIMAS PRIMA')
+		                                         OR msps_desc =
+		                                              TRIM('PRINT POLIS (E-LIONS)'))
+		                                        AND reg_spaj =
+		                                              a.reg_spaj),
+		                              NULL,
+		                              (SELECT   MIN (msps_date)
+		                                 FROM   eka.mst_position_spaj
+		                                WHERE   (msps_desc =
+		                                            TRIM('PRINT SERTIFIKAT SIMAS PRIMA')
+		                                         OR msps_desc =
+		                                              TRIM('PRINT POLIS (E-LIONS)'))
+		                                        AND reg_spaj =
+		                                              a.reg_spaj),
+		                              TO_DATE (
+		                                 TO_CHAR (
+		                                    (SELECT   MIN(msps_date)
+		                                       FROM   eka.mst_position_spaj
+		                                      WHERE   (msps_desc =
+		                                                  TRIM('PRINT SERTIFIKAT SIMAS PRIMA')
+		                                               OR msps_desc =
+		                                                    TRIM('PRINT POLIS (E-LIONS)'))
+		                                              AND reg_spaj =
+		                                                    a.reg_spaj)
+		                                    + (SELECT   (CASE
+		                                                    WHEN TO_CHAR (
+		                                                            (SELECT   MIN(msps_date)
+		                                                                         date_tes
+		                                                               FROM   eka.mst_position_spaj
+		                                                              WHERE   (msps_desc =
+		                                                                          TRIM('PRINT SERTIFIKAT SIMAS PRIMA')
+		                                                                       OR msps_desc =
+		                                                                            TRIM('PRINT POLIS (E-LIONS)'))
+		                                                                      AND reg_spaj =
+		                                                                            a.reg_spaj),
+		                                                            'Dy'
+		                                                         ) =
+		                                                            'Fri'
+		                                                    THEN
+		                                                       3
+		                                                    ELSE
+		                                                       1
+		                                                 END)
+		                                                   tambahan
+		                                         FROM   DUAL),
+		                                    'dd/mm/yyyy'
+		                                 )
+		                                 || ' 8:00:00',
+		                                 'dd/mm/yyyy hh24:mi:ss'
+		                              )
+		                           )
+		                        ELSE
+		                           a.mste_tgl_spaj_doc
+		                     END),
+		                    (CASE
+		                        WHEN (h.jn_bank = 2
+		                              OR h.jn_bank = 3)
+		                        THEN
+		                           (SELECT   MAX (msps_date)
+		                              FROM   eka.mst_position_spaj
+		                             WHERE   msps_desc =
+		                                        TRIM('TRANSFER KE PRINT POLIS')
+		                                     AND reg_spaj =
+		                                           a.reg_spaj)
+		                        WHEN (b.lca_id IN ('37', '52')
+		                              AND a.mste_flag_cc = 5)
+		                        THEN
+		                           (SELECT   MAX (msps_date)
+		                              FROM   eka.mst_position_spaj
+		                             WHERE   msps_desc =
+		                                        TRIM('TRANSFER LANGSUNG KE KOMISI (FINANCE)')
+		                                     AND reg_spaj =
+		                                           a.reg_spaj)
+		                        WHEN (b.lca_id IN ('37', '52')
+		                              AND a.mste_flag_cc <![CDATA[<>]]> 5)
+		                        THEN
+		                           NVL (a.mste_tgl_valid_print,
+		                                a.mste_tgl_kirim_polis)
+		                        WHEN b.lca_id = '40'
+		                        THEN
+		                           a.mste_tgl_kirim_polis
+		                        ELSE
+		                           NVL (a.mste_tgl_valid_print,
+		                                a.mste_tgl_kirim_polis)
+		                     END)
+		                ) lama_proses_terbit
+		            FROM
+		                eka.mst_insured a,
+		                eka.mst_policy b,
+		                eka.mst_product_insured c,
+		                eka.lst_det_bisnis d,
+		                eka.lst_region e,
+		                eka.lst_bisnis g,
+		                eka.lst_user h
+		            WHERE
+		                a.reg_spaj = b.reg_spaj
+		                AND b.reg_spaj = c.reg_spaj
+		                AND a.mste_insured_no = c.mste_insured_no
+		                AND c.lsbs_id = d.lsbs_id
+		                AND c.lsdbs_number = d.lsdbs_number
+		                AND b.lca_id = e.lca_id
+		                AND b.lwk_id = e.lwk_id
+		                AND b.lsrg_id = e.lsrg_id
+		                AND c.lsbs_id = g.lsbs_id
+		                AND b.lus_id = h.lus_id
+		                AND b.lstb_id = 1
+		                AND c.lsbs_id <![CDATA[<]]> 300
+		                AND TRUNC(a.mste_tgl_kirim_polis) = TRUNC(SYSDATE - 1)
+		            UNION ALL
+		            SELECT
+		                a.reg_spaj,
+		                eka.hourworkdays(
+		                    (CASE
+		                        WHEN (h.jn_bank = 2
+		                              OR h.jn_bank = 3)
+		                        THEN
+		                           DECODE (
+		                              (SELECT   MIN (msps_date)
+		                                 FROM   eka.mst_position_spaj
+		                                WHERE   (msps_desc LIKE
+		                                            '%PRINT SERTIFIKAT SIMAS PRIMA%'
+		                                         OR msps_desc LIKE
+		                                              '%PRINT POLIS (E-LIONS)%')
+		                                        AND reg_spaj =
+		                                              a.reg_spaj),
+		                              NULL,
+		                              (SELECT   MIN (msps_date)
+		                                 FROM   eka.mst_position_spaj
+		                                WHERE   (msps_desc LIKE
+		                                            '%PRINT SERTIFIKAT SIMAS PRIMA%'
+		                                         OR msps_desc LIKE
+		                                              '%PRINT POLIS (E-LIONS)%')
+		                                        AND reg_spaj =
+		                                              a.reg_spaj),
+		                              TO_DATE (
+		                                 TO_CHAR (
+		                                    (SELECT   MIN(msps_date)
+		                                       FROM   eka.mst_position_spaj
+		                                      WHERE   (msps_desc LIKE
+		                                                  '%PRINT SERTIFIKAT SIMAS PRIMA%'
+		                                               OR msps_desc LIKE
+		                                                    '%PRINT POLIS (E-LIONS)%')
+		                                              AND reg_spaj =
+		                                                    a.reg_spaj)
+		                                    + (SELECT   (CASE
+		                                                    WHEN TO_CHAR (
+		                                                            (SELECT   MIN(msps_date)
+		                                                                         date_tes
+		                                                               FROM   eka.mst_position_spaj
+		                                                              WHERE   (msps_desc LIKE
+		                                                                          '%PRINT SERTIFIKAT SIMAS PRIMA%'
+		                                                                       OR msps_desc LIKE
+		                                                                            '%PRINT POLIS (E-LIONS)%')
+		                                                                      AND reg_spaj =
+		                                                                            a.reg_spaj),
+		                                                            'Dy'
+		                                                         ) =
+		                                                            'Fri'
+		                                                    THEN
+		                                                       3
+		                                                    ELSE
+		                                                       1
+		                                                 END)
+		                                                   tambahan
+		                                         FROM   DUAL),
+		                                    'dd/mm/yyyy'
+		                                 )
+		                                 || ' 8:00:00',
+		                                 'dd/mm/yyyy hh24:mi:ss'
+		                              )
+		                           )
+		                        ELSE
+		                           a.mste_tgl_spaj_doc
+		                     END),
+		                    (CASE
+		                        WHEN (h.jn_bank = 2
+		                              OR h.jn_bank = 3)
+		                        THEN
+		                           (SELECT   MAX (msps_date)
+		                              FROM   eka.mst_position_spaj
+		                             WHERE   msps_desc LIKE
+		                                        '%TRANSFER KE PRINT POLIS%'
+		                                     AND reg_spaj =
+		                                           a.reg_spaj)
+		                        WHEN (b.lca_id IN ('37', '52')
+		                              AND a.mste_flag_cc = 5)
+		                        THEN
+		                           (SELECT   MAX (msps_date)
+		                              FROM   eka.mst_position_spaj
+		                             WHERE   msps_desc LIKE
+		                                        '%TRANSFER LANGSUNG KE KOMISI (FINANCE)%'
+		                                     AND reg_spaj =
+		                                           a.reg_spaj)
+		                        WHEN (b.lca_id IN ('37', '52')
+		                              AND a.mste_flag_cc <![CDATA[<>]]> 5)
+		                        THEN
+		                           NVL (a.mste_tgl_valid_print,
+		                                a.mste_tgl_kirim_polis)
+		                        WHEN b.lca_id = '40'
+		                        THEN
+		                           a.mste_tgl_kirim_polis
+		                        ELSE
+		                           NVL (a.mste_tgl_valid_print,
+		                                a.mste_tgl_kirim_polis)
+		                     END)
+		                ) lama_proses_terbit
+		            FROM
+		                eka.mst_insured a,
+		                eka.mst_policy b,
+		                eka.mst_product_insured c,
+		                eka.lst_det_bisnis d,
+		                eka.lst_region e,
+		                eka.lst_bisnis g,
+		                eka.lst_user h
+		            WHERE
+		                a.reg_spaj = b.reg_spaj
+		                AND b.reg_spaj = c.reg_spaj
+		                AND a.mste_insured_no = c.mste_insured_no
+		                AND c.lsbs_id = d.lsbs_id
+		                AND c.lsdbs_number = d.lsdbs_number
+		                AND b.lca_id = e.lca_id
+		                AND b.lwk_id = e.lwk_id
+		                AND b.lsrg_id = e.lsrg_id
+		                AND c.lsbs_id = g.lsbs_id
+		                AND b.lus_id = h.lus_id
+		                AND b.lstb_id = 1
+		                AND c.lsbs_id <![CDATA[<]]> 300
+                        AND TRUNC(a.mste_tgl_kirim_polis) = TRUNC(SYSDATE - 1)
+		                AND a.reg_spaj NOT IN
+		                    (SELECT   reg_spaj
+		                       FROM   (SELECT   b.reg_spaj
+		                                 FROM   eka.mst_insured a,
+		                                        eka.mst_policy b,
+		                                        eka.mst_product_insured c,
+		                                        eka.lst_det_bisnis d,
+		                                        eka.lst_region e,
+		                                        eka.lst_bisnis g,
+		                                        eka.lst_user h
+		                                WHERE   b.reg_spaj =
+		                                           a.reg_spaj
+		                                        AND a.reg_spaj =
+		                                              c.reg_spaj
+		                                        AND a.mste_insured_no =
+		                                              c.mste_insured_no
+		                                        AND d.lsbs_id =
+		                                              c.lsbs_id
+		                                        AND d.lsdbs_number =
+		                                              c.lsdbs_number
+		                                        AND e.lca_id =
+		                                              b.lca_id
+		                                        AND e.lwk_id =
+		                                              b.lwk_id
+		                                        AND e.lsrg_id =
+		                                              b.lsrg_id
+		                                        AND c.lsbs_id <![CDATA[<]]> 300
+                                                AND TRUNC(a.mste_tgl_kirim_polis) = TRUNC(SYSDATE - 1)
+		                                        AND b.lstb_id = 1
+		                                        AND c.lsbs_id =
+		                                              g.lsbs_id
+		                                        AND b.lus_id =
+		                                              h.lus_id)))) polis_terbit
+		    ON (
+		        trans.reg_spaj = polis_terbit.reg_spaj
+		        AND trans.jenis = 23
+		    )
+		WHEN MATCHED
+		    THEN UPDATE
+		        SET trans.lama_proses_terbit = polis_terbit.lama_proses_terbit
+	</update>
+
+</sqlMap>

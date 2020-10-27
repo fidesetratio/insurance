@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="eka8i">
+
+	<typeAlias alias="hashMap" type="java.util.HashMap"/>
+	<typeAlias alias="polis" type="com.ekalife.gwt.client.model.Polis"/>
+
+	<select id="selectDaftarPolis" resultClass="polis" parameterClass="string">
+		SELECT a.reg_spaj, a.mspo_policy_no_format, c.lspd_position, eka.f_lsdbs(a.reg_spaj, d.lsbs_id, d.lsdbs_number) lsdbs_name
+		  FROM eka.mst_policy a,
+		       eka.mst_insured b,
+		       eka.lst_document_position c,
+		       eka.mst_product_insured d,
+		       eka.lst_det_bisnis e
+		 WHERE a.reg_spaj = b.reg_spaj
+		   AND b.mste_spaj_asli = 0
+		   AND a.lspd_id = c.lspd_id
+		   AND a.reg_spaj = d.reg_spaj
+		   AND d.lsbs_id <![CDATA[<]]> 300
+		   AND d.lsbs_id = e.lsbs_id
+		   AND d.lsdbs_number = e.lsdbs_number
+		   AND a.lca_id='09'
+		   ORDER BY reg_spaj		
+	</select>
+	
+	<update id="updateDaftarPolis" parameterClass="string">
+		update eka.mst_insured set mste_spaj_asli = 1 where reg_spaj = rpad(replace(#value#,'.'),11,' ')
+	</update>
+	
+</sqlMap>

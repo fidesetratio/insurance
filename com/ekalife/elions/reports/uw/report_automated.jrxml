@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_automated" pageWidth="1000" pageHeight="842" columnWidth="960" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="datareal"/>
+	<parameter name="bdate" class="java.lang.String"/>
+	<parameter name="edate" class="java.lang.String"/>
+	<parameter name="props" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select --5302
+    '1' no_urut,'Jumlah SPAJ yang diterima di bulan tersebut' ket, count(reg_spaj) total
+from 
+    eka.mst_policy a
+where
+    a.lstb_id = 1
+    and a.mspo_input_date between to_date('01/06/2015','dd/MM/yyyy') and to_date('30/06/2015','dd/MM/yyyy')+1
+union
+select 
+    '2' no_urut,'Jumlah SPAJ yang diproses di bulan tersebut' ket, sum((a.total+b.total)-c.total) total
+from
+    (select --3900
+        count(a.reg_spaj) total
+    from
+        eka.mst_policy a,
+        eka.mst_trans_history b,
+        (select distinct reg_spaj, min(msps_date)msps_date
+        from eka.mst_position_spaj where lspd_id = 27
+        group by reg_spaj)c
+    where
+        a.reg_spaj = b.reg_spaj
+        and a.reg_spaj = c.reg_spaj
+        AND a.lspd_id not in (1,95)
+        AND c.msps_date between to_date('01/06/2015','dd/MM/yyyy') and to_date('30/06/2015','dd/MM/yyyy')+1
+        and a.lstb_id = 1
+        and b.jenis = 23)a,
+    (select count(a.reg_spaj) total --769
+    from eka.mst_policy a, eka.mst_trans_history b
+    where a.reg_spaj = b.reg_spaj  
+    and b.jenis = 23
+    and a.lstb_id = 1
+    and b.tgl_transfer_uw between to_date('01/06/2015','dd/MM/yyyy') and to_date('30/06/2015','dd/MM/yyyy')+1)b, 
+    (select count(a.reg_spaj) total
+    from
+        eka.mst_policy a,
+        eka.mst_trans_history b,
+        (select reg_spaj, min(msps_date)msps_date
+        from eka.mst_position_spaj where lspd_id = 27
+        group by reg_spaj)c
+    where
+        a.reg_spaj = b.reg_spaj
+        and a.reg_spaj = c.reg_spaj
+        AND a.lspd_id not in (1,95)
+        AND c.msps_date between to_date('01/06/2015','dd/MM/yyyy') and to_date('30/06/2015','dd/MM/yyyy')+1
+        and b.jenis = 23
+        and a.lstb_id = 1
+        AND a.reg_spaj in
+        (
+            select reg_spaj from eka.mst_trans_history
+            where reg_spaj = a.reg_spaj
+            and tgl_transfer_uw between to_date('01/06/2015','dd/MM/yyyy') and to_date('30/06/2015','dd/MM/yyyy')+1
+        ))c       
+union
+select '3' no_urut,'Jumlah SPAJ yang diterima & diproses di bulan tersebut' ket,  sum((a.total+c.total)-b.total) total
+from
+(select 
+        count(a.reg_spaj) total
+    from
+        eka.mst_policy a,
+        eka.mst_trans_history b,
+        (select distinct reg_spaj, min(msps_date)msps_date
+        from eka.mst_position_spaj where lspd_id = 27
+        group by reg_spaj)c
+    where
+        a.reg_spaj = b.reg_spaj
+        and a.reg_spaj = c.reg_spaj
+        AND a.lspd_id not in (1,95)
+        AND c.msps_date between to_date('01/06/2015','dd/MM/yyyy') and to_date('30/06/2015','dd/MM/yyyy')+1
+        and B.TGL_TRANSFER_UW_SPEEDY between to_date('01/06/2015','dd/MM/yyyy') and to_date('30/06/2015','dd/MM/yyyy')+1
+        and a.lstb_id= 1
+        and b.jenis = 23)a,
+(select 
+        count(a.reg_spaj) total
+    from
+        eka.mst_policy a,
+        eka.mst_trans_history b,
+        (select distinct reg_spaj, min(msps_date)msps_date
+        from eka.mst_position_spaj where lspd_id = 27
+        group by reg_spaj)c
+    where
+        a.reg_spaj = b.reg_spaj
+        and a.reg_spaj = c.reg_spaj
+        AND a.lspd_id not in (1,95)
+        AND c.msps_date between to_date('01/06/2015','dd/MM/yyyy') and to_date('30/06/2015','dd/MM/yyyy')+1
+        and B.TGL_TRANSFER_UW_SPEEDY between to_date('01/06/2015','dd/MM/yyyy') and to_date('30/06/2015','dd/MM/yyyy')+1
+        and a.lstb_id= 1
+        and b.jenis = 23
+        and a.reg_spaj in
+        (   
+            select a.reg_spaj
+            from
+                eka.mst_policy a,
+                eka.mst_trans_history b,
+                (select distinct reg_spaj, min(msps_date)msps_date
+                from eka.mst_position_spaj where lspd_id = 2
+                group by reg_spaj)c
+            where
+                a.reg_spaj = b.reg_spaj
+                and a.reg_spaj = c.reg_spaj
+                AND a.lspd_id not in (1,27,95)
+                AND c.msps_date between to_date('01/06/2015','dd/MM/yyyy') and to_date('30/06/2015','dd/MM/yyyy')+1
+                and B.TGL_TRANSFER_UW between to_date('01/06/2015','dd/MM/yyyy') and to_date('30/06/2015','dd/MM/yyyy')+1
+                and a.lstb_id= 1
+                and b.jenis = 23))b,
+(select 
+        count(a.reg_spaj) total
+    from
+        eka.mst_policy a,
+        eka.mst_trans_history b,
+        (select distinct reg_spaj, min(msps_date)msps_date
+        from eka.mst_position_spaj where lspd_id = 2
+        group by reg_spaj)c
+    where
+        a.reg_spaj = b.reg_spaj
+        and a.reg_spaj = c.reg_spaj
+        AND a.lspd_id not in (1,27,95)
+        AND c.msps_date between to_date('01/06/2015','dd/MM/yyyy') and to_date('30/06/2015','dd/MM/yyyy')+1
+        and B.TGL_TRANSFER_UW between to_date('01/06/2015','dd/MM/yyyy') and to_date('30/06/2015','dd/MM/yyyy')+1
+        and a.lstb_id= 1
+        and b.jenis = 23)c              
+union    
+select --3242
+    '4' no_urut, 'Jumlah SPAJ yang diproses menggunakan Automatic UW (clean case)' ket, count(a.reg_spaj) total
+from 
+    eka.mst_position_Spaj a, eka.mst_policy b, eka.mst_insured c
+where 
+    a.reg_spaj = b.reg_spaj
+    and b.reg_spaj = c.reg_spaj
+    and c.flag_speedy = 1
+    and a.lspd_id = 27
+    and a.msps_date = (select min(msps_date) from eka.mst_position_Spaj x where x.reg_spaj = a.reg_spaj and x.lspd_id = 27 )
+    and b.lstb_id = 1
+    and a.msps_date between to_date('01/06/2015','dd/MM/yyyy') and to_date('30/06/2015','dd/MM/yyyy')+1]]>
+	</queryString>
+	<field name="KET" class="java.lang.String"/>
+	<field name="NO_URUT" class="java.lang.String"/>
+	<field name="TOTAL" class="java.math.BigDecimal"/>
+	<title>
+		<band height="124">
+			<staticText>
+				<reportElement x="0" y="73" width="136" height="20"/>
+				<textElement/>
+				<text><![CDATA[Report Automated UW]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="97" width="237" height="20"/>
+				<textElement markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Periode : "+$P{bdate}+" s/d "+$P{edate}]]></textFieldExpression>
+			</textField>
+			<image hyperlinkType="None">
+				<reportElement x="0" y="1" width="155" height="53"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.logo")]]></imageExpression>
+			</image>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="20">
+			<staticText>
+				<reportElement x="0" y="0" width="70" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO_URUT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="70" y="0" width="381" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[KETERANGAN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="451" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[TOTAL]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="0" width="70" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NO_URUT}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="70" y="0" width="381" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KET}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="451" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatNumber($F{TOTAL})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

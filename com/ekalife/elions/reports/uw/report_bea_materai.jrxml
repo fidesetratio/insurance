@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_bea_materai" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<property name="com.jasperassistant.designer.Grid" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.HGuides" value="170,289,369,509"/>
+	<property name="com.jasperassistant.designer.VGuides.Summary" value="31"/>
+	<parameter name="tanggalAwal" class="java.lang.String">
+		<defaultValueExpression><![CDATA["17/05/2010"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.lang.String">
+		<defaultValueExpression><![CDATA["19/05/2010"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT   tipe, produk, jumlah, meterai, (jumlah*meterai) total
+    FROM   (  SELECT   1 urut,
+                       'INDIVIDU (INCL WS)' tipe,
+                      (c.lsdbs_name || ' [' || b.lsbs_id || '-' || b.lsdbs_number || '] ' ) produk,
+                       COUNT (b.reg_spaj) jumlah,
+                       a.msth_jumlah meterai
+                FROM   eka.mst_stamp_hist a,
+                       eka.mst_product_insured b,
+                       eka.lst_det_bisnis c
+               WHERE       a.msth_tipe = 1
+                       AND a.msth_ref_no = b.reg_spaj
+                       AND b.lsbs_id = c.lsbs_id
+                       AND b.lsdbs_number = c.lsdbs_number
+                       AND b.lsbs_id < 300
+						AND a.msth_tgl_bayar >= to_date($P{tanggalAwal},'dd/mm/yyyy') 
+          				AND a.msth_tgl_bayar <= to_date($P{tanggalAkhir},'dd/mm/yyyy') +1
+            GROUP BY   b.lsbs_id,
+                       b.lsdbs_number,
+                       c.lsdbs_name,
+                       a.msth_jumlah
+            UNION
+              SELECT   2 urut,
+                       'DMTM' tipe,
+                       c.product_name produk,
+                       COUNT ( * ) jumlah,
+                       a.msth_jumlah meterai
+                FROM   eka.mst_stamp_hist a,
+                       eka.mst_tmms@eb b,
+                       EKA.LST_TM_PRODUCT@EB C
+               WHERE   a.msth_tipe = 6
+                       AND a.msth_tgl_bayar >= to_date($P{tanggalAwal},'dd/mm/yyyy') 
+          				AND a.msth_tgl_bayar <= to_date($P{tanggalAkhir},'dd/mm/yyyy') +1
+                        AND a.msth_ref_no = b.no_sertifikat
+                       AND B.PRODUCT_CODE = C.PRODUCT_CODE
+            GROUP BY   c.product_name, a.msth_jumlah
+            UNION
+              SELECT   3 urut,
+                       'DMTM' tipe,
+                       'BILLING (KUITANSI)' produk,
+                       COUNT ( * ) jumlah,
+                       a.msth_jumlah meterai
+                FROM   eka.mst_stamp_hist a
+               WHERE   a.msth_tipe = 5
+                       AND a.msth_tgl_bayar >= to_date($P{tanggalAwal},'dd/mm/yyyy') 
+          				AND a.msth_tgl_bayar <= to_date($P{tanggalAkhir},'dd/mm/yyyy') +1
+            GROUP BY   a.msth_jumlah
+            UNION
+            SELECT   4 urut,
+                       'MRI' tipe,
+                      (c.lsdbs_name || ' [' || b.lsbs_id || '-' || b.lsdbs_number || '] ' ) produk,
+                       COUNT (b.reg_spaj) jumlah,
+                       a.msth_jumlah meterai
+                FROM   eka.mst_stamp_hist a,
+                       eka.mst_product_insured b,
+                       eka.lst_det_bisnis c
+               WHERE       a.msth_tipe = 1
+                       AND a.msth_ref_no = b.reg_spaj
+                       AND b.lsbs_id = c.lsbs_id
+                       AND b.lsdbs_number = c.lsdbs_number
+                       AND ((b.LSBS_ID >= 300 AND b.LSBS_ID <= 399) 
+                            OR (b.LSBS_ID >= 500 AND b.LSBS_ID <= 599) 
+                            OR (b.LSBS_ID >= 900))
+                       AND a.msth_tgl_bayar >= to_date($P{tanggalAwal},'dd/mm/yyyy') 
+                       AND a.msth_tgl_bayar <= to_date($P{tanggalAkhir},'dd/mm/yyyy') +1
+            GROUP BY   b.lsbs_id,
+                       b.lsdbs_number,
+                       c.lsdbs_name,
+                       a.msth_jumlah
+              UNION
+              SELECT   DECODE (msth_tipe, 2, 4, 3, 5, 4, 6, 4) urut,
+                       'EB' tipe,
+                       DECODE (msth_tipe, 2, 'POLIS INDUK', 3, 'BILLING (KUITANSI)', 4, 'IKTISAR POLIS', '-') produk,
+                       COUNT ( * ) jumlah,
+                       a.msth_jumlah meterai
+                FROM   eka.mst_stamp_hist a
+               WHERE   a.msth_tipe IN (2, 3, 4)
+						AND a.msth_tgl_bayar >= to_date($P{tanggalAwal},'dd/mm/yyyy') 
+          				AND a.msth_tgl_bayar <= to_date($P{tanggalAkhir},'dd/mm/yyyy') +1
+            GROUP BY   a.msth_tipe, a.msth_jumlah)
+ORDER BY   urut,
+           tipe,
+           produk,
+           meterai]]>
+	</queryString>
+	<field name="JUMLAH" class="java.math.BigDecimal"/>
+	<field name="METERAI" class="java.math.BigDecimal"/>
+	<field name="PRODUK" class="java.lang.String"/>
+	<field name="TIPE" class="java.lang.String"/>
+	<field name="TOTAL" class="java.math.BigDecimal"/>
+	<variable name="tot_tran" class="java.math.BigDecimal" resetType="Group" resetGroup="tipe" calculation="Sum">
+		<variableExpression><![CDATA[$F{JUMLAH}]]></variableExpression>
+		<initialValueExpression><![CDATA[$F{JUMLAH}]]></initialValueExpression>
+	</variable>
+	<variable name="total" class="java.math.BigDecimal" resetType="Group" resetGroup="tipe" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTAL}]]></variableExpression>
+	</variable>
+	<variable name="grandTotal" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTAL}]]></variableExpression>
+	</variable>
+	<variable name="grant_tot_tran" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{JUMLAH}]]></variableExpression>
+	</variable>
+	<group name="tipe">
+		<groupExpression><![CDATA[$F{TIPE}]]></groupExpression>
+		<groupHeader>
+			<band height="20">
+				<textField hyperlinkType="None">
+					<reportElement x="1" y="0" width="508" height="20"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["  " + $F{TIPE}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="21">
+				<staticText>
+					<reportElement x="1" y="1" width="169" height="20"/>
+					<box>
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement/>
+					<text><![CDATA[Sub Total]]></text>
+				</staticText>
+				<textField hyperlinkType="None">
+					<reportElement x="170" y="1" width="120" height="20"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center"/>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{tot_tran}]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="370" y="1" width="125" height="20"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top"/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit(new BigDecimal($V{total}.doubleValue()))]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="290" y="1" width="80" height="20"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement/>
+				</staticText>
+				<staticText>
+					<reportElement x="495" y="1" width="14" height="20"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement/>
+				</staticText>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band height="50"/>
+	</background>
+	<title>
+		<band height="65">
+			<staticText>
+				<reportElement x="1" y="1" width="555" height="22"/>
+				<textElement>
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PEMAKAIAN  BEA  METERAI  PER  PRODUK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="23" width="554" height="22"/>
+				<textElement>
+					<font size="13" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ PT ASURANSI JIWA SINARMAS MSIG Tbk.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="45" width="55" height="20"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tanggal]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="55" y="45" width="5" height="20"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="60" y="45" width="60" height="20"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggalAwal}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="120" y="45" width="20" height="20"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[s/d]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="140" y="45" width="60" height="20"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggalAkhir}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="21">
+			<staticText>
+				<reportElement x="1" y="1" width="169" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Product]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="170" y="1" width="120" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jumlah Transaksi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="290" y="1" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Satuan Materai]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="370" y="1" width="125" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jumlah Pemakaian]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="495" y="1" width="14" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField hyperlinkType="None">
+				<reportElement x="1" y="0" width="169" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "+ $F{PRODUK}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="170" y="0" width="120" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{JUMLAH}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="290" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit(new BigDecimal($F{METERAI}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="370" y="0" width="125" height="20"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit(new BigDecimal($F{TOTAL}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="495" y="0" width="14" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+			</staticText>
+		</band>
+	</detail>
+	<summary>
+		<band height="63">
+			<staticText>
+				<reportElement x="1" y="0" width="169" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Grand Total]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="170" y="0" width="120" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit(new BigDecimal($V{grant_tot_tran}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="290" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="370" y="0" width="125" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit(new BigDecimal($V{grandTotal}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="495" y="0" width="14" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="32" width="263" height="31"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Keterangan :
+- Meterai Rp. 3.000  untuk transaksi : di atas  Rp. 250.000  s/d  Rp. 1 juta
+- Meterai Rp. 6.000  untuk transaksi : di atas Rp. 1  juta]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

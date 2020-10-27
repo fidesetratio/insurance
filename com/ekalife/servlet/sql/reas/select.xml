@@ -1,0 +1,1300 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- f_check_posisi -->
+	<resultMap id="result.select.f.check.posisi" class="java.util.HashMap">
+		<result property="LSPD_ID" column="LSPD_ID" javaType="int" jdbcType="NUMBER" />                                                                                                                                                                 
+		<result property="LSPD_POSITION" column="LSPD_POSITION" javaType="string" jdbcType="VARCHAR2" nullValue=""/>                                                                                                                                    
+	</resultMap>
+
+	<select id="elions.uw.select.f.check.posisi" resultMap="result.select.f.check.posisi"
+		parameterClass="java.lang.String">
+		 SELECT EKA.MST_POLICY.LSPD_ID, EKA.LST_DOCUMENT_POSITION.LSPD_POSITION   
+	    	FROM EKA.MST_POLICY, EKA.LST_DOCUMENT_POSITION   
+			WHERE EKA.MST_POLICY.REG_SPAJ = rpad(replace(#txtnospaj#,'.'),11,' ') 
+			  AND EKA.MST_POLICY.LSPD_ID = EKA.LST_DOCUMENT_POSITION.LSPD_ID   
+	</select>
+	
+	<resultMap id="result.wf_get_status" class="java.util.HashMap">
+		<result property="LSSA_ID" column="lssa_id" javaType="int"/>
+		<result property="MSTE_REAS" column="mste_reas" javaType="int"/>
+		<result property="MSTE_ACTIVE" column="mste_active" javaType="int"/>
+		<result property="MSTE_FLAG_INVESTASI" column="mste_flag_investasi" javaType="int"/>
+		<result property="MSTE_TGL_AKSEP" column="mste_tgl_aksep" javaType="date"/>
+	</resultMap>
+	
+	<!-- wf get status -->
+	<select id="elions.uw.select.wf_get_status" resultMap="result.wf_get_status"
+		parameterClass="java.util.HashMap">
+	   	SELECT LSSA_ID, MSTE_REAS,MSTE_ACTIVE,MSTE_FLAG_INVESTASI,MSTE_TGL_AKSEP
+			FROM   EKA.MST_INSURED  
+			WHERE   ( EKA.MST_INSURED.REG_SPAJ = rpad(replace(#txtnospaj#,'.'),11,' ')  ) AND  
+		 			( EKA.MST_INSURED.MSTE_INSURED_NO = #li_insured_no# )   
+   	</select>
+   	
+   	<!-- Cek li_backup -->
+	<select id="elions.uw.select.li_backup" resultClass="java.lang.Integer"
+		parameterClass="java.lang.String">
+		 SELECT EKA.MST_INSURED.MSTE_BACKUP  
+	       FROM EKA.MST_INSURED  
+	  	   WHERE EKA.MST_INSURED.REG_SPAJ = rpad(replace(#txtnospaj#,'.'),11,' ') 
+   	</select>
+   	
+   	<!-- wf cek standard-->
+	<select id="elions.uw.select.wf_cek_standard" resultClass="java.lang.Integer"
+		parameterClass="java.lang.String">
+	   	 SELECT COUNT(*)  
+		    FROM EKA.MST_PRODUCT_INSURED  
+ 		    WHERE ( EKA.MST_PRODUCT_INSURED.REG_SPAJ = rpad(replace(#txtnospaj#,'.'),11,' ')) AND  
+		          ( EKA.MST_PRODUCT_INSURED.LSBS_ID <![CDATA[>=]]> 900 )   
+   	</select>
+   	
+   	<!-- cek mst product insured product utama-->
+	<select id="elions.uw.select.product_utama" resultClass="java.util.HashMap"
+		parameterClass="java.lang.String">
+	   	     SELECT  EKA.MST_PRODUCT_INSURED.REG_SPAJ,   
+			         EKA.MST_PRODUCT_INSURED.MSTE_INSURED_NO,   
+			         EKA.MST_PRODUCT_INSURED.LSBS_ID,   
+			         EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER,   
+			         EKA.MST_PRODUCT_INSURED.LKU_ID,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_BEG_DATE,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_END_DATE,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_TSI,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_TSI_PA_A,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_TSI_PA_B,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_TSI_PA_C,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_TSI_PA_D,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_TSI_PA_M,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_CLASS,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_UNIT,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_RATE,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_PERSEN,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_PREMIUM,   
+			         nvl( EKA.MST_PRODUCT_INSURED.MSPR_DISCOUNT, 0) MSPR_DISCOUNT,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_REF_NO,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_ACTIVE,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_EXTRA,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_INS_PERIOD,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_BUNGA_KPR,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_INS_BULAN,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_SISA_LIMIT,   
+			         eka.f_lsbs(EKA.MST_PRODUCT_INSURED.reg_spaj, EKA.MST_PRODUCT_INSURED.lsbs_id) LSBS_NAME  
+			    FROM EKA.MST_INSURED,   
+			         EKA.MST_PRODUCT_INSURED,   
+			         EKA.LST_BISNIS  
+			   WHERE ( EKA.MST_PRODUCT_INSURED.REG_SPAJ = EKA.MST_INSURED.REG_SPAJ ) and  
+			         ( EKA.MST_PRODUCT_INSURED.MSTE_INSURED_NO = EKA.MST_INSURED.MSTE_INSURED_NO ) and  
+			         ( EKA.MST_PRODUCT_INSURED.LSBS_ID = EKA.LST_BISNIS.LSBS_ID ) and  
+			         ( ( EKA.MST_INSURED.REG_SPAJ = rpad(replace(#txtnospaj#,'.'),11,' ') ) AND  
+			         ( EKA.MST_INSURED.MSTE_INSURED_NO = 1 ) AND  
+			         ( EKA.MST_PRODUCT_INSURED.LSBS_ID <![CDATA[<=]]> 400 ) )    
+   	</select>
+ 
+   	<!-- cek mst product insured product utama beda result class doang-->
+	<select id="elions.uw.select.product_utama2" resultClass="com.ekalife.elions.model.Product"
+		parameterClass="java.lang.String">
+	   	     SELECT  EKA.MST_PRODUCT_INSURED.REG_SPAJ,   
+			         EKA.MST_PRODUCT_INSURED.MSTE_INSURED_NO,   
+			         EKA.MST_PRODUCT_INSURED.LSBS_ID,   
+			         EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER,   
+			         EKA.MST_PRODUCT_INSURED.LKU_ID,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_BEG_DATE,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_END_DATE,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_TSI,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_TSI_PA_A,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_TSI_PA_B,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_TSI_PA_C,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_TSI_PA_D,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_TSI_PA_M,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_CLASS,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_UNIT,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_RATE,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_PERSEN,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_PREMIUM,   
+			         nvl(EKA.MST_PRODUCT_INSURED.MSPR_DISCOUNT,0) MSPR_DISCOUNT,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_REF_NO,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_ACTIVE,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_EXTRA,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_INS_PERIOD,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_BUNGA_KPR,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_INS_BULAN,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_SISA_LIMIT,   
+			         eka.f_lsbs(EKA.MST_PRODUCT_INSURED.reg_spaj, EKA.MST_PRODUCT_INSURED.lsbs_id) LSBS_NAME  
+			    FROM EKA.MST_INSURED,   
+			         EKA.MST_PRODUCT_INSURED,   
+			         EKA.LST_BISNIS  
+			   WHERE ( EKA.MST_PRODUCT_INSURED.REG_SPAJ = EKA.MST_INSURED.REG_SPAJ ) and  
+			         ( EKA.MST_PRODUCT_INSURED.MSTE_INSURED_NO = EKA.MST_INSURED.MSTE_INSURED_NO ) and  
+			         ( EKA.MST_PRODUCT_INSURED.LSBS_ID = EKA.LST_BISNIS.LSBS_ID ) and  
+			         ( ( EKA.MST_INSURED.REG_SPAJ = rpad(replace(#txtnospaj#,'.'),11,' ') ) AND  
+			         ( EKA.MST_INSURED.MSTE_INSURED_NO = 1 ) AND  
+			         ( EKA.MST_PRODUCT_INSURED.LSBS_ID <![CDATA[<=]]> 400 ) )    
+   	</select>
+   	
+   	<select id="elions.uw.select.mst_product_insured_mspr_unit" resultClass="java.lang.Integer"
+		parameterClass="java.util.HashMap">
+	   	    SELECT 	EKA.MST_PRODUCT_INSURED.MSPR_UNIT  
+				FROM 		EKA.MST_PRODUCT_INSURED  
+				WHERE 	( EKA.MST_PRODUCT_INSURED.REG_SPAJ = #reg_spaj# ) AND  
+			   	      ( EKA.MST_PRODUCT_INSURED.MSTE_INSURED_NO = #mste_insured_no# ) AND  
+			      	   ( EKA.MST_PRODUCT_INSURED.LSBS_ID = #lsbs_id# ) AND  
+			         	( EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER = #lsdbs_number# )    
+   	</select>
+   	
+   	
+   	<!-- f_get_kurs_reins -->
+	<select id="elions.uw.select.lst_reins_currency" resultClass="java.lang.Double"
+		parameterClass="java.lang.String">
+			SELECT EKA.LST_REINS_CURRENCY.LSRC_VALUE  
+				FROM	 EKA.LST_REINS_CURRENCY  
+				WHERE	 ( EKA.LST_REINS_CURRENCY.LKU_ID = '02' ) AND  
+				       ( EKA.LST_REINS_CURRENCY.LSRC_DATE = ( SELECT MAX( EKA.LST_REINS_CURRENCY.LSRC_DATE )  
+															  FROM	EKA.LST_REINS_CURRENCY  
+															  WHERE	( EKA.LST_REINS_CURRENCY.LKU_ID = '02' ) AND  
+																		( EKA.LST_REINS_CURRENCY.LSRC_DATE <![CDATA[<=]]> TO_DATE(#s_beg_date#,'DD-MM-YYYY') ) ) )
+   	</select>
+
+   	<!-- f_get_kurs_reins -->
+	<select id="elions.uw.select.lst_reins_currency2" resultClass="java.lang.Double"
+		parameterClass="java.util.HashMap">
+			SELECT EKA.LST_REINS_CURRENCY.LSRC_VALUE  
+				FROM	 EKA.LST_REINS_CURRENCY  
+				WHERE	 ( EKA.LST_REINS_CURRENCY.LKU_ID = #lkuId# ) AND  
+				       ( EKA.LST_REINS_CURRENCY.LSRC_DATE = ( SELECT MAX( EKA.LST_REINS_CURRENCY.LSRC_DATE )  
+															  FROM	EKA.LST_REINS_CURRENCY  
+															  WHERE	( EKA.LST_REINS_CURRENCY.LKU_ID = #lkuId# ) AND  
+																		( EKA.LST_REINS_CURRENCY.LSRC_DATE <![CDATA[<=]]> TO_DATE(#begDate#,'DD/MM/YYYY') ) ) )
+   	</select>
+
+   	<!-- count_m_reas_temp -->
+	<select id="elions.uw.select.count_m_reas_temp" resultClass="java.lang.Integer"
+		parameterClass="java.lang.String">
+		   	SELECT COUNT(*) COUNT   
+				FROM	 EKA.M_REAS_TEMP   
+				WHERE	 EKA.M_REAS_TEMP.REG_SPAJ = rpad(replace(#txtnospaj#,'.'),11,' ')
+						
+   	</select>
+					
+   	<!-- Cek ls old spaj -->
+	<select id="elions.uw.select.ls_old_spaj" resultClass="java.lang.String"
+		parameterClass="java.lang.String">
+			SELECT EKA.MST_CANCEL.REG_SPAJ  
+				FROM	 EKA.MST_CANCEL  
+				WHERE	 EKA.MST_CANCEL.MSCAN_SPAJ_BARU = rpad(#ls_old_spaj#,11,' ')   
+	</select>
+   	
+   	<!-- Cek no simultan-->
+	<select id="elions.uw.select.no_simultan" resultClass="java.lang.Integer"
+		parameterClass="java.util.HashMap">
+		SELECT min( EKA.MST_SIMULTANEOUS.MSSM_NUMBER )  
+			FROM	EKA.MST_SIMULTANEOUS  
+			WHERE ( EKA.MST_SIMULTANEOUS.MCL_ID = #ls_client# )  
+			AND	  ( EKA.MST_SIMULTANEOUS.REG_SPAJ = #ls_old_spaj# ) 
+	</select>
+	<!-- 
+	<resultMap id="result.d_ds_sar" class="java.util.HashMap">
+		<result property="LSSP_ID" column="lssp_id" javaType="int"/>
+		<result property="LSPD_ID" column="lspd_id" javaType="int"/>
+		<result property="MSPO_AGE" column="mspo_age" javaType="int"/>
+		<result property="LKU_ID" column="lku_id" javaType="string"/>
+		<result property="LSCB_ID" column="lscb_id" javaType="int"/>
+		<result property="MSPO_POLICY_NO" column="mspo_policy_no" javaType="string"/>
+		<result property="MSPO_INS_PERIOD" column="period" javaType="int"/>
+		<result property="MSPO_PAY_PERIOD" column="mspo_pay_period" javaType="int"/>
+		<result property="LSBS_ID" column="lsbs_id" javaType="int"/>
+		<result property="LSDBS_NUMBER" column="lsdbs_number" javaType="int"/>
+		<result property="MSPR_TSI" column="mspr_tsi" javaType="double"/>
+		<result property="MSPR_TSI_PA_A" column="mspr_tsi_pa_a" javaType="double"/>
+		<result property="MSPR_UNIT" column="mspr_unit" javaType="int"/>
+		<result property="REG_SPAJ" column="reg_spaj" javaType="string"/>
+		<result property="MSTE_INSURED_NO" column="mste_insured_no" javaType="int"/>
+		<result property="MSSM_PEMEGANG" column="mssm_pemegang" javaType="int"/>
+		<result property="MSTE_MEDICAL" column="mste_medical" javaType="int"/>
+		<result property="MSTE_BEG_DATE" column="mste_beg_date" javaType="date"/>
+		<result property="LSSA_ID" column="lssa_id" javaType="int"/>
+		<result property="LSTB_ID" column="lstb_id" javaType="int"/>
+		<result property="LSTR_ID" column="lstr_id" javaType="int"/>
+		<result property="LSTR_QUOTA_REAS" column="lstr_quota_reas" javaType="double"/>
+		<result property="LSDBS_REAS_CLIENT" column="lsdbs_reas_client" javaType="int"/>
+		<result property="MSPO_INS_BULAN" column="mspo_ins_bulan" javaType="int"/>
+		<result property="MSPR_BUNGA_KPR" column="mspr_bunga_kpr" javaType="double"/>
+		<result property="MSPO_FLAT" column="mspo_flat" javaType="int"/>
+	</resultMap>
+	
+	<select id="elions.uw.select.d_ds_sar" resultMap="result.d_ds_sar"
+		parameterClass="java.util.HashMap">
+		 SELECT  EKA.MST_POLICY.LSSP_ID,   
+		         EKA.MST_POLICY.LSPD_ID,   
+		         EKA.MST_POLICY.MSPO_AGE,   
+		         EKA.MST_POLICY.LKU_ID,   
+		         EKA.MST_POLICY.LSCB_ID,   
+		         EKA.MST_POLICY.MSPO_POLICY_NO,   
+		         EKA.MST_POLICY.MSPO_INS_PERIOD PERIOD,   
+		         EKA.MST_POLICY.MSPO_PAY_PERIOD,   
+		         EKA.MST_PRODUCT_INSURED.LSBS_ID,   
+		         EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER,   
+		         EKA.MST_PRODUCT_INSURED.LKU_ID,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_TSI,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_TSI_PA_A,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_UNIT,   
+		         EKA.MST_INSURED.REG_SPAJ,   
+		         EKA.MST_INSURED.MSTE_INSURED_NO,   
+		         EKA.MST_SIMULTANEOUS.MSSM_PEMEGANG,   
+		         EKA.MST_INSURED.MSTE_MEDICAL,   
+		         EKA.MST_INSURED.MSTE_BEG_DATE,   
+		         EKA.MST_INSURED.LSSA_ID,   
+		         EKA.LST_TYPE_REINSURANCE.LSTB_ID,   
+		         EKA.LST_TYPE_REINSURANCE.LSTR_ID,   
+		         EKA.LST_TYPE_REINSURANCE.LSTR_QUOTA_REAS,   
+		         EKA.LST_DET_BISNIS.LSDBS_REAS_CLIENT,   
+		         EKA.MST_POLICY.MSPO_INS_BULAN,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_BUNGA_KPR,   
+		         EKA.MST_POLICY.MSPO_FLAT  
+		    FROM EKA.MST_POLICY,   
+		         EKA.MST_PRODUCT_INSURED,   
+		         EKA.MST_INSURED,   
+		         EKA.MST_SIMULTANEOUS,   
+		         EKA.LST_BISNIS,   
+		         EKA.LST_TYPE_REINSURANCE,   
+		         EKA.LST_DET_BISNIS  
+		   WHERE ( EKA.MST_INSURED.REG_SPAJ = EKA.MST_PRODUCT_INSURED.REG_SPAJ ) and  
+		         ( EKA.MST_INSURED.MSTE_INSURED_NO = EKA.MST_PRODUCT_INSURED.MSTE_INSURED_NO ) and  
+		         ( EKA.MST_SIMULTANEOUS.REG_SPAJ = EKA.MST_POLICY.REG_SPAJ ) and  
+		         ( EKA.LST_TYPE_REINSURANCE.LSTR_ID = EKA.LST_BISNIS.LSTR_ID ) and  
+		         ( EKA.MST_SIMULTANEOUS.REG_SPAJ = EKA.MST_INSURED.REG_SPAJ ) and  
+		         ( EKA.LST_BISNIS.LSBS_ID = EKA.LST_DET_BISNIS.LSBS_ID ) and  
+		         ( EKA.MST_PRODUCT_INSURED.LSBS_ID = EKA.LST_DET_BISNIS.LSBS_ID ) and  
+		         ( EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER = EKA.LST_DET_BISNIS.LSDBS_NUMBER ) and  
+		         ( EKA.LST_BISNIS.LSTB_ID = EKA.LST_TYPE_REINSURANCE.LSTB_ID ) and  
+		         ( ( EKA.MST_SIMULTANEOUS.MCL_ID = #ls_client# ) AND  
+		         ( EKA.MST_POLICY.LSSP_ID = 1 OR  
+		         EKA.MST_POLICY.LSSP_ID = 3 OR  
+		         EKA.MST_POLICY.LSSP_ID = 4 OR  
+		         EKA.MST_POLICY.LSSP_ID = 10 OR  
+		         EKA.MST_POLICY.LSSP_ID = 14 ) AND  
+		         ( #li_simultan_no# = 0 OR  
+		         EKA.MST_SIMULTANEOUS.MSSM_NUMBER <![CDATA[<]]> #li_simultan_no# ) )   
+		ORDER BY EKA.MST_POLICY.MSPO_POLICY_NO ASC,   
+		         EKA.MST_PRODUCT_INSURED.LSBS_ID ASC,   
+		         EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER ASC   
+	</select> -->
+	
+	<resultMap id="result.d_ds_sarn" class="java.util.HashMap">
+		<result property="LSSP_ID" column="lssp_id" javaType="int"/>
+		<result property="LSPD_ID" column="lspd_id" javaType="int"/>
+		<result property="MSPO_AGE" column="mspo_age" javaType="int"/>
+		<result property="LKU_ID" column="lku_id" javaType="string"/>
+		<result property="LSCB_ID" column="lscb_id" javaType="int"/>
+		<result property="MSPO_POLICY_NO" column="mspo_policy_no" javaType="string"/>
+		<result property="MSPO_INS_PERIOD" column="period" javaType="int"/>
+		<result property="MSPO_PAY_PERIOD" column="mspo_pay_period" javaType="int"/>
+		<result property="LSBS_ID" column="lsbs_id" javaType="int"/>
+		<result property="LSDBS_NUMBER" column="lsdbs_number" javaType="int"/>
+		<result property="MSPR_TSI" column="mspr_tsi" javaType="double"/>
+		<result property="MSPR_TSI_PA_A" column="mspr_tsi_pa_a" javaType="double"/>
+		<result property="MSPR_UNIT" column="mspr_unit" javaType="int"/>
+		<result property="MSPR_RATE" column="mspr_rate" javaType="double"/>
+		<result property="MSPR_EXTRA" column="mspr_extra" javaType="double"/>
+		<result property="REG_SPAJ" column="reg_spaj" javaType="string"/>
+		<result property="MSTE_INSURED_NO" column="mste_insured_no" javaType="int"/>
+		<result property="MSTE_MEDICAL" column="mste_medical" javaType="int"/>
+		<result property="MSTE_BEG_DATE" column="mste_beg_date" javaType="date"/>
+		<result property="LSTB_ID" column="lstb_id" javaType="int"/>
+		<result property="LSTR_ID" column="lstr_id" javaType="int"/>
+		<result property="LSTR_QUOTA_REAS" column="lstr_quota_reas" javaType="double"/>
+		<result property="LSDBS_REAS_CLIENT" column="lsdbs_reas_client" javaType="int"/>
+		<result property="MSPO_INS_BULAN" column="mspo_ins_bulan" javaType="int"/>
+		<result property="MSPR_BUNGA_KPR" column="mspr_bunga_kpr" javaType="double"/>
+		<result property="MSPO_FLAT" column="mspo_flat" javaType="int"/>
+	</resultMap>
+	
+   	<!-- Cek d_ds_sarn-->
+	<select id="elions.uw.select.d_ds_sarn" resultMap="result.d_ds_sarn" 
+		parameterClass="java.util.HashMap"> <!-- resultClass="java.util.HashMap" -->
+			 SELECT  EKA.MST_POLICY.LSSP_ID,   
+			         EKA.MST_POLICY.LSPD_ID,   
+			         EKA.MST_POLICY.MSPO_AGE,   
+			         EKA.MST_POLICY.LKU_ID,   
+			         EKA.MST_POLICY.LSCB_ID,   
+			         EKA.MST_POLICY.MSPO_POLICY_NO,   
+			         EKA.MST_POLICY.MSPO_INS_PERIOD PERIOD,   
+			         EKA.MST_POLICY.MSPO_PAY_PERIOD,   
+			         EKA.MST_PRODUCT_INSURED.LSBS_ID,   
+			         EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER,   
+			         EKA.MST_PRODUCT_INSURED.LKU_ID,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_TSI,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_TSI_PA_A,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_UNIT,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_RATE,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_EXTRA,   
+			         EKA.MST_INSURED.REG_SPAJ,   
+			         EKA.MST_INSURED.MSTE_INSURED_NO,   
+			         EKA.MST_INSURED.MSTE_MEDICAL,   
+			         EKA.MST_INSURED.MSTE_BEG_DATE,   
+			         EKA.LST_TYPE_REINSURANCE.LSTB_ID,   
+			         EKA.LST_TYPE_REINSURANCE.LSTR_ID,   
+			         EKA.LST_TYPE_REINSURANCE.LSTR_QUOTA_REAS,   
+			         EKA.LST_DET_BISNIS.LSDBS_REAS_CLIENT,   
+			         EKA.MST_POLICY.MSPO_INS_BULAN,   
+			         EKA.MST_PRODUCT_INSURED.MSPR_BUNGA_KPR,   
+			         EKA.MST_POLICY.MSPO_FLAT  
+			    FROM EKA.MST_POLICY,   
+			         EKA.MST_PRODUCT_INSURED,   
+			         EKA.MST_INSURED,   
+			         EKA.LST_BISNIS,   
+			         EKA.LST_TYPE_REINSURANCE,   
+			         EKA.LST_DET_BISNIS  
+			   WHERE ( EKA.LST_TYPE_REINSURANCE.LSTR_ID (+) = EKA.LST_BISNIS.LSTR_ID) and  
+			         ( EKA.LST_BISNIS.LSTB_ID = EKA.LST_TYPE_REINSURANCE.LSTB_ID (+)) and  
+			         ( EKA.MST_INSURED.REG_SPAJ = EKA.MST_PRODUCT_INSURED.REG_SPAJ ) and  
+			         ( EKA.MST_INSURED.MSTE_INSURED_NO = EKA.MST_PRODUCT_INSURED.MSTE_INSURED_NO ) and  
+			         ( EKA.MST_INSURED.REG_SPAJ = EKA.MST_POLICY.REG_SPAJ ) and  
+			         ( EKA.MST_PRODUCT_INSURED.LSBS_ID = EKA.LST_DET_BISNIS.LSBS_ID ) and  
+			         ( EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER = EKA.LST_DET_BISNIS.LSDBS_NUMBER ) and  
+			         ( EKA.LST_DET_BISNIS.LSBS_ID = EKA.LST_BISNIS.LSBS_ID ) and  
+			         ( ( EKA.MST_INSURED.REG_SPAJ = rpad(replace(#txtnospaj#,'.'),11,' ') ) AND  
+			         ( EKA.MST_INSURED.MSTE_INSURED_NO = #txtli_insured_no# ) )   AND
+			         eka.mst_policy.lstb_id=1
+			ORDER BY EKA.MST_POLICY.MSPO_POLICY_NO ASC,   
+			         EKA.MST_PRODUCT_INSURED.LSBS_ID ASC,   
+			         EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER ASC   
+	</select>
+   
+   <!-- Cek mst_insured_age-->
+	<select id="elions.uw.select.mst_insured_age" resultClass="java.lang.Integer"
+		parameterClass="java.util.HashMap">
+		   	 SELECT 	EKA.MST_INSURED.MSTE_AGE  
+				FROM 	EKA.MST_INSURED  
+				WHERE 	( EKA.MST_INSURED.REG_SPAJ = rpad(#as_spaj#,11,'.') ) AND  
+			        	( EKA.MST_INSURED.MSTE_INSURED_NO = #ai_insured# )   
+	</select>	   
+   	 
+   <!-- Cek li_ltanggung_max-->
+	<select id="elions.uw.select.lst_reins_desc1" resultClass="java.lang.Integer"
+		parameterClass="java.util.HashMap">
+ 			SELECT EKA.LST_REINS_DESC.LSRP_LAMA_TANGGUNG_EXT  
+				FROM	 EKA.LST_REINS_DESC  
+				WHERE	 ( EKA.LST_REINS_DESC.LSBS_ID = #ai_bisnis_id# ) AND  
+						 ( EKA.LST_REINS_DESC.LSDBS_NUMBER = #ai_bisnis_no# ) AND  
+						 ( EKA.LST_REINS_DESC.LKU_ID = #as_kurs# ) 
+   	</select>	   
+   	
+     <!-- Cek ldec_kali_up-->
+	<select id="elions.uw.select.lst_reins_desc2" resultClass="java.lang.Double"
+		parameterClass="java.util.HashMap">
+	 		SELECT EKA.LST_REINS_DESC.LSRP_KALI_UP  
+				FROM	 EKA.LST_REINS_DESC  
+				WHERE	 ( EKA.LST_REINS_DESC.LSBS_ID = #ai_bisnis_id# ) AND  
+						 ( EKA.LST_REINS_DESC.LSDBS_NUMBER = #ai_bisnis_no# ) 
+		<isNotEmpty property="as_kurs">
+		 AND  
+		 ( EKA.LST_REINS_DESC.LKU_ID = #as_kurs# )     	
+		</isNotEmpty>				 
+	</select>	   
+   	
+   
+   	
+   <!-- Cek lst_table_awal-->
+	<select id="elions.uw.select.lst_table_awal" resultClass="java.lang.Double"
+		parameterClass="java.util.HashMap">
+		   	 SELECT	EKA.LST_TABLE_AWAL.LSTAW_VALUE  
+				FROM		EKA.LST_TABLE_AWAL
+			   	WHERE		( EKA.LST_TABLE_AWAL.LSTAW_TYPE = #ai_type# ) AND  
+			      	  		( EKA.LST_TABLE_AWAL.LSBS_ID = #ai_bisnis_id# ) AND  
+			       			( EKA.LST_TABLE_AWAL.LKU_ID = #as_kurs# ) AND  
+			         		( EKA.LST_TABLE_AWAL.LSCB_ID = #ai_cbayar# ) AND  
+			         		( EKA.LST_TABLE_AWAL.LSTAW_LAMA_BAYAR = #ai_lbayar# ) AND  
+			         		( EKA.LST_TABLE_AWAL.LSTAW_LAMA_TANGGUNG = #ai_ltanggung# ) AND  
+			         		( EKA.LST_TABLE_AWAL.LSTAW_TAHUN_KE = #ai_year# ) AND  
+			         		( EKA.LST_TABLE_AWAL.LSTAW_ENTRY_AGE = #ai_age# )
+   	</select>	    
+ 
+   <!-- Cek li_penurunan_sar-->
+	<select id="elions.uw.select.lst_bisnis" resultClass="java.lang.Integer"
+		parameterClass="java.lang.Integer">
+			SELECT EKA.LST_BISNIS.LSBS_MONTH_SAR  
+				FROM   EKA.LST_BISNIS  
+				WHERE  EKA.LST_BISNIS.LSBS_ID = #ai_bisnis#
+   	</select>	   
+  
+   <!-- Cek lst_table_mri_awal-->
+	<select id="elions.uw.select.lst_table_mri_awal" resultClass="java.lang.Double"
+		parameterClass="java.util.HashMap">
+		  	SELECT EKA.LST_TABLE_MRI_AWAL.LSTMAW_VALUE  
+			   FROM   EKA.LST_TABLE_MRI_AWAL
+			   WHERE  ( EKA.LST_TABLE_MRI_AWAL.LSTMAW_TYPE = #ai_type# ) AND  
+			   	      ( EKA.LST_TABLE_MRI_AWAL.LSTMAW_MONTH_SAR = #li_penurunan_sar# ) AND  
+			          ( EKA.LST_TABLE_MRI_AWAL.LSTMAW_BUNGA = #ai_bunga# ) AND  
+			          ( EKA.LST_TABLE_MRI_AWAL.LSTMAW_BULAN_TANGGUNG = #ai_month# ) AND  
+			          ( EKA.LST_TABLE_MRI_AWAL.LSTMAW_TAHUN_KE = #ai_year# ) 
+	
+   	</select>	   
+ 
+  <!-- Cek lst_rider_include 1-->
+	<select id="elions.uw.select.lst_rider_include1" resultClass="java.util.HashMap"
+		parameterClass="java.util.HashMap">
+			  SELECT EKA.LST_RIDER_INCLUDE.LST_LSBS_ID,   
+			         EKA.LST_RIDER_INCLUDE.LST_LSDBS_NUMBER,   
+			         EKA.LST_DET_BISNIS.LSDBS_REAS_CLIENT,   
+			         EKA.LST_RIDER_INCLUDE.LSRID_KALI_UP  
+			    FROM EKA.LST_DET_BISNIS,   
+			         EKA.LST_RIDER_INCLUDE  
+			   WHERE ( EKA.LST_RIDER_INCLUDE.LST_LSBS_ID = EKA.LST_DET_BISNIS.LSBS_ID ) and  
+			         ( EKA.LST_RIDER_INCLUDE.LST_LSDBS_NUMBER = EKA.LST_DET_BISNIS.LSDBS_NUMBER ) and  
+			         ( ( EKA.LST_RIDER_INCLUDE.LSBS_ID = #li_bisnis_id# ) AND  
+			         ( EKA.LST_RIDER_INCLUDE.LSDBS_NUMBER = #li_bisnis_no# ) AND  
+			         ( EKA.LST_RIDER_INCLUDE.LKU_ID = #ls_kurs# ) )   
+			ORDER BY EKA.LST_RIDER_INCLUDE.LST_LSBS_ID ASC,   
+			         EKA.LST_RIDER_INCLUDE.LST_LSDBS_NUMBER ASC   
+	
+   	</select>	  
+   	
+   	<!-- Cek lst_rider_include 2-->
+	<select id="elions.uw.select.lst_rider_include2" resultClass="java.lang.Double"
+		parameterClass="java.util.HashMap">
+			SELECT EKA.LST_RIDER_INCLUDE.LSRID_KALI_UP   
+				 FROM EKA.LST_RIDER_INCLUDE   
+				 WHERE  ( EKA.LST_RIDER_INCLUDE.LSBS_ID = #ai_main_bisnis_id# ) AND  
+			   	        ( EKA.LST_RIDER_INCLUDE.LSDBS_NUMBER = #ai_main_bisnis_no# ) AND   
+			   	        ( EKA.LST_RIDER_INCLUDE.LKU_ID = #as_kurs# ) AND   
+			      	    ( EKA.LST_RIDER_INCLUDE.LST_LSBS_ID = #ai_bisnis_id# ) AND   
+			         	( EKA.LST_RIDER_INCLUDE.LST_LSDBS_NUMBER = #ai_bisnis_no# )
+	
+   	</select>	  
+   	 
+  
+  <!-- Cek d_ds_em_max-->
+	<select id="elions.uw.select.lst_em_max" resultClass="java.lang.Double"
+		parameterClass="java.util.HashMap">
+		  SELECT EKA.LST_EM_MAX.LSEM_VALUE  
+		    FROM EKA.LST_EM_MAX  
+		   WHERE ( EKA.LST_EM_MAX.LSTB_ID = #type_bisnis# ) AND  
+		         ( EKA.LST_EM_MAX.LSTR_ID = #li_type_reas# ) AND  
+		         ( EKA.LST_EM_MAX.LSEM_DATE = (  SELECT MAX ( EKA.LST_EM_MAX.LSEM_DATE )  
+		                                               FROM EKA.LST_EM_MAX  
+		                                              WHERE ( EKA.LST_EM_MAX.LSTB_ID = #type_bisnis# ) AND  
+		                                                    ( EKA.LST_EM_MAX.LSTR_ID = #li_type_reas# ) AND  
+		                                                    ( EKA.LST_EM_MAX.LSEM_DATE <![CDATA[<=]]> TO_DATE(#s_beg_date#,'DD-MM-YYYY') ) ))    
+
+	
+   	</select>	   
+  
+	<select id="elions.uw.select.lst_em_max2" resultClass="java.lang.Double"
+		parameterClass="java.util.HashMap">
+		  SELECT EKA.LST_EM_MAX.LSEM_VALUE  
+		    FROM EKA.LST_EM_MAX  
+		   WHERE ( EKA.LST_EM_MAX.LSTB_ID = #type_bisnis# ) AND  
+		         ( EKA.LST_EM_MAX.LSTR_ID = #li_type_reas# ) AND  
+		         ( EKA.LST_EM_MAX.LSEM_DATE = (  SELECT MAX ( EKA.LST_EM_MAX.LSEM_DATE )  
+		                                               FROM EKA.LST_EM_MAX  
+		                                              WHERE ( EKA.LST_EM_MAX.LSTB_ID = #type_bisnis# ) AND  
+		                                                    ( EKA.LST_EM_MAX.LSTR_ID = #li_type_reas# ) AND  
+		                                                    ( EKA.LST_EM_MAX.LSEM_DATE <![CDATA[<=]]> #beg_date# ) ))    
+
+	
+   	</select>	   
+  
+   <!-- Cek lst bisnis f_get_retensi-->
+	<select id="elions.uw.select.lst_bisnis_retensi" resultClass="java.util.HashMap"
+		parameterClass="java.lang.Integer">
+			SELECT EKA.LST_BISNIS.LSTB_ID,   
+					 EKA.LST_BISNIS.LSTR_ID  
+				FROM	 EKA.LST_BISNIS  
+				WHERE	 EKA.LST_BISNIS.LSBS_ID = #ai_main_bisnis_id# 
+	
+   	</select>	   
+  
+	<select id="elions.uw.select.lst_bisnis_retensi2" resultClass="com.ekalife.elions.model.ParameterClass"
+		parameterClass="java.lang.Integer">
+			SELECT EKA.LST_BISNIS.LSTB_ID,   
+					 EKA.LST_BISNIS.LSTR_ID  
+				FROM	 EKA.LST_BISNIS  
+				WHERE	 EKA.LST_BISNIS.LSBS_ID = #ai_main_bisnis_id# 
+	
+   	</select>	   
+  
+   <!-- Cek lst_limit_reinsureance f_get_retensi-->
+	<select id="elions.uw.select.lst_limit_reinsureance" resultClass="java.lang.Double"
+		parameterClass="java.util.HashMap">
+		  SELECT EKA.LST_LIMIT_REINSURANCE.LSLI_VALUE  
+		    FROM EKA.LST_LIMIT_REINSURANCE  
+		   WHERE ( EKA.LST_LIMIT_REINSURANCE.LSTB_ID = #li_tbisnis# ) AND  
+		         ( EKA.LST_LIMIT_REINSURANCE.LSTR_ID = #li_treins# ) AND  
+		         ( EKA.LST_LIMIT_REINSURANCE.LSLI_RIDER = #ai_rider# ) AND  
+		         ( EKA.LST_LIMIT_REINSURANCE.LSLI_TYPE = #ai_type# ) AND  
+		         ( EKA.LST_LIMIT_REINSURANCE.LSLI_MEDICAL = #ai_medis# ) AND  
+		         ( EKA.LST_LIMIT_REINSURANCE.LKU_ID = #as_kurs# ) AND  
+		         EKA.LST_LIMIT_REINSURANCE.LSLI_DATE = (  SELECT MAX( EKA.LST_LIMIT_REINSURANCE.LSLI_DATE )  
+                                                        FROM EKA.LST_LIMIT_REINSURANCE  
+                                                       WHERE ( EKA.LST_LIMIT_REINSURANCE.LSTB_ID = #li_tbisnis# ) AND  
+                                                             ( EKA.LST_LIMIT_REINSURANCE.LSTR_ID = #li_treins# ) AND  
+                                                             ( EKA.LST_LIMIT_REINSURANCE.LSLI_RIDER = #ai_rider# ) AND  
+                                                             ( EKA.LST_LIMIT_REINSURANCE.LSLI_TYPE = #ai_type# ) AND  
+                                                             ( EKA.LST_LIMIT_REINSURANCE.LSLI_MEDICAL = #ai_medis# ) AND  
+                                                             ( EKA.LST_LIMIT_REINSURANCE.LSLI_AGE <![CDATA[<=]]> #ai_age# )
+                                                             ( EKA.LST_LIMIT_REINSURANCE.LKU_ID = #as_kurs# ) AND  
+                                                             ( EKA.LST_LIMIT_REINSURANCE.LSLI_DATE <![CDATA[<=]]> TO_DATE(#adt_bdate# ,'DD-MM-YYYY'))  )AND  
+         		EKA.LST_LIMIT_REINSURANCE.LSLI_AGE = (  SELECT MAX ( EKA.LST_LIMIT_REINSURANCE.LSLI_AGE )  
+                                                       FROM EKA.LST_LIMIT_REINSURANCE  
+                                                      WHERE ( EKA.LST_LIMIT_REINSURANCE.LSTB_ID = #li_tbisnis# ) AND  
+                                                            ( EKA.LST_LIMIT_REINSURANCE.LSTR_ID = #li_treins# ) AND  
+                                                            ( EKA.LST_LIMIT_REINSURANCE.LSLI_RIDER = #ai_rider# ) AND  
+                                                            ( EKA.LST_LIMIT_REINSURANCE.LSLI_TYPE = #ai_type# ) AND  
+                                                            ( EKA.LST_LIMIT_REINSURANCE.LSLI_MEDICAL = #ai_medis# ) AND  
+                                                            ( EKA.LST_LIMIT_REINSURANCE.LKU_ID = #as_kurs# ) AND  
+                                                            ( EKA.LST_LIMIT_REINSURANCE.LSLI_DATE = (  SELECT MAX ( EKA.LST_LIMIT_REINSURANCE.LSLI_DATE )  
+                                                                                                             FROM EKA.LST_LIMIT_REINSURANCE  
+                                                                                                            WHERE ( EKA.LST_LIMIT_REINSURANCE.LSTB_ID = #li_tbisnis# ) AND  
+                                                                                                                  ( EKA.LST_LIMIT_REINSURANCE.LSTR_ID = #li_treins# ) AND  
+                                                                                                                  ( EKA.LST_LIMIT_REINSURANCE.LSLI_RIDER = #ai_rider# ) AND  
+                                                                                                                  ( EKA.LST_LIMIT_REINSURANCE.LSLI_TYPE = #ai_type# ) AND  
+                                                                                                                  ( EKA.LST_LIMIT_REINSURANCE.LSLI_MEDICAL = #ai_medis# ) AND  
+                                                                                                                  ( EKA.LST_LIMIT_REINSURANCE.LSLI_AGE <![CDATA[<=]]> #ai_age# )
+                                                                                                                  ( EKA.LST_LIMIT_REINSURANCE.LKU_ID = #as_kurs# ) AND  
+                                                                                                                  ( EKA.LST_LIMIT_REINSURANCE.LSLI_DATE <![CDATA[<=]]>  TO_DATE(#adt_bdate# ,'DD-MM-YYYY') )  )) AND  
+                                                            ( EKA.LST_LIMIT_REINSURANCE.LSLI_AGE <![CDATA[<=]]> #ai_age# )  )   
+	
+   	</select>	   
+ 
+ 
+ 
+ 
+ 
+ 
+ 	<select id="elions.uw.select.lst_limit_reinsureance2" resultClass="java.lang.Double"
+		parameterClass="java.util.HashMap">
+ 		  SELECT EKA.LST_LIMIT_REINSURANCE.LSLI_VALUE  
+		    FROM EKA.LST_LIMIT_REINSURANCE  
+		   WHERE ( EKA.LST_LIMIT_REINSURANCE.LSTB_ID = #li_tbisnis# ) AND  
+		         ( EKA.LST_LIMIT_REINSURANCE.LSTR_ID = #li_treins# ) AND  
+		         ( EKA.LST_LIMIT_REINSURANCE.LSLI_RIDER = #ai_rider# ) AND  
+		         ( EKA.LST_LIMIT_REINSURANCE.LSLI_TYPE = #ai_type# ) AND  
+		         ( EKA.LST_LIMIT_REINSURANCE.LSLI_MEDICAL = #ai_medis# ) AND  
+		         ( EKA.LST_LIMIT_REINSURANCE.LKU_ID = #as_kurs# ) AND  
+		         EKA.LST_LIMIT_REINSURANCE.LSLI_DATE = (  SELECT MAX( EKA.LST_LIMIT_REINSURANCE.LSLI_DATE )  
+                                                        FROM EKA.LST_LIMIT_REINSURANCE  
+                                                       WHERE ( EKA.LST_LIMIT_REINSURANCE.LSTB_ID = #li_tbisnis# ) AND  
+                                                             ( EKA.LST_LIMIT_REINSURANCE.LSTR_ID = #li_treins# ) AND  
+                                                             ( EKA.LST_LIMIT_REINSURANCE.LSLI_RIDER = #ai_rider# ) AND  
+                                                             ( EKA.LST_LIMIT_REINSURANCE.LSLI_TYPE = #ai_type# ) AND  
+                                                             ( EKA.LST_LIMIT_REINSURANCE.LSLI_MEDICAL = #ai_medis# ) AND  
+                                                             ( EKA.LST_LIMIT_REINSURANCE.LKU_ID = #as_kurs# ) AND  
+                                                             ( EKA.LST_LIMIT_REINSURANCE.LSLI_DATE <![CDATA[<=]]> (select msdef_date from eka.mst_default where msdef_id = 1 ))  )AND  
+         		EKA.LST_LIMIT_REINSURANCE.LSLI_AGE = (  SELECT MAX ( EKA.LST_LIMIT_REINSURANCE.LSLI_AGE )  
+                                                       FROM EKA.LST_LIMIT_REINSURANCE  
+                                                      WHERE ( EKA.LST_LIMIT_REINSURANCE.LSTB_ID = #li_tbisnis# ) AND  
+                                                            ( EKA.LST_LIMIT_REINSURANCE.LSTR_ID = #li_treins# ) AND  
+                                                            ( EKA.LST_LIMIT_REINSURANCE.LSLI_RIDER = #ai_rider# ) AND  
+                                                            ( EKA.LST_LIMIT_REINSURANCE.LSLI_TYPE = #ai_type# ) AND  
+                                                            ( EKA.LST_LIMIT_REINSURANCE.LSLI_MEDICAL = #ai_medis# ) AND  
+                                                            ( EKA.LST_LIMIT_REINSURANCE.LKU_ID = #as_kurs# ) AND  
+                                                            ( EKA.LST_LIMIT_REINSURANCE.LSLI_DATE = (  SELECT MAX ( EKA.LST_LIMIT_REINSURANCE.LSLI_DATE )  
+                                                                                                             FROM EKA.LST_LIMIT_REINSURANCE  
+                                                                                                            WHERE ( EKA.LST_LIMIT_REINSURANCE.LSTB_ID = #li_tbisnis# ) AND  
+                                                                                                                  ( EKA.LST_LIMIT_REINSURANCE.LSTR_ID = #li_treins# ) AND  
+                                                                                                                  ( EKA.LST_LIMIT_REINSURANCE.LSLI_RIDER = #ai_rider# ) AND  
+                                                                                                                  ( EKA.LST_LIMIT_REINSURANCE.LSLI_TYPE = #ai_type# ) AND  
+                                                                                                                  ( EKA.LST_LIMIT_REINSURANCE.LSLI_MEDICAL = #ai_medis# ) AND  
+                                                                                                                  ( EKA.LST_LIMIT_REINSURANCE.LKU_ID = #as_kurs# ) AND  
+                                                                                                                  ( EKA.LST_LIMIT_REINSURANCE.LSLI_DATE <![CDATA[<=]]>(select msdef_date from eka.mst_default where msdef_id = 1 ) ) )) AND  
+                                                            ( EKA.LST_LIMIT_REINSURANCE.LSLI_AGE <![CDATA[<=]]> #ai_age# )  )   
+	
+   	</select>	 
+   	
+   	<select id="elions.uw.select.lst_limit_reinsureance3" resultClass="java.lang.Double" parameterClass="java.util.HashMap">
+		SELECT a.LSLI_VALUE
+		  FROM EKA.LST_LIMIT_REINSURANCE a
+		 WHERE     a.LSTB_ID = #li_tbisnis#
+		       AND a.LSTR_ID = #li_treins#
+		       AND a.LSLI_RIDER = #ai_rider#
+		       AND a.LSLI_TYPE = #ai_type#
+		       AND a.LSLI_MEDICAL = #ai_medis#
+		       AND a.LKU_ID = #as_kurs#
+		       AND a.LSLI_DATE =
+		              (SELECT MAX (LSLI_DATE)
+		                 FROM EKA.LST_LIMIT_REINSURANCE
+		                WHERE     LSTB_ID = a.lstb_id AND LSTR_ID = a.lstr_id AND LSLI_RIDER = a.lsli_rider
+		                      AND LSLI_TYPE = a.lsli_type AND LSLI_MEDICAL = a.lsli_medical AND LSLI_AGE <![CDATA[<=]]> #ai_age#
+		                      AND LKU_ID = a.lku_id AND LSLI_DATE <![CDATA[<=]]>
+		                             (SELECT mste_beg_date FROM eka.mst_insured WHERE reg_spaj = #spaj# AND mste_insured_no = 1))
+		       AND LSLI_AGE =
+		              (SELECT MAX (LSLI_AGE)
+		                 FROM EKA.LST_LIMIT_REINSURANCE
+		                WHERE     LSTB_ID = a.lstb_id AND LSTR_ID = a.lstr_id AND LSLI_RIDER = a.lsli_rider
+		                      AND LSLI_TYPE = a.lsli_type AND LSLI_MEDICAL = a.lsli_medical AND LKU_ID = a.lku_id
+		                      AND LSLI_DATE =
+		                             (SELECT MAX (LSLI_DATE)
+		                                FROM EKA.LST_LIMIT_REINSURANCE
+		                               WHERE     LSTB_ID = a.lstb_id AND LSTR_ID = a.lstr_id AND LSLI_RIDER = a.lsli_rider
+		                                     AND LSLI_TYPE = a.lsli_type AND LSLI_MEDICAL = a.lsli_medical AND LSLI_AGE <![CDATA[<=]]> #ai_age#
+		                                     AND LKU_ID = a.lku_id
+		                                     AND LSLI_DATE <![CDATA[<=]]>
+		                                            (SELECT mste_beg_date FROM eka.mst_insured WHERE reg_spaj = #spaj# AND mste_insured_no = 1))
+		                      AND LSLI_AGE <![CDATA[<=]]> #ai_age#)
+   	</select>	  
+  
+    <!-- Cek mst_simultaneous li_simultan_no-->
+	<select id="elions.uw.select.mst_simultaneous" resultClass="java.lang.Integer"
+		parameterClass="java.lang.String">
+			SELECT max( EKA.MST_SIMULTANEOUS.MSSM_NUMBER ) 
+				FROM 	 EKA.MST_SIMULTANEOUS  
+				WHERE	 EKA.MST_SIMULTANEOUS.MCL_ID = #txtclient_id# 
+				
+   	</select>	   
+  
+   <!-- Cek mst_product_insured wf_ins_cash_tpd-->
+	<select id="elions.uw.select.mst_product_insured" resultClass="java.util.HashMap"
+		parameterClass="java.util.HashMap">
+			 SELECT EKA.MST_PRODUCT_INSURED.LSBS_ID,   
+			        EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER,
+					EKA.MST_PRODUCT_INSURED.MSPR_TSI,
+					EKA.MST_PRODUCT_INSURED.LKU_ID
+			  FROM EKA.MST_PRODUCT_INSURED  
+			   WHERE ( EKA.MST_PRODUCT_INSURED.REG_SPAJ = #as_reg_spaj# ) AND  
+			         ( EKA.MST_PRODUCT_INSURED.MSTE_INSURED_NO = #ai_insured_no# ) AND  
+			         ( EKA.MST_PRODUCT_INSURED.LSBS_ID <![CDATA[<]]> 300 )   
+
+				
+   	</select>	   
+ 	<resultMap id="elions.uw.select.eka.m_sar_temp.result" class="java.util.HashMap">
+	 	<result property="REG_SPAJ" column="REG_SPAJ" javaType="string" jdbcType="CHAR" nullValue=""/>                                                                                                                                                  
+		<result property="REG_SPAJ_REF" column="REG_SPAJ_REF" javaType="string" jdbcType="CHAR" nullValue=""/>                                                                                                                                                  
+		<result property="CNT" column="CNT" javaType="int" jdbcType="NUMBER" />                                                                                                                                                                         
+		<result property="NO_POLIS" column="NO_POLIS" javaType="string" jdbcType="CHAR" nullValue=""/>                                                                                                                                                  
+		<result property="BISNIS_ID" column="BISNIS_ID" javaType="int" jdbcType="NUMBER" />                                                                                                                                                             
+		<result property="LKU_SYMBOL" column="LKU_SYMBOL" javaType="string" jdbcType="VARCHAR2" nullValue=""/>                                                                                                                                          
+		<result property="BISNIS_NO" column="BISNIS_NO" javaType="int" jdbcType="NUMBER" />                                                                                                                                                             
+		<result property="SAR" column="SAR" javaType="double" jdbcType="NUMBER" />                                                                                                                                                                      
+		<result property="LSSP_STATUS" column="LSSP_STATUS" javaType="string" jdbcType="VARCHAR2" nullValue=""/>                                                                                                                                        
+		<result property="MEDIS" column="MEDIS" javaType="int" jdbcType="NUMBER" />                                                                                                                                                                     
+		<result property="LSDBS_NAME" column="LSDBS_NAME" javaType="string" jdbcType="VARCHAR2" nullValue=""/>                                                                                                                                          
+	 </resultMap>
+
+ 	<resultMap id="elions.uw.select.eka.m_sar_temp_new.result" class="java.util.HashMap">
+	 	<result property="REG_SPAJ" column="REG_SPAJ" javaType="string" jdbcType="CHAR" nullValue=""/>                                                                                                                                                  
+		<result property="REG_SPAJ_REF" column="REG_SPAJ_REF" javaType="string" jdbcType="CHAR" nullValue=""/>                                                                                                                                                  
+		<result property="CNT" column="CNT" javaType="int" jdbcType="NUMBER" />                                                                                                                                                                         
+		<result property="NO_POLIS" column="NO_POLIS" javaType="string" jdbcType="CHAR" nullValue=""/>                                                                                                                                                  
+		<result property="BISNIS_ID" column="BISNIS_ID" javaType="int" jdbcType="NUMBER" />                                                                                                                                                             
+		<result property="LKU_SYMBOL" column="LKU_SYMBOL" javaType="string" jdbcType="VARCHAR2" nullValue=""/>                                                                                                                                          
+		<result property="BISNIS_NO" column="BISNIS_NO" javaType="int" jdbcType="NUMBER" />                                                                                                                                                             
+		<result property="SAR" column="SAR" javaType="double" jdbcType="NUMBER" />                                                                                                                                                                      
+		<result property="LSSP_STATUS" column="LSSP_STATUS" javaType="string" jdbcType="VARCHAR2" nullValue=""/>                                                                                                                                        
+		<result property="MEDIS" column="MEDIS" javaType="int" jdbcType="NUMBER" />                                                                                                                                                                     
+		<result property="LSDBS_NAME" column="LSDBS_NAME" javaType="string" jdbcType="VARCHAR2" nullValue=""/>                                                                                                                                          
+		<result property="LSGR_NAME" column="LSGR_NAME" javaType="string" jdbcType="VARCHAR2" nullValue=""/>                                                                                                                                          
+	 </resultMap>
+    <!-- Cek m_sar_temp-->
+	<select id="elions.uw.select.eka.m_sar_temp" resultMap="elions.uw.select.eka.m_sar_temp.result"
+		parameterClass="string">
+		SELECT EKA.M_SAR_TEMP.REG_SPAJ   ,
+					    EKA.M_SAR_TEMP.REG_SPAJ_REF,
+					    EKA.M_SAR_TEMP.CNT   ,
+					    EKA.M_SAR_TEMP.NO_POLIS   ,
+					    EKA.M_SAR_TEMP.BISNIS_ID   ,
+					    EKA.LST_KURS.LKU_SYMBOL    ,
+					    EKA.M_SAR_TEMP.BISNIS_NO   ,
+					    EKA.M_SAR_TEMP.SAR   ,
+					     EKA.LST_POLICY_STATUS.LSSP_STATUS   ,
+					    EKA.M_SAR_TEMP.MEDIS   ,
+					    eka.f_lsdbs(eka.m_sar_temp.reg_spaj, eka.m_sar_temp.BISNIS_ID, eka.m_sar_temp.BISNIS_NO) LSDBS_NAME   
+					FROM EKA.LST_BISNIS ,  
+					    EKA.LST_DET_BISNIS ,  
+					    EKA.LST_KURS ,
+					    EKA.LST_POLICY_STATUS,
+					    EKA.M_SAR_TEMP   
+					WHERE ( EKA.LST_DET_BISNIS.LSBS_ID = EKA.LST_BISNIS.LSBS_ID ) and   
+					    ( EKA.LST_DET_BISNIS.LSBS_ID = EKA.M_SAR_TEMP.BISNIS_ID ) and   
+					    ( EKA.M_SAR_TEMP.KURS_ID=EKA.LST_KURS.LKU_ID) and 
+					    ( EKA.M_SAR_TEMP.BISNIS_NO = EKA.LST_DET_BISNIS.LSDBS_NUMBER ) and  
+					    ( EKA.LST_POLICY_STATUS.LSSP_ID=EKA.M_SAR_TEMP.STS_POLIS) and 
+			   			( EKA.M_SAR_TEMP.REG_SPAJ = #spaj# )
+						
+ 
+    </select>
+   	<select id="elions.uw.select.eka.m_sar_temp_new" resultMap="elions.uw.select.eka.m_sar_temp_new.result"
+		parameterClass="string">
+			SELECT EKA.M_SAR_TEMP.REG_SPAJ   ,
+						    EKA.M_SAR_TEMP.REG_SPAJ_REF,
+						    EKA.M_SAR_TEMP.CNT   ,
+						    EKA.M_SAR_TEMP.NO_POLIS   ,
+						    EKA.M_SAR_TEMP.BISNIS_ID   ,
+						    EKA.LST_KURS.LKU_SYMBOL    ,
+						    EKA.M_SAR_TEMP.BISNIS_NO   ,
+						    EKA.M_SAR_TEMP.SAR   ,
+						     EKA.LST_POLICY_STATUS.LSSP_STATUS   ,
+						    EKA.M_SAR_TEMP.MEDIS   ,
+						    eka.f_lsdbs(eka.m_sar_temp.reg_spaj, eka.m_sar_temp.BISNIS_ID, eka.m_sar_temp.BISNIS_NO) LSDBS_NAME   ,
+						    eka.lst_group_reas.lsgr_name
+						FROM EKA.LST_BISNIS ,  
+						    EKA.LST_DET_BISNIS ,  
+						    EKA.LST_KURS ,
+						    EKA.LST_POLICY_STATUS,
+						    EKA.M_SAR_TEMP,
+						    eka.lst_group_Reas
+						WHERE ( EKA.LST_DET_BISNIS.LSBS_ID = EKA.LST_BISNIS.LSBS_ID ) and   
+						    ( EKA.LST_DET_BISNIS.LSBS_ID = EKA.M_SAR_TEMP.BISNIS_ID ) and   
+						    ( EKA.M_SAR_TEMP.KURS_ID=EKA.LST_KURS.LKU_ID) and 
+						    ( EKA.M_SAR_TEMP.BISNIS_NO = EKA.LST_DET_BISNIS.LSDBS_NUMBER ) and  
+						    ( EKA.LST_POLICY_STATUS.LSSP_ID=EKA.M_SAR_TEMP.STS_POLIS) and 
+						    (eka.lst_bisnis.lsgr_id=eka.lst_group_Reas.lsgr_id) and
+				   			( EKA.M_SAR_TEMP.REG_SPAJ = #spaj# )
+						
+   	</select>	   
+     <!-- Cek m_reas_temp-->
+	<select id="elions.uw.select.eka.m_reas_temp" resultClass="java.util.HashMap"
+		parameterClass="java.lang.String">
+			SELECT EKA.M_REAS_TEMP.REG_SPAJ   ,
+					    EKA.M_REAS_TEMP.PEMEGANG   ,
+					    EKA.M_REAS_TEMP.MSTE_REAS   ,
+					    EKA.M_REAS_TEMP.EXTRA_MORTALITY   ,
+					    EKA.M_REAS_TEMP.LKU_ID   ,
+					    EKA.M_REAS_TEMP.NIL_KURS   ,
+					    EKA.M_REAS_TEMP.SIMULTAN_TR_RD   ,
+					    EKA.M_REAS_TEMP.TSI_TR_RD   ,
+					    EKA.M_REAS_TEMP.SAR_TR_RD   ,
+					    EKA.M_REAS_TEMP.RETENSI_TR_RD   ,
+					    EKA.M_REAS_TEMP.REAS_TR_RD   ,
+					    EKA.M_REAS_TEMP.SIMULTAN_LIFE   ,
+					    EKA.M_REAS_TEMP.TSI_LIFE   ,
+					    EKA.M_REAS_TEMP.SAR_LIFE   ,
+					    EKA.M_REAS_TEMP.RETENSI_LIFE   ,
+					    EKA.M_REAS_TEMP.REAS_LIFE   ,
+					    EKA.M_REAS_TEMP.SIMULTAN_SSP   ,
+					    EKA.M_REAS_TEMP.TSI_SSP   ,
+					    EKA.M_REAS_TEMP.SAR_SSP   ,
+					    EKA.M_REAS_TEMP.RETENSI_SSP   ,
+					    EKA.M_REAS_TEMP.REAS_SSP   ,
+					    EKA.M_REAS_TEMP.SIMULTAN_PA_IN   ,
+					    EKA.M_REAS_TEMP.TSI_PA_IN   ,
+					    EKA.M_REAS_TEMP.SAR_PA_IN   ,
+					    EKA.M_REAS_TEMP.RETENSI_PA_IN   ,
+					    EKA.M_REAS_TEMP.REAS_PA_IN   ,
+					    EKA.M_REAS_TEMP.SIMULTAN_PA_RD   ,
+					    EKA.M_REAS_TEMP.TSI_PA_RD   ,
+					    EKA.M_REAS_TEMP.SAR_PA_RD   ,
+					    EKA.M_REAS_TEMP.RETENSI_PA_RD   ,
+					    EKA.M_REAS_TEMP.REAS_PA_RD   ,
+					    EKA.M_REAS_TEMP.SIMULTAN_PK_IN   ,
+					    EKA.M_REAS_TEMP.TSI_PK_IN   ,
+					    EKA.M_REAS_TEMP.SAR_PK_IN   ,
+					    EKA.M_REAS_TEMP.RETENSI_PK_IN   ,
+					    EKA.M_REAS_TEMP.REAS_PK_IN   ,
+					    EKA.M_REAS_TEMP.SIMULTAN_PK_RD   ,
+					    EKA.M_REAS_TEMP.TSI_PK_RD   ,
+					    EKA.M_REAS_TEMP.SAR_PK_RD   ,
+					    EKA.M_REAS_TEMP.RETENSI_PK_RD   ,
+					    EKA.M_REAS_TEMP.REAS_PK_RD   ,
+					    EKA.M_REAS_TEMP.SIMULTAN_SSH  , 
+					    EKA.M_REAS_TEMP.TSI_SSH   ,
+					    EKA.M_REAS_TEMP.SAR_SSH   ,
+					    EKA.M_REAS_TEMP.RETENSI_SSH   ,
+					    EKA.M_REAS_TEMP.REAS_SSH   ,
+					    EKA.M_REAS_TEMP.SIMULTAN_CASH   ,
+					    EKA.M_REAS_TEMP.TSI_CASH   ,
+					    EKA.M_REAS_TEMP.SAR_CASH   ,
+					    EKA.M_REAS_TEMP.RETENSI_CASH   ,
+					    EKA.M_REAS_TEMP.REAS_CASH   ,
+					    EKA.M_REAS_TEMP.SIMULTAN_TPD   ,
+					    EKA.M_REAS_TEMP.TSI_TPD   ,
+					    EKA.M_REAS_TEMP.SAR_TPD   ,
+					    EKA.M_REAS_TEMP.RETENSI_TPD   ,
+					    EKA.M_REAS_TEMP.REAS_TPD   
+					FROM EKA.M_REAS_TEMP   
+					WHERE EKA.M_REAS_TEMP.REG_SPAJ = #txtnospaj# 
+					ORDER BY EKA.M_REAS_TEMP.REG_SPAJ ASC   ,
+					    EKA.M_REAS_TEMP.PEMEGANG ASC 						
+   	</select>	   
+ 
+    <select id="elions.uw.reas.select.d_ds_sar" resultClass="com.ekalife.elions.model.D_DS_Sar" 
+		parameterClass="java.util.HashMap"> 
+		SELECT   polis.reg_spaj reg_spaj_ref,
+		         polis.lssp_id, polis.lspd_id,
+		         polis.mspo_age, polis.lscb_id,
+		         polis.mspo_policy_no, polis.mspo_ins_period,
+		         polis.mspo_pay_period, eka.mst_product_insured.lsbs_id,
+		         eka.mst_product_insured.lsdbs_number, eka.mst_product_insured.lku_id,
+		         eka.mst_product_insured.mspr_tsi,
+		         eka.mst_product_insured.mspr_tsi_pa_a,
+		         eka.mst_product_insured.mspr_unit, eka.mst_product_insured.mspr_rate,
+		         eka.mst_product_insured.mspr_extra, eka.mst_insured.reg_spaj,
+		         eka.mst_insured.mste_insured_no, eka.mst_simultaneous.mssm_pemegang,
+		         eka.mst_insured.mste_medical, eka.mst_insured.mste_beg_date,
+		         eka.mst_insured.lssa_id, eka.lst_type_reinsurance.lstb_id,
+		         eka.lst_type_reinsurance.lstr_id,
+		         eka.lst_type_reinsurance.lstr_quota_reas,
+		         eka.lst_det_bisnis.lsdbs_reas_client, polis.mspo_ins_bulan,
+		         eka.mst_product_insured.mspr_bunga_kpr, polis.mspo_flat,
+		         eka.lst_bisnis.lsgb_id
+		    FROM (select * from eka.mst_policy 
+				 	where reg_spaj in
+							  		   	 (select reg_spaj 
+										 		 from eka.mst_simultaneous 
+												 where mcl_id=#mclId# 
+												 	   and (#simultanNo# = 0 OR eka.mst_simultaneous.mssm_number <![CDATA[<]]> 0)
+										 )
+					  and (
+					  	  eka.mst_policy.lssp_id=1  or 
+						  eka.mst_policy.lssp_id=3  or 
+						  eka.mst_policy.lssp_id=4  or 
+						  eka.mst_policy.lssp_id=10 )
+				  )polis,
+		         eka.mst_product_insured,
+		         eka.mst_insured,
+		         eka.mst_simultaneous,
+		         eka.lst_bisnis,
+		         eka.lst_type_reinsurance,
+		         eka.lst_det_bisnis
+		   WHERE (eka.mst_insured.reg_spaj = eka.mst_product_insured.reg_spaj)
+		     AND (eka.mst_insured.mste_insured_no =
+		                                       eka.mst_product_insured.mste_insured_no
+		         )
+		     AND (eka.mst_simultaneous.reg_spaj = polis.reg_spaj)
+		     AND (eka.lst_type_reinsurance.lstr_id = eka.lst_bisnis.lstr_id)
+		     AND (eka.mst_simultaneous.reg_spaj = eka.mst_insured.reg_spaj)
+		     AND (eka.lst_bisnis.lsbs_id = eka.lst_det_bisnis.lsbs_id)
+		     AND (eka.mst_product_insured.lsbs_id = eka.lst_det_bisnis.lsbs_id)
+		     AND (eka.mst_product_insured.lsdbs_number =
+		                                               eka.lst_det_bisnis.lsdbs_number
+		         )
+		     AND (eka.lst_bisnis.lstb_id = eka.lst_type_reinsurance.lstb_id)
+		     AND (    eka.mst_simultaneous.mcl_id = #mclId#)
+		          AND (#simultanNo# = 0 OR eka.mst_simultaneous.mssm_number <![CDATA[<]]> #simultanNo#)
+		          and eka.mst_simultaneous.mssm_pemegang=0 and
+		         polis.lstb_id=1
+		ORDER BY polis.mspo_policy_no ASC,
+		         eka.mst_product_insured.lsbs_id ASC,
+		         eka.mst_product_insured.lsdbs_number ASC
+		       
+    </select>
+ 
+     <select id="elions.uw.reas.select.d_ds_sarNew" resultClass="com.ekalife.elions.model.D_DS_Sar" 
+		parameterClass="java.util.HashMap"> 
+		SELECT   polis.reg_spaj reg_spaj_ref,
+		         polis.lssp_id, polis.lspd_id,
+		         polis.mspo_age, polis.lscb_id,
+		         polis.mspo_policy_no, polis.mspo_ins_period,
+		         polis.mspo_pay_period, pi.lsbs_id,
+		         pi.lsdbs_number, pi.lku_id,
+		         nvl(pi.mspr_tsi_endors,pi.mspr_tsi) mspr_tsi,
+		         pi.mspr_tsi_pa_a,
+		         pi.mspr_unit, pi.mspr_rate,
+		         pi.mspr_extra, i.reg_spaj,
+		         i.mste_insured_no, s.mssm_pemegang,
+		         i.mste_medical, i.mste_beg_date,
+		         i.lssa_id, tr.lstb_id,
+		         tr.lstr_id,
+		         tr.lstr_quota_reas,
+		         db.lsdbs_reas_client, polis.mspo_ins_bulan,
+		         pi.mspr_bunga_kpr, polis.mspo_flat,
+		         b.lsgb_id,
+		         b.lsgr_id,
+		         b.lssr_id,
+	             rt.retensi_life,
+	             rt.retensi_tr_rd,
+	             rt.retensi_ssp,
+	             rt.retensi_ssh
+		    FROM (SELECT * FROM eka.mst_policy 
+				 	WHERE reg_spaj IN
+							  		   	 (SELECT reg_spaj 
+										 		 FROM eka.mst_simultaneous 
+												 WHERE id_simultan=#id_simultan#
+												 	   AND (#simultanNo# = 0 OR eka.mst_simultaneous.mssm_number <![CDATA[<]]>0)
+										 )
+					  AND (
+					  	  eka.mst_policy.lssp_id=1  OR 
+						  eka.mst_policy.lssp_id=3  OR 
+						  eka.mst_policy.lssp_id=4  OR 
+						  eka.mst_policy.lssp_id=10 )
+				  )polis,
+		         eka.mst_product_insured pi,
+		         eka.mst_insured i,
+		         (SELECT * FROM eka.mst_simultaneous WHERE id_simultan=#id_simultan#)s,
+		         eka.lst_bisnis b,
+		         eka.lst_type_reinsurance tr,
+		         eka.lst_det_bisnis db,
+				 eka.m_reas_temp rt
+		   WHERE i.reg_spaj = pi.reg_spaj
+		     AND i.mste_insured_no =pi.mste_insured_no
+		     AND s.reg_spaj = polis.reg_spaj
+		     AND tr.lstr_id = b.lstr_id
+		     AND s.reg_spaj = i.reg_spaj
+		     AND b.lsbs_id = db.lsbs_id
+		     AND pi.lsbs_id = db.lsbs_id
+		     AND pi.lsdbs_number =db.lsdbs_number
+		     AND b.lstb_id = tr.lstb_id
+		     AND (#simultanNo#= 0 OR s.mssm_number <![CDATA[<]]> #simultanNo#)
+		     AND s.mssm_pemegang=0
+		     AND i.reg_spaj = rt.reg_spaj    
+		ORDER BY polis.mspo_policy_no ASC,
+		         pi.lsbs_id ASC,
+		         pi.lsdbs_number ASC
+
+		       
+    </select>
+    
+ <!-- <select id="elions.uw.reas.select.d_ds_sar" resultClass="com.ekalife.elions.model.D_DS_Sar" 
+		parameterClass="java.util.HashMap"> 
+		    SELECT EKA.MST_POLICY.LSSP_ID,   
+		         EKA.MST_POLICY.LSPD_ID,   
+		         EKA.MST_POLICY.MSPO_AGE,   
+		         EKA.MST_POLICY.LSCB_ID,   
+		         EKA.MST_POLICY.MSPO_POLICY_NO,   
+		         EKA.MST_POLICY.MSPO_INS_PERIOD,   
+		         EKA.MST_POLICY.MSPO_PAY_PERIOD,   
+		         EKA.MST_PRODUCT_INSURED.LSBS_ID,   
+		         EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER,   
+		         EKA.MST_PRODUCT_INSURED.LKU_ID,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_TSI,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_TSI_PA_A,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_UNIT,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_RATE,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_EXTRA,   
+		         EKA.MST_INSURED.REG_SPAJ,   
+		         EKA.MST_INSURED.MSTE_INSURED_NO,   
+		         EKA.MST_SIMULTANEOUS.MSSM_PEMEGANG,   
+		         EKA.MST_INSURED.MSTE_MEDICAL,   
+		         EKA.MST_INSURED.MSTE_BEG_DATE,   
+		         EKA.MST_INSURED.LSSA_ID,   
+		         EKA.LST_TYPE_REINSURANCE.LSTB_ID,   
+		         EKA.LST_TYPE_REINSURANCE.LSTR_ID,   
+		         EKA.LST_TYPE_REINSURANCE.LSTR_QUOTA_REAS,   
+		         EKA.LST_DET_BISNIS.LSDBS_REAS_CLIENT,   
+		         EKA.MST_POLICY.MSPO_INS_BULAN,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_BUNGA_KPR,   
+		         EKA.MST_POLICY.MSPO_FLAT  
+		    FROM EKA.MST_POLICY,   
+		         EKA.MST_PRODUCT_INSURED,   
+		         EKA.MST_INSURED,   
+		         EKA.MST_SIMULTANEOUS,   
+		         EKA.LST_BISNIS,   
+		         EKA.LST_TYPE_REINSURANCE,   
+		         EKA.LST_DET_BISNIS  
+		   WHERE ( EKA.MST_INSURED.REG_SPAJ = EKA.MST_PRODUCT_INSURED.REG_SPAJ ) and  
+		         ( EKA.MST_INSURED.MSTE_INSURED_NO = EKA.MST_PRODUCT_INSURED.MSTE_INSURED_NO ) and  
+		         ( EKA.MST_SIMULTANEOUS.REG_SPAJ = EKA.MST_POLICY.REG_SPAJ ) and  
+		         ( EKA.LST_TYPE_REINSURANCE.LSTR_ID = EKA.LST_BISNIS.LSTR_ID ) and  
+		         ( EKA.MST_SIMULTANEOUS.REG_SPAJ = EKA.MST_INSURED.REG_SPAJ ) and  
+		         ( EKA.LST_BISNIS.LSBS_ID = EKA.LST_DET_BISNIS.LSBS_ID ) and  
+		         ( EKA.MST_PRODUCT_INSURED.LSBS_ID = EKA.LST_DET_BISNIS.LSBS_ID ) and  
+		         ( EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER = EKA.LST_DET_BISNIS.LSDBS_NUMBER ) and  
+		         ( EKA.LST_BISNIS.LSTB_ID = EKA.LST_TYPE_REINSURANCE.LSTB_ID ) and  
+		         ( ( EKA.MST_SIMULTANEOUS.MCL_ID = #mclId# ) AND  
+		         ( EKA.MST_POLICY.LSSP_ID = 1 OR  
+		         EKA.MST_POLICY.LSSP_ID = 3 OR  
+		         EKA.MST_POLICY.LSSP_ID = 4 OR  
+		         EKA.MST_POLICY.LSSP_ID = 10 OR  
+		         EKA.MST_POLICY.LSSP_ID = 14 ) AND  
+		         ( #simultanNo# = 0 OR EKA.MST_SIMULTANEOUS.MSSM_NUMBER  <![CDATA[<]]> #simultanNo# ) )   
+		ORDER BY EKA.MST_POLICY.MSPO_POLICY_NO ASC,   
+		         EKA.MST_PRODUCT_INSURED.LSBS_ID ASC,   
+		         EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER ASC   
+		       
+    </select>-->
+    
+    <select id="elions.uw.reas.select.d_ds_sarn" resultClass="com.ekalife.elions.model.D_DS_Sar" 
+		parameterClass="java.util.HashMap"> 
+			   SELECT EKA.MST_POLICY.LSSP_ID,   
+		         EKA.MST_POLICY.LSPD_ID,   
+		         EKA.MST_POLICY.MSPO_AGE,   
+		         EKA.MST_POLICY.LSCB_ID,   
+		         EKA.MST_POLICY.MSPO_POLICY_NO,   
+		         EKA.MST_POLICY.MSPO_INS_PERIOD,   
+		         EKA.MST_POLICY.MSPO_PAY_PERIOD,   
+		         EKA.MST_PRODUCT_INSURED.LSBS_ID,   
+		         EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER,   
+		         EKA.MST_PRODUCT_INSURED.LKU_ID,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_TSI,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_TSI_PA_A,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_UNIT,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_RATE,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_EXTRA,   
+		         EKA.MST_INSURED.REG_SPAJ,   
+		         EKA.MST_INSURED.REG_SPAJ REG_SPAJ_REF,   
+		         EKA.MST_INSURED.MSTE_INSURED_NO,   
+		         EKA.MST_INSURED.MSTE_MEDICAL,   
+		         EKA.MST_INSURED.MSTE_BEG_DATE,   
+		         EKA.LST_TYPE_REINSURANCE.LSTB_ID,   
+		         EKA.LST_TYPE_REINSURANCE.LSTR_ID,   
+		         EKA.LST_TYPE_REINSURANCE.LSTR_QUOTA_REAS,   
+		         EKA.LST_DET_BISNIS.LSDBS_REAS_CLIENT,   
+		         EKA.MST_POLICY.MSPO_INS_BULAN,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_BUNGA_KPR,   
+		         EKA.MST_POLICY.MSPO_FLAT,
+		         EKA.LST_BISNIS.LSGB_ID
+		    FROM EKA.MST_POLICY,   
+		         EKA.MST_PRODUCT_INSURED,   
+		         EKA.MST_INSURED,   
+		         EKA.LST_BISNIS,   
+		         EKA.LST_TYPE_REINSURANCE,   
+		         EKA.LST_DET_BISNIS  
+		   WHERE ( EKA.LST_TYPE_REINSURANCE.LSTR_ID (+) = EKA.LST_BISNIS.LSTR_ID) and  
+		         ( EKA.LST_BISNIS.LSTB_ID = EKA.LST_TYPE_REINSURANCE.LSTB_ID (+)) and  
+		         ( EKA.MST_INSURED.REG_SPAJ = EKA.MST_PRODUCT_INSURED.REG_SPAJ ) and  
+		         ( EKA.MST_INSURED.MSTE_INSURED_NO = EKA.MST_PRODUCT_INSURED.MSTE_INSURED_NO ) and  
+		         ( EKA.MST_INSURED.REG_SPAJ = EKA.MST_POLICY.REG_SPAJ ) and  
+		         ( EKA.MST_PRODUCT_INSURED.LSBS_ID = EKA.LST_DET_BISNIS.LSBS_ID ) and  
+		         ( EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER = EKA.LST_DET_BISNIS.LSDBS_NUMBER ) and  
+		         ( EKA.LST_DET_BISNIS.LSBS_ID = EKA.LST_BISNIS.LSBS_ID ) and  
+		         ( ( EKA.MST_INSURED.REG_SPAJ = #spaj# ) AND  
+		         ( EKA.MST_INSURED.MSTE_INSURED_NO = #insured# ) )   
+		         AND eka.mst_policy.lstb_id=1
+		ORDER BY EKA.MST_POLICY.MSPO_POLICY_NO ASC,   
+		         EKA.MST_PRODUCT_INSURED.LSBS_ID ASC,   
+		         EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER ASC           	
+	</select>
+	
+    <select id="elions.uw.reas.select.d_ds_sarnNew" resultClass="com.ekalife.elions.model.D_DS_Sar" 
+		parameterClass="java.util.HashMap"> 
+			   SELECT EKA.MST_POLICY.LSSP_ID,   
+		         EKA.MST_POLICY.LSPD_ID,   
+		         EKA.MST_POLICY.MSPO_AGE,   
+		         EKA.MST_POLICY.LSCB_ID,   
+		         EKA.MST_POLICY.MSPO_POLICY_NO,   
+		         EKA.MST_POLICY.MSPO_INS_PERIOD,   
+		         EKA.MST_POLICY.MSPO_PAY_PERIOD,   
+		         EKA.MST_PRODUCT_INSURED.LSBS_ID,   
+		         EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER,   
+		         EKA.MST_PRODUCT_INSURED.LKU_ID,   
+		         NVL(EKA.MST_PRODUCT_INSURED.MSPR_TSI_ENDORS, EKA.MST_PRODUCT_INSURED.MSPR_TSI) MSPR_TSI,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_TSI_PA_A,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_UNIT,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_RATE,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_EXTRA,   
+		         EKA.MST_INSURED.REG_SPAJ,   
+		         EKA.MST_INSURED.REG_SPAJ REG_SPAJ_REF,   
+		         EKA.MST_INSURED.MSTE_INSURED_NO,   
+		         EKA.MST_INSURED.MSTE_MEDICAL,   
+		         EKA.MST_INSURED.MSTE_BEG_DATE,  
+		         EKA.MST_INSURED.LSSA_ID,
+		         EKA.LST_TYPE_REINSURANCE.LSTB_ID,   
+		         EKA.LST_TYPE_REINSURANCE.LSTR_ID,   
+		         EKA.LST_TYPE_REINSURANCE.LSTR_QUOTA_REAS,   
+		         EKA.LST_DET_BISNIS.LSDBS_REAS_CLIENT,   
+		         EKA.MST_POLICY.MSPO_INS_BULAN,   
+		         EKA.MST_PRODUCT_INSURED.MSPR_BUNGA_KPR,   
+		         EKA.MST_POLICY.MSPO_FLAT,
+		         EKA.LST_BISNIS.LSGB_ID,
+		         EKA.LST_BISNIS.LSGR_ID,
+		         EKA.LST_BISNIS.LSSR_ID
+		    FROM EKA.MST_POLICY,   
+		         EKA.MST_PRODUCT_INSURED,   
+		         EKA.MST_INSURED,   
+		         EKA.LST_BISNIS,   
+		         EKA.LST_TYPE_REINSURANCE,   
+		         EKA.LST_DET_BISNIS  
+		   WHERE ( EKA.LST_TYPE_REINSURANCE.LSTR_ID (+) = EKA.LST_BISNIS.LSTR_ID) and  
+		         ( EKA.LST_BISNIS.LSTB_ID = EKA.LST_TYPE_REINSURANCE.LSTB_ID (+)) and  
+		         ( EKA.MST_INSURED.REG_SPAJ = EKA.MST_PRODUCT_INSURED.REG_SPAJ ) and  
+		         ( EKA.MST_INSURED.MSTE_INSURED_NO = EKA.MST_PRODUCT_INSURED.MSTE_INSURED_NO ) and  
+		         ( EKA.MST_INSURED.REG_SPAJ = EKA.MST_POLICY.REG_SPAJ ) and  
+		         ( EKA.MST_PRODUCT_INSURED.LSBS_ID = EKA.LST_DET_BISNIS.LSBS_ID ) and  
+		         ( EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER = EKA.LST_DET_BISNIS.LSDBS_NUMBER ) and  
+		         ( EKA.LST_DET_BISNIS.LSBS_ID = EKA.LST_BISNIS.LSBS_ID ) and  
+		         ( ( EKA.MST_INSURED.REG_SPAJ = #spaj# ) AND  
+		         ( EKA.MST_INSURED.MSTE_INSURED_NO = #insured# ) )   
+			     and eka.mst_policy.lstb_id=1
+		ORDER BY EKA.MST_POLICY.MSPO_POLICY_NO ASC,   
+		         EKA.MST_PRODUCT_INSURED.LSBS_ID ASC,   
+		         EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER ASC           	
+	</select>
+	
+	<select id="elions.uw.select.m_sar_temp_new" resultClass="com.ekalife.elions.model.SarTempNew"	parameterClass="string"> 
+		select * 
+			from eka.m_sar_temp_new where reg_spaj=#value# order by bisnis_id asc
+	</select>
+	
+	<select id="elions.uw.select.distinct.m_sar_temp_new.bisnis_id" resultClass="integer"	parameterClass="string"> 
+		SELECT DISTINCT bisnis_id 
+			FROM eka.m_sar_temp_new 
+					WHERE id_sar=#value#
+	</select>
+	  
+	<select id="elions.uw.select.distinct.m_sar_temp_new.lsgb_id" resultClass="integer"	parameterClass="string"> 
+		SELECT DISTINCT lsgb_id  
+			FROM eka.m_sar_temp_new 
+					WHERE id_sar=#value#
+	</select>
+	  
+	<select id="elions.uw.select.lst_group_bisnis" resultClass="java.util.HashMap"> 
+		SELECT * FROM eka.lst_group_bisnis WHERE lstb_id=1
+	</select>
+
+	<select id="elions.uw.selectMReasTempNew" resultClass="com.ekalife.elions.model.ReasTempNew" parameterClass="java.util.HashMap" > 
+		 select a.*,b.lsdbs_name from eka.m_reas_temp_new a,
+	 		  	   eka.lst_det_bisnis b
+				   where a.lsbs_id=b.lsbs_id and
+				   		 a.lsdbs_number=b.lsdbs_number 
+						 <isNotNull property="spaj">
+							 and a.reg_spaj=#spaj#
+						 </isNotNull>
+	</select>
+
+	<select id="elions.uw.selectIdSimultan" resultClass="string"  parameterClass="java.util.HashMap" >
+			  SELECT id_simultan
+		  FROM eka.mst_simultaneous
+		 WHERE reg_spaj = rpad(replace(#spaj#,'.'),11,' ') 
+		 AND mssm_pemegang = #pemegang#
+	</select>
+	
+	<select id="elions.uw.selectCountIdSimultan" resultClass="int"  parameterClass="string" >
+		SELECT COUNT (*)
+		  FROM eka.mst_simultaneous
+		 WHERE id_simultan = #value#
+	</select>
+	
+	<select id="elions.uw.selectMstSimultaneousRegSpaj" resultClass="string"  parameterClass="string" >
+		SELECT DISTINCT reg_spaj
+           FROM eka.mst_simultaneous
+          WHERE id_simultan =#value#
+	</select>
+	
+	<select id="elions.uw.selectMReasTempNewNotInsertToReins" resultClass="com.ekalife.elions.model.ReasTempNew" > 
+		SELECT b.*FROM
+			eka.mst_insured a,
+			eka.m_Reas_temp_new b
+			WHERE a.reg_spaj=b.reg_spaj AND  b.reas <![CDATA[<>]]> 0  
+
+	</select>
+
+	<select id="elions.uw.selectCountMstReinsProduct" resultClass="int" parameterClass="java.util.HashMap" > 
+	  SELECT COUNT (*)
+		  FROM eka.mst_reins_product
+		 WHERE reg_spaj = #reg_spaj#
+		   AND lsbs_id = #lsbs_id#
+		   AND lsdbs_number = #lsdbs_number#
+		   AND mste_insured_no = #mste_insured_no# 
+	</select>	 
+	
+	<select id="elions.uw.selectCountMstMainReas" resultClass="int" parameterClass="java.util.HashMap" > 
+	  SELECT COUNT (*)
+		  FROM eka.mst_reins_product
+		 WHERE reg_spaj = #reg_spaj#
+		   AND lsbs_id = #lsbs_id#
+		   AND lsdbs_number <![CDATA[<]]> 300
+		   AND mste_insured_no = #mste_insured_no# 
+	</select>
+	
+	<select id="elions.uw.selectCountMstBill" resultClass="int" parameterClass="java.util.HashMap" > 
+	  SELECT COUNT (*)
+		  FROM eka.mst_billing
+		 WHERE reg_spaj = #reg_spaj#
+		 	  AND msbi_tahun_ke= #msbi_tahun_ke#
+		 	  AND msbi_premi_ke= #msbi_tahun_ke#
+	</select>	
+	  
+	<select id= "elions.uw.selectSpajSimultan" resultClass="java.util.HashMap" parameterClass="java.lang.String">
+			SELECT DISTINCT b.reg_spaj,c.mste_beg_date,a.sar, d.lstb_id
+			FROM eka.m_sar_temp a, eka.mst_simultaneous b, eka.mst_insured c,EKA.LST_BISNIS d
+         	WHERE a.reg_spaj = b.reg_spaj and   
+         	      a.reg_spaj=  c.reg_spaj AND 
+         		  a.bisnis_id= d.lsbs_id AND 
+         		  id_simultan =#id_simultan#
+         		  And d.lsbs_id <![CDATA[<]]> 600
+       		ORDER BY c.mste_beg_date asc
+	</select>  
+	
+	<select id= "elions.uw.selectSpajSimultanLife" resultClass="java.util.HashMap" parameterClass="java.lang.String">
+			SELECT DISTINCT b.reg_spaj,c.mste_beg_date,a.sar,a.bisnis_id
+           	FROM eka.m_sar_temp a, eka.mst_simultaneous b, eka.mst_insured c
+         	WHERE a.reg_spaj = b.reg_spaj and   a.reg_spaj=  c.reg_spaj AND id_simultan =#id_simultan#
+         	and a.bisnis_id IN ('815', '817', '818', '813')
+       		ORDER BY c.mste_beg_date asc
+	</select>  
+	
+	<select id= "elions.uw.selectOldSar" resultClass="java.lang.Double" parameterClass="java.util.HashMap">
+		select sar from (
+				SELECT  ROWNUM rowke , a.sar
+   				FROM eka.m_sar_temp a, eka.mst_simultaneous b, eka.mst_insured c
+   				WHERE bisnis_id IN ('815', '817', '818', '813','816', '822')
+     					AND id_simultan = #id_simultan#
+     					AND a.reg_spaj = b.reg_spaj
+     					AND a.reg_spaj = c.reg_spaj	 
+				ORDER BY c.mste_beg_date ASC)
+		where rowke=#rowke#
+	</select>
+	
+	<select id= "elions.uw.listOldSar" resultClass="java.util.HashMap" parameterClass="java.lang.String">
+		select rowke , sar from (
+				SELECT  ROWNUM rowke , a.sar
+   				FROM eka.m_sar_temp a, eka.mst_simultaneous b, eka.mst_insured c
+   				WHERE bisnis_id IN ('815', '817', '818', '813','816','822')
+     					AND id_simultan = #id_simultan#
+     					AND a.reg_spaj = b.reg_spaj
+     					AND a.reg_spaj = c.reg_spaj	 
+				ORDER BY c.mste_beg_date ASC)
+				order by rowke
+	
+	</select>
+	<select id= "elions.uw.listOldProdSave" resultClass="java.util.HashMap" parameterClass="java.lang.String">
+		select distinct cnt,sar ,mste_beg_date,bisnis_id,lsgr_id from (
+				SELECT   a.cnt, a.sar, c.mste_beg_date, a.bisnis_id, d.lsgr_id
+   				FROM eka.m_sar_temp a, eka.mst_simultaneous b, 
+					 eka.mst_insured c, eka.lst_bisnis_reas d, eka.lst_group_reas e
+   				WHERE  id_simultan = #id_simultan#
+     					AND a.reg_spaj = b.reg_spaj
+     					AND a.reg_spaj = c.reg_spaj	 
+						AND d.lsbs_id = a.bisnis_id
+						AND d.lsgr_id = e.LSGR_ID
+						AND d.lsgr_id=2
+				ORDER BY cnt ASC)
+	
+	</select>
+	
+	<select id= "elions.uw.selectOldSarTPD" resultClass="java.lang.Double" parameterClass="java.util.HashMap">
+		select sar from (
+				SELECT  ROWNUM rowke , a.sar
+   				FROM eka.m_sar_temp a, eka.mst_simultaneous b, eka.mst_insured c
+   				WHERE bisnis_id IN ('812', '814', '815')
+     					AND id_simultan = #id_simultan#
+     					AND a.reg_spaj = b.reg_spaj
+     					AND a.reg_spaj = c.reg_spaj	 
+				ORDER BY c.mste_beg_date ASC)
+		where rowke=#rowke#
+	</select>
+	<select id= "elions.uw.listOldSarTPD" resultClass="java.util.HashMap" parameterClass="java.lang.String">
+		select rowke,sar from (
+				SELECT  ROWNUM rowke , a.sar
+   				FROM eka.m_sar_temp a, eka.mst_simultaneous b, eka.mst_insured c
+   				WHERE bisnis_id IN ('812', '814', '815', '816')
+     					AND id_simultan = #id_simultan#
+     					AND a.reg_spaj = b.reg_spaj
+     					AND a.reg_spaj = c.reg_spaj	 
+				ORDER BY c.mste_beg_date ASC)
+	</select>
+	<select id= "elions.uw.selectOldSar1" resultClass="java.lang.Double" parameterClass="java.util.HashMap">
+		select sar from (
+				SELECT  ROWNUM rowke , a.sar
+   				FROM eka.m_sar_temp a, eka.mst_simultaneous b, eka.mst_insured c
+   				WHERE bisnis_id IN ('812', '813', '815', '817', '818')
+     					AND id_simultan = #id_simultan#
+     					AND a.reg_spaj = b.reg_spaj
+     					AND a.reg_spaj = c.reg_spaj	 
+				ORDER BY c.mste_beg_date ASC)
+		where rowke=#rowke#
+	</select>
+	<select id= "elions.uw.selectReasSimultanPowerSave" resultClass="java.util.HashMap" parameterClass="java.lang.String">
+		SELECT b.mspo_spaj_date, B.*, c.tsi_ssp,c.sar_ssp,c.retensi_ssp,c.reas_ssp 
+		FROM eka.mst_simultaneous a, eka.mst_policy b, eka.m_reas_temp c
+		WHERE a.id_simultan = #id_simultan# and mssm_pemegang = 0
+		AND a.REG_SPAJ = b.REG_SPAJ
+		AND c.REG_SPAJ =  b.REG_SPAJ
+		order by b.mspo_spaj_date asc
+	</select> 
+
+ <!-- Coba -->
+	<select id="elions.uw.select.coba_policy" resultClass="java.util.HashMap"
+		parameterClass="java.lang.String">
+			select * from eka.mst_policy where reg_spaj= #reg_spaj#
+   	</select>	   
+
+   	<!-- TES -->
+   	<insert id="elions.uw.insert.tes" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.LST_JABATAN  
+         		( LJB_ID,   
+        		  LJB_NOTE )  
+  		VALUES ( #ljb_id#,   
+   			     #ljb_note# )  
+		            	
+	</insert>		
+ </sqlMap>

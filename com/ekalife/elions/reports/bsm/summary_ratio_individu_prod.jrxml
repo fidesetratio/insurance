@@ -1,0 +1,796 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="summary_ratio_individu_prod" pageWidth="1151" pageHeight="800" columnWidth="1121" leftMargin="15" rightMargin="15" topMargin="20" bottomMargin="20">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("01/01/2013")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("31/06/2013")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="username" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Andhika"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="namaprod" class="java.lang.String">
+		<defaultValueExpression><![CDATA["xxx"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lsdbsnumber" class="java.lang.String">
+		<defaultValueExpression><![CDATA["6"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select 
+ 'STANDARD' Jenis,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('01'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_jan,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('02'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_feb,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('03'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_mar,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('04'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_apr,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('05'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_may,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('06'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_jun,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('07'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_jul,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('08'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_aug,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('09'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_sep,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('10'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_oct,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('11'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_nov,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('12'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_dec,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'yyyy'),'yyyy') = to_date(TO_CHAR($P{tanggalAwal},'yyyy'),'yyyy') then 1 else 0 end)ind_jum
+from eka.mst_policy a,
+     eka.mst_insured b,
+     eka.mst_product_insured c,
+     eka.mst_production e
+where a.reg_spaj = b.reg_spaj
+and a.reg_spaj = c.reg_spaj
+and a.reg_spaj = e.reg_spaj
+and e.mspro_prod_ke = 1
+and e.lstb_id = 1
+and a.lstb_id = e.lstb_id
+and c.lsbs_id < 800
+and (a.lspd_id <> 95 or a.lssp_id <> 8)
+and e.mspro_prod_date between $P{tanggalAwal} AND $P{tanggalAkhir}
+and not exists (select 1 from eka.mst_product_insured where reg_spaj = a.reg_spaj and lsbs_id >=900)
+union
+select 
+ 'NON STANDARD' Jenis,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('01'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_jan,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('02'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_feb,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('03'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_mar,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('04'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_apr,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('05'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_may,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('06'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_jun,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('07'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_jul,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('08'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_aug,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('09'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_sep,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('10'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_oct,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('11'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_nov,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('12'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end)ind_dec,
+sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'yyyy'),'yyyy') = to_date(TO_CHAR($P{tanggalAwal},'yyyy'),'yyyy') then 1 else 0 end)ind_jum
+from eka.mst_policy a,  
+     eka.mst_insured b,
+     eka.mst_product_insured c,
+eka.mst_production e
+where a.reg_spaj = b.reg_spaj
+and a.reg_spaj = c.reg_spaj 
+and a.reg_spaj = e.reg_spaj
+and e.mspro_prod_ke = 1
+and e.lstb_id = 1
+and a.lstb_id = e.lstb_id
+and c.lsbs_id < 800
+and (a.lspd_id <> 95 or a.lssp_id <> 8)
+and e.mspro_prod_date between $P{tanggalAwal} AND $P{tanggalAkhir}
+and exists (select 1 from eka.mst_product_insured where reg_spaj = a.reg_spaj and lsbs_id >=900)
+union 
+select 
+ 'DECLINE' Jenis,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('01'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_jan,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('02'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_feb,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('03'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_mar,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('04'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_apr,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('05'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_may,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('06'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_jun,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('07'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_jul,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('08'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_aug,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('09'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_sep,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('10'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_oct,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('11'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_nov,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('12'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_dec,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'yyyy'),'yyyy') = to_date(TO_CHAR($P{tanggalAwal},'yyyy'),'yyyy') then 1 else 0 end),0)ind_jum
+from eka.mst_policy a,  
+     eka.mst_insured b,
+     eka.mst_product_insured c,
+eka.mst_production e
+where a.reg_spaj = b.reg_spaj
+and a.reg_spaj = c.reg_spaj 
+and a.reg_spaj = e.reg_spaj
+and e.mspro_prod_ke = 1
+and e.lstb_id = 1
+and a.lstb_id = e.lstb_id
+and c.lsbs_id < 800
+and (b.lssa_id in (2) or a.lssp_id = 25)
+and e.mspro_prod_date between $P{tanggalAwal} AND $P{tanggalAkhir}
+union
+select 
+ 'POSTPONED' Jenis,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('01'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_jan,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('02'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_feb,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('03'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_mar,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('04'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_apr,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('05'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_may,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('06'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_jun,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('07'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_jul,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('08'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_aug,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('09'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_sep,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('10'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_oct,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('11'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_nov,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'mmyyyy'),'mmyyyy') = to_date('12'||TO_CHAR($P{tanggalAwal},'yyyy'),'mmyyyy') then 1 else 0 end),0)ind_dec,
+nvl(sum(case when a.lstb_id = 1 and to_date(to_char(e.mspro_prod_date,'yyyy'),'yyyy') = to_date(TO_CHAR($P{tanggalAwal},'yyyy'),'yyyy') then 1 else 0 end),0)ind_jum
+from eka.mst_policy a,  
+     eka.mst_insured b,
+     eka.mst_product_insured c,
+eka.mst_production e
+where a.reg_spaj = b.reg_spaj
+and a.reg_spaj = c.reg_spaj 
+and a.reg_spaj = e.reg_spaj
+and e.mspro_prod_ke = 1
+and e.lstb_id = 1
+and a.lstb_id = e.lstb_id
+and c.lsbs_id < 800
+and (b.lssa_id in (9) or a.lssp_id = 27)
+and e.mspro_prod_date between $P{tanggalAwal} AND $P{tanggalAkhir}]]>
+	</queryString>
+	<field name="JENIS" class="java.lang.String"/>
+	<field name="IND_JAN" class="java.math.BigDecimal"/>
+	<field name="IND_FEB" class="java.math.BigDecimal"/>
+	<field name="IND_MAR" class="java.math.BigDecimal"/>
+	<field name="IND_APR" class="java.math.BigDecimal"/>
+	<field name="IND_MAY" class="java.math.BigDecimal"/>
+	<field name="IND_JUN" class="java.math.BigDecimal"/>
+	<field name="IND_JUL" class="java.math.BigDecimal"/>
+	<field name="IND_AUG" class="java.math.BigDecimal"/>
+	<field name="IND_SEP" class="java.math.BigDecimal"/>
+	<field name="IND_OCT" class="java.math.BigDecimal"/>
+	<field name="IND_NOV" class="java.math.BigDecimal"/>
+	<field name="IND_DEC" class="java.math.BigDecimal"/>
+	<field name="IND_JUM" class="java.math.BigDecimal"/>
+	<variable name="tot_jan" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal($F{IND_JAN}.intValue() )]]></variableExpression>
+	</variable>
+	<variable name="tot_feb" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal($F{IND_FEB}.intValue() )]]></variableExpression>
+	</variable>
+	<variable name="tot_mar" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal($F{IND_MAR}.intValue() )]]></variableExpression>
+	</variable>
+	<variable name="tot_apr" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal($F{IND_APR}.intValue() )]]></variableExpression>
+	</variable>
+	<variable name="tot_may" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal($F{IND_MAY}.intValue() )]]></variableExpression>
+	</variable>
+	<variable name="tot_jun" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal($F{IND_JUN}.intValue() )]]></variableExpression>
+	</variable>
+	<variable name="tot_jul" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal($F{IND_JUL}.intValue() )]]></variableExpression>
+	</variable>
+	<variable name="tot_aug" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal($F{IND_AUG}.intValue() )]]></variableExpression>
+	</variable>
+	<variable name="tot_sep" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal($F{IND_SEP}.intValue() )]]></variableExpression>
+	</variable>
+	<variable name="tot_oct" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal($F{IND_OCT}.intValue() )]]></variableExpression>
+	</variable>
+	<variable name="tot_nov" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal($F{IND_NOV}.intValue() )]]></variableExpression>
+	</variable>
+	<variable name="tot_dec" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal($F{IND_DEC}.intValue() )]]></variableExpression>
+	</variable>
+	<variable name="tot_jum" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal($F{IND_JUM}.intValue() )]]></variableExpression>
+	</variable>
+	<group name="mainGroup">
+		<groupHeader>
+			<band height="80">
+				<staticText>
+					<reportElement x="321" y="56" width="80" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[April]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1" y="56" width="80" height="24"/>
+					<box>
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Jenis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="81" y="56" width="80" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Januari]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="161" y="56" width="80" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Februari]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="241" y="56" width="80" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Maret]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="401" y="56" width="80" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[May]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="481" y="56" width="80" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Juni]]></text>
+				</staticText>
+				<textField pattern="M/d/yy h:mm:ss a" hyperlinkType="None">
+					<reportElement x="1" y="1" width="645" height="18"/>
+					<textElement markup="none">
+						<font fontName="Arial" size="14" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["PT Asuransi Jiwa Sinarmas MSIG Tbk. - Laporan Summary Ratio By Production Date (Individu)"]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="641" y="56" width="80" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Agustus]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="561" y="56" width="80" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Juli]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="881" y="56" width="80" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[November]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="961" y="56" width="80" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Desember]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="801" y="56" width="80" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Oktober]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="721" y="56" width="80" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[September]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1041" y="56" width="80" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Jumlah per Jenis]]></text>
+				</staticText>
+				<textField hyperlinkType="None">
+					<reportElement x="0" y="30" width="47" height="12"/>
+					<textElement markup="none">
+						<font fontName="Arial" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Oleh"]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="53" y="30" width="12" height="12"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+						<font fontName="Arial" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="53" y="18" width="12" height="12"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+						<font fontName="Arial" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+				</textField>
+				<textField pattern="M/d/yy h:mm:ss a" hyperlinkType="None">
+					<reportElement x="76" y="30" width="468" height="12"/>
+					<textElement markup="none">
+						<font fontName="Arial" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{username} + " pada " + (new Date())]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="0" y="18" width="47" height="12"/>
+					<textElement markup="none">
+						<font fontName="Arial" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Periode"]]></textFieldExpression>
+				</textField>
+				<textField pattern="M/d/yy h:mm:ss a" hyperlinkType="None">
+					<reportElement x="76" y="18" width="468" height="12"/>
+					<textElement markup="none">
+						<font fontName="Arial" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[($P{tanggalAwal}) + " sampai " + ($P{tanggalAkhir})]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="49">
+				<textField hyperlinkType="None">
+					<reportElement x="321" y="0" width="80" height="12"/>
+					<box padding="1">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{tot_apr} + " "]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="81" y="0" width="80" height="12"/>
+					<box padding="1">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{tot_jan} + " "]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="161" y="0" width="80" height="12"/>
+					<box padding="1">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{tot_feb} + " "]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="241" y="0" width="80" height="12"/>
+					<box padding="1">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{tot_mar} + " "]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="401" y="0" width="80" height="12"/>
+					<box padding="1">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{tot_may} + " "]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="481" y="0" width="80" height="12"/>
+					<box padding="1">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{tot_jun} + " "]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="961" y="0" width="80" height="12"/>
+					<box padding="1">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{tot_dec} + " "]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="881" y="0" width="80" height="12"/>
+					<box padding="1">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{tot_nov} + " "]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="801" y="0" width="80" height="12"/>
+					<box padding="1">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{tot_oct} + " "]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="721" y="0" width="80" height="12"/>
+					<box padding="1">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{tot_sep} + " "]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="641" y="0" width="80" height="12"/>
+					<box padding="1">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{tot_aug} + " "]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="561" y="0" width="80" height="12"/>
+					<box padding="1">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{tot_jul} + " "]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="1041" y="0" width="80" height="12"/>
+					<box padding="1">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{tot_jum} + " "]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="1" y="0" width="80" height="12"/>
+					<box padding="1">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[" " + "Jumlah per Bulan"]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<detail>
+		<band height="12">
+			<textField hyperlinkType="None">
+				<reportElement x="321" y="0" width="80" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{IND_APR}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1" y="0" width="80" height="12"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{JENIS}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="81" y="0" width="80" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{IND_JAN}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="161" y="0" width="80" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{IND_FEB}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="241" y="0" width="80" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{IND_MAR}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="401" y="0" width="80" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{IND_MAY}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="481" y="0" width="80" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{IND_JUN}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="961" y="0" width="80" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{IND_DEC}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="881" y="0" width="80" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{IND_NOV}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="801" y="0" width="80" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{IND_OCT}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="721" y="0" width="80" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{IND_SEP}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="641" y="0" width="80" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{IND_AUG}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="561" y="0" width="80" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{IND_JUL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1041" y="0" width="80" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{IND_JUM}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

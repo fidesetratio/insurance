@@ -1,0 +1,616 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_simpol_jatuhtempo" pageWidth="2200" pageHeight="595" orientation="Landscape" whenNoDataType="BlankPage" columnWidth="2160" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("01/12/2015")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("31/12/2015")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalPrint" class="java.lang.String">
+		<defaultValueExpression><![CDATA["06/07/2015"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lcb_no" class="java.lang.String">
+		<defaultValueExpression><![CDATA["S179"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select no_spaj, no_polis, gm, referrer, cabang_referrer, nm_pp, lsdbs_name, mspro_beg_date, mspro_prod_date,
+    (select min(msbi_tahun_ke) from eka.mst_production where reg_spaj = x.no_spaj and mspro_beg_date = x.mspro_beg_date) as tahun_ke,
+    (select min(msbi_premi_ke) from eka.mst_production where reg_spaj = x.no_spaj and mspro_beg_date = x.mspro_beg_date) as premi_ke,
+    (case when (sum(premi) <= 0 and sum(premi_topup) > 0) then 'SEKALIGUS' else upper(lscb_pay_mode) end) as pay_mode,
+    sum(premi) as premi_pokok, (sum(premi) * nilai_kurs) as premi_pokok_ccy,
+    sum(premi_topup) as premi_top_up, (sum(premi_topup) * nilai_kurs) as premi_top_up_ccy,
+    (sum(premi) + sum(premi_topup)) as total_premi, ((sum(premi) + sum(premi_topup)) * nilai_kurs) as total_premi_ccy,
+    nvl((select sum(msdpr_premium) from eka.mst_det_production where reg_spaj = x.no_spaj 
+           and msbi_premi_ke = (select min(msbi_premi_ke) from eka.mst_production where reg_spaj = x.no_spaj 
+                                             and mspro_beg_date = x.mspro_beg_date)
+           and lsbs_id > 300),0) as premi_rider,
+    sum(nvl(ape_prod_pokok,0)) as ape_prod_pokok, sum(nvl(ape_prod_topup,0)) as ape_prod_topup,
+    nilai_kurs, id_wilayah, wilayah, jenis_agent, status_agent, tgl_bayar, msbi_due_date,
+    (select mspa_pay_date from eka.mst_payment where mspa_payment_id=(select mspa_payment_id from eka.mst_tag_payment where reg_spaj=x.no_spaj and msbi_premi_ke=1 and rownum=1) ) as tgl_bayar_nb
+from (
+    select a.reg_spaj as no_spaj, a.mspo_policy_no as no_polis, upper(e.team_name) as gm, d.agent_code as kode_referrer, upper(d.nama_reff) as referrer, 
+        e.kode as kode_cabang, upper(e.nama_cabang) as cabang_referrer, (select upper(mcl_first) from eka.mst_client_new where mcl_id=a.mspo_policy_holder) as nm_pp,
+        eka.f_lsdbs(a.reg_spaj, l.lsbs_id, l.lsdbs_number) as lsdbs_name, g.mspro_beg_date, g.mspro_prod_date, j.lscb_pay_mode,
+        case when nvl(k.msbi_flag_topup,0) = 2 then
+                (select max(mspa_pay_date) from eka.mst_payment 
+                where mspa_payment_id in (select mspa_payment_id from eka.mst_tag_payment 
+                                                         where reg_spaj = k.reg_spaj and msbi_premi_ke = k.msbi_premi_ke - 1) )
+            else
+                (select max(mspa_pay_date) from eka.mst_payment
+                where mspa_payment_id in (select mspa_payment_id from eka.mst_tag_payment 
+                                                         where reg_spaj = k.reg_spaj and msbi_premi_ke = k.msbi_premi_ke) ) 
+        end as tgl_bayar,
+        decode(f.lku_id,'01','Rp','USD') as kurs, g.mspro_nilai_kurs as nilai_kurs,
+        (decode(nvl(k.msbi_flag_topup,0),0,h.mspa_payment,0) * case  when g.mspro_jn_prod=3 then -1 else 1 end) as premi,
+        (decode(nvl(k.msbi_flag_topup,0),0,0,h.mspa_payment) * case  when g.mspro_jn_prod=3 then -1 else 1 end) as premi_topup,
+        (select kode from eka.lst_cabang_bii where lcb_no = (select wil_no from eka.lst_cabang_bii where lcb_no = e.lcb_no)) as id_wilayah,
+        (select nama_cabang from eka.lst_cabang_bii where lcb_no = (select wil_no from eka.lst_cabang_bii where lcb_no = e.lcb_no)) as wilayah,
+        o.nama_level as jenis_agent, decode(penutup.flag_aktif,1,'AKTIF','NON AKTIF') as status_agent,
+        decode(nvl(k.msbi_flag_topup,0),0,g.ape_prod,0) * case  when g.mspro_jn_prod=3 then -1 else 1 end as ape_prod_pokok,
+        decode(nvl(k.msbi_flag_topup,0),0,0,g.ape_prod) * case  when g.mspro_jn_prod=3 then -1 else 1 end as ape_prod_topup,
+        (case when nvl(k.msbi_flag_topup,0) in (0,2) and g.mspro_jn_prod in (1,2) then 1 when g.mspro_jn_prod = 3 then 3 else 2 end) as type_premi,
+		k.msbi_due_date
+    from
+        eka.mst_policy a,
+        eka.mst_insured b,
+        eka.mst_reff_bii c,
+        eka.lst_reff_bii d,
+        eka.lst_cabang_bii e,
+        eka.mst_product_insured f,
+        eka.mst_production g,
+        eka.mst_payment h,
+        eka.mst_tag_payment i,
+        eka.lst_pay_mode j,
+        eka.mst_billing k,
+        eka.lst_det_bisnis l,
+        eka.lst_reff_bii penutup,
+        eka.lst_reff_bii_jab n,
+        eka.lst_jab_ref_bii o
+    where a.reg_spaj = b.reg_spaj
+        and a.reg_spaj = c.reg_spaj
+        and b.reg_spaj = f.reg_spaj
+        and b.reg_spaj = g.reg_spaj
+        and a.reg_spaj = h.reg_spaj
+        and a.reg_spaj = i.reg_spaj
+        and a.reg_spaj = k.reg_spaj
+        and h.mspa_payment_id = i.mspa_payment_id
+        and b.mste_insured_no = f.mste_insured_no
+        and c.reff_id = d.lrb_id
+        and c.lrb_id = penutup.lrb_id
+        and d.lcb_no = e.lcb_no
+        and a.lscb_id = j.lscb_id
+        and i.msbi_tahun_ke = g.msbi_tahun_ke
+        and i.msbi_premi_ke = g.msbi_premi_ke
+        and i.msbi_tahun_ke = k.msbi_tahun_ke
+        and i.msbi_premi_ke = k.msbi_premi_ke
+        and f.lsbs_id = l.lsbs_id
+        and f.lsdbs_number = l.lsdbs_number
+        and k.msbi_due_date between $P{tanggalAwal} and $P{tanggalAkhir}
+        and k.msbi_input_date = (select max(msbi_input_date) from eka.mst_billing where reg_spaj = a.reg_spaj)
+        and e.jenis = 2
+        and f.lsbs_id = 120
+        and c.level_id = 4
+        and c.no_urut = (select max(no_urut) from eka.mst_reff_bii where reg_spaj=a.reg_spaj)
+        and n.lrbj_id (+) = d.lrbj_id
+        and o.level_id (+) = penutup.lrbj_id1
+		and c.lcb_no = (case when $P{lcb_no} is not null and $P{lcb_no} not like 'SSS' then $P{lcb_no} else c.lcb_no end)
+) x
+group by gm, referrer, cabang_referrer, id_wilayah, wilayah, no_spaj, no_polis, lsdbs_name, nm_pp,
+    lscb_pay_mode, tgl_bayar, nilai_kurs, mspro_beg_date, mspro_prod_date, jenis_agent, status_agent, type_premi, msbi_due_date
+order by no_spaj, no_polis, tgl_bayar]]>
+	</queryString>
+	<field name="APE_PROD_POKOK" class="java.math.BigDecimal"/>
+	<field name="APE_PROD_TOPUP" class="java.math.BigDecimal"/>
+	<field name="CABANG_REFERRER" class="java.lang.String"/>
+	<field name="GM" class="java.lang.String"/>
+	<field name="ID_WILAYAH" class="java.lang.String"/>
+	<field name="JENIS_AGENT" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="MSBI_DUE_DATE" class="java.util.Date"/>
+	<field name="MSPRO_BEG_DATE" class="java.sql.Timestamp"/>
+	<field name="MSPRO_PROD_DATE" class="java.sql.Timestamp"/>
+	<field name="NILAI_KURS" class="java.math.BigDecimal"/>
+	<field name="NM_PP" class="java.lang.String"/>
+	<field name="NO_POLIS" class="java.lang.String"/>
+	<field name="NO_SPAJ" class="java.lang.String"/>
+	<field name="PAY_MODE" class="java.lang.String"/>
+	<field name="PREMI_KE" class="java.math.BigDecimal"/>
+	<field name="PREMI_POKOK" class="java.math.BigDecimal"/>
+	<field name="PREMI_POKOK_CCY" class="java.math.BigDecimal"/>
+	<field name="PREMI_RIDER" class="java.math.BigDecimal"/>
+	<field name="PREMI_TOP_UP" class="java.math.BigDecimal"/>
+	<field name="PREMI_TOP_UP_CCY" class="java.math.BigDecimal"/>
+	<field name="REFERRER" class="java.lang.String"/>
+	<field name="STATUS_AGENT" class="java.lang.String"/>
+	<field name="TAHUN_KE" class="java.math.BigDecimal"/>
+	<field name="TGL_BAYAR" class="java.sql.Timestamp"/>
+	<field name="TGL_BAYAR_NB" class="java.sql.Timestamp"/>
+	<field name="TOTAL_PREMI" class="java.math.BigDecimal"/>
+	<field name="TOTAL_PREMI_CCY" class="java.math.BigDecimal"/>
+	<field name="WILAYAH" class="java.lang.String"/>
+	<title>
+		<band height="75">
+			<staticText>
+				<reportElement x="0" y="0" width="400" height="20"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[REPORT JATUH TEMPO PREMI LANJUTAN SIMPOL BSIM]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="25" width="400" height="20"/>
+				<textElement markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Periode       :"+" "+$P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAwal})+" s/d "+$P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAkhir})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="45" width="400" height="20"/>
+				<textElement markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Print Date       :"+" "+ $P{tanggalPrint}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="20">
+			<staticText>
+				<reportElement x="0" y="0" width="30" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="30" y="0" width="140" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Referral Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="170" y="0" width="140" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Referral Branch]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="310" y="0" width="90" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Policy No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="400" y="0" width="140" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Policy Holder]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="540" y="0" width="140" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Insured Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="680" y="0" width="80" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Beg Date]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="760" y="0" width="80" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Production Date]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="840" y="0" width="50" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Tahun Ke]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="890" y="0" width="50" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Premi Ke]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="940" y="0" width="80" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Pay Mode]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1020" y="0" width="80" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Premi Pokok]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1100" y="0" width="80" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Premi Topup]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1180" y="0" width="80" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Premi Rider]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1260" y="0" width="80" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Premi Non Rider]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1340" y="0" width="80" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Total Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1420" y="0" width="50" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Kurs]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1470" y="0" width="90" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Status Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1560" y="0" width="80" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Prod Bulan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1640" y="0" width="50" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[ID Kanwil]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1690" y="0" width="140" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Kanwil]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1830" y="0" width="80" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Tgl RK NB]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1910" y="0" width="80" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Jenis Agent]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1990" y="0" width="80" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Status Agen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2070" y="0" width="80" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Tgl Jatuh Tempo]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="30" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Number"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="30" y="0" width="140" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REFERRER}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="170" y="0" width="140" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CABANG_REFERRER}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="310" y="0" width="90" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NO_POLIS}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="400" y="0" width="140" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NM_PP}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="540" y="0" width="140" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="680" y="0" width="80" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{MSPRO_BEG_DATE})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="760" y="0" width="80" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{MSPRO_PROD_DATE})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="840" y="0" width="50" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Number"><![CDATA[$F{TAHUN_KE}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="890" y="0" width="50" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Number"><![CDATA[$F{PREMI_KE}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="940" y="0" width="80" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PAY_MODE}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1020" y="0" width="80" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{PREMI_POKOK})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1100" y="0" width="80" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{PREMI_TOP_UP})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1180" y="0" width="80" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{PREMI_RIDER})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1260" y="0" width="80" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{TOTAL_PREMI})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1340" y="0" width="80" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit(new BigDecimal($F{TOTAL_PREMI}.doubleValue() + $F{PREMI_RIDER}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1420" y="0" width="50" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{NILAI_KURS})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1470" y="0" width="90" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TAHUN_KE}.intValue()>1?"RENEWAL":($F{PREMI_KE}.intValue()>1?"SUCCESSIVE PREMIUM":($F{PREMI_POKOK}.intValue()==0?"TOP UP SINGLE":"NEW"))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1560" y="0" width="80" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatMonthYear2($F{MSPRO_PROD_DATE})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1640" y="0" width="50" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ID_WILAYAH}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1690" y="0" width="140" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{WILAYAH}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1830" y="0" width="80" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{TGL_BAYAR_NB})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1910" y="0" width="80" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{JENIS_AGENT}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1990" y="0" width="80" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{STATUS_AGENT}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="2070" y="0" width="80" height="20"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{MSBI_DUE_DATE})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

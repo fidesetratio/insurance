@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_aging_followup_kategori" pageWidth="1100" pageHeight="842" columnWidth="1060" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<parameter name="pdate" class="java.lang.String"/>
+	<parameter name="a_bdate" class="java.lang.String"/>
+	<parameter name="a_edate" class="java.lang.String"/>
+	<parameter name="f_bdate" class="java.lang.String"/>
+	<parameter name="f_edate" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select kategori, sum(jml) jml, sum(premi_rp_total) premi_rp_total, sum(premi_us_total) premi_us_total, sum(jml_paid) jml_paid, sum(premi_rp_paid) premi_rp_paid, sum(premi_us_paid) premi_us_paid, 
+sum(jml_non_paid) jml_non_paid,sum(premi_rp_non_paid) premi_rp_non_paid, sum(premi_us_non_paid) premi_us_non_paid
+from(
+select
+    tabel.lsfu_desc kategori,
+    count(tabel.reg_spaj)jml,
+    sum(case when tabel.lku_id = '01' then tabel.mspr_premium else 0 end)premi_rp_total,
+    sum(case when tabel.lku_id = '02' then tabel.mspr_premium else 0 end)premi_us_total,
+    sum(case when mb.msbi_paid = 1 then 1 else 0 end)jml_paid,
+    sum(case when tabel.lku_id = '01' and mb.msbi_paid = 1 then tabel.mspr_premium else 0 end)premi_rp_paid,
+    sum(case when tabel.lku_id = '02' and mb.msbi_paid = 1 then tabel.mspr_premium else 0 end)premi_us_paid,
+    sum(case when mb.msbi_paid = 0 then 1 else 0 end)jml_non_paid,
+    sum(case when tabel.lku_id = '01' and mb.msbi_paid = 0 then tabel.mspr_premium else 0 end)premi_rp_non_paid,
+    sum(case when tabel.lku_id = '02' and mb.msbi_paid = 0 then tabel.mspr_premium else 0 end)premi_us_non_paid
+from
+    (select distinct --3144
+        a.mspo_policy_no, b.reg_spaj, c.lsfu_id, d.lus_full_name user_input,
+        max(c.msbi_tahun_ke)msbi_tahun_ke, max(c.msbi_premi_ke)msbi_premi_ke, c.msfu_create_date,
+        e.mspr_premium, f.lsfu_desc, b.lku_id
+    from
+        eka.lst_aging_followup_temp a,
+        eka.mst_policy b,
+        eka.mst_followup c,
+        eka.lst_user d,
+        eka.mst_product_insured e,
+        eka.lst_followup f
+    where
+        a.mspo_policy_no = b.mspo_policy_no
+        and b.reg_spaj = c.reg_spaj
+        and c.lus_id = d.lus_id
+        and b.reg_spaj = e.reg_spaj
+        and c.lsfu_id = f.lsfu_id
+        and e.mste_insured_no = 1
+        and e.lsbs_id < 300
+        and a.beg_date = to_date('01/11/2015','dd/MM/yyyy') 
+        and a.end_date = to_date('30/11/2015','dd/MM/yyyy')
+        and followup = 1
+        and c.msfu_create_date between to_date('01/09/2015','dd/MM/yyyy') and to_date('10/12/2015','dd/MM/yyyy')+1
+        and c.msfu_create_date = (select max(msfu_create_date) from eka.mst_followup where reg_spaj = c.reg_spaj and msfu_create_date between to_date('01/09/2015','dd/MM/yyyy') and to_date('10/12/2015','dd/MM/yyyy')+1)
+        --and c.lsfu_id = 8
+    group by
+        a.mspo_policy_no, b.reg_spaj, c.lsfu_id, d.lus_full_name,c.msfu_create_date, e.mspr_premium, f.lsfu_desc, b.lku_id)tabel,
+    eka.mst_billing mb
+where
+    tabel.reg_spaj = mb.reg_spaj
+    and tabel.msbi_tahun_ke = mb.msbi_tahun_ke
+    and tabel.msbi_premi_ke = mb.msbi_premi_ke 
+group by
+    tabel.lsfu_desc
+union
+select 'Paid (Autodebet)' kategori,
+count(tabel.reg_spaj) jml,
+sum(case when tabel.lku_id = '01' then tabel.mspr_premium else 0 end)premi_rp_total,
+sum(case when tabel.lku_id = '02' then tabel.mspr_premium else 0 end)premi_us_total,
+sum(case when tabel.msbi_paid = 1 then 1 else 0 end)jml_paid,
+sum(case when tabel.lku_id = '01' and tabel.msbi_paid = 1 then tabel.mspr_premium else 0 end)premi_rp_paid,
+sum(case when tabel.lku_id = '02' and tabel.msbi_paid = 1 then tabel.mspr_premium else 0 end)premi_us_paid,
+sum(case when tabel.msbi_paid = 0 then 1 else 0 end)jml_non_paid,
+sum(case when tabel.lku_id = '01' and tabel.msbi_paid = 0 then tabel.mspr_premium else 0 end)premi_rp_non_paid,
+sum(case when tabel.lku_id = '02' and tabel.msbi_paid = 0 then tabel.mspr_premium else 0 end)premi_us_non_paid
+from(
+select distinct
+   b.reg_spaj, b.lku_id, i.mspr_premium, C.MSBI_PAID
+from
+    eka.lst_aging_followup_temp a,
+    eka.mst_policy b,
+    eka.mst_billing c,
+    eka.mst_insured d,
+    eka.mst_product_insured i       
+where
+    a.beg_date = to_date('01/11/2015','dd/MM/yyyy') 
+    and a.end_date = to_date('30/11/2015','dd/MM/yyyy')    
+    and a.followup = 0
+    and a.mspo_policy_no = b.mspo_policy_no
+    and b.reg_spaj = c.reg_spaj
+    and c.msbi_beg_date between to_date('01/11/2015','dd/MM/yyyy') and to_date('30/11/2015','dd/MM/yyyy')
+    and c.msbi_beg_date = (select max(msbi_beg_date) from eka.mst_billing where reg_spaj = b.reg_spaj and msbi_beg_date between to_date('01/11/2015','dd/MM/yyyy') and to_date('30/11/2015','dd/MM/yyyy'))
+    and b.reg_spaj = d.reg_spaj 
+    and B.REG_SPAJ = I.REG_SPAJ
+    and I.LSBS_ID < 300
+    and msbi_paid = 1
+    and mste_flag_cc = 1) tabel
+union
+select 'Followup to marketing' kategori,
+count(tabel.reg_spaj) jml,
+sum(case when tabel.lku_id = '01' then tabel.mspr_premium else 0 end)premi_rp_total,
+sum(case when tabel.lku_id = '02' then tabel.mspr_premium else 0 end)premi_us_total,
+sum(case when tabel.msbi_paid = 1 then 1 else 0 end)jml_paid,
+sum(case when tabel.lku_id = '01' and tabel.msbi_paid = 1 then tabel.mspr_premium else 0 end)premi_rp_paid,
+sum(case when tabel.lku_id = '02' and tabel.msbi_paid = 1 then tabel.mspr_premium else 0 end)premi_us_paid,
+sum(case when tabel.msbi_paid = 0 then 1 else 0 end)jml_non_paid,
+sum(case when tabel.lku_id = '01' and tabel.msbi_paid = 0 then tabel.mspr_premium else 0 end)premi_rp_non_paid,
+sum(case when tabel.lku_id = '02' and tabel.msbi_paid = 0 then tabel.mspr_premium else 0 end)premi_us_non_paid
+from(
+select distinct
+   b.reg_spaj, b.lku_id, i.mspr_premium, C.MSBI_PAID
+from
+    eka.lst_aging_followup_temp a,
+    eka.mst_policy b,
+    eka.mst_billing c,
+    eka.mst_insured d,
+    eka.mst_product_insured i       
+where
+    a.beg_date = to_date('01/11/2015','dd/MM/yyyy') 
+    and a.end_date = to_date('30/11/2015','dd/MM/yyyy')    
+    and a.followup = 0
+    and a.mspo_policy_no = b.mspo_policy_no
+    and b.reg_spaj = c.reg_spaj
+    and c.msbi_beg_date between to_date('01/11/2015','dd/MM/yyyy') and to_date('30/11/2015','dd/MM/yyyy')
+    and c.msbi_beg_date = (select max(msbi_beg_date) from eka.mst_billing where reg_spaj = b.reg_spaj and msbi_beg_date between to_date('01/11/2015','dd/MM/yyyy') and to_date('30/11/2015','dd/MM/yyyy'))
+    and b.reg_spaj = d.reg_spaj 
+    and B.REG_SPAJ = I.REG_SPAJ
+    and I.LSBS_ID < 300
+    and msbi_paid = 0) tabel
+union
+select 'Paid (Non Autodebet)' kategori,
+count(tabel.reg_spaj) jml,
+sum(case when tabel.lku_id = '01' then tabel.mspr_premium else 0 end)premi_rp_total,
+sum(case when tabel.lku_id = '02' then tabel.mspr_premium else 0 end)premi_us_total,
+sum(case when tabel.msbi_paid = 1 then 1 else 0 end)jml_paid,
+sum(case when tabel.lku_id = '01' and tabel.msbi_paid = 1 then tabel.mspr_premium else 0 end)premi_rp_paid,
+sum(case when tabel.lku_id = '02' and tabel.msbi_paid = 1 then tabel.mspr_premium else 0 end)premi_us_paid,
+sum(case when tabel.msbi_paid = 0 then 1 else 0 end)jml_non_paid,
+sum(case when tabel.lku_id = '01' and tabel.msbi_paid = 0 then tabel.mspr_premium else 0 end)premi_rp_non_paid,
+sum(case when tabel.lku_id = '02' and tabel.msbi_paid = 0 then tabel.mspr_premium else 0 end)premi_us_non_paid
+from(
+select distinct
+   b.reg_spaj, b.lku_id, i.mspr_premium, C.MSBI_PAID
+from
+    eka.lst_aging_followup_temp a,
+    eka.mst_policy b,
+    eka.mst_billing c,
+    eka.mst_insured d,
+    eka.mst_product_insured i       
+where
+    a.beg_date = to_date('01/11/2015','dd/MM/yyyy') 
+    and a.end_date = to_date('30/11/2015','dd/MM/yyyy')    
+    and a.followup = 0
+    and a.mspo_policy_no = b.mspo_policy_no
+    and b.reg_spaj = c.reg_spaj
+    and c.msbi_beg_date between to_date('01/11/2015','dd/MM/yyyy') and to_date('30/11/2015','dd/MM/yyyy')
+    and c.msbi_beg_date = (select max(msbi_beg_date) from eka.mst_billing where reg_spaj = b.reg_spaj and msbi_beg_date between to_date('01/11/2015','dd/MM/yyyy') and to_date('30/11/2015','dd/MM/yyyy'))
+    and b.reg_spaj = d.reg_spaj 
+    and B.REG_SPAJ = I.REG_SPAJ
+    and I.LSBS_ID < 300
+    and msbi_paid = 1
+    and (mste_flag_cc != 1 or mste_flag_cc is null)) tabel    
+)group by kategori
+order by kategori]]>
+	</queryString>
+	<field name="JML" class="java.math.BigDecimal"/>
+	<field name="JML_NON_PAID" class="java.math.BigDecimal"/>
+	<field name="JML_PAID" class="java.math.BigDecimal"/>
+	<field name="KATEGORI" class="java.lang.String"/>
+	<field name="PREMI_RP_NON_PAID" class="java.math.BigDecimal"/>
+	<field name="PREMI_RP_PAID" class="java.math.BigDecimal"/>
+	<field name="PREMI_RP_TOTAL" class="java.math.BigDecimal"/>
+	<field name="PREMI_US_NON_PAID" class="java.math.BigDecimal"/>
+	<field name="PREMI_US_PAID" class="java.math.BigDecimal"/>
+	<field name="PREMI_US_TOTAL" class="java.math.BigDecimal"/>
+	<variable name="sum_jml" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{JML}]]></variableExpression>
+	</variable>
+	<variable name="sum_premi_total_rp" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_RP_TOTAL}]]></variableExpression>
+	</variable>
+	<variable name="sum_premi_total_us" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_US_TOTAL}]]></variableExpression>
+	</variable>
+	<variable name="sum_jml_paid" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{JML_PAID}]]></variableExpression>
+	</variable>
+	<variable name="sum_premi_paid_rp" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_RP_PAID}]]></variableExpression>
+	</variable>
+	<variable name="sum_premi_paid_us" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_US_PAID}]]></variableExpression>
+	</variable>
+	<variable name="sum_jml_non_paid" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{JML_NON_PAID}]]></variableExpression>
+	</variable>
+	<variable name="sum_premi_non_paid_rp" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_RP_NON_PAID}]]></variableExpression>
+	</variable>
+	<variable name="sum_premi_non_paid_us" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_US_NON_PAID}]]></variableExpression>
+	</variable>
+	<columnHeader>
+		<band height="105">
+			<staticText>
+				<reportElement x="0" y="0" width="300" height="20"/>
+				<textElement/>
+				<text><![CDATA[Report Aging Followup Billing Per Kategori]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="20" width="80" height="20"/>
+				<textElement/>
+				<text><![CDATA[Tanggal Aging]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="80" y="20" width="10" height="20"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="90" y="20" width="210" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{a_bdate} + " s/d " + $P{a_edate}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="85" width="150" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Kategori]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="150" y="85" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jumlah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="230" y="85" width="100" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi Total (Rp.)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="330" y="85" width="100" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi Total (USD)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="430" y="85" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jml Paid]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="510" y="85" width="100" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi Paid (Rp.)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="610" y="85" width="100" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi Paid (USD)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="710" y="85" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jml Non Paid]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="790" y="85" width="100" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi Non Paid (Rp.)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="890" y="85" width="100" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi Non Paid (USD)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="40" width="80" height="20"/>
+				<textElement/>
+				<text><![CDATA[Tanggal Print]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="80" y="40" width="10" height="20"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="90" y="40" width="210" height="20"/>
+				<textElement markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{pdate}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KATEGORI}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="150" y="0" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{JML}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="230" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_RP_TOTAL})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="330" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_US_TOTAL})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="430" y="0" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{JML_PAID}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="510" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_RP_PAID})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="610" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_US_PAID})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="710" y="0" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{JML_NON_PAID}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="790" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_RP_NON_PAID})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="890" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_US_NON_PAID})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="20">
+			<staticText>
+				<reportElement x="0" y="0" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="150" y="0" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{sum_jml}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="230" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$V{sum_premi_total_rp})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="330" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$V{sum_premi_total_us})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="430" y="0" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{sum_jml_paid}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="510" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$V{sum_premi_paid_rp})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="610" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$V{sum_premi_paid_us})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="710" y="0" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{sum_jml_non_paid}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="790" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$V{sum_premi_non_paid_rp})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="890" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$V{sum_premi_non_paid_us})]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

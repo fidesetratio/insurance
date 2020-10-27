@@ -1,0 +1,1164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="data_polis_sinarmas_sekuritas" pageWidth="5315" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="5275" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" whenResourceMissingType="Empty">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<reportFont name="Font_1" isDefault="false" fontName="Arial" size="9" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+	<parameter name="tanggalAwal" class="java.lang.String">
+		<defaultValueExpression><![CDATA["01/01/2009"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.lang.String">
+		<defaultValueExpression><![CDATA["15/01/2009"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT /*+ first_rows */
+a.reg_spaj, a.mspo_age, a.mspo_spaj_date, a.mspo_ins_period, a.mspo_pay_period, 
+a.mspo_ao, a.mspo_no_blanko, a.mspo_nasabah_dcif,
+	   b.mste_age, b.mste_beg_date, b.mste_end_date, b.mste_tgl_aksep,
+	   c.lsbs_id, c.lsdbs_number, c.mspr_tsi, c.mspr_premium,
+	   d.msag_id,
+	   e.lca_nama,f.mcl_first pp_nama,
+	   f.mspe_no_identity pp_id,
+       DECODE (f.mspe_sex, 0, 'Ibu ', 1, 'Bapak ') pp_sex,
+	   f.mpn_job_desc pp_job,
+	   f.mspe_mother pp_mother,
+	   f.mspe_date_birth pp_birth,
+	   f.mspe_place_birth pp_place_birth,
+	   f.mkl_tujuan pp_tuj,
+	   f.mkl_penghasilan pp_peng,
+	   f.mkl_pendanaan pp_pend,
+	   f.mkl_kerja pp_kerj,
+	   f.mkl_industri pp_ind,
+	   f.mkl_smbr_penghasilan pp_smbr,
+	   g.mcl_first tt_nama,
+	   g.mspe_no_identity tt_id,
+       DECODE (g.mspe_sex, 0, 'Ibu ', 1, 'Bapak ') tt_sex,
+	   g.mpn_job_desc tt_job,
+	   g.mspe_mother tt_mother,
+	   g.mspe_date_birth tt_birth,
+	   g.mspe_place_birth tt_place_birth,
+	   g.mkl_tujuan tt_tuj,
+	   g.mkl_penghasilan tt_peng,
+	   g.mkl_pendanaan tt_pend,
+	   g.mkl_kerja tt_kerj,
+	   g.mkl_industri tt_ind,
+	   g.mkl_smbr_penghasilan tt_smbr,
+	   h.mcl_first agen_penutup,	   
+	   i.msag_id,
+	   k.lsdbs_name,
+	   l.msap_address alamat_tagihan,
+       TRIM (NVL (l.kota, '') || ' ' || NVL (l.msap_zip_code, '')) kota_tagihan,
+       (CASE
+           WHEN l.msap_phone1 IS NOT NULL THEN (l.msap_area_code1 || l.msap_phone1)
+           WHEN l.msap_phone2 IS NOT NULL THEN (l.msap_area_code2 || l.msap_phone2)
+           WHEN l.msap_phone3 IS NOT NULL THEN (l.msap_area_code3 || l.msap_phone3)
+        END) telp_tagihan,
+       (CASE
+           WHEN l.msap_fax1 IS NOT NULL THEN (l.msap_area_code_fax1 || l.msap_fax1)
+           WHEN l.msap_fax2 IS NOT NULL THEN (l.msap_area_code_fax2 || l.msap_fax2)
+        END) fax_tagihan,
+       (CASE WHEN l.no_hp IS NOT NULL THEN l.no_hp ELSE l.no_hp2 END) hp_tagihan,
+       (CASE WHEN l.e_mail IS NOT NULL THEN l.e_mail ELSE f.mspe_email END) email_tagihan, 
+	   m.alamat_rumah,
+       TRIM (NVL (m.kota_rumah, '') || ' ' || NVL (m.kd_pos_rumah, '')) kota_rumah,
+       (CASE WHEN m.telpon_rumah IS NOT NULL AND m.telpon_rumah <> '' THEN (m.area_code_rumah || ' ' || m.telpon_rumah) ELSE (m.area_code_rumah2 || ' ' || m.telpon_rumah2) END) telp_rumah,
+       m.alamat_kantor,
+       TRIM (NVL (m.kota_kantor, '') || ' ' || NVL (m.kd_pos_kantor, '')) kota_kantor,
+       (CASE WHEN m.telpon_kantor IS NOT NULL AND m.telpon_kantor <> '' THEN (m.area_code_kantor || ' ' || m.telpon_kantor) ELSE (m.area_code_kantor2 || ' ' || m.telpon_kantor2) END) telp_kantor,
+	   p.nama_cabang, p.nama_reff,
+	   r.status_accept, s.lspd_position,t.mps_deposit_date, t.mpr_mature_date, t.mpr_jangka_invest, t.mpr_rate, t.mpr_deposit, t.mpr_interest, t.mpr_note, 
+	   decode(t.mpr_jns_ro, 1, 'ALL', 2, 'PREMI', 3, 'AUTOBREAK') rollover
+  FROM eka.mst_policy a,
+       eka.mst_insured b,
+       eka.mst_product_insured c,
+       eka.mst_agent_prod d,
+       eka.lst_cabang e,
+       eka.mst_client_new f,
+       eka.mst_client_new g,
+       eka.mst_client_new h,
+       eka.mst_agent i,
+       eka.lst_bisnis j,
+       eka.lst_det_bisnis k,
+       eka.mst_address_billing l,
+       eka.mst_address_new m,
+       eka.mst_address_new n,
+       (SELECT a.reg_spaj, b.nama_cabang, c.nama_reff
+          FROM (select * 
+ 							from eka.mst_reff_bii a
+							 where	  level_id=4
+ 							and	  no_urut=(select max(no_urut) from eka.mst_reff_bii where reg_spaj=a.reg_spaj)) a, 
+					eka.lst_cabang_bii b, 
+					eka.lst_reff_bii c
+         WHERE a.level_id = 4 AND a.lcb_no = b.lcb_no AND a.lrb_id = c.lrb_id) p,
+       (SELECT a.mcl_id, b.mcl_first
+          FROM eka.mst_company a, eka.mst_client_new b
+         WHERE a.mcl_id = b.mcl_id) q,
+       eka.lst_status_accept r,
+	   eka.lst_document_position s,
+	   eka.mst_powersave_ro t
+ WHERE a.lstb_id = 1
+   AND a.reg_spaj = b.reg_spaj
+   AND b.reg_spaj = c.reg_spaj
+   AND c.lsbs_id < 800
+   AND c.reg_spaj = d.reg_spaj
+   AND d.lsle_id = 4
+   AND a.lca_id = e.lca_id
+   AND a.mspo_policy_holder = f.mcl_id
+   AND b.mste_insured = g.mcl_id
+   AND d.msag_id = i.msag_id
+   AND i.mcl_id = h.mcl_id
+   AND c.lsbs_id = j.lsbs_id
+   AND c.lsbs_id = k.lsbs_id
+   AND c.lsdbs_number = k.lsdbs_number
+   AND a.reg_spaj = l.reg_spaj
+   AND f.mcl_id = m.mcl_id
+   AND g.mcl_id = n.mcl_id
+   AND a.reg_spaj = p.reg_spaj(+)
+   AND a.mspo_customer = q.mcl_id(+)
+   AND b.lssa_id = r.lssa_id
+   AND a.lca_id = '09'
+   AND (   (c.lsbs_id = 142 AND c.lsdbs_number = 9)
+        OR (c.lsbs_id = 158 AND c.lsdbs_number = 14)
+       )
+   AND a.lspd_id = s.lspd_id 
+   AND a.reg_spaj = t.reg_spaj
+   AND t.mps_kode = 5
+  AND a.mspo_date_print is not null
+    AND b.mste_input_date BETWEEN  to_date($P{tanggalAwal},'dd/MM/yyyy') AND  
+	to_date($P{tanggalAkhir},'dd/MM/yyyy')+1]]>
+	</queryString>
+	<field name="AGEN_PENUTUP" class="java.lang.String"/>
+	<field name="ALAMAT_KANTOR" class="java.lang.String"/>
+	<field name="ALAMAT_RUMAH" class="java.lang.String"/>
+	<field name="ALAMAT_TAGIHAN" class="java.lang.String"/>
+	<field name="EMAIL_TAGIHAN" class="java.lang.String"/>
+	<field name="FAX_TAGIHAN" class="java.lang.String"/>
+	<field name="HP_TAGIHAN" class="java.lang.String"/>
+	<field name="KOTA_KANTOR" class="java.lang.String"/>
+	<field name="KOTA_RUMAH" class="java.lang.String"/>
+	<field name="KOTA_TAGIHAN" class="java.lang.String"/>
+	<field name="LCA_NAMA" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="LSPD_POSITION" class="java.lang.String"/>
+	<field name="MPR_DEPOSIT" class="java.math.BigDecimal"/>
+	<field name="MPR_INTEREST" class="java.math.BigDecimal"/>
+	<field name="MPR_JANGKA_INVEST" class="java.math.BigDecimal"/>
+	<field name="MPR_MATURE_DATE" class="java.util.Date"/>
+	<field name="MPR_NOTE" class="java.lang.String"/>
+	<field name="MPR_RATE" class="java.math.BigDecimal"/>
+	<field name="MPS_DEPOSIT_DATE" class="java.util.Date"/>
+	<field name="MSAG_ID" class="java.lang.String"/>
+	<field name="MSPO_AGE" class="java.math.BigDecimal"/>
+	<field name="MSPO_AO" class="java.lang.String"/>
+	<field name="MSPO_INS_PERIOD" class="java.math.BigDecimal"/>
+	<field name="MSPO_NASABAH_DCIF" class="java.lang.String"/>
+	<field name="MSPO_NO_BLANKO" class="java.lang.String"/>
+	<field name="MSPO_PAY_PERIOD" class="java.math.BigDecimal"/>
+	<field name="MSPO_SPAJ_DATE" class="java.util.Date"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="MSPR_TSI" class="java.math.BigDecimal"/>
+	<field name="MSTE_AGE" class="java.math.BigDecimal"/>
+	<field name="MSTE_BEG_DATE" class="java.util.Date"/>
+	<field name="MSTE_END_DATE" class="java.util.Date"/>
+	<field name="MSTE_TGL_AKSEP" class="java.util.Date"/>
+	<field name="NAMA_CABANG" class="java.lang.String"/>
+	<field name="NAMA_REFF" class="java.lang.String"/>
+	<field name="PP_BIRTH" class="java.util.Date"/>
+	<field name="PP_ID" class="java.lang.String"/>
+	<field name="PP_IND" class="java.lang.String"/>
+	<field name="PP_JOB" class="java.lang.String"/>
+	<field name="PP_KERJ" class="java.lang.String"/>
+	<field name="PP_MOTHER" class="java.lang.String"/>
+	<field name="PP_NAMA" class="java.lang.String"/>
+	<field name="PP_PEND" class="java.lang.String"/>
+	<field name="PP_PENG" class="java.lang.String"/>
+	<field name="PP_PLACE_BIRTH" class="java.lang.String"/>
+	<field name="PP_SEX" class="java.lang.String"/>
+	<field name="PP_SMBR" class="java.lang.String"/>
+	<field name="PP_TUJ" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="ROLLOVER" class="java.lang.String"/>
+	<field name="STATUS_ACCEPT" class="java.lang.String"/>
+	<field name="TELP_KANTOR" class="java.lang.String"/>
+	<field name="TELP_RUMAH" class="java.lang.String"/>
+	<field name="TELP_TAGIHAN" class="java.lang.String"/>
+	<field name="TT_BIRTH" class="java.util.Date"/>
+	<field name="TT_ID" class="java.lang.String"/>
+	<field name="TT_IND" class="java.lang.String"/>
+	<field name="TT_JOB" class="java.lang.String"/>
+	<field name="TT_KERJ" class="java.lang.String"/>
+	<field name="TT_MOTHER" class="java.lang.String"/>
+	<field name="TT_NAMA" class="java.lang.String"/>
+	<field name="TT_PEND" class="java.lang.String"/>
+	<field name="TT_PENG" class="java.lang.String"/>
+	<field name="TT_PLACE_BIRTH" class="java.lang.String"/>
+	<field name="TT_SEX" class="java.lang.String"/>
+	<field name="TT_SMBR" class="java.lang.String"/>
+	<field name="TT_TUJ" class="java.lang.String"/>
+	<pageHeader>
+		<band height="31">
+			<staticText>
+				<reportElement x="0" y="1" width="177" height="14"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[Report Data Polis SinarMas Sekuritas]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="15" width="44" height="16"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Periode  :]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="44" y="15" width="80" height="15"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggalAwal}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="128" y="16" width="23" height="15"/>
+				<textElement/>
+				<text><![CDATA[S/d]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="154" y="15" width="80" height="15"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggalAkhir}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="26">
+			<staticText>
+				<reportElement x="21" y="1" width="92" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Agen Penutup]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="114" y="1" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Alamat Kantor]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="195" y="1" width="82" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Alamat Rumah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="277" y="1" width="98" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Alamat Tagihan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="375" y="1" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Email Tagihan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="455" y="1" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Fax Tagihan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="535" y="1" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[HP Tagihan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="615" y="1" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Kota Kantor]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="695" y="1" width="82" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Kota Rumah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="777" y="1" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Kota Tagihan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="857" y="1" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Lca Nama]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="937" y="2" width="40" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[LSBS ID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="977" y="2" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[LSDBS NAME]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1057" y="2" width="70" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[LSDBS NUMBER]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1127" y="2" width="66" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[LSPD Position]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1193" y="2" width="74" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[MPR Deposit]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1267" y="2" width="70" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[MPR Interest]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1337" y="2" width="81" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[MPR Jangka Invest]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1418" y="2" width="84" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[MPR Mature Date]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1502" y="2" width="97" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[MPR Note]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1599" y="2" width="50" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[MPR Rate]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1649" y="2" width="90" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[MPS Deposit Date]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1739" y="2" width="44" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[MSAG ID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1783" y="2" width="23" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[AGE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1806" y="2" width="60" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[MSPO AO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1866" y="2" width="75" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[MSPO INS Period]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1941" y="1" width="95" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[MSPO SPAJ DATE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2036" y="1" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[MSPR Premium]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2116" y="1" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[MSPR TSI]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2196" y="1" width="64" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[MSTE AGE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2260" y="1" width="86" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[MSTE BEG DATE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2346" y="1" width="86" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[MSTE END DATE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2432" y="1" width="86" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[MSTE TGL AKSEP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2518" y="1" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[NAMA CABANG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2598" y="1" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[NAMA REFF]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2678" y="1" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[PP BIRTH]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2758" y="1" width="107" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[PP ID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2865" y="1" width="78" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[PP IND]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2943" y="1" width="78" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[PP JOB]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3021" y="1" width="78" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[PP KERJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3099" y="1" width="78" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[PP MOTHER]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3177" y="1" width="78" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[PP NAMA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3255" y="1" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[PP PEND]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3335" y="1" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[PP PENG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3415" y="1" width="83" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[PP PLACE BIRTH]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3498" y="1" width="60" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[PP SEX]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3558" y="1" width="83" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[PP SMBR]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3641" y="1" width="82" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[PP TUJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3723" y="1" width="78" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[REG SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3801" y="1" width="78" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[ROLLOVER]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3879" y="1" width="88" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[STATUS ACCEPT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3967" y="1" width="78" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[TELP KANTOR]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4045" y="1" width="78" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[TELP RUMAH]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4123" y="1" width="78" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[TELP TAGIHAN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4201" y="1" width="83" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[TT BIRD]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4284" y="1" width="110" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[TT ID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4394" y="1" width="78" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[TT IND]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4472" y="1" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[TT JOB]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4552" y="1" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[TT KERJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4632" y="1" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[TT MOTHER]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4712" y="1" width="80" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[TT NAMA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4792" y="1" width="78" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[TT PEND]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4870" y="1" width="78" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[TT PENG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4948" y="1" width="83" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[TT PLACE BIRTH]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="5109" y="1" width="83" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TT SUMBER]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="5031" y="1" width="78" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TT SEX]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="5192" y="1" width="82" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TT TUJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1" y="1" width="19" height="23"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="0" width="5277" height="1"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="0" y="25" width="5277" height="1"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="0" y="1" width="1" height="24"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="5274" y="1" width="1" height="24"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="35">
+			<textField isBlankWhenNull="true">
+				<reportElement x="21" y="0" width="92" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{AGEN_PENUTUP}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="114" y="0" width="80" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ALAMAT_KANTOR}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="194" y="0" width="83" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ALAMAT_RUMAH}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="277" y="0" width="98" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ALAMAT_TAGIHAN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="375" y="0" width="80" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{EMAIL_TAGIHAN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="455" y="0" width="80" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{FAX_TAGIHAN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="535" y="0" width="80" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{HP_TAGIHAN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="615" y="0" width="80" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KOTA_KANTOR}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="695" y="0" width="82" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KOTA_RUMAH}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="777" y="0" width="80" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KOTA_TAGIHAN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="857" y="0" width="80" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LCA_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="937" y="0" width="40" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{LSBS_ID}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="977" y="0" width="80" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1057" y="0" width="70" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{LSDBS_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1127" y="0" width="66" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSPD_POSITION}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1193" y="0" width="74" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MPR_DEPOSIT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1267" y="0" width="70" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MPR_INTEREST}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1337" y="0" width="81" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MPR_JANGKA_INVEST}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1418" y="0" width="84" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MPR_MATURE_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1502" y="0" width="97" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MPR_NOTE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1599" y="0" width="50" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MPR_RATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1649" y="0" width="90" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MPS_DEPOSIT_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1739" y="0" width="44" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSAG_ID}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1783" y="0" width="23" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSPO_AGE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1806" y="0" width="60" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_AO}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1866" y="0" width="75" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSPO_INS_PERIOD}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1941" y="0" width="95" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSPO_SPAJ_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="2036" y="0" width="80" height="35"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSPR_PREMIUM}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="2116" y="0" width="80" height="35"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSPR_TSI}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="2196" y="0" width="64" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSTE_AGE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="2260" y="0" width="86" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSTE_BEG_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="2346" y="0" width="86" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSTE_END_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="2432" y="0" width="86" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSTE_TGL_AKSEP}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="2518" y="0" width="80" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_CABANG}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="2598" y="0" width="80" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_REFF}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="2678" y="0" width="80" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{PP_BIRTH}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="2758" y="0" width="107" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_ID}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="2865" y="0" width="78" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_IND}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="2943" y="0" width="78" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_JOB}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="3021" y="0" width="78" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_KERJ}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="3099" y="0" width="78" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_MOTHER}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="3177" y="0" width="78" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="3255" y="0" width="80" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_PEND}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="3335" y="0" width="80" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_PENG}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="3415" y="0" width="83" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_PLACE_BIRTH}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="3498" y="0" width="60" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_SEX}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="3558" y="0" width="83" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_SMBR}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="3641" y="0" width="82" height="35"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_TUJ}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="3723" y="0" width="78" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REG_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="3801" y="0" width="78" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ROLLOVER}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="3879" y="0" width="88" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{STATUS_ACCEPT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="3967" y="0" width="78" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TELP_KANTOR}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="4045" y="0" width="78" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TELP_RUMAH}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="4123" y="0" width="78" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TELP_TAGIHAN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="4201" y="0" width="83" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{TT_BIRTH}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="4284" y="0" width="110" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT_ID}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="4394" y="0" width="78" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT_IND}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="4472" y="0" width="80" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT_JOB}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="4552" y="0" width="80" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT_KERJ}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="4632" y="0" width="80" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT_MOTHER}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="4712" y="0" width="80" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="4792" y="0" width="78" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT_PEND}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="4870" y="0" width="78" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT_PENG}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="4948" y="0" width="83" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT_PLACE_BIRTH}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="5031" y="0" width="78" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT_SEX}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="5109" y="0" width="83" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT_SMBR}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="5192" y="0" width="82" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT_TUJ}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1" y="0" width="19" height="35"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{REPORT_COUNT}+"."]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="0" width="1" height="35"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="5274" y="0" width="1" height="35"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</detail>
+</jasperReport>

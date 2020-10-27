@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using an evaluation version of JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="provider_akseptasi" pageWidth="655" pageHeight="842" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="620" leftMargin="15" rightMargin="20" topMargin="30" bottomMargin="25" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="3"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="3"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("01/08/2011")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select a.reg_spaj, a.mspo_policy_no, a.mspo_policy_no_format, a.nama_pp, a.mspr_beg_date, a.tgl_akhir, 
+    (case when b.lsbs_id in(823,825) and b.lsdbs_number > 15 then b.nama else a.nama_tt end) nama_tt,
+ b.lsbs_id, b.lsdbs_number
+from
+(select a.reg_spaj, a.mspo_policy_no, a.mspo_policy_no_format, b.mcl_first nama_pp, c.mspr_beg_date, sysdate tgl_akhir, e.mcl_first nama_tt
+from eka.mst_policy a,
+     eka.mst_insured d,
+     eka.mst_client_new b,
+     eka.mst_product_insured c,
+     eka.mst_client_new e
+where a.reg_spaj = c.reg_spaj
+and a.reg_spaj = d.reg_spaj
+and a.mspo_policy_holder = b.mcl_id
+and d.mste_insured  = e.mcl_id
+and a.mspo_provider = 2
+and c.lsbs_id <300
+and d.mste_tgl_aksep between $P{tanggalAwal} and sysdate) a,
+    eka.mst_peserta b
+where a.reg_spaj = b.reg_spaj
+order by a.mspo_policy_no, b.lsbs_id, b.lsdbs_number]]>
+	</queryString>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSPO_POLICY_NO_FORMAT" class="java.lang.String"/>
+	<field name="MSPR_BEG_DATE" class="java.util.Date"/>
+	<field name="NAMA_PP" class="java.lang.String"/>
+	<field name="NAMA_TT" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="TGL_AKHIR" class="java.util.Date"/>
+	<title>
+		<band height="72">
+			<image hyperlinkType="None">
+				<reportElement x="0" y="0" width="120" height="32"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.ekalife")]]></imageExpression>
+			</image>
+			<textField pattern="dd/MM/yyyy" hyperlinkType="None">
+				<reportElement x="129" y="45" width="280" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[( new SimpleDateFormat("dd/MM/yyyy") ).format($P{tanggalAwal}) + " s/d " + ( new SimpleDateFormat("dd/MM/yyyy") ).format($F{TGL_AKHIR})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="128" y="32" width="436" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Monitoring Akseptasi Provider"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="111" y="45" width="9" height="13"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="5" y="32" width="97" height="13"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Laporan"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="5" y="45" width="97" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tanggal Terima SPAJ"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="111" y="32" width="9" height="13"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="82">
+			<frame>
+				<reportElement x="0" y="24" width="618" height="58"/>
+				<box padding="0">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<staticText>
+					<reportElement x="0" y="0" width="29" height="58"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[No.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="30" y="0" width="102" height="58"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[No Polis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="133" y="0" width="188" height="58"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[Pemegang Polis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="511" y="0" width="107" height="58"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[Efektif Polis]]></text>
+				</staticText>
+				<line>
+					<reportElement x="29" y="0" width="1" height="58"/>
+				</line>
+				<line>
+					<reportElement x="132" y="0" width="1" height="58"/>
+				</line>
+				<line>
+					<reportElement x="321" y="0" width="1" height="58"/>
+				</line>
+				<line>
+					<reportElement x="510" y="0" width="1" height="58"/>
+				</line>
+				<staticText>
+					<reportElement x="322" y="0" width="188" height="58"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[Tertanggung]]></text>
+				</staticText>
+			</frame>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="37">
+			<textField hyperlinkType="None">
+				<reportElement x="1" y="0" width="28" height="35"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="30" y="0" width="102" height="35"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_POLICY_NO_FORMAT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" hyperlinkType="None">
+				<reportElement x="511" y="0" width="107" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[( new SimpleDateFormat("dd/MM/yyyy") ).format($F{MSPR_BEG_DATE})]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="0" width="1" height="36"/>
+			</line>
+			<line>
+				<reportElement x="0" y="36" width="611" height="1"/>
+			</line>
+			<line>
+				<reportElement x="617" y="0" width="1" height="36"/>
+			</line>
+			<line>
+				<reportElement x="132" y="0" width="1" height="36"/>
+			</line>
+			<line>
+				<reportElement x="29" y="0" width="1" height="36"/>
+			</line>
+			<textField hyperlinkType="None">
+				<reportElement x="133" y="0" width="188" height="35"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PP}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="321" y="0" width="1" height="36"/>
+			</line>
+			<line>
+				<reportElement x="510" y="0" width="1" height="36"/>
+			</line>
+			<textField hyperlinkType="None">
+				<reportElement x="322" y="0" width="188" height="35"/>
+				<textElement verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_TT}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

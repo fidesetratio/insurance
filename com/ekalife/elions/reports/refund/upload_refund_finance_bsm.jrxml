@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="upload_refund_finance_bsm" pageWidth="600" pageHeight="842" columnWidth="560" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<queryString>
+		<![CDATA[        select kli_nama as Name, lsbp_pusat as BankName, kli_norek as AccNo, (case when lku_id like '01' then 'IDR' else 'USD' end) as Curr, sum(premi_refund) as Amount, 'REFUND PREMI' as Description
+        from
+        (
+        	select * from (
+            	select distinct a.reg_spaj, a.kli_nama, nvl(f.lsbp_pusat,f.lsbp_nama) as lsbp_pusat, a.kli_norek, c.lku_id, a.premi_refund
+            	from eka.mst_refund a,
+                	(select reg_spaj, mspa_no_pre, mspa_no_voucher
+                	from eka.mst_payment 
+                	where mspa_payment_id in(
+                    	select a.mspa_payment_id
+                    	from eka.mst_tag_payment a, eka.mst_production b
+                    	where a.reg_spaj = b.reg_spaj
+                        	and a.msbi_tahun_ke = b.msbi_tahun_ke
+                        	and a.msbi_premi_ke = b.msbi_premi_ke
+                	) and mspa_no_pre is not null) b,
+                	eka.mst_policy c, eka.mst_client_new d, eka.mst_rek_client e, eka.lst_bank_pusat f
+            	where a.reg_spaj = b.reg_spaj
+	                and a.reg_spaj = c.reg_spaj
+    	            and a.reg_spaj = e.reg_spaj
+        	        and c.mspo_policy_holder = d.mcl_id
+            	    and f.lsbp_id = e.lsbp_id
+            	    and a.tindakan_cd = 2
+                	and a.cancel_when BETWEEN to_date( (to_char(SYSDATE-2,'dd/mm/yyyy')) || ' (20:00:01)', 'dd/mm/yyyy (hh24:mi:ss)') and to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (20:00:00)', 'dd/mm/yyyy (hh24:mi:ss)')
+            		and f.lsbp_id in ('156', '224')
+            	union
+            	select distinct a.reg_spaj, a.kli_nama, nvl(f.lsbp_pusat,f.lsbp_nama) as lsbp_pusat, a.kli_norek, c.lku_id, a.premi_refund
+            	from eka.mst_refund a,
+                	(select reg_spaj, mspa_no_pre, mspa_no_voucher
+                	from eka.mst_payment 
+                	where mspa_payment_id in(
+                    	select a.mspa_payment_id
+                    	from eka.mst_tag_payment a, eka.mst_production b
+                    	where a.reg_spaj = b.reg_spaj
+                        	and a.msbi_tahun_ke = b.msbi_tahun_ke
+                        	and a.msbi_premi_ke = b.msbi_premi_ke
+                	) and mspa_no_pre is not null) b,
+                	eka.mst_policy c, eka.mst_client_new d, eka.mst_account_recur e, eka.lst_bank_pusat f, eka.lst_bank g
+            	where a.reg_spaj = b.reg_spaj
+                	and a.reg_spaj = c.reg_spaj
+                	and a.reg_spaj = e.reg_spaj
+                	and c.mspo_policy_holder = d.mcl_id
+                	and e.lbn_id = g.lbn_id
+                	and f.lsbp_id = g.lsbp_id
+                	and a.tindakan_cd = 2
+                	and a.cancel_when BETWEEN to_date( (to_char(SYSDATE-2,'dd/mm/yyyy')) || ' (20:00:01)', 'dd/mm/yyyy (hh24:mi:ss)') and to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (20:00:00)', 'dd/mm/yyyy (hh24:mi:ss)')
+                	and f.lsbp_id in ('156', '224')
+        	) order by kli_nama, kli_norek, lku_id
+        )
+        group by kli_nama, lsbp_pusat, kli_norek, lku_id
+        order by kli_nama, lsbp_pusat, kli_norek, lku_id]]>
+	</queryString>
+	<field name="ACCNO" class="java.lang.String"/>
+	<field name="AMOUNT" class="java.math.BigDecimal"/>
+	<field name="BANKNAME" class="java.lang.String"/>
+	<field name="CURR" class="java.lang.String"/>
+	<field name="DESCRIPTION" class="java.lang.String"/>
+	<field name="NAME" class="java.lang.String"/>
+	<columnHeader>
+		<band height="20">
+			<staticText>
+				<reportElement x="0" y="0" width="60" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<text><![CDATA[NIK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="60" y="0" width="120" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<text><![CDATA[Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="220" y="0" width="60" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<text><![CDATA[AccNo]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="180" y="0" width="40" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<text><![CDATA[Curr]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="280" y="0" width="80" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<text><![CDATA[Amount]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="360" y="0" width="80" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<text><![CDATA[Description]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="60" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{COLUMN_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="60" y="0" width="120" height="20"/>
+				<textElement verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="220" y="0" width="60" height="20"/>
+				<textElement verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ACCNO}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="180" y="0" width="40" height="20"/>
+				<textElement verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CURR}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="280" y="0" width="80" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{AMOUNT}.toString()]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="360" y="0" width="80" height="20"/>
+				<textElement verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{DESCRIPTION}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

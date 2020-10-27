@@ -1,0 +1,2004 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_prod_nb" pageWidth="5500" pageHeight="842" columnWidth="5460" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("03/05/2016")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("09/05/2016")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select nb.* ,(case when nb.jenis = 1 then 'UNIT LINK'
+                   when nb.jenis = 2 then 'SAVE SERIES' else 'NON-UNIT LINK' end)kriteria,       
+(case when (nb.clean_unclean = 1 or nb.clean_unclean is null)then 'CLEAN' else 'UNCLEAN' end) clean,
+(case when nb.jenis=2 then (case when nb.tgl_aksep_speedy is null then EKA.WORKDAYS (to_date(nb.tgl_upload_scan,'dd/MM/yyyy'),to_date(nb.tgl_aksep_uwproses,'dd/MM/yyyy')) else EKA.WORKDAYS (to_date(nb.tgl_upload_scan,'dd/MM/yyyy'),to_date(nb.tgl_aksep_speedy,'dd/MM/yyyy')) end)
+      when nb.lsbs_id = 73 and nb.lsdbs_number in(12,13,14) then EKA.WORKDAYS (to_date(nb.tgl_input,'dd/MM/yyyy'),to_date(nb.tgl_input_payment_pertama,'dd/MM/yyyy'))                       
+      when nb.lsbs_id = 205 then EKA.WORKDAYS (to_date(nb.tgl_input,'dd/MM/yyyy'),to_date(nb.tgl_input_payment_pertama,'dd/MM/yyyy'))  
+      else EKA.WORKDAYS (to_date(nb.tgl_input,'dd/MM/yyyy'),to_date(nb.tgl_kirim_polis,'dd/MM/yyyy'))
+end)sla                           
+from(
+    select
+         H.NAMA_DIST as channel,g.lca_nama|| '||'||F.LSRG_NAMA as cabang,
+         a.reg_Spaj as spaj,EKA.UTILS.PEMEGANG(a.reg_Spaj) as pemegang,EKA.UTILS.TERTANGGUNG(a.reg_Spaj)as tertanggung,
+         C.MSPR_PREMIUM as premi_pokok,
+         (select ber.mu_jlh_premi from eka.mst_ulink ber where ber.reg_Spaj=a.reg_spaj and ber.mu_ke in(1,2,3) and ber.lt_id=5 and ber.reg_Spaj=a.reg_Spaj and rownum=1)premi_topup,
+         (select tung.mu_jlh_premi from eka.mst_ulink tung where tung.reg_Spaj=a.reg_spaj and tung.mu_ke in(1,2,3) and tung.lt_id=2 and tung.reg_Spaj=a.reg_spaj and rownum=1)premi_topuptunggal,
+         (select sum(ap.ape_prod) from eka.mst_production ap where ap.reg_spaj=a.reg_spaj)ape,J.LSCB_PAY_MODE as cara_bayar,
+         D.LSDBS_NAME as nama_produk,to_char(I.TGL_INPUT_SPAJ_ADMIN,'dd/MM/yyyy') as tgl_input,
+         to_char(I.TGL_TRANSFER_UW_SPEEDY,'dd/MM/yyyy')as TGL_TRANSFER_UW_SPEEDY,to_char(I.TGL_BACK_TO_BAS,'dd/MM/yyyy')as TGL_BACK_TO_BAS,
+         to_char(i.tgl_transfer_uw,'dd/MM/yyyy') as tgl_transfer_uwproses,to_char(I.TGL_FURTHER,'dd/MM/yyyy') as TGL_FURTHER,
+         (case when B.FLAG_SPEEDY =1 then to_char(i.tgl_akseptasi_polis,'dd/MM/yyyy')else '' end )tgl_aksep_speedy,
+         to_char(I.TGL_PRINT_POLIS,'dd/MM/yyyy')as tgl_print,
+         (case when (B.FLAG_SPEEDY =0 or B.FLAG_SPEEDY is null ) then to_char(i.tgl_akseptasi_polis,'dd/MM/yyyy')else (select to_char(pst.msps_date,'dd/MM/yyyy') from eka.mst_position_Spaj pst where pst.reg_Spaj=a.reg_Spaj and pst.msps_date=(select min(msps_date) from eka.mst_position_Spaj where reg_Spaj=pst.reg_Spaj and lssa_id=5 and lspd_id=2)) 
+              end )tgl_aksep_uwproses,
+         to_char(I.TGL_KIRIM_POLIS,'dd/MM/yyyy') as tgl_kirim_polis,to_char(I.tgl_ttp,'dd/MM/yyyy') as tgl_ttp,
+         to_char((select min(pst.msps_date) from eka.mst_position_spaj pst where pst.reg_spaj=a.reg_Spaj and pst.msps_desc like '%KIRIM ENROLLMENT%' ),'dd/MM/yyyy')tgl_enrollment_admedika,
+         to_char((select X.MSDP_INPUT_DATE from eka.mst_deposit_premium x where x.msdp_number=1 and x.reg_Spaj=a.reg_spaj),'dd/MM/yyyy')tgl_input_tp,
+         to_char((select min(yy.MSpa_INPUT_DATE) from eka.mst_payment yy where  yy.reg_Spaj=a.reg_spaj and (yy.msdp_number=1 or yy.msdp_number is null)),'dd/MM/yyyy')tgl_input_payment_pertama,
+         to_char(b.mste_tgl_spaj_doc,'dd/MM/yyyy')tgl_upload_scan,
+		to_char(i.tgl_transfer_uw_print,'dd/MM/yyyy')tgl_transfer_print_polis,
+         to_char(e.mspro_prod_date,'dd/MM/yyyy')tgl_produksi,
+         nvl(B.FLAG_SPEEDY,1) clean_unclean,
+         (case when d.lsbs_id in(115,116,117,118,119,120,121,122,127,128,129,134,138,139,140,141,152,153,154,159,160,162,190,191,199,200,202,213) then 1
+               when d.lsbs_id in(086,094,123,124,142,143,144,155,158,175,176,177,184,188,207)then 2 else 0 end )jenis,
+         d.lsbs_id,d.lsdbs_number      
+   from
+        eka.mst_policy a,
+        eka.mst_insured b,
+        eka.mst_product_insured c,
+        eka.lst_det_bisnis d,
+        eka.mst_production e,
+        eka.lst_region f,
+        eka.lst_cabang g,
+        eka.lst_jalur_dist h,
+        eka.mst_trans_history i,
+        EKA.LST_PAY_MODE j
+   where
+        a.reg_Spaj=b.reg_Spaj
+        and a.LSCB_ID=J.LSCB_ID
+        and a.reg_Spaj=c.reg_Spaj
+        and c.lsbs_id=d.lsbs_id
+        and c.lsdbs_number=d.lsdbs_number
+        and a.reg_Spaj=e.reg_Spaj
+        and a.lca_id=g.lca_id
+        and a.lca_id=f.lca_id
+        and a.lwk_id=f.lwk_id
+        and a.lsrg_id=f.lsrg_id
+        and a.lstb_id=1
+        and c.lsbs_id<300
+        and a.lspd_id<>95
+        and g.jalurdis=h.id_dist
+        and a.reg_spaj = i.reg_spaj(+)
+        and i.jenis=23
+        and E.MSPRO_PROD_KE=1
+        and E.MSPRO_PROD_DATE between $P{tanggalAwal}  and $P{tanggalAkhir} order by i.tgl_input_Spaj_admin asc)nb]]>
+	</queryString>
+	<field name="APE" class="java.math.BigDecimal"/>
+	<field name="CABANG" class="java.lang.String"/>
+	<field name="CARA_BAYAR" class="java.lang.String"/>
+	<field name="CHANNEL" class="java.lang.String"/>
+	<field name="CLEAN" class="java.lang.String"/>
+	<field name="CLEAN_UNCLEAN" class="java.math.BigDecimal"/>
+	<field name="JENIS" class="java.math.BigDecimal"/>
+	<field name="KRITERIA" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="NAMA_PRODUK" class="java.lang.String"/>
+	<field name="PEMEGANG" class="java.lang.String"/>
+	<field name="PREMI_POKOK" class="java.math.BigDecimal"/>
+	<field name="PREMI_TOPUP" class="java.math.BigDecimal"/>
+	<field name="PREMI_TOPUPTUNGGAL" class="java.math.BigDecimal"/>
+	<field name="SLA" class="java.math.BigDecimal"/>
+	<field name="SPAJ" class="java.lang.String"/>
+	<field name="TERTANGGUNG" class="java.lang.String"/>
+	<field name="TGL_AKSEP_SPEEDY" class="java.lang.String"/>
+	<field name="TGL_AKSEP_UWPROSES" class="java.lang.String"/>
+	<field name="TGL_BACK_TO_BAS" class="java.lang.String"/>
+	<field name="TGL_ENROLLMENT_ADMEDIKA" class="java.lang.String"/>
+	<field name="TGL_FURTHER" class="java.lang.String"/>
+	<field name="TGL_INPUT" class="java.lang.String"/>
+	<field name="TGL_INPUT_PAYMENT_PERTAMA" class="java.lang.String"/>
+	<field name="TGL_INPUT_TP" class="java.lang.String"/>
+	<field name="TGL_KIRIM_POLIS" class="java.lang.String"/>
+	<field name="TGL_PRINT" class="java.lang.String"/>
+	<field name="TGL_PRODUKSI" class="java.lang.String"/>
+	<field name="TGL_TRANSFER_PRINT_POLIS" class="java.lang.String"/>
+	<field name="TGL_TRANSFER_UWPROSES" class="java.lang.String"/>
+	<field name="TGL_TRANSFER_UW_SPEEDY" class="java.lang.String"/>
+	<field name="TGL_TTP" class="java.lang.String"/>
+	<field name="TGL_UPLOAD_SCAN" class="java.lang.String"/>
+	<variable name="count_link" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==1? new BigDecimal(1) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="count_nonlink" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==0? new BigDecimal(1) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="count_save" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==2? new BigDecimal(1) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="total1" class="java.math.BigDecimal" calculation="Count">
+		<variableExpression><![CDATA[$F{SPAJ}]]></variableExpression>
+	</variable>
+	<variable name="count_link_clean" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==1? ($F{CLEAN_UNCLEAN}.intValue()==1? new  Integer(1): new  Integer(0)) : new  Integer(0))]]></variableExpression>
+	</variable>
+	<variable name="count_link_unclean" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==1? ($F{CLEAN_UNCLEAN}.intValue()==0? new  BigDecimal(1): new  BigDecimal(0)) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="count_nonlink_clean" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==0? ($F{CLEAN_UNCLEAN}.intValue()==1? new  BigDecimal(1): new  BigDecimal(0)) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="count_save_clean" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==2? ($F{CLEAN_UNCLEAN}.intValue()==1? new  Integer(1): new  Integer(0)) : new  Integer(0))]]></variableExpression>
+	</variable>
+	<variable name="count_nonlink_unclean" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==0? ($F{CLEAN_UNCLEAN}.intValue()==0? new  BigDecimal(1): new  BigDecimal(0)) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="count_save_unclean" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==2? ($F{CLEAN_UNCLEAN}.intValue()==0? new  BigDecimal(1): new  BigDecimal(0)) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="within_link_clean" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==1? ($F{CLEAN_UNCLEAN}.intValue()==1?$F{SLA}.intValue()<=11?new  BigDecimal(1):new  BigDecimal(0): new  BigDecimal(0)) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="within_nonlink_clean" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==0? ($F{CLEAN_UNCLEAN}.intValue()==1?$F{SLA}.intValue()<=11?new  BigDecimal(1):new  BigDecimal(0): new  BigDecimal(0)) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="within_save_clean" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==2? ($F{CLEAN_UNCLEAN}.intValue()==1?$F{SLA}.intValue()<=11?new  BigDecimal(1):new  BigDecimal(0): new  BigDecimal(0)) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="exceed_link_clean" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==1? ($F{CLEAN_UNCLEAN}.intValue()==1?$F{SLA}.intValue()<=11?new  BigDecimal(0):new  BigDecimal(1): new  BigDecimal(0)) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="exceed_nonlink_clean" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==0? ($F{CLEAN_UNCLEAN}.intValue()==1?$F{SLA}.intValue()<=11?new  BigDecimal(0):new  BigDecimal(1): new  BigDecimal(0)) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="exceed_save_clean" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==2? ($F{CLEAN_UNCLEAN}.intValue()==1?$F{SLA}.intValue()<=11?new  BigDecimal(0):new  BigDecimal(1): new  BigDecimal(0)) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="within_link_unclean" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==1? ($F{CLEAN_UNCLEAN}.intValue()==0?$F{SLA}.intValue()<=11?new  BigDecimal(1):new  BigDecimal(0): new  BigDecimal(0)) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="within_nonlink_unclean" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==0? ($F{CLEAN_UNCLEAN}.intValue()==0?$F{SLA}.intValue()<=11?new  BigDecimal(1):new  BigDecimal(0): new  BigDecimal(0)) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="within_save_unclean" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==2? ($F{CLEAN_UNCLEAN}.intValue()==0?$F{SLA}.intValue()<=11?new  BigDecimal(1):new  BigDecimal(0): new  BigDecimal(0)) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="exceed_link_unclean" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==1? ($F{CLEAN_UNCLEAN}.intValue()==0?$F{SLA}.intValue()<=11?new  BigDecimal(0):new  BigDecimal(1): new  BigDecimal(0)) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="exceed_nonlink_unclean" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==0? ($F{CLEAN_UNCLEAN}.intValue()==1?$F{SLA}.intValue()<=11?new  BigDecimal(0):new  BigDecimal(1): new  BigDecimal(0)) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="exceed_save_unclean" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{JENIS}.intValue()==2? ($F{CLEAN_UNCLEAN}.intValue()==1?$F{SLA}.intValue()<=11?new  BigDecimal(0):new  BigDecimal(1): new  BigDecimal(0)) : new  BigDecimal(0))]]></variableExpression>
+	</variable>
+	<variable name="count_sla_link" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{JENIS}.intValue()==1?$F{SLA}:new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="count_sla_nonlink" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{JENIS}.intValue()==0?$F{SLA}:new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="count_sla_save" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{JENIS}.intValue()==2?$F{SLA}:new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<title>
+		<band height="73">
+			<staticText>
+				<reportElement x="0" y="0" width="354" height="30"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PT ASURANSI JIWA SINARMAS MSIG Tbk.]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="30" width="354" height="23"/>
+				<textElement markup="none">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["REPORT PRODUCTION NB"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="53" width="354" height="20"/>
+				<textElement markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Periode	:" +$P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAwal}) + " "+"s/d"+" "+$P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAkhir})]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="20">
+			<staticText>
+				<reportElement x="0" y="0" width="37" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[NO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="37" y="0" width="218" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[CHANELL]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="255" y="0" width="361" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[CABANG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="616" y="0" width="155" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="771" y="0" width="300" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[PEMEGANG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1071" y="0" width="300" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TERTANGGUNG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1371" y="0" width="173" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[PREMI POKOK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1544" y="0" width="173" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[PREMI TOPUP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1717" y="0" width="173" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[PREMI TOPUP TUNGGAL]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1890" y="0" width="120" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[APE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2010" y="0" width="168" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[CARA BAYAR]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2178" y="0" width="276" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[NAMA PRODUK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2454" y="0" width="174" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[KRITERIA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2628" y="0" width="130" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TGL INPUT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2758" y="0" width="172" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TGL TRANSFER UW SPEEDY]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2930" y="0" width="172" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TGL BACK TO BAS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3102" y="0" width="172" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TGL TRANSFER UW PROSES]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3274" y="0" width="130" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TGL FURTHER]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3404" y="0" width="130" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TGL AKSEP SPEEDY]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3534" y="0" width="130" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TGL PRINT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3664" y="0" width="130" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TGL AKSEP UW PROSES]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3794" y="0" width="130" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TGL KIRIM POLIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3924" y="0" width="130" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TGL TTP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4054" y="0" width="180" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TGL ENROLLMENT ADMEDIKA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4234" y="0" width="130" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TGL INPUT TP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4364" y="0" width="203" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TGL INPUT PAYMENT PERTAMA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4567" y="0" width="119" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TGL UPLOAD SCAN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4981" y="0" width="72" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[SLA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="5053" y="0" width="122" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[CLEAN & NON-CLEAN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="5175" y="0" width="122" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[WITHIN/EXCEED SLA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4686" y="0" width="176" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TGL TRANSFER KE PRINT POLIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4862" y="0" width="119" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TGL PRODUKSI]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="0" y="0" width="37" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + ($V{REPORT_COUNT}.intValue()) + "."]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="37" y="0" width="218" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CHANNEL}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="255" y="0" width="361" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CABANG}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="616" y="0" width="155" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="771" y="0" width="300" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PEMEGANG}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1071" y="0" width="300" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TERTANGGUNG}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1371" y="0" width="173" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{PREMI_POKOK}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1544" y="0" width="173" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{PREMI_TOPUP}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1717" y="0" width="173" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{PREMI_TOPUPTUNGGAL}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1890" y="0" width="120" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{APE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="2010" y="0" width="168" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CARA_BAYAR}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="2178" y="0" width="276" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PRODUK}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="2454" y="0" width="174" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KRITERIA}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="2628" y="0" width="130" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_INPUT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="2758" y="0" width="172" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_TRANSFER_UW_SPEEDY}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="2930" y="0" width="172" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_BACK_TO_BAS}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="3102" y="0" width="172" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_TRANSFER_UWPROSES}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="3274" y="0" width="130" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_FURTHER}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="3404" y="0" width="130" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_AKSEP_SPEEDY}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="3534" y="0" width="130" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_PRINT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="3664" y="0" width="130" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_AKSEP_UWPROSES}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="3794" y="0" width="130" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_KIRIM_POLIS}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="3924" y="0" width="130" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_TTP}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="4054" y="0" width="180" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_ENROLLMENT_ADMEDIKA}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="4234" y="0" width="130" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_INPUT_TP}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="4364" y="0" width="203" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_INPUT_PAYMENT_PERTAMA}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="4567" y="0" width="119" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_UPLOAD_SCAN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="4981" y="0" width="72" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{SLA}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="5053" y="0" width="122" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{CLEAN_UNCLEAN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="5175" y="0" width="122" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{SLA}.intValue()>11?"EXCEED":"WITHIN"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="4686" y="0" width="176" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_TRANSFER_PRINT_POLIS}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="4862" y="0" width="119" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_PRODUKSI}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="437">
+			<staticText>
+				<reportElement x="0" y="25" width="202" height="48"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Process]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="73" width="202" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Individu Unit Link]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="93" width="202" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Individu Non Unit Link]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="113" width="202" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Save Series]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="133" width="202" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="202" y="25" width="213" height="48"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[#Process]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="202" y="73" width="213" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_link}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="202" y="93" width="213" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_nonlink}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="202" y="113" width="213" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_save}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="202" y="133" width="213" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total1}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="415" y="25" width="150" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Clean Case]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="415" y="49" width="75" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="490" y="49" width="75" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="565" y="25" width="150" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Unclean Case]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="565" y="49" width="75" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="640" y="49" width="75" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="415" y="73" width="75" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{count_link_clean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="490" y="73" width="75" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.pembulatan2Digit(new BigDecimal($V{count_link_clean}.doubleValue()*100/$V{count_link}.doubleValue()),2)]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="565" y="73" width="75" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_link_unclean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="640" y="73" width="75" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.pembulatan2Digit(new BigDecimal($V{count_link_unclean}.doubleValue()*100/$V{count_link}.doubleValue()),2)]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="415" y="93" width="75" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_nonlink_clean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="415" y="113" width="75" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{count_save_clean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="490" y="93" width="75" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.pembulatan2Digit(new BigDecimal($V{count_nonlink_clean}.doubleValue()*100/$V{count_nonlink}.doubleValue()),2)]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="490" y="113" width="75" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.pembulatan2Digit(new BigDecimal($V{count_save_clean}.doubleValue()*100/$V{count_save}.doubleValue()),2)]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="415" y="133" width="75" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal($V{count_link_clean}.intValue()+$V{count_nonlink_clean}.intValue()+$V{count_save_clean}.intValue())]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="490" y="133" width="75" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.pembulatan2Digit(new BigDecimal(($V{count_save_clean}.doubleValue()+$V{count_link_clean}.doubleValue()+$V{count_nonlink_clean}.doubleValue())*100/$V{total1}.doubleValue()),2)]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="565" y="93" width="75" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_nonlink_unclean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="565" y="113" width="75" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_save_unclean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="565" y="133" width="75" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal($V{count_link_unclean}.intValue()+$V{count_nonlink_unclean}.intValue()+$V{count_save_unclean}.intValue())]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="640" y="133" width="75" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.pembulatan2Digit(new BigDecimal(($V{count_save_unclean}.doubleValue()+$V{count_link_unclean}.doubleValue()+$V{count_nonlink_unclean}.doubleValue())*100/$V{total1}.doubleValue()),2)]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="640" y="93" width="75" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.pembulatan2Digit(new BigDecimal($V{count_nonlink_unclean}.doubleValue()*100/$V{count_nonlink}.doubleValue()),2)]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="640" y="113" width="75" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.pembulatan2Digit(new BigDecimal($V{count_save_unclean}.doubleValue()*100/$V{count_save}.doubleValue()),2)]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="184" width="202" height="48"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Process]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="202" y="184" width="106" height="48"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SLA(Working Days)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="415" y="184" width="361" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Clean Case]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="308" y="184" width="107" height="48"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[#Process]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="776" y="184" width="316" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Unclean Case]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="415" y="208" width="72" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[#Clean]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="487" y="208" width="72" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[#Within SLA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="559" y="208" width="72" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[%Ach
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="631" y="208" width="72" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Exceed SLA
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="703" y="208" width="73" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[%Exceed
+
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="776" y="208" width="63" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Unclean]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="839" y="208" width="63" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Within SLA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="902" y="208" width="63" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[%Ach]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="965" y="208" width="63" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Exceed SLA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1028" y="208" width="64" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[%Exceed]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="232" width="202" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Individu Unit Link]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="252" width="202" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Individu Non Unit Link]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="272" width="202" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Save Series]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="202" y="232" width="106" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[11]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="202" y="252" width="106" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[11]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="202" y="272" width="106" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[11]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="308" y="232" width="107" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_link}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="308" y="252" width="107" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_nonlink}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="308" y="272" width="107" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_save}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="415" y="232" width="72" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{count_link_clean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="415" y="252" width="72" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_nonlink_clean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="415" y="272" width="72" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{count_save_clean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="487" y="232" width="72" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{within_link_clean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="487" y="252" width="72" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{within_nonlink_clean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="487" y="272" width="72" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{within_save_clean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="559" y="232" width="72" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{within_link_clean}.doubleValue()*100/$V{count_link_clean}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="559" y="252" width="72" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{within_nonlink_clean}.doubleValue()*100/$V{count_nonlink_clean}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="559" y="272" width="72" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{within_save_clean}.doubleValue()*100/$V{count_save_clean}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="631" y="232" width="72" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{exceed_link_clean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="631" y="252" width="72" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{exceed_nonlink_clean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="631" y="272" width="72" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{exceed_save_clean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="703" y="232" width="73" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{exceed_link_clean}.doubleValue()*100/$V{count_link_clean}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="703" y="252" width="73" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{exceed_nonlink_clean}.doubleValue()*100/$V{count_nonlink_clean}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="703" y="272" width="73" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{exceed_save_clean}.doubleValue()*100/$V{count_nonlink_clean}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="776" y="232" width="63" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_link_unclean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="776" y="252" width="63" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_nonlink_unclean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="776" y="272" width="63" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_save_unclean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="839" y="232" width="63" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{within_link_unclean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="839" y="252" width="63" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{within_nonlink_unclean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="839" y="272" width="63" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{within_save_unclean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="902" y="232" width="63" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{within_link_unclean}.doubleValue()*100/$V{count_link_unclean}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="902" y="252" width="63" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{within_nonlink_unclean}.doubleValue()*100/$V{count_nonlink_unclean}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="902" y="272" width="63" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{count_save_unclean}.intValue()==0? $P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(0)) : $P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{within_save_unclean}.doubleValue()*100/$V{count_save_unclean}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="965" y="232" width="63" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{exceed_link_unclean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="965" y="252" width="63" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{exceed_nonlink_unclean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="965" y="272" width="63" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{exceed_save_unclean}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1028" y="232" width="64" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{exceed_link_unclean}.doubleValue()*100/$V{count_link_unclean}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1028" y="252" width="64" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{exceed_nonlink_unclean}.doubleValue()*100/$V{count_link_unclean}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1028" y="272" width="64" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{exceed_save_unclean}.doubleValue()*100/$V{count_link_unclean}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="329" width="202" height="48"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Process]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="377" width="202" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Individu Unit Link]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="397" width="202" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Individu Non Unit Link]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="417" width="202" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Save Series]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="202" y="329" width="106" height="48"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SLA(Working Days)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="202" y="377" width="106" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[11]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="202" y="397" width="106" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[11]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="202" y="417" width="106" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[11]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="308" y="329" width="107" height="48"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[#Process]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="308" y="377" width="107" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_link}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="308" y="417" width="107" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_save}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="308" y="397" width="107" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_nonlink}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="415" y="329" width="150" height="48"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Waktu Proses]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="565" y="329" width="211" height="48"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Average TAT]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="415" y="377" width="150" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_sla_link}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="415" y="397" width="150" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_sla_nonlink}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="415" y="417" width="150" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{count_sla_save}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="565" y="377" width="211" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{count_sla_link}.doubleValue()/$V{count_link}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="565" y="397" width="211" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{count_sla_nonlink}.doubleValue()/$V{count_nonlink}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="565" y="417" width="211" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{count_sla_save}.doubleValue()/$V{count_save}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="158" width="1098" height="20"/>
+				<textElement>
+					<font isBold="false"/>
+				</textElement>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="303" width="1098" height="20"/>
+				<textElement>
+					<font isBold="false"/>
+				</textElement>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

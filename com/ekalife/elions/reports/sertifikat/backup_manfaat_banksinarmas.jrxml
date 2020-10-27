@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="manfaat_banksinarmas" pageWidth="693" pageHeight="144" orientation="Landscape" columnWidth="693" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="4"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="4"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<import value="net.sf.jasperreports.engine.xml.JRXmlLoader"/>
+	<import value="com.ibatis.common.resources.Resources"/>
+	<import value="net.sf.jasperreports.engine.design.JRJdtCompiler"/>
+	<reportFont name="Tahoma" isDefault="false" fontName="Tahoma" size="9" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Tahoma" pdfEncoding="Cp1252" isPdfEmbedded="true"/>
+	<parameter name="spaj" class="java.lang.String">
+		<parameterDescription><![CDATA[Nomor SPAJ]]></parameterDescription>
+		<defaultValueExpression><![CDATA["09200827179"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select * from 
+(select a.lsbs_id,
+	   (case when a.lsbs_id =822 then 
+		  (select count(lsman_line)
+			FROM eka.mst_product_insured a, eka.lst_manfaat b
+			   WHERE a.reg_spaj =$P{spaj}
+			     AND a.lsbs_id = b.lsbs_id
+			     AND a.lsdbs_number = b.lsdbs_number)
+	   else lsman_line end) lsman_line,
+	   lsman_manfaat
+FROM eka.mst_product_insured a, eka.lst_manfaat b
+   WHERE a.reg_spaj =$P{spaj}
+     AND a.lsbs_id = b.lsbs_id
+     AND a.lsdbs_number = b.lsdbs_number 
+     AND a.lsbs_id <300
+order by lsman_line asc
+)]]>
+	</queryString>
+	<field name="LSMAN_MANFAAT" class="java.lang.String"/>
+	<field name="LSMAN_LINE" class="java.math.BigDecimal"/>
+	<detail>
+		<band height="13">
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="24" y="0" width="669" height="10"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle" isStyledText="true">
+					<font fontName="Tahoma" size="8" isBold="false" isItalic="false" pdfFontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSMAN_MANFAAT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="4" y="0" width="20" height="13"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top" isStyledText="true">
+					<font fontName="Tahoma" size="9" isBold="false" isItalic="false" pdfFontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSMAN_LINE} + "."]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

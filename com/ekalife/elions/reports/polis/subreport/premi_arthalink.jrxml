@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="premi_arthalink" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<reportFont name="Tahoma" isDefault="false" fontName="Tahoma" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Tahoma" pdfEncoding="Cp1252" isPdfEmbedded="true"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["02200700053"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT 
+	   a.mu_jlh_premi,
+	   (CASE WHEN b.lt_id IN (2, 5, 6) THEN b.lt_transksi ELSE 'Pokok' END) premi, 
+	   decode(d.lscb_id,0,'',d.lscb_print) lscb_print, e.lku_symbol
+FROM 
+	 eka.mst_ulink a, eka.lst_transaksi b, eka.mst_policy c, eka.lst_pay_mode d, eka.lst_kurs e
+WHERE 
+	  a.reg_spaj = $P{spaj} AND a.lt_id = b.lt_id AND a.reg_spaj = c.reg_spaj 
+	  and c.lscb_id = d.lscb_id and c.lku_id = e.lku_id
+	  AND b.lt_id in (1,5) 
+	  AND a.mu_tgl_trans = (select mu_tgl_trans from eka.mst_ulink where reg_spaj = a.reg_spaj and mu_ke=1)
+ORDER BY 
+	  (CASE WHEN b.lt_id IN (2, 5, 6) THEN b.lt_transksi ELSE 'Pokok' END)]]>
+	</queryString>
+	<field name="LKU_SYMBOL" class="java.lang.String">
+		<fieldDescription><![CDATA[LKU_SYMBOL]]></fieldDescription>
+	</field>
+	<field name="LSCB_PRINT" class="java.lang.String">
+		<fieldDescription><![CDATA[LSCB_PRINT]]></fieldDescription>
+	</field>
+	<field name="MU_JLH_PREMI" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[MU_JLH_PREMI]]></fieldDescription>
+	</field>
+	<field name="PREMI" class="java.lang.String">
+		<fieldDescription><![CDATA[PREMI]]></fieldDescription>
+	</field>
+	<columnHeader>
+		<band height="1"/>
+	</columnHeader>
+	<detail>
+		<band height="10">
+			<textField>
+				<reportElement positionType="Float" x="145" y="0" width="70" height="10"/>
+				<textElement textAlignment="Right">
+					<font reportFont="Tahoma" size="8" isBold="false" pdfFontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[new DecimalFormat("#,##0.00;(#,##0.00)").format($F{MU_JLH_PREMI})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="116" y="0" width="5" height="10"/>
+				<textElement>
+					<font fontName="Tahoma" size="8" isBold="false" pdfFontName="Tahoma"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" x="0" y="0" width="115" height="10"/>
+				<textElement>
+					<font reportFont="Tahoma" size="8" isBold="false" pdfFontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Premi " + $F{PREMI} + " *)"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement positionType="Float" x="220" y="0" width="90" height="10"/>
+				<textElement>
+					<font reportFont="Tahoma" size="8" isBold="false" pdfFontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSCB_PRINT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="125" y="0" width="20" height="10"/>
+				<textElement textAlignment="Left">
+					<font reportFont="Tahoma" size="8" isBold="false" pdfFontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+</jasperReport>

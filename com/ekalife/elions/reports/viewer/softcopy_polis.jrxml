@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="softcopy_polis" pageWidth="1003" pageHeight="709" orientation="Landscape" columnWidth="963" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<parameter name="tgl1" class="java.lang.String"/>
+	<parameter name="tgl2" class="java.lang.String"/>
+	<parameter name="tanggal1" class="java.lang.String"/>
+	<parameter name="tanggal2" class="java.lang.String"/>
+	<parameter name="user" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT /*+ first_rows */ "EKA"."MST_POLICY"."REG_SPAJ",   
+         "EKA"."MST_POLICY"."MSPO_POLICY_NO",   
+         "EKA"."MST_AGENT"."MSAG_ID",   
+         "MST_CLIENT_NEW_A"."MCL_FIRST" "nama_agen",   
+         "EKA"."MST_PRODUCT_INSURED"."LSBS_ID",   
+         "EKA"."MST_PRODUCT_INSURED"."LSDBS_NUMBER",   
+         "EKA"."LST_DET_BISNIS"."LSDBS_NAME",   
+         "EKA"."MST_PRODUCT_INSURED"."MSPR_TSI",   
+         "EKA"."MST_PRODUCT_INSURED"."MSPR_PREMIUM",   
+         "EKA"."MST_POLICY"."LSCB_ID",   
+         "EKA"."LST_PAY_MODE"."LSCB_PAY_MODE",   
+         "MST_CLIENT_NEW_B"."MSPE_EMAIL" "email_1",   
+         "EKA"."MST_INSURED"."MSTE_TGL_KIRIM_POLIS",   
+         "EKA"."LST_USER"."LUS_ID",   
+         "EKA"."LST_USER"."LUS_LOGIN_NAME",   
+         "EKA"."MST_ADDRESS_BILLING"."E_MAIL",   
+         "EKA"."LST_KURS"."LKU_SYMBOL",   
+         "MST_CLIENT_NEW_C"."MCL_FIRST" "nama_pp",   
+         "MST_CLIENT_NEW_C"."MSPE_EMAIL",   
+         "EKA"."MST_INSURED"."MSTE_TGL_AKSEP",   
+         "EKA"."MST_POLICY"."MSPO_DATE_TTP"  ,
+	 "EKA"."LST_REGION"."LSRG_NAMA",
+ decode( "EKA"."MST_POLICY"."MSPO_POLICY_NO",null,'',SUBSTR ( "EKA"."MST_POLICY"."MSPO_POLICY_NO", 1, 2)
+				       || '.'
+				       || SUBSTR ( "EKA"."MST_POLICY"."MSPO_POLICY_NO", 3, 3)
+				       || '.'
+				       || SUBSTR ( "EKA"."MST_POLICY"."MSPO_POLICY_NO", 6, 4)
+				       || '.'
+				       || SUBSTR ( "EKA"."MST_POLICY"."MSPO_POLICY_NO", 10, 5)) POLICY_FORMATTED,
+"EKA"."MST_PRODUCT_INSURED"."LKU_ID",
+"EKA"."MST_POLICY"."MSPO_JENIS_TERBIT",
+T1.LUS_ID LUS_ID1,
+T1.LUS_LOGIN_NAME LUS_LOGIN_NAME1
+    FROM "EKA"."MST_AGENT_PROD",   
+         "EKA"."MST_POLICY",   
+         "EKA"."MST_PRODUCT_INSURED",   
+         "EKA"."LST_DET_BISNIS",   
+         "EKA"."LST_PAY_MODE",   
+         "EKA"."MST_INSURED",   
+         EKA."MST_CLIENT_NEW" "MST_CLIENT_NEW_B",   
+         "EKA"."LST_USER",   
+         "EKA"."MST_ADDRESS_BILLING",   
+         "EKA"."LST_KURS",   
+         EKA."MST_CLIENT_NEW" "MST_CLIENT_NEW_C"  ,
+		 EKA."LST_REGION",
+		 "EKA"."MST_AGENT",
+		  EKA."MST_CLIENT_NEW" "MST_CLIENT_NEW_A",
+		  (select DISTINCT eka.mst_position_spaj.REG_SPAJ, MAX(eka.mst_position_spaj.LUS_ID) LUS_ID, 
+MAX(eka.lst_user.LUS_LOGIN_NAME) LUS_LOGIN_NAME 
+from eka.mst_position_spaj,eka.lst_user where  msps_desc like '%SOFTCOPY%' and
+eka.mst_position_spaj.LUS_ID = eka.lst_user.lus_id
+GROUP BY eka.mst_position_spaj.REG_SPAJ
+		  		 )T1
+   WHERE 
+   ( "EKA"."MST_POLICY"."REG_SPAJ" = "EKA"."MST_AGENT_PROD"."REG_SPAJ" ) and  
+         ( "EKA"."MST_POLICY"."LSTB_ID" = "EKA"."MST_AGENT_PROD"."LSTB_ID" ) and  
+         ( "EKA"."LST_DET_BISNIS"."LSBS_ID" = "EKA"."MST_PRODUCT_INSURED"."LSBS_ID" ) and  
+         ( "EKA"."LST_DET_BISNIS"."LSDBS_NUMBER" = "EKA"."MST_PRODUCT_INSURED"."LSDBS_NUMBER" ) and  
+         ( "EKA"."MST_POLICY"."LSCB_ID" = "EKA"."LST_PAY_MODE"."LSCB_ID" ) and  
+         ( "EKA"."MST_POLICY"."REG_SPAJ" = "EKA"."MST_INSURED"."REG_SPAJ" ) and  
+         ( "EKA"."MST_INSURED"."REG_SPAJ" = "EKA"."MST_PRODUCT_INSURED"."REG_SPAJ" ) and  
+         ( "EKA"."MST_INSURED"."MSTE_INSURED_NO" = "EKA"."MST_PRODUCT_INSURED"."MSTE_INSURED_NO" ) and  
+         ( "EKA"."MST_INSURED"."MSTE_INSURED" = "MST_CLIENT_NEW_B"."MCL_ID" ) and  
+         ( "EKA"."MST_POLICY"."LUS_ID" = "EKA"."LST_USER"."LUS_ID" ) and  
+         ( "EKA"."MST_POLICY"."REG_SPAJ" = "EKA"."MST_ADDRESS_BILLING"."REG_SPAJ" ) and  
+         ( "EKA"."MST_PRODUCT_INSURED"."LKU_ID" = "EKA"."LST_KURS"."LKU_ID" ) and  
+         ( "EKA"."MST_POLICY"."MSPO_POLICY_HOLDER" = "MST_CLIENT_NEW_C"."MCL_ID" ) and  
+		 ( EKA."LST_REGION"."LCA_ID" = "EKA"."MST_POLICY"."LCA_ID") AND
+		 ( EKA."LST_REGION"."LWK_ID" = "EKA"."MST_POLICY"."LWK_ID") AND
+		 ( EKA."LST_REGION"."LSRG_ID" = "EKA"."MST_POLICY"."LSRG_ID") AND
+         ( ( EKA."MST_AGENT_PROD"."LSTB_ID" = 1 ) AND  
+         ( EKA."MST_PRODUCT_INSURED"."LSBS_ID" < 300 ) AND  
+         ( EKA."MST_AGENT_PROD"."LEV_COMM" = 4 ) ) and 
+		 (EKA.MST_PRODUCT_INSURED.LSBS_ID not in('142','175','171','143')) and
+		 (EKA.MST_PRODUCT_INSURED.LSBS_ID not in('153') and EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER not in(3)) and
+		 (EKA.MST_PRODUCT_INSURED.LSBS_ID not in('170') and EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER not in(1)) and
+		 ( "EKA"."MST_AGENT_PROD"."MSAG_ID" = "EKA"."MST_AGENT"."MSAG_ID" ) and
+		 ( "EKA"."MST_AGENT"."MCL_ID" = "MST_CLIENT_NEW_A"."MCL_ID" ) and
+		 (to_char ("EKA"."MST_INSURED"."MSTE_TGL_KIRIM_POLIS",'YYYYMMDD') between $P{tgl1} and $P{tgl2}) AND
+		  (not("EKA"."MST_ADDRESS_BILLING"."E_MAIL"  is  null) or not("MST_CLIENT_NEW_C"."MSPE_EMAIL" is  null)) and
+		 T1.REG_SPAJ (+)= "EKA"."MST_POLICY"."REG_SPAJ"]]>
+	</queryString>
+	<field name="E_MAIL" class="java.lang.String"/>
+	<field name="LKU_ID" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSCB_ID" class="java.math.BigDecimal"/>
+	<field name="LSCB_PAY_MODE" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="LSRG_NAMA" class="java.lang.String"/>
+	<field name="LUS_ID" class="java.math.BigDecimal"/>
+	<field name="LUS_ID1" class="java.math.BigDecimal"/>
+	<field name="LUS_LOGIN_NAME" class="java.lang.String"/>
+	<field name="LUS_LOGIN_NAME1" class="java.lang.String"/>
+	<field name="MSAG_ID" class="java.lang.String"/>
+	<field name="MSPE_EMAIL" class="java.lang.String"/>
+	<field name="MSPO_DATE_TTP" class="java.util.Date"/>
+	<field name="MSPO_JENIS_TERBIT" class="java.math.BigDecimal"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="MSPR_TSI" class="java.math.BigDecimal"/>
+	<field name="MSTE_TGL_AKSEP" class="java.util.Date"/>
+	<field name="MSTE_TGL_KIRIM_POLIS" class="java.util.Date"/>
+	<field name="POLICY_FORMATTED" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="email_1" class="java.lang.String"/>
+	<field name="nama_agen" class="java.lang.String"/>
+	<field name="nama_pp" class="java.lang.String"/>
+	<variable name="no" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[new Integer(1)]]></variableExpression>
+	</variable>
+	<variable name="email" class="java.lang.String">
+		<variableExpression><![CDATA[$F{MSPE_EMAIL} == null ? $F{E_MAIL} : $F{MSPE_EMAIL}]]></variableExpression>
+	</variable>
+	<title>
+		<band height="21">
+			<staticText>
+				<reportElement x="243" y="3" width="288" height="17"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[PENGIRIMAN  SOFTCOPY  POLIS]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="20">
+			<staticText>
+				<reportElement x="3" y="4" width="174" height="15"/>
+				<textElement>
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PENGIRIMAN  SOFTCOPY  POLIS]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="180" y="4" width="179" height="15"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggal1} + " s/d "+$P{tanggal2}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="43">
+			<staticText>
+				<reportElement x="3" y="1" width="18" height="36"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="23" y="1" width="123" height="36"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO POLIS
+PEMEGANG POLIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="148" y="1" width="138" height="36"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[BRANCH
+AGEN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="288" y="1" width="86" height="36"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PRODUK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="376" y="1" width="88" height="36"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[UP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="465" y="1" width="85" height="36"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PREMI]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="551" y="1" width="64" height="36"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[CARA BAYAR]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="616" y="1" width="128" height="36"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[EMAIL
+ADD]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="746" y="1" width="46" height="36"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TGL AKSEPTASI]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="793" y="1" width="46" height="36"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TGL KIRIM POLIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="839" y="1" width="46" height="36"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TGL TERIMA POLIS]]></text>
+			</staticText>
+			<line>
+				<reportElement x="3" y="40" width="952" height="1"/>
+				<graphicElement/>
+			</line>
+			<staticText>
+				<reportElement x="936" y="1" width="17" height="36"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[H/S]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="886" y="1" width="48" height="36"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[USER]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="36">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="23" y="0" width="123" height="16"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{POLICY_FORMATTED}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="23" y="19" width="123" height="16"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nama_pp}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="148" y="0" width="138" height="16"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSRG_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="148" y="19" width="138" height="16"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nama_agen}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="288" y="0" width="86" height="34"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="376" y="0" width="88" height="34"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(($F{LKU_ID}.equals("01") ? "Rp " : "U$ "),$F{MSPR_TSI})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="465" y="0" width="85" height="34"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(($F{LKU_ID}.equals("01") ? "Rp " : "U$ "),$F{MSPR_PREMIUM})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="551" y="0" width="64" height="34"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSCB_PAY_MODE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="616" y="0" width="128" height="34"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{email}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="746" y="0" width="46" height="34"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSTE_TGL_AKSEP}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="793" y="0" width="46" height="34"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSTE_TGL_KIRIM_POLIS}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="839" y="0" width="46" height="34"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSPO_DATE_TTP}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="3" y="0" width="18" height="33"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{no}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="936" y="0" width="17" height="34"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_JENIS_TERBIT}.intValue() == 0 ? "H" : "S"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="886" y="0" width="48" height="34"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LUS_LOGIN_NAME1}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="52">
+			<staticText>
+				<reportElement x="11" y="8" width="301" height="39"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NOTE : 
+	H : polis dikirim Hardcopy + softcopy
+	S : polis yang dikirim hanya dalam bentuk softcopy]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="elions.uw">
+
+	<typeAlias alias="hashMap" type="java.util.HashMap"/>
+
+	<resultMap id="resultReportServiceLevel" class="hashMap">
+		<result property="dist" column="dist" javaType="string" jdbcType="VARCHAR2" />
+		<result property="lsrg_nama" column="lsrg_nama" javaType="string"	jdbcType="VARCHAR2" />
+		<result property="reg_spaj" column="reg_spaj" javaType="string" jdbcType="CHAR" nullValue="" />
+		<result property="lsdbs_name" column="lsdbs_name" javaType="string" jdbcType="VARCHAR2" />
+		<result property="mste_tgl_terima_spaj"	column="mste_tgl_terima_spaj" javaType="java.sql.Date" jdbcType="DATE" />
+		<result property="mste_tgl_spaj_doc" column="mste_tgl_spaj_doc"	javaType="java.sql.Date" jdbcType="DATE" />
+		<result property="mste_tgl_kirim_polis"	column="mste_tgl_kirim_polis" javaType="java.sql.Date" jdbcType="DATE" />
+		<result property="mste_tgl_valid_print"	column="mste_tgl_valid_print" javaType="java.sql.Date" jdbcType="DATE" />
+		<result property="lama_proses" column="lama_proses"	javaType="int" jdbcType="NUMBER" />
+		<result property="jenis_perhitungan" column="jenis_perhitungan"	javaType="string" jdbcType="VARCHAR2" />
+		<result property="lama_pending" column="lama_pending" javaType="int" jdbcType="NUMBER" />
+		<result property="now" column="now" javaType="java.sql.Date"	jdbcType="DATE" />
+		<result property="lsbs_id" column="lsbs_id" javaType="int" jdbcType="NUMBER" />
+		<result property="lsdbs_number" column="lsdbs_number" javaType="int" jdbcType="NUMBER" />
+		<result property="lca_id" column="lca_id" javaType="string" jdbcType="CHAR" nullValue="" />
+		<result property="diatas_jam_12" column="diatas_jam_12" javaType="int" jdbcType="NUMBER" />
+		<result property="msps_desc" column="reg_spaj" javaType="string" select="elions.uw.selectMstPositionSpajTerakhir"/>
+	</resultMap>
+	
+	<select id="selectMstPositionSpajTerakhir" parameterClass="string" resultClass="string">
+		SELECT msps_desc
+		  FROM eka.mst_position_spaj i
+		 WHERE i.reg_spaj = RPAD (#value#, 11, ' ')
+		   AND msps_date = (SELECT MAX (msps_date) FROM eka.mst_position_spaj WHERE reg_spaj = i.reg_spaj)	
+	</select>
+	
+	<select id="selectReportServiceLevel" resultClass="hashMap" parameterClass="hashMap">
+		SELECT dist, lsrg_nama, reg_spaj, lsdbs_name, mste_tgl_terima_spaj, mste_tgl_spaj_doc, mste_tgl_kirim_polis, mste_tgl_valid_print, 
+			   (CASE 
+			   		 WHEN diatas_jam_12 = 0 THEN lama_proses-1 
+					 ELSE lama_proses
+			   END) lama_proses,
+			   jenis_perhitungan, lama_pending, sysdate sekarang, lsbs_id, lsdbs_number, lca_id,
+			   diatas_jam_12
+		FROM (
+			SELECT
+				  (CASE
+					WHEN b.lca_id = '09' THEN decode(g.lsgb_id, 17, 'Bancassurance (Unit-Link)', 'Bancassurance') 
+					WHEN b.lca_id in ('08','42') THEN decode(g.lsgb_id, 17, 'Worksite (Unit-Link)', 'Worksite') 
+					ELSE decode(g.lsgb_id, 17, 'Agency (Unit-Link)', 'Agency')
+				  END) dist,
+				  e.lsrg_nama,
+				  b.reg_spaj, 
+				  eka.f_lsdbs(b.reg_spaj, d.lsbs_id, d.lsdbs_number) lsdbs_name,
+				  a.mste_tgl_terima_spaj,
+				  a.mste_tgl_spaj_doc,
+				  a.mste_tgl_kirim_polis, 
+				  a.mste_tgl_valid_print, 
+				  (CASE
+				    WHEN h.jn_bank = 2 THEN eka.workdays(a.mste_tgl_spaj_doc, nvl(a.mste_tgl_aksep, sysdate))
+				    WHEN a.mste_tgl_valid_print is not null THEN eka.workdays(a.mste_tgl_spaj_doc, a.mste_tgl_valid_print)
+					ELSE eka.workdays(a.mste_tgl_spaj_doc, nvl(a.mste_tgl_kirim_polis, sysdate))
+				  END) lama_proses,
+				  (CASE
+				    WHEN h.jn_bank = 2 THEN 'simas prima'
+				    WHEN a.mste_tgl_valid_print is not null THEN 'polis cabang'
+					ELSE 'normal'
+				  END) jenis_perhitungan,
+			      eka.workdays (a.mste_tgl_terima_spaj, SYSDATE) lama_pending, 
+				  d.lsbs_id, 
+				  d.lsdbs_number,
+			      b.lca_id,
+				  (case when to_char(a.mste_tgl_terima_spaj,'hh24miss')<![CDATA[>=]]>120000 then 1 else 0 end) diatas_jam_12
+			FROM
+				 eka.mst_insured a,
+				 eka.mst_policy b,
+				 eka.mst_product_insured c,
+				 eka.lst_det_bisnis d,
+				 eka.lst_region e, 
+				 eka.lst_bisnis g,
+				 eka.lst_user h
+			WHERE
+				 b.reg_spaj = a.reg_spaj
+			     AND a.reg_spaj = c.reg_spaj
+			     AND a.mste_insured_no = c.mste_insured_no
+			     AND d.lsbs_id = c.lsbs_id
+			     AND d.lsdbs_number = c.lsdbs_number
+			     AND e.lca_id = b.lca_id
+			     AND e.lwk_id = b.lwk_id
+			     AND e.lsrg_id = b.lsrg_id
+			     AND c.lsbs_id <![CDATA[<]]> 300
+			     AND (a.mste_tgl_aksep BETWEEN #tanggalAwal# AND #tanggalAkhir#)
+			     AND b.lstb_id = 1
+				 AND a.mste_tgl_terima_spaj is not null
+				 AND a.mste_tgl_spaj_doc is not null
+				 <isEqual property="jenis" compareValue="servicelevel" open=" " close=" ">
+					 AND a.mste_tgl_kirim_polis is not null 
+				 </isEqual>
+				 <isNotEmpty property="dist" open=" " close=" ">
+				 	<isEqual property="dist" compareValue="All">
+				 		
+				 	</isEqual>
+				 	<isEqual property="dist" compareValue="Agency">
+				 		AND b.lca_id not in ('08','09','42') AND g.lsgb_id <![CDATA[<>]]> 17
+				 	</isEqual>
+				 	<isEqual property="dist" compareValue="Agency (Unit-Link)">
+				 		AND b.lca_id not in ('08','09','42') AND g.lsgb_id = 17
+				 	</isEqual>
+				 	<isEqual property="dist" compareValue="Bancassurance">
+				 		AND b.lca_id = '09' AND g.lsgb_id <![CDATA[<>]]> 17
+				 	</isEqual>
+				 	<isEqual property="dist" compareValue="Bancassurance (Unit-Link)">
+				 		AND b.lca_id = '09' AND g.lsgb_id = 17
+				 	</isEqual>
+				 	<isEqual property="dist" compareValue="Worksite">
+				 		AND b.lca_id not in ('08','42') AND g.lsgb_id <![CDATA[<>]]> 17
+				 	</isEqual>
+				 	<isEqual property="dist" compareValue="Worksite (Unit-Link)">
+				 		AND b.lca_id not in ('08','42') AND g.lsgb_id = 17
+				 	</isEqual>
+				 </isNotEmpty>
+				 AND c.lsbs_id = g.lsbs_id
+				 AND b.lus_id = h.lus_id
+			ORDER BY 
+				  (CASE
+					WHEN b.lca_id = '09' THEN decode(g.lsgb_id, 17, 'Bancassurance (Unit-Link)', 'Bancassurance') 
+					WHEN b.lca_id in ('08','42') THEN decode(g.lsgb_id, 17, 'Worksite (Unit-Link)', 'Worksite') 
+					ELSE decode(g.lsgb_id, 17, 'Agency (Unit-Link)', 'Agency') 
+				  END),
+				  d.lsdbs_name, e.lsrg_nama, b.reg_spaj
+		)	  
+	</select>
+	
+</sqlMap>

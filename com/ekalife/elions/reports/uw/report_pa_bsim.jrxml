@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_pa_bsim" pageWidth="660" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="620" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="20">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<parameter name="tanggalAwal" class="java.util.Date"/>
+	<parameter name="tanggalAkhir" class="java.util.Date"/>
+	<queryString>
+		<![CDATA[select * from (
+select no_sertifikat, full_name nama, 
+(select distinct msp_pas_email from eka.mst_pas_sms where msp_full_name = full_name and to_char(mcp_beg_date,'dd/MM/yyyy') = to_char(MSP_PAS_BEG_DATE, 'dd/MM/yyyy') and to_char(mcp_tgl_lahir,'dd/MM/yyyy') = to_char(MSP_DATE_OF_BIRTH, 'dd/MM/yyyy'))
+email,
+(
+(select distinct a.lca_nama from eka.mst_pas_sms c, eka.lst_cabang a, eka.lst_user b where msp_full_name = full_name and to_char(mcp_beg_date,'dd/MM/yyyy') = to_char(MSP_PAS_BEG_DATE, 'dd/MM/yyyy') and to_char(mcp_tgl_lahir,'dd/MM/yyyy') = to_char(MSP_DATE_OF_BIRTH, 'dd/MM/yyyy')
+and a.lca_id = b.lca_id and b.lus_id = c.lus_id)
+) cabang,
+ to_char(mcp_beg_date,'dd/MM/yyyy') beg_date, '36364' premi from eka.mst_cplan@eb where jenis_cp = 25 and lsbp_id= 156 and to_date(mcp_beg_date, 'dd/MM/yyyy') >= to_date($P{tanggalAwal},'dd/MM/yyyy') and to_date(mcp_beg_date,'dd/MM/yyyy') <= to_date($P{tanggalAkhir},'dd/MM/yyyy')
+order by mcp_beg_date asc
+)]]>
+	</queryString>
+	<field name="NO_SERTIFIKAT" class="java.lang.String"/>
+	<field name="NAMA" class="java.lang.String"/>
+	<field name="EMAIL" class="java.lang.String"/>
+	<field name="CABANG" class="java.lang.String"/>
+	<field name="BEG_DATE" class="java.lang.String"/>
+	<field name="PREMI" class="java.math.BigDecimal"/>
+	<variable name="TOTAL_PREMI" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI}]]></variableExpression>
+	</variable>
+	<pageHeader>
+		<band height="91">
+			<staticText>
+				<reportElement x="198" y="13" width="200" height="36"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Laporan Produksi PA 
+Bank Sinarmas]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="71" width="371" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Periode    :  " + new SimpleDateFormat("dd/MM/yyyy").format($P{tanggalAwal}) + " s/d " + new SimpleDateFormat("dd/MM/yyyy").format($P{tanggalAkhir})]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="20">
+			<staticText>
+				<reportElement x="0" y="0" width="40" height="20"/>
+				<box padding="0">
+					<pen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="40" y="0" width="120" height="20"/>
+				<box padding="0">
+					<pen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO SERTIFIKAT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="160" y="0" width="120" height="20"/>
+				<box padding="0">
+					<pen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NAMA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="280" y="0" width="140" height="20"/>
+				<box padding="0">
+					<pen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ALAMAT EMAIL]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="420" y="0" width="100" height="20"/>
+				<box padding="0">
+					<pen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[CABANG BSIM]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="520" y="0" width="100" height="20"/>
+				<box padding="0">
+					<pen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PREMI]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="40" height="20"/>
+				<box padding="0">
+					<leftPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="40" y="0" width="120" height="20"/>
+				<box padding="0">
+					<leftPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NO_SERTIFIKAT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="160" y="0" width="120" height="20"/>
+				<box padding="0">
+					<leftPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="280" y="0" width="140" height="20"/>
+				<box padding="0">
+					<leftPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{EMAIL} == null ? "-" : $F{EMAIL}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="420" y="0" width="100" height="20"/>
+				<box padding="0">
+					<leftPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CABANG} == null ? "-" : $F{CABANG}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="Rp #,##0.##;(Rp #,##0.##)" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="520" y="0" width="100" height="20"/>
+				<box padding="0">
+					<leftPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{PREMI} == null ? BigDecimal.ZERO : $F{PREMI}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="20">
+			<printWhenExpression><![CDATA[new Boolean(!$V{PAGE_COUNT}.equals(new Integer(0)))]]></printWhenExpression>
+			<textField pattern="Rp #,##0.##;(Rp #,##0.##)" hyperlinkType="None">
+				<reportElement x="520" y="0" width="100" height="20"/>
+				<box padding="0">
+					<topPen lineWidth="1.0"/>
+					<bottomPen lineWidth="2.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{TOTAL_PREMI} == null ? BigDecimal.ZERO : $V{TOTAL_PREMI}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="420" y="0" width="100" height="20"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="5">
+					<topPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Premi : ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="0" width="420" height="20"/>
+				<box padding="0">
+					<topPen lineWidth="1.0"/>
+				</box>
+				<textElement/>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

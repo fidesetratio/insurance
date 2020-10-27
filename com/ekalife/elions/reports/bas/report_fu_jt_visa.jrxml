@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_fu_jt_visa" pageWidth="2200" pageHeight="842" columnWidth="2160" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<parameter name="tanggalAwal" class="java.util.Date"/>
+	<queryString>
+		<![CDATA[select    
+   visa.polis as no_polis,
+   visa.pemegang,   
+   visa.region as cabang,
+   visa.beg_date,
+   visa.end_date,   
+   (case when visa.lsbs_linkkon = 2 then (visa.top_up_berkala + visa.top_up_single + visa.premi_pokok) else visa.premi_pokok end)premi,
+   visa.premi_ke,
+   visa.carabayar,
+   '' as card_no,
+   visa.tgl_rk,
+   '' as tgl_input,
+   (case when visa.jumlah_smed > 0 then 'Y' else 'T'end)Smile_medical
+from(
+SELECT DISTINCT       
+    d.lca_nama cabang, e.lsrg_nama region, tabel.reg_spaj, tabel.mspo_policy_no_format polis, 
+    to_char (tabel.msbi_beg_date, 'dd/mm/yyyy') beg_date, to_char (tabel.msbi_end_date, 'dd/mm/yyyy') end_date, 
+    to_char (tabel.msbi_due_date, 'dd/mm/yyyy') due_date, eka.utils.pemegang (tabel.reg_spaj) pemegang,       
+    eka.utils.tertanggung (tabel.reg_spaj) tertanggung, f.lsdbs_name produk, 
+    tabel.msbi_tahun_ke tahun_ke, tabel.msbi_premi_ke premi_ke ,xxx.lsbs_linkkon,pay.lscb_pay_mode carabayar,
+    (select count(xx.lsbs_id) from eka.mst_product_insured xx where xx.lsbs_id in(183,189,823) and xx.reg_spaj=tabel.reg_Spaj )jumlah_smed,
+    to_char(zz.mspa_pay_date,'dd/MM/yyyy')tgl_rk,tabel.lscb_id,
+    nvl((select ul.mu_jlh_premi from eka.mst_ulink ul where ul.lt_id=5 and ul.mu_ke in(1,2,3) and ul.reg_spaj=tabel.reg_Spaj),0)top_up_berkala,  
+    nvl((select ula.mu_jlh_premi from eka.mst_ulink ula where ula.lt_id=2 and ula.mu_ke in(1,2,3) and ula.reg_spaj=tabel.reg_Spaj),0)top_up_single ,
+    (select sum(pr.mspr_premium) from eka.mst_product_insured pr where pr.reg_Spaj=tabel.reg_Spaj)premi_pokok
+    from
+    (select                
+        mb.msbi_beg_date, mb.msbi_end_date, mb.msbi_due_date, mp.mspo_policy_no_format, mp.reg_spaj, 
+        mb.msbi_tahun_ke, mb.msbi_premi_ke,
+        mb.msbi_flag_topup, mb.lca_id, mb.lwk_id, mb.lsrg_id,mp.lscb_id
+    from                
+        eka.mst_billing mb, eka.mst_det_billing mdb, eka.mst_policy mp, eka.mst_billing_hcr mbh, 
+        eka.mst_insured mi
+    where               
+        mb.reg_spaj = mbh.reg_spaj(+)
+        and mb.msbi_tahun_ke = mbh.msbih_tahun_ke(+)
+        and mb.msbi_premi_ke = mbh.msbih_premi_ke(+)
+        and mdb.reg_spaj = mb.reg_spaj
+        and mdb.msbi_tahun_ke = mb.msbi_tahun_ke
+        and mdb.msbi_premi_ke = mb.msbi_premi_ke
+        and mp.reg_spaj = mb.reg_spaj
+        and mp.reg_spaj = mi.reg_spaj      
+        ) tabel,
+    eka.mst_insured b,
+    eka.mst_product_insured c,
+    eka.lst_cabang d,
+    eka.lst_region e,
+    eka.lst_det_bisnis f,
+    eka.lst_bisnis xxx,
+    EKA.MST_VISA_CAMP_DET g,
+    eka.mst_payment zz,
+    eka.mst_tag_payment yy,
+    eka.lst_pay_mode pay
+WHERE   
+    tabel.reg_spaj = b.reg_spaj
+    and b.reg_spaj = c.reg_spaj
+    and b.mste_insured_no = c.mste_insured_no
+    and tabel.lca_id = d.lca_id
+    and tabel.lca_id = e.lca_id
+    and tabel.lwk_id = e.lwk_id
+    and tabel.lsrg_id = e.lsrg_id
+    and c.lsbs_id = f.lsbs_id
+    and c.lsdbs_number = f.lsdbs_number
+    and b.mste_insured_no = 1                
+    and c.lsbs_id < 300   
+    and tabel.reg_spaj=g.reg_spaj
+    and g. periode_bdate=tabel.msbi_beg_date
+    and g.jenis=1    
+    and tabel.msbi_flag_topup is null  
+    and g.tgl_kirim is null 
+    and tabel.reg_Spaj=zz.reg_Spaj
+    and zz.reg_Spaj=yy.reg_Spaj
+    and zz.mspa_payment_id=YY.MSPA_PAYMENT_ID
+    and tabel.msbi_premi_ke=yy.msbi_premi_ke
+    and tabel.msbi_tahun_ke=yy.msbi_tahun_ke
+    and c.lsbs_id=xxx.lsbs_id
+    and tabel.lscb_id=pay.lscb_id    
+    and zz.mspa_pay_date<=sysdate-21
+GROUP BY 
+    d.lca_nama, e.lsrg_nama, tabel.msbi_beg_date, tabel.msbi_end_date, tabel.msbi_due_date, tabel.mspo_policy_no_format, tabel.reg_spaj,
+    f.lsdbs_name, tabel.msbi_tahun_ke, tabel.msbi_premi_ke,  tabel.msbi_flag_topup,zz.mspa_pay_date,tabel.lscb_id,xxx.lsbs_linkkon,pay.lscb_pay_mode
+ORDER BY 
+    1,2,3,4)visa]]>
+	</queryString>
+	<field name="BEG_DATE" class="java.lang.String"/>
+	<field name="CABANG" class="java.lang.String"/>
+	<field name="CARABAYAR" class="java.lang.String"/>
+	<field name="CARD_NO" class="java.lang.String"/>
+	<field name="END_DATE" class="java.lang.String"/>
+	<field name="NO_POLIS" class="java.lang.String"/>
+	<field name="PEMEGANG" class="java.lang.String"/>
+	<field name="PREMI" class="java.math.BigDecimal"/>
+	<field name="PREMI_KE" class="java.math.BigDecimal"/>
+	<field name="SMILE_MEDICAL" class="java.lang.String"/>
+	<field name="TGL_INPUT" class="java.lang.String"/>
+	<field name="TGL_RK" class="java.lang.String"/>
+	<title>
+		<band height="73">
+			<staticText>
+				<reportElement x="0" y="0" width="354" height="30"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PT ASURANSI JIWA SINARMAS MSIG Tbk.]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="30" width="354" height="23"/>
+				<textElement markup="none">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["REPORT  JATUH TEMPO VISA"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="53" width="354" height="20"/>
+				<textElement markup="none">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Periode	 Jatuh Tempo:" +$P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAwal}) ]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="20">
+			<staticText>
+				<reportElement x="0" y="0" width="50" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[NO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="50" y="0" width="231" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[No.Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="281" y="0" width="152" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Pemegang Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="433" y="0" width="211" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Cabang]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="644" y="0" width="211" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[BegDate]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="855" y="0" width="158" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[EndDate]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1013" y="0" width="158" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1171" y="0" width="158" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Premi ke]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1329" y="0" width="158" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Cara Bayar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1487" y="0" width="158" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Card. no]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1645" y="0" width="158" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Tgl RK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1803" y="0" width="158" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[TGL INPUT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1961" y="0" width="158" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Smile Medical]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="0" y="0" width="50" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + ($V{REPORT_COUNT}.intValue()) + "."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="50" y="0" width="231" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NO_POLIS}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="281" y="0" width="152" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PEMEGANG}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="433" y="0" width="211" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CABANG}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="644" y="0" width="211" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{BEG_DATE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="855" y="0" width="158" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{END_DATE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1013" y="0" width="158" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{PREMI}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1171" y="0" width="158" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{PREMI_KE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1329" y="0" width="158" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CARABAYAR}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1487" y="0" width="158" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CARD_NO}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1645" y="0" width="158" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_RK}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1803" y="0" width="158" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_INPUT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1961" y="0" width="158" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{SMILE_MEDICAL}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

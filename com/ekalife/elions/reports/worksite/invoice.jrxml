@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="invoice" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="props" class="java.lang.String"/>
+	<parameter name="customer" class="java.lang.String"/>
+	<parameter name="no_invoice" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{no_invoice}]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select t1.* 
+from (SELECT DISTINCT NVL ((SELECT SUM (mu_jlh_premi)
+        FROM eka.mst_ulink x
+        WHERE reg_spaj = b.reg_spaj
+                AND mu_tgl_trans =
+                (SELECT mu_tgl_trans
+                        FROM eka.mst_ulink
+                        WHERE reg_spaj = b.reg_spaj AND mu_ke = 1)),
+                        h.mspr_premium
+                ) mspr_premium,
+                l.lca_id, b.reg_spaj, a.mspo_customer, a.lstb_id, a.lspd_id,
+                b.mste_flag_cc, d.mcl_first, j.lsle_id, b.lssa_id,
+                (TO_CHAR (b.mste_input_date, 'yyyymmdd')) input_date,
+                COUNT (b.reg_spaj) jumlah_peserta, h.lsbs_id, m.sub_desc, m.sub_id
+        FROM eka.mst_policy a,
+                eka.mst_insured b,
+                eka.mst_client_new c,
+                eka.mst_client_new d,
+                eka.mst_company e,
+                eka.mst_worksite_flag f,
+                eka.mst_address_new g,
+                eka.mst_product_insured h,
+                eka.mst_client_new i,
+                eka.mst_agent_prod j,
+                eka.lst_det_bisnis k,
+                eka.mst_agent l,
+                (select a.reg_spaj, a.msps_date, a.lssa_id, a.lssp_id, a.lspd_id, a.sub_id, b.sub_desc
+                        from eka.mst_position_spaj a,
+                        eka.lst_status_accept_sub b
+                        where a.lssa_id = b.lssa_id
+                        and a.sub_id = b.sub_id
+                        and a.sub_id = 1
+                        and a.lssa_id = 3) m
+WHERE a.reg_spaj = b.reg_spaj
+        AND a.mspo_policy_holder = c.mcl_id
+        AND a.mspo_customer = d.mcl_id(+)
+        AND a.mspo_customer = e.mcl_id(+)
+        AND a.reg_spaj = f.reg_spaj(+)
+        AND a.reg_spaj = m.reg_spaj
+        AND a.lssp_id = m.lssp_id
+        AND a.lspd_id = m.lspd_id
+        AND d.mcl_id = g.mcl_id
+        AND b.reg_spaj = h.reg_spaj
+        AND b.mste_insured_no = h.mste_insured_no
+        AND b.mste_insured = i.mcl_id
+        AND b.lssa_id = m.lssa_id
+        AND h.reg_spaj = j.reg_spaj
+        AND h.lsbs_id = k.lsbs_id
+        AND h.lsdbs_number = k.lsdbs_number
+        AND j.msag_id = l.msag_id
+        AND to_date(m.msps_date,'dd/mm/yyyy') = (select to_date(max(msps_date),'dd/mm/yyyy') from eka.mst_position_spaj where reg_spaj = a.reg_spaj)
+        AND b.mste_flag_cc = 3
+        AND a.lspd_id in (1,2)
+        AND a.lstb_id = 1
+        AND a.mspo_customer = $P{customer}
+        AND ( l.lca_id = '42' OR h.lsbs_id IN (140, 141, 148, 149, 156, 158) )
+        AND j.lsle_id = 4
+        AND h.lsbs_id < 300
+        AND b.lssa_id in (1,3,9)
+GROUP BY h.mspr_premium,
+        l.lca_id,
+        a.mspo_customer,
+        a.lstb_id,
+        a.lspd_id,
+        b.mste_flag_cc,
+        d.mcl_first,
+        j.lsle_id,
+        b.lssa_id,
+        b.mste_input_date,
+        h.lsbs_id,
+        b.reg_spaj,
+        m.sub_desc,
+        m.sub_id
+UNION 
+        SELECT DISTINCT NVL ((SELECT SUM (mu_jlh_premi)
+                FROM eka.mst_ulink x
+                WHERE reg_spaj = b.reg_spaj
+                        AND mu_tgl_trans =
+                        (SELECT mu_tgl_trans
+                                FROM eka.mst_ulink
+                                WHERE reg_spaj = b.reg_spaj AND mu_ke = 1)),
+                        h.mspr_premium
+                ) mspr_premium,
+                l.lca_id, b.reg_spaj, a.mspo_customer, a.lstb_id, a.lspd_id,
+                b.mste_flag_cc, d.mcl_first, j.lsle_id, b.lssa_id,
+                (TO_CHAR (b.mste_input_date, 'yyyymmdd')) input_date,
+                COUNT (b.reg_spaj) jumlah_peserta, h.lsbs_id, null sub_desc, null sub_id
+        FROM eka.mst_policy a,
+                eka.mst_insured b,
+                eka.mst_client_new c,
+                eka.mst_client_new d,
+                eka.mst_company e,
+                eka.mst_worksite_flag f,
+                eka.mst_address_new g,
+                eka.mst_product_insured h,
+                eka.mst_client_new i,
+                eka.mst_agent_prod j,
+                eka.lst_det_bisnis k,
+                eka.mst_agent l
+        WHERE a.reg_spaj = b.reg_spaj
+                AND a.mspo_policy_holder = c.mcl_id
+                AND a.mspo_customer = d.mcl_id(+)
+                AND a.mspo_customer = e.mcl_id(+)
+                AND a.reg_spaj = f.reg_spaj(+)
+                AND d.mcl_id = g.mcl_id
+                AND b.reg_spaj = h.reg_spaj
+                AND b.mste_insured_no = h.mste_insured_no
+                AND b.mste_insured = i.mcl_id
+                AND h.reg_spaj = j.reg_spaj
+                AND h.lsbs_id = k.lsbs_id
+                AND h.lsdbs_number = k.lsdbs_number
+                AND j.msag_id = l.msag_id
+                AND b.mste_flag_cc = 3
+                AND a.lspd_id in (1,2)
+                AND a.lstb_id = 1
+                AND a.mspo_customer = $P{customer}
+                AND ( l.lca_id = '42' OR h.lsbs_id IN (140, 141, 148, 149, 156, 158) )
+                AND j.lsle_id = 4
+                AND h.lsbs_id < 300
+                AND b.lssa_id in (1,9)
+        GROUP BY h.mspr_premium,
+                l.lca_id,
+                a.mspo_customer,
+                a.lstb_id,
+                a.lspd_id,
+                b.mste_flag_cc,
+                d.mcl_first,
+                j.lsle_id,
+                b.lssa_id,
+                b.mste_input_date,
+                h.lsbs_id,
+                b.reg_spaj) t1]]>
+	</queryString>
+	<field name="INPUT_DATE" class="java.lang.String"/>
+	<field name="JUMLAH_PESERTA" class="java.math.BigDecimal"/>
+	<field name="LCA_ID" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSLE_ID" class="java.math.BigDecimal"/>
+	<field name="LSPD_ID" class="java.math.BigDecimal"/>
+	<field name="LSSA_ID" class="java.math.BigDecimal"/>
+	<field name="LSTB_ID" class="java.math.BigDecimal"/>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="MSPO_CUSTOMER" class="java.lang.String"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="MSTE_FLAG_CC" class="java.math.BigDecimal"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="SUB_DESC" class="java.lang.String"/>
+	<field name="SUB_ID" class="java.math.BigDecimal"/>
+	<variable name="jumlah_peserta" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{JUMLAH_PESERTA}]]></variableExpression>
+	</variable>
+	<variable name="jumlah_premi" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{MSPR_PREMIUM}]]></variableExpression>
+	</variable>
+	<summary>
+		<band height="362">
+			<staticText>
+				<reportElement x="218" y="59" width="80" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Microsoft Sans Serif" size="12" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[INVOICE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="40" y="93" width="134" height="12"/>
+				<textElement>
+					<font fontName="Microsoft Sans Serif" size="10"/>
+				</textElement>
+				<text><![CDATA[PERUSAHAAN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="40" y="109" width="134" height="17"/>
+				<textElement>
+					<font fontName="Microsoft Sans Serif" size="10"/>
+				</textElement>
+				<text><![CDATA[UNTUK PEMBAYARAN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="40" y="129" width="132" height="14"/>
+				<textElement>
+					<font fontName="Microsoft Sans Serif" size="10"/>
+				</textElement>
+				<text><![CDATA[JUMLAH PESERTA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="40" y="147" width="132" height="14"/>
+				<textElement>
+					<font fontName="Microsoft Sans Serif" size="10"/>
+				</textElement>
+				<text><![CDATA[JUMLAH PREMI]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="40" y="167" width="131" height="19"/>
+				<textElement>
+					<font fontName="Microsoft Sans Serif" size="10"/>
+				</textElement>
+				<text><![CDATA[( SESUAI LAMPIRAN )]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="37" y="206" width="129" height="15"/>
+				<textElement>
+					<font fontName="Microsoft Sans Serif" size="10"/>
+				</textElement>
+				<text><![CDATA[CATATAN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="37" y="227" width="128" height="37"/>
+				<textElement>
+					<font fontName="Microsoft Sans Serif" size="10"/>
+				</textElement>
+				<text><![CDATA[Pembayaran ditujukan ke
+PT Asuransi Jiwa Sinarmas MSIG Tbk.
+No Rekening]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="58" y="274" width="223" height="79"/>
+				<textElement>
+					<font fontName="Microsoft Sans Serif" size="10"/>
+				</textElement>
+				<text><![CDATA[A/C. 2-001-501193, 
+BII Cabang Wisma Eka Jiwa, 
+Jakarta	]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="178" y="93" width="225" height="12"/>
+				<textElement>
+					<font fontName="Microsoft Sans Serif" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MCL_FIRST}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="178" y="109" width="120" height="15"/>
+				<textElement>
+					<font fontName="Microsoft Sans Serif" size="10"/>
+				</textElement>
+				<text><![CDATA[Premi Asuransi]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="178" y="129" width="120" height="14"/>
+				<textElement textAlignment="Left">
+					<font fontName="Microsoft Sans Serif" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{jumlah_peserta}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="178" y="147" width="198" height="15"/>
+				<textElement>
+					<font fontName="Microsoft Sans Serif" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("Rp ", $V{jumlah_premi})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="178" y="167" width="334" height="34" isPrintWhenDetailOverflows="true"/>
+				<textElement>
+					<font fontName="Microsoft Sans Serif" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatTerbilang($V{jumlah_premi}, "01")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="364" y="209" width="55" height="12"/>
+				<textElement>
+					<font fontName="Microsoft Sans Serif" size="10"/>
+				</textElement>
+				<text><![CDATA[JAKARTA]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy" hyperlinkType="None">
+				<reportElement x="422" y="209" width="80" height="13"/>
+				<textElement>
+					<font fontName="Microsoft Sans Serif" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="361" y="341" width="140" height="13"/>
+				<textElement textAlignment="Center">
+					<font fontName="Microsoft Sans Serif" size="10"/>
+				</textElement>
+				<text><![CDATA[Underwriting Department]]></text>
+			</staticText>
+			<image hyperlinkType="None">
+				<reportElement x="396" y="233" width="75" height="74"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.ingrid")]]></imageExpression>
+			</image>
+			<textField hyperlinkType="None">
+				<reportElement x="375" y="41" width="117" height="14" forecolor="#A61E35"/>
+				<textElement>
+					<font fontName="Microsoft Sans Serif" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatinvoice($P{no_invoice})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="359" y="321" width="142" height="14"/>
+				<textElement textAlignment="Center">
+					<font fontName="Microsoft Sans Serif"/>
+				</textElement>
+				<text><![CDATA[Ingrid T Kurniawan]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

@@ -1,0 +1,1221 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="elions.summary_akseptasi">
+
+	<typeAlias alias="hashMap" type="java.util.HashMap"/>
+
+	<select id="selectEmailVPFromSpaj" resultClass="string" parameterClass="string">
+		SELECT c.mrmc_email
+		  FROM eka.mst_policy a, eka.lst_wakil b, eka.mst_rmc c
+		 WHERE a.reg_spaj = RPAD (#value#, 11, ' ')
+		   AND a.lca_id = b.lca_id
+		   AND a.lwk_id = b.lwk_id
+		   AND b.mrmc_id = c.mrmc_id		
+	</select>
+	
+
+	<select id="selectDaftarAkseptasiNyangkut" resultClass="hashMap" parameterClass="hashMap">
+	select * from (
+		SELECT   t.lwk_nama, l.lca_nama, nvl(n.team_name, m.team_name) team_name, 
+				 m.kci,sysdate,nvl(trunc(sysdate) - trunc(ins.mste_tgl_terima_spaj), 0) lama_proses,
+		         NVL (m.nama_cabang, n.nama_cabang) nama_cabang,
+		         decode(n.jenis, 2, r.mcl_first,DECODE (pol.lca_id,
+		                 '09', (SELECT distinct NVL (d.nama_reff,
+		                                    NVL (g.nama_ref, h.nama_bfa)
+		                                   ) reff
+		                          FROM eka.mst_policy a,
+		                               (select * 
+										from eka.mst_reff_bii a
+										where	  level_id=4
+										and	  no_urut=(select max(no_urut) from eka.mst_reff_bii where level_id = 4 and reg_spaj=a.reg_spaj)) b,
+		                               eka.mst_nasabah c,
+		                               eka.lst_reff_bii d,
+		                               eka.lst_referrer_bii g,
+		                               eka.mst_bfa h
+		                         WHERE a.reg_spaj = pol.reg_spaj
+		                           AND a.reg_spaj = b.reg_spaj(+)
+		                           AND a.mspo_plan_provider = c.mns_kd_nasabah(+)
+		                           AND b.lrb_id = d.lrb_id(+)
+		                           AND c.referrer_id = g.referrer_id(+)
+		                           AND c.referrer_fa = h.msag_id(+)),
+		                 c3.mcl_first
+		                )) nama_penutup, n.nama_reff,
+		         (select nvl(b.jenis, 0) 
+		          from (select * 
+							from eka.mst_reff_bii a
+							where level_id=4
+							and no_urut=(select max(no_urut) from eka.mst_reff_bii where level_id = 4 and reg_spaj=a.reg_spaj)) a, 
+		          	   eka.lst_cabang_bii b 
+		          where a.reg_spaj = pol.reg_spaj and a.lcb_no = b.lcb_no) jn_bank,
+		         pol.mspo_policy_no, pol.lca_id, k.msag_id, pol.reg_spaj,
+		         c1.mcl_first nama_pp, c2.mcl_first nama_tt, eka.f_lsdbs(pol.reg_spaj, e.lsbs_id, e.lsdbs_number) lsdbs_name,e.lsbs_id, e.lsdbs_number,
+		         f.lscb_pay_mode, prod_ins.lku_id, prod_ins.mspr_premium,
+		         ins.mste_tgl_aksep, ins.mste_beg_date, 
+		         (case when to_char(ins.mste_beg_date,'yyyy')=#yearbefore# then 1 else 0 end) as tahun2008,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month1# then 1 else 0 end) as bulan1,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month2# then 1 else 0 end) as bulan2,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month3# then 1 else 0 end) as bulan3,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month4# then 1 else 0 end) as bulan4,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month5# then 1 else 0 end) as bulan5,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month6# then 1 else 0 end) as bulan6,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month7# then 1 else 0 end) as bulan7,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month8# then 1 else 0 end) as bulan8,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month9# then 1 else 0 end) as bulan9,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month10# then 1 else 0 end) as bulan10,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month11# then 1 else 0 end) as bulan11,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month12# then 1 else 0 end) as bulan12,
+		         pol.mspo_date_print,
+		         h.telpon_rumah, i.msap_area_code1, msap_phone1, ins.mste_tgl_terima_spaj,
+		         NVL( NVL( NVL( (SELECT msps_desc FROM eka.mst_position_spaj WHERE reg_spaj = pol.reg_spaj
+                                 AND lssa_id = ins.lssa_id AND msps_date IN (SELECT MAX (msps_date)
+                                 	  FROM eka.mst_position_spaj WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id AND msps_desc like #type#||'%'
+                                      <isEqual property="lssa_id" compareValue="3">AND sub_id != 5</isEqual>)), 
+                                (SELECT msps_desc FROM eka.mst_position_spaj WHERE reg_spaj = pol.reg_spaj
+                                 AND lssa_id = ins.lssa_id AND msps_date IN (SELECT MIN (msps_date)
+                                      FROM eka.mst_position_spaj WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id
+                                      <isEqual property="lssa_id" compareValue="3">AND sub_id != 5</isEqual>)) ), 
+                                (SELECT msps_desc FROM eka.mst_position_spaj WHERE reg_spaj = pol.reg_spaj
+                                 AND lssa_id = 3 AND msps_date IN (SELECT MAX (msps_date)
+                                      FROM eka.mst_position_spaj WHERE reg_spaj = pol.reg_spaj AND lssa_id = 3 AND msps_desc like #type#||'%'
+                                      <isEqual property="lssa_id" compareValue="3">AND sub_id != 5</isEqual>)) ), '-') as kurang_data,
+                 NVL( (SELECT msps_date FROM eka.mst_position_spaj WHERE reg_spaj = pol.reg_spaj
+                       AND lssa_id = ins.lssa_id AND msps_date IN (SELECT MAX (msps_date)
+							FROM eka.mst_position_spaj WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id AND msps_desc like #type#||'%'
+                            <isEqual property="lssa_id" compareValue="3">AND sub_id != 5</isEqual>)) , 
+                      (SELECT msps_date FROM eka.mst_position_spaj WHERE reg_spaj = pol.reg_spaj
+                       AND lssa_id = ins.lssa_id AND msps_date IN (SELECT MIN (msps_date)
+                            FROM eka.mst_position_spaj WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id
+                            <isEqual property="lssa_id" compareValue="3">AND sub_id != 5</isEqual>)) ) as tgl_kurang_data,                 
+                 NVL( (SELECT b.lus_login_name FROM eka.mst_position_spaj a, eka.lst_user b WHERE a.reg_spaj = pol.reg_spaj
+                       AND a.lus_id = b.lus_id AND a.lssa_id = ins.lssa_id AND a.msps_date IN (SELECT MAX (msps_date)
+                            FROM eka.mst_position_spaj WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id AND msps_desc like #type#||'%'
+                            <isEqual property="lssa_id" compareValue="3">AND sub_id != 5</isEqual>)) ,
+                      (SELECT b.lus_login_name FROM eka.mst_position_spaj a, eka.lst_user b WHERE a.reg_spaj = pol.reg_spaj
+                       AND a.lus_id = b.lus_id AND a.lssa_id = ins.lssa_id AND a.msps_date IN (SELECT MIN (msps_date)
+                            FROM eka.mst_position_spaj WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id
+                            <isEqual property="lssa_id" compareValue="3">AND sub_id != 5</isEqual>)) ) as user_kurang_data,
+		         trim(p.lar_email) lar_email, s.lssp_status
+		    FROM eka.mst_policy pol,
+		         eka.mst_insured ins,
+		         eka.mst_product_insured prod_ins,
+		         eka.mst_agent_prod agent_prod,
+		         eka.mst_client_new c1,
+		         eka.mst_client_new c2,
+		         eka.mst_client_new c3,
+		         eka.lst_det_bisnis e,
+		         eka.lst_pay_mode f,
+		         eka.mst_address_new h,
+		         eka.mst_address_billing i,
+		         eka.mst_agent k,
+		         eka.lst_cabang l,
+		         (SELECT a.mns_kd_nasabah, b.nama_cabang, c.nama_cabang kci, b.team_name
+		            FROM eka.mst_nasabah a, eka.lst_cab_bii b, eka.lst_cab_bii c
+		           WHERE a.kd_region = b.kd_region
+		             AND a.kd_koord = b.kd_koord
+		             AND a.kd_area = b.kd_area
+		             AND a.kd_cabang = b.kd_cabang
+		             AND a.kd_region = c.kd_region
+		             AND a.kd_koord = c.kd_koord
+		             AND a.kd_area = c.kd_area
+		             AND c.kd_cabang = '000') m,
+		         (SELECT a.reg_spaj, b.nama_reff, b.jenis, c.nama_cabang, c.team_name, c.jenis jn_bank
+		            FROM (select * 
+							from eka.mst_reff_bii a
+							where	  level_id=4
+							and	  no_urut=(select max(no_urut) from eka.mst_reff_bii where reg_spaj=a.reg_spaj)) a, 
+		            	 eka.lst_reff_bii b, 
+		            	 eka.lst_cabang_bii c
+		           WHERE a.reff_id = b.lrb_id AND a.lcb_no = c.lcb_no) n,
+		         eka.lst_region o,
+		         eka.lst_addr_region p,
+				 eka.mst_agent q,
+				 eka.mst_client_new r,
+				 eka.lst_policy_status s,
+				 eka.lst_wakil t
+		   WHERE pol.lstb_id = 1
+		     AND pol.lspd_id not in (0, 14, 15, 16, 25, 95, 99, 103, 999)
+		     AND pol.lssp_id not in (0, 2, 3, 5, 7, 8, 12, 13, 14)
+		     AND pol.reg_spaj = ins.reg_spaj
+		     <isEqual property="lssa_id" compareValue="3">
+			 AND ins.lssa_id in (3,4)
+			 </isEqual>
+			 <isNotEqual property="lssa_id" compareValue="3">
+			 AND ins.lssa_id = #lssa_id#
+			 </isNotEqual>
+			 <isEqual property="lssp_id" compareValue="10">
+			 AND pol.lssp_id =10
+			 AND ins.lssa_id <![CDATA[<>]]> 5
+			 AND agent_prod lev_comm=4
+			 AND pol.LSPD_ID<![CDATA[<>]]>99
+			 AND nvl(trunc(sysdate) - trunc(ins.mste_tgl_terima_spaj), 0)<![CDATA[>]]> 90
+	  		 AND nvl(trunc(sysdate) - trunc(ins.mste_tgl_terima_spaj), 0)<![CDATA[<]]> 730
+			 </isEqual>
+		     AND ins.mste_insured_no = prod_ins.mste_insured_no
+		     AND ins.reg_spaj = prod_ins.reg_spaj
+		     AND prod_ins.lsbs_id <![CDATA[<]]> 300
+		     AND pol.reg_spaj = agent_prod.reg_spaj
+		     AND agent_prod.lsle_id = 4
+		     AND pol.lscb_id = f.lscb_id
+		     AND prod_ins.lsbs_id = e.lsbs_id
+		     AND pol.reg_spaj = i.reg_spaj
+		     AND prod_ins.lsdbs_number = e.lsdbs_number
+		     AND pol.mspo_policy_holder = c1.mcl_id
+		     AND ins.mste_insured = c2.mcl_id
+		     AND pol.mspo_policy_holder = h.mcl_id
+		     AND agent_prod.msag_id = k.msag_id
+		     AND k.mcl_id = c3.mcl_id
+		     AND pol.lca_id = l.lca_id
+		     AND pol.mspo_plan_provider = m.mns_kd_nasabah(+)
+		     AND pol.reg_spaj = n.reg_spaj(+)
+		     AND pol.lca_id = o.lca_id
+		     AND pol.lwk_id = o.lwk_id
+		     AND pol.lsrg_id = o.lsrg_id
+		     AND pol.lca_id = t.lca_id
+			 AND pol.lwk_id = t.lwk_id
+		     AND o.lar_id = p.lar_id
+			 AND pol.mspo_ao = q.msag_id(+)
+			 AND q.mcl_id = r.mcl_id(+)
+			 AND pol.lssp_id = s.lssp_id 
+		<isNotEmpty property="isEmailRequired">
+		 AND p.lar_email is not null 
+		</isNotEmpty>
+		<isNotEmpty property="isProductSekuritas">
+		 AND n.jn_bank =3
+		</isNotEmpty>
+		<isEqual property="lssa_id" compareValue="3">
+		union
+             select
+            LWK_NAMA,    
+            LCA_NAMA,
+            null TEAM_NAME,
+            null KCI,
+            SYSDATE,
+            null LAMA_PROSES,
+            null NAMA_CABANG,
+            NAMA_PENUTUP,
+            NAMA_REFF,
+            null JN_BANK,
+            MSPO_POLICY_NO,
+            LCA_ID,
+            null MSAG_ID,
+            REG_SPAJ,
+            NAMA_PP,
+            NAMA_TT,
+            LSDBS_NAME,
+            187 LSBS_ID,
+            null LSDBS_NUMBER,
+            LSCB_PAY_MODE,
+            null LKU_ID,
+            (
+            case
+            when (lscb_id = '03') then premi*10
+            when(lscb_id = '01') then premi*2.7
+            when(lscb_id = '02') then premi*5.25
+            else premi
+            end) mspr_premium,
+            MSTE_TGL_AKSEP,
+            MSTE_BEG_DATE,    
+            TAHUN2008,    
+            BULAN1,    
+            BULAN2,
+            BULAN3,    
+            BULAN4,    
+            BULAN5,    
+            BULAN6,
+            BULAN7,    
+            BULAN8,    
+            BULAN9,    
+            BULAN10,    
+            BULAN11,    
+            BULAN12,   null MSPO_DATE_PRINT,   '' TELPON_RUMAH,   '' MSAP_AREA_CODE1,    
+            '' MSAP_PHONE1,  null  MSTE_TGL_TERIMA_SPAJ,    KURANG_DATA,   TGL_KURANG_DATA,    
+            USER_KURANG_DATA,    NVL(LAR_EMAIL, '') LAR_EMAIL,    LSSP_STATUS
+            from
+            (
+            select (select v.lus_login_name from eka.lst_user v where v.lus_id = d.mssd_lus_id) lwk_nama, lscb_id, d.mssd_lus_id lus_id,
+            EKA.UTILS.CABANG((select q.lca_id from eka.lst_user q where q.lus_id = d.mssd_lus_id)) lca_nama,
+            (select q.lca_id from eka.lst_user q where q.lus_id = d.mssd_lus_id) lca_id,
+            (select lus_email from eka.lst_user where lus_id = d.mssd_lus_id) lar_email,
+            c.mcl_first nama_penutup, 
+            (case when to_char(a.msp_pas_beg_date,'yyyy')=#yearbefore# then 1 else 0 end) as tahun2008,
+                 (case when to_char(a.msp_pas_beg_date,'mmyyyy')=#month1# then 1 else 0 end) as bulan1,
+                 (case when to_char(a.msp_pas_beg_date,'mmyyyy')=#month2# then 1 else 0 end) as bulan2,
+                 (case when to_char(a.msp_pas_beg_date,'mmyyyy')=#month3# then 1 else 0 end) as bulan3,
+                 (case when to_char(a.msp_pas_beg_date,'mmyyyy')=#month4# then 1 else 0 end) as bulan4,
+                 (case when to_char(a.msp_pas_beg_date,'mmyyyy')=#month5# then 1 else 0 end) as bulan5,
+                 (case when to_char(a.msp_pas_beg_date,'mmyyyy')=#month6# then 1 else 0 end) as bulan6,
+                 (case when to_char(a.msp_pas_beg_date,'mmyyyy')=#month7# then 1 else 0 end) as bulan7,
+                 (case when to_char(a.msp_pas_beg_date,'mmyyyy')=#month8# then 1 else 0 end) as bulan8,
+                 (case when to_char(a.msp_pas_beg_date,'mmyyyy')=#month9# then 1 else 0 end) as bulan9,
+                 (case when to_char(a.msp_pas_beg_date,'mmyyyy')=#month10# then 1 else 0 end) as bulan10,
+                 (case when to_char(a.msp_pas_beg_date,'mmyyyy')=#month11# then 1 else 0 end) as bulan11,
+                 (case when to_char(a.msp_pas_beg_date,'mmyyyy')=#month12# then 1 else 0 end) as bulan12,
+            '-' nama_reff, msp_pas_nama_pp nama_pp, msp_full_name nama_tt, '-' mspo_policy_no, a.msp_fire_id reg_spaj,
+            (select lsdbs_name from eka.lst_det_bisnis where lsbs_id = 187 and lsdbs_number = a.produk) lsdbs_name, 
+            (select lscb_pay_mode from eka.lst_pay_mode where lscb_id = a.lscb_id) lscb_pay_mode,
+            (select premi from eka.mst_kartu_pas where no_kartu = a.no_kartu) premi, 
+            msp_pas_beg_date mste_beg_date, '' mste_tgl_terima_spaj, msp_pas_accept_date mste_tgl_aksep, 
+            (select lspd_position from eka.lst_document_position where lspd_id = a.lspd_id) lssp_status, 
+            (#type# || upper(msp_ket_status)) kurang_data, msp_tgl_status tgl_kurang_data,
+            (select lus_login_name from eka.lst_user where lus_id = a.lus_id_uw_pas) user_kurang_data from eka.mst_pas_sms a, eka.mst_agent b, eka.mst_client_new c, eka.mst_spaj_det d
+            where a.msag_id = b.msag_id and b.mcl_id = c.mcl_id and d.no_blanko = a.no_kartu and a.msag_id_pp is null
+            and a.msp_status = 1 and a.reg_spaj is null and (a.MSP_FIRE_JENIS is null or a.MSP_FIRE_JENIS=0)
+            )
+            </isEqual>
+            )
+            <isNotEmpty property="isEmailRequired">
+			 ORDER BY nama_cabang, lwk_nama, lar_email, lssp_status, 1, 2, 3, 4, 5, 6
+			</isNotEmpty>
+			<isEmpty property="isEmailRequired">
+			 ORDER BY nama_cabang, lwk_nama,lssp_status, 1, 2, 3, 4, 5, 6
+			</isEmpty>
+	</select>
+	
+	<select id="selectDaftarAkseptasiNyangkut3" resultClass="hashMap" parameterClass="hashMap">
+		SELECT   t.lwk_nama, l.lca_nama, n.team_name, m.kci,temp1.msps_date tglTERIMA,deposit.msdp_pay_date,
+		         NVL (m.nama_cabang, n.nama_cabang) nama_cabang,sysdate,nvl(trunc(sysdate) - trunc(ins.mste_tgl_terima_spaj), 0) lama_proses,
+		         decode(n.jenis, 2, r.mcl_first,DECODE (pol.lca_id,
+		                 '09', (SELECT distinct NVL (d.nama_reff,
+		                                    NVL (g.nama_ref, h.nama_bfa)
+		                                   ) reff
+		                          FROM eka.mst_policy a,
+		                               (select * 
+										from eka.mst_reff_bii a
+										where	  level_id=4
+										and	  no_urut=(select max(no_urut) from eka.mst_reff_bii where level_id = 4 and reg_spaj=a.reg_spaj)) b,
+		                               eka.mst_nasabah c,
+		                               eka.lst_reff_bii d,
+		                               eka.lst_referrer_bii g,
+		                               eka.mst_bfa h
+		                         WHERE a.reg_spaj = pol.reg_spaj
+		                           AND a.reg_spaj = b.reg_spaj(+)
+		                           AND a.mspo_plan_provider = c.mns_kd_nasabah(+)
+		                           AND b.lrb_id = d.lrb_id(+)
+		                           AND c.referrer_id = g.referrer_id(+)
+		                           AND c.referrer_fa = h.msag_id(+)),
+		                 c3.mcl_first
+		                )) nama_penutup, 
+		         (select nvl(b.jenis, 0) 
+		          from (select * 
+							from eka.mst_reff_bii a
+							where level_id=4
+							and no_urut=(select max(no_urut) from eka.mst_reff_bii where level_id = 4 and reg_spaj=a.reg_spaj)) a, 
+		          	   eka.lst_cabang_bii b 
+		          where a.reg_spaj = pol.reg_spaj and a.lcb_no = b.lcb_no) jn_bank,
+		         pol.mspo_policy_no, pol.lca_id, k.msag_id, pol.reg_spaj,
+		         c1.mcl_first nama_pp, c2.mcl_first nama_tt, eka.f_lsdbs(pol.reg_spaj, e.lsbs_id, e.lsdbs_number) lsdbs_name,
+		         f.lscb_pay_mode, prod_ins.lku_id, prod_ins.mspr_premium,
+		         ins.mste_tgl_aksep, ins.mste_beg_date, 
+		         (case when to_char(ins.mste_beg_date,'yyyy')=#yearbefore# then 1 else 0 end) as tahun2008,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month1# then 1 else 0 end) as bulan1,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month2# then 1 else 0 end) as bulan2,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month3# then 1 else 0 end) as bulan3,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month4# then 1 else 0 end) as bulan4,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month5# then 1 else 0 end) as bulan5,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month6# then 1 else 0 end) as bulan6,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month7# then 1 else 0 end) as bulan7,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month8# then 1 else 0 end) as bulan8,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month9# then 1 else 0 end) as bulan9,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month10# then 1 else 0 end) as bulan10,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month11# then 1 else 0 end) as bulan11,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month12# then 1 else 0 end) as bulan12,
+		         pol.mspo_date_print,
+		         h.telpon_rumah, i.msap_area_code1, msap_phone1, ins.mste_tgl_terima_spaj,
+		         NVL( NVL( NVL( (SELECT msps_desc
+		            FROM eka.mst_position_spaj
+		           WHERE reg_spaj = pol.reg_spaj
+		             AND lssa_id = ins.lssa_id
+		             AND msps_date IN (SELECT MAX (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id AND msps_desc like #type#||'%')) , 
+							         (SELECT msps_desc
+							            FROM eka.mst_position_spaj
+							           WHERE reg_spaj = pol.reg_spaj
+							             AND lssa_id = ins.lssa_id
+							             AND msps_date IN (SELECT MIN (msps_date)
+							                                 FROM eka.mst_position_spaj
+							                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id)) ) , 
+					     (SELECT msps_desc
+				            FROM eka.mst_position_spaj
+				           WHERE reg_spaj = pol.reg_spaj
+				             AND lssa_id = 3
+				             AND msps_date IN (SELECT MAX (msps_date)
+				                                 FROM eka.mst_position_spaj
+				                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = 3 AND msps_desc like #type#||'%') )) ,'-') as kurang_data,
+		         NVL( (SELECT msps_date
+		            FROM eka.mst_position_spaj
+		           WHERE reg_spaj = pol.reg_spaj
+		             AND lssa_id = ins.lssa_id
+		             AND msps_date IN (SELECT MAX (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id AND msps_desc like #type#||'%')) , 
+		              (SELECT msps_date
+		            FROM eka.mst_position_spaj
+		           WHERE reg_spaj = pol.reg_spaj
+		             AND lssa_id = ins.lssa_id
+		             AND msps_date IN (SELECT MIN (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id)) ) as tgl_kurang_data,                 
+		         NVL( (SELECT b.lus_login_name
+		            FROM eka.mst_position_spaj a, eka.lst_user b 
+		           WHERE a.reg_spaj = pol.reg_spaj
+				     AND a.lus_id = b.lus_id
+		             AND a.lssa_id = ins.lssa_id
+		             AND a.msps_date IN (SELECT MAX (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id AND msps_desc like #type#||'%')) ,
+		              (SELECT b.lus_login_name
+		            FROM eka.mst_position_spaj a, eka.lst_user b 
+		           WHERE a.reg_spaj = pol.reg_spaj
+				     AND a.lus_id = b.lus_id
+		             AND a.lssa_id = ins.lssa_id
+		             AND a.msps_date IN (SELECT MIN (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id)) ) as user_kurang_data,
+		         trim(p.lar_email) lar_email, s.lssp_status
+		    FROM eka.mst_policy pol,
+		         eka.mst_insured ins,
+		         eka.mst_product_insured prod_ins,
+		         eka.mst_agent_prod agent_prod,
+		         eka.mst_client_new c1,
+		         eka.mst_client_new c2,
+		         eka.mst_client_new c3,
+		         eka.lst_det_bisnis e,
+		         eka.lst_pay_mode f,
+		         eka.mst_address_new h,
+		         eka.mst_address_billing i,
+		         eka.mst_agent k,eka.mst_deposit_premium deposit,
+		         eka.lst_cabang l,
+		         (SELECT s.msps_date ,cy.reg_spaj 
+	   				FROM eka.mst_position_spaj s, eka.mst_policy cy
+	   				WHERE s.reg_spaj= cy.reg_spaj
+	    				AND  upper(msps_desc) like ('TGL TERIMA%')) temp1,
+		         (SELECT a.mns_kd_nasabah, b.nama_cabang, c.nama_cabang kci
+		            FROM eka.mst_nasabah a, eka.lst_cab_bii b, eka.lst_cab_bii c
+		           WHERE a.kd_region = b.kd_region
+		             AND a.kd_koord = b.kd_koord
+		             AND a.kd_area = b.kd_area
+		             AND a.kd_cabang = b.kd_cabang
+		             AND a.kd_region = c.kd_region
+		             AND a.kd_koord = c.kd_koord
+		             AND a.kd_area = c.kd_area
+		             AND c.kd_cabang = '000') m,
+		         (SELECT a.reg_spaj, b.nama_reff, b.jenis, c.nama_cabang, c.team_name
+		            FROM (select * 
+							from eka.mst_reff_bii a
+							where	  level_id=4
+							and	  no_urut=(select max(no_urut) from eka.mst_reff_bii where reg_spaj=a.reg_spaj)) a, 
+		            	 eka.lst_reff_bii b, 
+		            	 eka.lst_cabang_bii c
+		           WHERE a.lrb_id = b.lrb_id AND a.lcb_no = c.lcb_no) n,
+		         eka.lst_region o,
+		         eka.lst_addr_region p,
+				 eka.mst_agent q,
+				 eka.mst_client_new r,
+				 eka.lst_policy_status s,
+				 eka.lst_wakil t 
+		   WHERE pol.lstb_id = 1
+		     AND pol.lspd_id not in (0, 14, 15, 16, 25, 95, 99, 103, 999)
+		     AND pol.lssp_id not in (0, 2, 3, 5, 7, 8, 12, 13, 14)
+		     AND pol.reg_spaj = ins.reg_spaj
+		     <isEqual property="lssa_id" compareValue="3">
+			 AND ins.lssa_id in (3,4)
+			 </isEqual>
+			 <isNotEqual property="lssa_id" compareValue="3">
+			 AND ins.lssa_id = #lssa_id#
+			 </isNotEqual>
+			 <isEqual property="lssp_id" compareValue="10">
+			 AND pol.lssp_id =10
+			 AND ins.lssa_id <![CDATA[<>]]> 5
+			 AND agent_prod.lev_comm=4
+			 AND pol.LSPD_ID<![CDATA[<>]]>99
+			 AND  deposit.msdp_number=1
+			 AND nvl(trunc(sysdate) - trunc(ins.mste_tgl_terima_spaj), 0)<![CDATA[>]]> 90
+	  		 AND nvl(trunc(sysdate) - trunc(ins.mste_tgl_terima_spaj), 0)<![CDATA[<]]> 730
+			 </isEqual>
+		     AND ins.mste_insured_no = prod_ins.mste_insured_no
+		     AND ins.reg_spaj = prod_ins.reg_spaj
+		     AND ins.reg_spaj = deposit.reg_spaj
+		     AND prod_ins.lsbs_id <![CDATA[<]]> 300
+		     AND pol.reg_spaj = agent_prod.reg_spaj
+		     AND agent_prod.lsle_id = 4
+		     AND pol.lscb_id = f.lscb_id
+		     AND prod_ins.lsbs_id = e.lsbs_id
+		     AND pol.reg_spaj = i.reg_spaj
+		     and pol.reg_spaj=temp1.reg_spaj
+		     AND prod_ins.lsdbs_number = e.lsdbs_number
+		     AND pol.mspo_policy_holder = c1.mcl_id
+		     AND ins.mste_insured = c2.mcl_id
+		     AND pol.mspo_policy_holder = h.mcl_id
+		     AND agent_prod.msag_id = k.msag_id
+		     AND k.mcl_id = c3.mcl_id
+		     AND pol.lca_id = l.lca_id
+		     AND pol.mspo_plan_provider = m.mns_kd_nasabah(+)
+		     AND pol.reg_spaj = n.reg_spaj(+)
+		     AND pol.lca_id = o.lca_id
+		     AND pol.lwk_id = o.lwk_id
+		     AND pol.lsrg_id = o.lsrg_id
+		     AND pol.lca_id = t.lca_id
+			 AND pol.lwk_id = t.lwk_id
+		     AND o.lar_id = p.lar_id
+			 AND pol.mspo_ao = q.msag_id(+)
+			 AND q.mcl_id = r.mcl_id(+)
+			 AND pol.lssp_id = s.lssp_id 
+		<isNotEmpty property="isEmailRequired">
+		 AND p.lar_email is not null 
+		 ORDER BY nama_cabang, t.lwk_nama, p.lar_email, s.lssp_status, 1, 2, 3, 4, 5, 6
+		</isNotEmpty>
+		<isEmpty property="isEmailRequired">
+		 ORDER BY nama_cabang, t.lwk_nama,s.lssp_status, 1, 2, 3, 4, 5, 6
+		</isEmpty>
+	</select>
+
+	<select id="financeTopUp" resultClass="hashMap" parameterClass="hashMap">
+		SELECT   b.mspo_policy_no AS no_polis, c.mcl_first AS nama_pemegang,sysdate,b.lca_id,
+         	UPPER (eka.cabang_bank (a.reg_spaj, 2)) AS cabang,
+         	a.no_trx AS no_transaksi,
+         	'PREMI TOP UP KE-' || TO_CHAR (a.msl_tu_ke) AS jenis_transaksi,
+         	a.msl_bdate AS beg_date, a.msl_edate AS end_date,
+         	a.msl_premi AS jumlah_premi, a.msl_input_date AS tgl_input
+    	FROM eka.mst_slink a, eka.mst_policy b, eka.mst_client_new c
+   		WHERE a.reg_spaj = b.reg_spaj
+     		AND b.mspo_policy_holder = c.mcl_id
+     		AND a.msl_proses_bsm in (1,2)
+     		AND a.msl_kode = 5
+		ORDER BY a.msl_bdate
+	</select>
+
+	<select id="selectSummaryAllNewBusiness" resultClass="java.util.HashMap">
+		SELECT   dist, SUM (DECODE (lspd_id, 1, 1, 0)) "BAC",
+		         SUM (DECODE (lspd_id, 2, 1, 0)) "UW",
+		         SUM (DECODE (lspd_id, 4, 1, 0)) "PAYMENT",
+		         SUM (DECODE (lspd_id, 6, 1, 0)) "PRINTPOLIS",
+		         SUM (DECODE (lspd_id, 7, 1, 0)) "TTP",
+		         SUM (DECODE (lspd_id, 9, 1, 0)) "CEKTTP",
+		         SUM (DECODE (lspd_id, 8, 1, 0)) "KOMISI",
+		         SUM (DECODE (lssa_id, 1, 1, 0)) "ENTRY",
+		         SUM (DECODE (lssa_id, 2, 1, 0)) "DECLINE",
+		         SUM (DECODE (lssa_id, 3, 1, 0)) "FURTHER",
+		         SUM (DECODE (lssa_id, 4, 1, 0)) "EXTRA",
+		         SUM (DECODE (lssa_id, 5, 1, 0)) "AKSEP",
+		         SUM (DECODE (lssa_id, 8, 1, 0)) "FUND",
+		         SUM (DECODE (lssa_id, 9, 1, 0)) "POSTPONE",
+		         SUM (DECODE (lssa_id, 10, 1, 0)) "AKSEPKHUSUS"
+		    FROM (SELECT (CASE
+		                     WHEN pol.lca_id in ('37','52')
+		                        THEN 'AGENCY'
+		                     WHEN pol.lca_id IN ('08', '42')
+		                        THEN 'WORKSITE'
+		                     WHEN pol.lca_id = '46'
+		                        THEN 'HYBRID'
+		                     WHEN pol.lca_id = '09'
+		                     AND bank.team_name = 'Team Yanti Sumirkan'
+		                        THEN 'BANCASSURANCE 1'
+		                     WHEN pol.lca_id = '09' AND bank.jenis = 2
+		                        THEN 'BANCASSURANCE 2 - Bank Sinarmas'
+		                     WHEN pol.lca_id = '09' AND bank.jenis = 3
+		                        THEN 'BANCASSURANCE 2 - Sinarmas Sekuritas'
+		                     ELSE 'REGIONAL'
+		                  END
+		                 ) dist,
+		                 pol.lspd_id, ins.lssa_id
+		            FROM eka.mst_policy pol,
+		                 eka.mst_insured ins,
+		                 (SELECT a.reg_spaj, b.team_name, b.jenis
+		                    FROM eka.mst_reff_bii a, eka.lst_cabang_bii b
+		                   WHERE a.lcb_no = b.lcb_no AND b.jenis IN (2, 3)) bank
+		           WHERE pol.lstb_id = 1
+		             AND pol.lspd_id IN (1, 2, 4, 6, 7, 8, 9)
+		             AND pol.reg_spaj = ins.reg_spaj
+		             AND pol.reg_spaj = bank.reg_spaj(+))
+		GROUP BY dist	
+	</select>
+
+	<select id="selectPolisBelumDicetak" resultClass="java.util.HashMap">
+		SELECT pol.lca_id, pol.reg_spaj, pol.mspo_policy_no_format, trunc(ins.mste_tgl_valid_print) mste_tgl_valid_print,
+		       pp.mcl_first pp, tt.mcl_first tt, eka.f_lsdbs(mpr.reg_spaj, mpr.lsbs_id, mpr.lsdbs_number) lsdbs_name, mpr.mspr_tsi, mpr.mspr_premium,
+			   adr.lar_email, pol.mspo_date_print
+		  FROM eka.mst_policy pol,
+		       eka.mst_insured ins,
+		       eka.mst_product_insured mpr,
+		       eka.lst_wakil lwk,
+		       eka.mst_client_new pp,
+		       eka.mst_client_new tt,
+		       eka.lst_det_bisnis ldb,
+			   eka.lst_region reg,
+			   eka.lst_addr_region adr
+		 WHERE pol.lspd_id <![CDATA[<]]> 8
+		   AND pol.lca_id <![CDATA[<>]]> '09'
+		   AND pol.mspo_date_print IS NULL
+		   AND pol.reg_spaj = ins.reg_spaj
+		   AND ins.mste_tgl_valid_print IS NOT NULL
+		   AND ins.mste_insured_no = mpr.mste_insured_no
+		   AND ins.reg_spaj = mpr.reg_spaj
+		   AND mpr.lsbs_id <![CDATA[<]]> 300
+		   AND pol.lca_id = lwk.lca_id
+		   AND pol.lwk_id = lwk.lwk_id
+		   AND lwk.flag_print_cabang = 1
+		   AND pol.mspo_policy_holder = pp.mcl_id
+		   AND ins.mste_insured = tt.mcl_id
+		   AND mpr.lsbs_id = ldb.lsbs_id
+		   AND mpr.lsdbs_number = ldb.lsdbs_number
+		   AND pol.lca_id = reg.lca_id
+		   AND pol.lwk_id = reg.lwk_id
+		   AND pol.lsrg_id = reg.lsrg_id
+		   AND reg.lar_id = adr.lar_id   
+	</select>
+
+	<select id="selectPolisBelumDitransfer" resultClass="java.util.HashMap">
+		SELECT pol.lca_id, pol.reg_spaj, pol.mspo_policy_no_format, trunc(ins.mste_tgl_valid_print) mste_tgl_valid_print,
+		       pp.mcl_first pp, tt.mcl_first tt, eka.f_lsdbs(mpr.reg_spaj, mpr.lsbs_id, mpr.lsdbs_number) lsdbs_name, mpr.mspr_tsi, mpr.mspr_premium,
+			   adr.lar_email, pol.mspo_date_print
+		  FROM eka.mst_policy pol,
+		       eka.mst_insured ins,
+		       eka.mst_product_insured mpr,
+		       eka.lst_wakil lwk,
+		       eka.mst_client_new pp,
+		       eka.mst_client_new tt,
+		       eka.lst_det_bisnis ldb,
+			   eka.lst_region reg,
+			   eka.lst_addr_region adr
+		 WHERE pol.lspd_id = 6
+		   AND pol.lca_id <![CDATA[<>]]> '09'
+		   AND pol.mspo_date_print IS NOT NULL
+		   AND pol.reg_spaj = ins.reg_spaj
+		   AND ins.mste_tgl_valid_print IS NOT NULL
+		   AND ins.mste_insured_no = mpr.mste_insured_no
+		   AND ins.reg_spaj = mpr.reg_spaj
+		   AND mpr.lsbs_id <![CDATA[<]]> 300
+		   AND pol.lca_id = lwk.lca_id
+		   AND pol.lwk_id = lwk.lwk_id
+		   AND lwk.flag_print_cabang = 1
+		   AND pol.mspo_policy_holder = pp.mcl_id
+		   AND ins.mste_insured = tt.mcl_id
+		   AND mpr.lsbs_id = ldb.lsbs_id
+		   AND mpr.lsdbs_number = ldb.lsdbs_number
+		   AND pol.lca_id = reg.lca_id
+		   AND pol.lwk_id = reg.lwk_id
+		   AND pol.lsrg_id = reg.lsrg_id
+		   AND reg.lar_id = adr.lar_id 
+		   AND pol.lssp_id not in (6)  
+	</select>
+
+	<select id="selectEmailCabangBSM" parameterClass="string" resultClass="java.util.HashMap">
+		SELECT   email_cab, email_head
+		    FROM eka.lst_cabang_bii
+		   WHERE lcb_no = RPAD (#value#, 5, ' ')
+	</select>
+
+	<select id="selectCabangBsmByWilayah" parameterClass="string" resultClass="java.util.HashMap">
+		SELECT   head.nama_cabang nama_head, head.kode kode_head,
+		         head.email_cab email_head, cab.lcb_no, cab.nama_cabang, cab.kode kode_cab,
+		         cab.email_cab
+		    FROM eka.lst_cabang_bii cab, eka.lst_cabang_bii head
+		   WHERE cab.kode IS NOT NULL
+		     AND cab.wil_no = RPAD (#value#, 4, ' ')
+		     AND cab.head_no = head.lcb_no
+		ORDER BY head.nama_cabang, cab.nama_cabang 
+	</select>
+	
+	<select id="selectDaftarAkseptasiNyangkutTemp" resultClass="hashMap" parameterClass="hashMap">
+		SELECT   t.lwk_nama, l.lca_nama, nvl(n.team_name, m.team_name) team_name, m.kci,sysdate,nvl(trunc(sysdate) - trunc(ins.mste_tgl_terima_spaj), 0) lama_proses,
+		         NVL (m.nama_cabang, n.nama_cabang) nama_cabang, n.kode_bsm,
+		         decode(n.jenis, 2, r.mcl_first,DECODE (pol.lca_id,
+		                 '09', (SELECT distinct NVL (d.nama_reff,
+		                                    NVL (g.nama_ref, h.nama_bfa)
+		                                   ) reff
+		                          FROM eka.mst_policy a,
+		                               (select * 
+										from eka.mst_reff_bii a
+										where	  level_id=4
+										and	  no_urut=(select max(no_urut) from eka.mst_reff_bii where level_id = 4 and reg_spaj=a.reg_spaj)) b,
+		                               eka.mst_nasabah c,
+		                               eka.lst_reff_bii d,
+		                               eka.lst_referrer_bii g,
+		                               eka.mst_bfa h
+		                         WHERE a.reg_spaj = pol.reg_spaj
+		                           AND a.reg_spaj = b.reg_spaj(+)
+		                           AND a.mspo_plan_provider = c.mns_kd_nasabah(+)
+		                           AND b.lrb_id = d.lrb_id(+)
+		                           AND c.referrer_id = g.referrer_id(+)
+		                           AND c.referrer_fa = h.msag_id(+)),
+		                 c3.mcl_first
+		                )) nama_penutup, n.nama_reff,
+		         (select nvl(b.jenis, 0) 
+		          from (select * 
+							from eka.mst_reff_bii a
+							where level_id=4
+							and no_urut=(select max(no_urut) from eka.mst_reff_bii where level_id = 4 and reg_spaj=a.reg_spaj)) a, 
+		          	   eka.lst_cabang_bii b 
+		          where a.reg_spaj = pol.reg_spaj and a.lcb_no = b.lcb_no) jn_bank,
+		         pol.mspo_policy_no, pol.lca_id, k.msag_id, pol.reg_spaj,
+		         c1.mcl_first nama_pp, c2.mcl_first nama_tt, eka.f_lsdbs(pol.reg_spaj, e.lsbs_id, e.lsdbs_number) lsdbs_name,
+		         f.lscb_pay_mode, prod_ins.lku_id, prod_ins.mspr_premium,
+		         ins.mste_tgl_aksep, ins.mste_beg_date, 
+		         (case when to_char(ins.mste_beg_date,'yyyy')=#yearbefore# then 1 else 0 end) as tahun2008,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month1# then 1 else 0 end) as bulan1,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month2# then 1 else 0 end) as bulan2,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month3# then 1 else 0 end) as bulan3,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month4# then 1 else 0 end) as bulan4,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month5# then 1 else 0 end) as bulan5,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month6# then 1 else 0 end) as bulan6,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month7# then 1 else 0 end) as bulan7,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month8# then 1 else 0 end) as bulan8,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month9# then 1 else 0 end) as bulan9,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month10# then 1 else 0 end) as bulan10,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month11# then 1 else 0 end) as bulan11,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month12# then 1 else 0 end) as bulan12,
+		         pol.mspo_date_print,
+		         h.telpon_rumah, i.msap_area_code1, msap_phone1, ins.mste_tgl_terima_spaj,
+		         NVL( NVL( NVL( (SELECT msps_desc
+		            FROM eka.mst_position_spaj
+		           WHERE reg_spaj = pol.reg_spaj
+		             AND lssa_id = ins.lssa_id
+		             AND msps_date IN (SELECT MAX (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id AND msps_desc like #type#||'%')) , 
+							         (SELECT msps_desc
+							            FROM eka.mst_position_spaj
+							           WHERE reg_spaj = pol.reg_spaj
+							             AND lssa_id = ins.lssa_id
+							             AND msps_date IN (SELECT MIN (msps_date)
+							                                 FROM eka.mst_position_spaj
+							                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id)) ) , 
+					     (SELECT msps_desc
+				            FROM eka.mst_position_spaj
+				           WHERE reg_spaj = pol.reg_spaj
+				             AND lssa_id = 3
+				             AND msps_date IN (SELECT MAX (msps_date)
+				                                 FROM eka.mst_position_spaj
+				                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = 3 AND msps_desc like #type#||'%') )) ,'-') as kurang_data,
+		         NVL( (SELECT msps_date
+		            FROM eka.mst_position_spaj
+		           WHERE reg_spaj = pol.reg_spaj
+		             AND lssa_id = ins.lssa_id
+		             AND msps_date IN (SELECT MAX (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id AND msps_desc like #type#||'%')) , 
+		              (SELECT msps_date
+		            FROM eka.mst_position_spaj
+		           WHERE reg_spaj = pol.reg_spaj
+		             AND lssa_id = ins.lssa_id
+		             AND msps_date IN (SELECT MIN (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id)) ) as tgl_kurang_data,                 
+		         NVL( (SELECT b.lus_login_name
+		            FROM eka.mst_position_spaj a, eka.lst_user b 
+		           WHERE a.reg_spaj = pol.reg_spaj
+				     AND a.lus_id = b.lus_id
+		             AND a.lssa_id = ins.lssa_id
+		             AND a.msps_date IN (SELECT MAX (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id AND msps_desc like #type#||'%')) ,
+		              (SELECT b.lus_login_name
+		            FROM eka.mst_position_spaj a, eka.lst_user b 
+		           WHERE a.reg_spaj = pol.reg_spaj
+				     AND a.lus_id = b.lus_id
+		             AND a.lssa_id = ins.lssa_id
+		             AND a.msps_date IN (SELECT MIN (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id)) ) as user_kurang_data,
+		         trim(p.lar_email) lar_email, s.lssp_status
+		    FROM eka.mst_policy pol,
+		         eka.mst_insured ins,
+		         eka.mst_product_insured prod_ins,
+		         eka.mst_agent_prod agent_prod,
+		         eka.mst_client_new c1,
+		         eka.mst_client_new c2,
+		         eka.mst_client_new c3,
+		         eka.lst_det_bisnis e,
+		         eka.lst_pay_mode f,
+		         eka.mst_address_new h,
+		         eka.mst_address_billing i,
+		         eka.mst_agent k,
+		         eka.lst_cabang l,
+		         (SELECT a.mns_kd_nasabah, b.nama_cabang, c.nama_cabang kci, b.team_name
+		            FROM eka.mst_nasabah a, eka.lst_cab_bii b, eka.lst_cab_bii c
+		           WHERE a.kd_region = b.kd_region
+		             AND a.kd_koord = b.kd_koord
+		             AND a.kd_area = b.kd_area
+		             AND a.kd_cabang = b.kd_cabang
+		             AND a.kd_region = c.kd_region
+		             AND a.kd_koord = c.kd_koord
+		             AND a.kd_area = c.kd_area
+		             AND c.kd_cabang = '000') m,
+		         (SELECT a.reg_spaj, b.nama_reff, b.jenis, c.nama_cabang, c.team_name, a.kode_bsm
+		            FROM (SELECT a.reg_spaj, a.level_id, a.lcb_no, a.lrb_id, a.no_urut, a.tgl_input, a.reff_id, a.jn_nasabah,
+								 b.nama_cabang, b.alamat, b.kota, b.nama_head, b.nama_wakil, b.no_telp, b.no_fax, b.head_no, b.jenis, 
+								 b.kode kode_bii, b.rek_head, b.kode_alias, b.wil_no,
+								 b.team_name, b.msag_id_ao, b.lcb_group, b.email_cab, c.kode1, c.kode kode_bsm, c.nama_cab, c.alamat, c.nm_pincab, c.em_pincab
+		                    FROM eka.mst_reff_bii a,
+		                         eka.lst_cabang_bii b,
+		                         eka.cab_bsm c
+		                   WHERE a.level_id = 4
+		                     AND a.lcb_no = b.lcb_no
+		                     AND b.kode = SUBSTR (c.kode1, -3)
+		                     AND no_urut = (SELECT MAX (no_urut)
+		                                      FROM eka.mst_reff_bii
+		                                     WHERE reg_spaj = a.reg_spaj)) a, 
+		            	 eka.lst_reff_bii b, 
+		            	 eka.lst_cabang_bii c
+		           WHERE a.lrb_id = b.lrb_id AND a.lcb_no = c.lcb_no) n,
+		         eka.lst_region o,
+		         eka.lst_addr_region p,
+				 eka.mst_agent q,
+				 eka.mst_client_new r,
+				 eka.lst_policy_status s,
+				 eka.lst_wakil t
+		   WHERE pol.lstb_id = 1
+		     AND pol.lspd_id not in (0, 14, 15, 16, 25, 95, 99, 103, 999)
+		     AND pol.lssp_id not in (0, 2, 3, 5, 7, 8, 12, 13, 14)
+		     AND pol.reg_spaj = ins.reg_spaj
+		     <isEqual property="lssa_id" compareValue="3">
+			 AND ins.lssa_id in (3,4)
+			 </isEqual>
+			 <isNotEqual property="lssa_id" compareValue="3">
+			 AND ins.lssa_id = #lssa_id#
+			 </isNotEqual>
+			 <isEqual property="lssp_id" compareValue="10">
+			 AND pol.lssp_id =10
+			 AND ins.lssa_id <![CDATA[<>]]> 5
+			 AND agent_prod.lev_comm=4
+			 AND pol.LSPD_ID<![CDATA[<>]]>99
+			 AND nvl(trunc(sysdate) - trunc(ins.mste_tgl_terima_spaj), 0)<![CDATA[>]]> 90
+	  		 AND nvl(trunc(sysdate) - trunc(ins.mste_tgl_terima_spaj), 0)<![CDATA[<]]> 730
+			 </isEqual>
+		     AND ins.mste_insured_no = prod_ins.mste_insured_no
+		     AND ins.reg_spaj = prod_ins.reg_spaj
+		     AND prod_ins.lsbs_id <![CDATA[<]]> 300
+		     AND pol.reg_spaj = agent_prod.reg_spaj
+		     AND agent_prod.lsle_id = 4
+		     AND pol.lscb_id = f.lscb_id
+		     AND prod_ins.lsbs_id = e.lsbs_id
+		     AND pol.reg_spaj = i.reg_spaj
+		     AND prod_ins.lsdbs_number = e.lsdbs_number
+		     AND pol.mspo_policy_holder = c1.mcl_id
+		     AND ins.mste_insured = c2.mcl_id
+		     AND pol.mspo_policy_holder = h.mcl_id
+		     AND agent_prod.msag_id = k.msag_id
+		     AND k.mcl_id = c3.mcl_id
+		     AND pol.lca_id = l.lca_id
+		     AND pol.mspo_plan_provider = m.mns_kd_nasabah(+)
+		     AND pol.reg_spaj = n.reg_spaj(+)
+		     AND pol.lca_id = o.lca_id
+		     AND pol.lwk_id = o.lwk_id
+		     AND pol.lsrg_id = o.lsrg_id
+		     AND pol.lca_id = t.lca_id
+			 AND pol.lwk_id = t.lwk_id
+		     AND o.lar_id = p.lar_id
+			 AND pol.mspo_ao = q.msag_id(+)
+			 AND q.mcl_id = r.mcl_id(+)
+			 AND pol.lssp_id = s.lssp_id
+		<isNotEmpty property="lastMonthLastDay">
+			AND ins.mste_tgl_aksep <![CDATA[<=]]> to_date(#lastMonthLastDay#,'dd/mm/yyyy')
+		</isNotEmpty>	  
+		<isNotEmpty property="isEmailRequired">
+		 AND p.lar_email is not null 
+		 ORDER BY nama_cabang, t.lwk_nama, p.lar_email, s.lssp_status, 1, 2, 3, 4, 5, 6
+		</isNotEmpty>
+		<isEmpty property="isEmailRequired">
+		 ORDER BY pol.lca_id, nama_cabang, t.lwk_nama,s.lssp_status, 1, 2, 3, 4, 5, 6
+		</isEmpty>
+	</select>	
+	
+	<select id="selectDaftarAkseptasiNyangkutBSMSyariah" resultClass="hashMap" parameterClass="hashMap">
+	select * from (
+		SELECT   t.lwk_nama, l.lca_nama, nvl(n.team_name, m.team_name) team_name, 
+				 m.kci,sysdate,nvl(trunc(sysdate) - trunc(ins.mste_tgl_terima_spaj), 0) lama_proses,
+		         NVL (m.nama_cabang, n.nama_cabang) nama_cabang,
+		         decode(n.jenis, 2, r.mcl_first,DECODE (pol.lca_id,
+		                 '09', (SELECT distinct NVL (d.nama_reff,
+		                                    NVL (g.nama_ref, h.nama_bfa)
+		                                   ) reff
+		                          FROM eka.mst_policy a,
+		                               (select * 
+										from eka.mst_reff_bii a
+										where	  level_id=4
+										and	  no_urut=(select max(no_urut) from eka.mst_reff_bii where level_id = 4 and reg_spaj=a.reg_spaj)) b,
+		                               eka.mst_nasabah c,
+		                               eka.lst_reff_bii d,
+		                               eka.lst_referrer_bii g,
+		                               eka.mst_bfa h
+		                         WHERE a.reg_spaj = pol.reg_spaj
+		                           AND a.reg_spaj = b.reg_spaj(+)
+		                           AND a.mspo_plan_provider = c.mns_kd_nasabah(+)
+		                           AND b.lrb_id = d.lrb_id(+)
+		                           AND c.referrer_id = g.referrer_id(+)
+		                           AND c.referrer_fa = h.msag_id(+)),
+		                 c3.mcl_first
+		                )) nama_penutup, 
+		         (select nvl(b.jenis, 0) 
+		          from (select * 
+							from eka.mst_reff_bii a
+							where level_id=4
+							and no_urut=(select max(no_urut) from eka.mst_reff_bii where level_id = 4 and reg_spaj=a.reg_spaj)) a, 
+		          	   eka.lst_cabang_bii b 
+		          where a.reg_spaj = pol.reg_spaj and a.lcb_no = b.lcb_no) jn_bank,
+		         pol.mspo_policy_no, pol.lca_id, k.msag_id, pol.reg_spaj,
+		         c1.mcl_first nama_pp, c2.mcl_first nama_tt, eka.f_lsdbs(pol.reg_spaj, e.lsbs_id, e.lsdbs_number) lsdbs_name,e.lsbs_id, e.lsdbs_number,
+		         f.lscb_pay_mode, prod_ins.lku_id, prod_ins.mspr_premium,
+		         ins.mste_tgl_aksep, ins.mste_beg_date, 
+		         (case when to_char(ins.mste_beg_date,'yyyy')=#yearbefore# then 1 else 0 end) as tahun2008,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month1# then 1 else 0 end) as bulan1,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month2# then 1 else 0 end) as bulan2,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month3# then 1 else 0 end) as bulan3,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month4# then 1 else 0 end) as bulan4,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month5# then 1 else 0 end) as bulan5,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month6# then 1 else 0 end) as bulan6,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month7# then 1 else 0 end) as bulan7,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month8# then 1 else 0 end) as bulan8,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month9# then 1 else 0 end) as bulan9,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month10# then 1 else 0 end) as bulan10,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month11# then 1 else 0 end) as bulan11,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month12# then 1 else 0 end) as bulan12,
+		         pol.mspo_date_print,
+		         h.telpon_rumah, i.msap_area_code1, msap_phone1, ins.mste_tgl_terima_spaj,
+		         NVL( NVL( NVL( (SELECT msps_desc
+		            FROM eka.mst_position_spaj
+		           WHERE reg_spaj = pol.reg_spaj
+		             AND lssa_id = ins.lssa_id
+		             AND msps_date IN (SELECT MAX (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id AND msps_desc like #type#||'%')) , 
+							         (SELECT msps_desc
+							            FROM eka.mst_position_spaj
+							           WHERE reg_spaj = pol.reg_spaj
+							             AND lssa_id = ins.lssa_id
+							             AND msps_date IN (SELECT MIN (msps_date)
+							                                 FROM eka.mst_position_spaj
+							                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id)) ) , 
+					     (SELECT msps_desc
+				            FROM eka.mst_position_spaj
+				           WHERE reg_spaj = pol.reg_spaj
+				             AND lssa_id = 3
+				             AND msps_date IN (SELECT MAX (msps_date)
+				                                 FROM eka.mst_position_spaj
+				                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = 3 AND msps_desc like #type#||'%') )) ,'-') as kurang_data,
+		         NVL( (SELECT msps_date
+		            FROM eka.mst_position_spaj
+		           WHERE reg_spaj = pol.reg_spaj
+		             AND lssa_id = ins.lssa_id
+		             AND msps_date IN (SELECT MAX (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id AND msps_desc like #type#||'%')) , 
+		              (SELECT msps_date
+		            FROM eka.mst_position_spaj
+		           WHERE reg_spaj = pol.reg_spaj
+		             AND lssa_id = ins.lssa_id
+		             AND msps_date IN (SELECT MIN (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id)) ) as tgl_kurang_data,                 
+		         NVL( (SELECT b.lus_login_name
+		            FROM eka.mst_position_spaj a, eka.lst_user b 
+		           WHERE a.reg_spaj = pol.reg_spaj
+				     AND a.lus_id = b.lus_id
+		             AND a.lssa_id = ins.lssa_id
+		             AND a.msps_date IN (SELECT MAX (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id AND msps_desc like #type#||'%')) ,
+		              (SELECT b.lus_login_name
+		            FROM eka.mst_position_spaj a, eka.lst_user b 
+		           WHERE a.reg_spaj = pol.reg_spaj
+				     AND a.lus_id = b.lus_id
+		             AND a.lssa_id = ins.lssa_id
+		             AND a.msps_date IN (SELECT MIN (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id)) ) as user_kurang_data,
+		         trim(p.lar_email) lar_email, s.lssp_status
+		    FROM eka.mst_policy pol,
+		         eka.mst_insured ins,
+		         eka.mst_product_insured prod_ins,
+		         eka.mst_agent_prod agent_prod,
+		         eka.mst_client_new c1,
+		         eka.mst_client_new c2,
+		         eka.mst_client_new c3,
+		         eka.lst_det_bisnis e,
+		         eka.lst_pay_mode f,
+		         eka.mst_address_new h,
+		         eka.mst_address_billing i,
+		         eka.mst_agent k,
+		         eka.lst_cabang l,
+		         (SELECT a.mns_kd_nasabah, b.nama_cabang, c.nama_cabang kci, b.team_name
+		            FROM eka.mst_nasabah a, eka.lst_cab_bii b, eka.lst_cab_bii c
+		           WHERE a.kd_region = b.kd_region
+		             AND a.kd_koord = b.kd_koord
+		             AND a.kd_area = b.kd_area
+		             AND a.kd_cabang = b.kd_cabang
+		             AND a.kd_region = c.kd_region
+		             AND a.kd_koord = c.kd_koord
+		             AND a.kd_area = c.kd_area
+		             AND c.kd_cabang = '000') m,
+		         (SELECT a.reg_spaj, b.nama_reff, b.jenis, c.nama_cabang, c.team_name
+		            FROM (select * 
+							from eka.mst_reff_bii a
+							where	  level_id=4
+							and	  no_urut=(select max(no_urut) from eka.mst_reff_bii where reg_spaj=a.reg_spaj)) a, 
+		            	 eka.lst_reff_bii b, 
+		            	 eka.lst_cabang_bii c
+		           WHERE a.lrb_id = b.lrb_id AND a.lcb_no = c.lcb_no) n,
+		         eka.lst_region o,
+		         eka.lst_addr_region p,
+				 eka.mst_agent q,
+				 eka.mst_client_new r,
+				 eka.lst_policy_status s,
+				 eka.lst_wakil t
+		   WHERE pol.lstb_id = 1
+		     AND pol.lspd_id not in (0, 14, 15, 16, 25, 95, 99, 103, 999)
+		     AND pol.lssp_id not in (0, 2, 3, 5, 7, 8, 12, 13, 14)
+		     AND pol.reg_spaj = ins.reg_spaj
+		     <isEqual property="lssa_id" compareValue="3">
+			 AND ins.lssa_id in (3,4)
+			 </isEqual>
+			 <isNotEqual property="lssa_id" compareValue="3">
+			 AND ins.lssa_id = #lssa_id#
+			 </isNotEqual>
+			 <isEqual property="lssp_id" compareValue="10">
+			 <!-- AND pol.lssp_id =10 -->
+			 AND ins.lssa_id <![CDATA[<>]]> 5
+			 <!-- AND agent_prod lev_comm=4 -->
+			 AND pol.LSPD_ID<![CDATA[<>]]>99
+			 AND nvl(trunc(sysdate) - trunc(ins.mste_tgl_terima_spaj), 0)<![CDATA[>]]> 90
+	  		 AND nvl(trunc(sysdate) - trunc(ins.mste_tgl_terima_spaj), 0)<![CDATA[<]]> 730
+			 </isEqual>
+		     AND ins.mste_insured_no = prod_ins.mste_insured_no
+		     AND ins.reg_spaj = prod_ins.reg_spaj
+		     AND prod_ins.lsbs_id <![CDATA[<]]> 300
+		     AND pol.reg_spaj = agent_prod.reg_spaj
+		     AND agent_prod.lsle_id = 4
+		     AND pol.lscb_id = f.lscb_id
+		     AND prod_ins.lsbs_id = e.lsbs_id
+		     AND pol.reg_spaj = i.reg_spaj
+		     AND prod_ins.lsdbs_number = e.lsdbs_number
+		     AND pol.mspo_policy_holder = c1.mcl_id
+		     AND ins.mste_insured = c2.mcl_id
+		     AND pol.mspo_policy_holder = h.mcl_id
+		     AND agent_prod.msag_id = k.msag_id
+		     AND k.mcl_id = c3.mcl_id
+		     AND pol.lca_id = l.lca_id
+		     AND pol.mspo_plan_provider = m.mns_kd_nasabah(+)
+		     AND pol.reg_spaj = n.reg_spaj(+)
+		     AND pol.lca_id = o.lca_id
+		     AND pol.lwk_id = o.lwk_id
+		     AND pol.lsrg_id = o.lsrg_id
+		     AND pol.lca_id = t.lca_id
+			 AND pol.lwk_id = t.lwk_id
+		     AND o.lar_id = p.lar_id
+			 AND pol.mspo_ao = q.msag_id(+)
+			 AND q.mcl_id = r.mcl_id(+)
+			 AND pol.lssp_id = s.lssp_id 
+			 AND ((e.lsbs_id = 175 and e.lsdbs_number = 2) or (e.lsbs_id = 182 and e.lsdbs_number = 7) 
+               or (e.lsbs_id = 182 and e.lsdbs_number = 8) or (e.lsbs_id = 182 and e.lsdbs_number = 9))
+		<isNotEmpty property="isEmailRequired">
+		 AND p.lar_email is not null 
+		</isNotEmpty>
+            )
+            <isNotEmpty property="isEmailRequired">
+			 ORDER BY nama_cabang, lwk_nama, lar_email, lssp_status, 1, 2, 3, 4, 5, 6
+			</isNotEmpty>
+			<isEmpty property="isEmailRequired">
+			 ORDER BY nama_cabang, lwk_nama,lssp_status, 1, 2, 3, 4, 5, 6
+			</isEmpty>
+	</select>
+
+<select id="selectDaftarAkseptasiNyangkutSiArco" resultClass="hashMap" parameterClass="hashMap">
+	select * from (
+		SELECT   t.lwk_nama, l.lca_nama, nvl(n.team_name, m.team_name) team_name, 
+				 m.kci,sysdate,nvl(trunc(sysdate) - trunc(ins.mste_tgl_terima_spaj), 0) lama_proses,
+		         NVL (m.nama_cabang, n.nama_cabang) nama_cabang,
+		         decode(n.jenis, 2, r.mcl_first,DECODE (pol.lca_id,
+		                 '09', (SELECT distinct NVL (d.nama_reff,
+		                                    NVL (g.nama_ref, h.nama_bfa)
+		                                   ) reff
+		                          FROM eka.mst_policy a,
+		                               (select * 
+										from eka.mst_reff_bii a
+										where	  level_id=4
+										and	  no_urut=(select max(no_urut) from eka.mst_reff_bii where level_id = 4 and reg_spaj=a.reg_spaj)) b,
+		                               eka.mst_nasabah c,
+		                               eka.lst_reff_bii d,
+		                               eka.lst_referrer_bii g,
+		                               eka.mst_bfa h
+		                         WHERE a.reg_spaj = pol.reg_spaj
+		                           AND a.reg_spaj = b.reg_spaj(+)
+		                           AND a.mspo_plan_provider = c.mns_kd_nasabah(+)
+		                           AND b.lrb_id = d.lrb_id(+)
+		                           AND c.referrer_id = g.referrer_id(+)
+		                           AND c.referrer_fa = h.msag_id(+)),
+		                 c3.mcl_first
+		                )) nama_penutup, 
+		         (select nvl(b.jenis, 0) 
+		          from (select * 
+							from eka.mst_reff_bii a
+							where level_id=4
+							and no_urut=(select max(no_urut) from eka.mst_reff_bii where level_id = 4 and reg_spaj=a.reg_spaj)) a, 
+		          	   eka.lst_cabang_bii b 
+		          where a.reg_spaj = pol.reg_spaj and a.lcb_no = b.lcb_no) jn_bank,
+		         pol.mspo_policy_no, pol.lca_id, k.msag_id, pol.reg_spaj,
+		         c1.mcl_first nama_pp, c2.mcl_first nama_tt, eka.f_lsdbs(pol.reg_spaj, e.lsbs_id, e.lsdbs_number) lsdbs_name,e.lsbs_id, e.lsdbs_number,
+		         f.lscb_pay_mode, prod_ins.lku_id, prod_ins.mspr_premium,
+		         ins.mste_tgl_aksep, ins.mste_beg_date, 
+		         (case when to_char(ins.mste_beg_date,'yyyy')=#yearbefore# then 1 else 0 end) as tahun2008,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month1# then 1 else 0 end) as bulan1,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month2# then 1 else 0 end) as bulan2,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month3# then 1 else 0 end) as bulan3,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month4# then 1 else 0 end) as bulan4,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month5# then 1 else 0 end) as bulan5,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month6# then 1 else 0 end) as bulan6,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month7# then 1 else 0 end) as bulan7,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month8# then 1 else 0 end) as bulan8,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month9# then 1 else 0 end) as bulan9,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month10# then 1 else 0 end) as bulan10,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month11# then 1 else 0 end) as bulan11,
+				 (case when to_char(ins.mste_beg_date,'mmyyyy')=#month12# then 1 else 0 end) as bulan12,
+		         pol.mspo_date_print,
+		         h.telpon_rumah, i.msap_area_code1, msap_phone1, ins.mste_tgl_terima_spaj,
+		         NVL( NVL( NVL( (SELECT msps_desc
+		            FROM eka.mst_position_spaj
+		           WHERE reg_spaj = pol.reg_spaj
+		             AND lssa_id = ins.lssa_id
+		             AND msps_date IN (SELECT MAX (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id AND msps_desc like #type#||'%')) , 
+							         (SELECT msps_desc
+							            FROM eka.mst_position_spaj
+							           WHERE reg_spaj = pol.reg_spaj
+							             AND lssa_id = ins.lssa_id
+							             AND msps_date IN (SELECT MIN (msps_date)
+							                                 FROM eka.mst_position_spaj
+							                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id)) ) , 
+					     (SELECT msps_desc
+				            FROM eka.mst_position_spaj
+				           WHERE reg_spaj = pol.reg_spaj
+				             AND lssa_id = 3
+				             AND msps_date IN (SELECT MAX (msps_date)
+				                                 FROM eka.mst_position_spaj
+				                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = 3 AND msps_desc like #type#||'%') )) ,'-') as kurang_data,
+		         NVL( (SELECT msps_date
+		            FROM eka.mst_position_spaj
+		           WHERE reg_spaj = pol.reg_spaj
+		             AND lssa_id = ins.lssa_id
+		             AND msps_date IN (SELECT MAX (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id AND msps_desc like #type#||'%')) , 
+		              (SELECT msps_date
+		            FROM eka.mst_position_spaj
+		           WHERE reg_spaj = pol.reg_spaj
+		             AND lssa_id = ins.lssa_id
+		             AND msps_date IN (SELECT MIN (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id)) ) as tgl_kurang_data,                 
+		         NVL( (SELECT b.lus_login_name
+		            FROM eka.mst_position_spaj a, eka.lst_user b 
+		           WHERE a.reg_spaj = pol.reg_spaj
+				     AND a.lus_id = b.lus_id
+		             AND a.lssa_id = ins.lssa_id
+		             AND a.msps_date IN (SELECT MAX (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id AND msps_desc like #type#||'%')) ,
+		              (SELECT b.lus_login_name
+		            FROM eka.mst_position_spaj a, eka.lst_user b 
+		           WHERE a.reg_spaj = pol.reg_spaj
+				     AND a.lus_id = b.lus_id
+		             AND a.lssa_id = ins.lssa_id
+		             AND a.msps_date IN (SELECT MIN (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id)) ) as user_kurang_data,
+		         trim(p.lar_email) lar_email, s.lssp_status
+		    FROM eka.mst_policy pol,
+		         eka.mst_insured ins,
+		         eka.mst_product_insured prod_ins,
+		         eka.mst_agent_prod agent_prod,
+		         eka.mst_client_new c1,
+		         eka.mst_client_new c2,
+		         eka.mst_client_new c3,
+		         eka.lst_det_bisnis e,
+		         eka.lst_pay_mode f,
+		         eka.mst_address_new h,
+		         eka.mst_address_billing i,
+		         eka.mst_agent k,
+		         eka.lst_cabang l,
+		         (SELECT a.mns_kd_nasabah, b.nama_cabang, c.nama_cabang kci, b.team_name
+		            FROM eka.mst_nasabah a, eka.lst_cab_bii b, eka.lst_cab_bii c
+		           WHERE a.kd_region = b.kd_region
+		             AND a.kd_koord = b.kd_koord
+		             AND a.kd_area = b.kd_area
+		             AND a.kd_cabang = b.kd_cabang
+		             AND a.kd_region = c.kd_region
+		             AND a.kd_koord = c.kd_koord
+		             AND a.kd_area = c.kd_area
+		             AND c.kd_cabang = '000') m,
+		         (SELECT a.reg_spaj, b.nama_reff, b.jenis, c.nama_cabang, c.team_name
+		            FROM (select * 
+							from eka.mst_reff_bii a
+							where	  level_id=4
+							and	  no_urut=(select max(no_urut) from eka.mst_reff_bii where reg_spaj=a.reg_spaj)) a, 
+		            	 eka.lst_reff_bii b, 
+		            	 eka.lst_cabang_bii c
+		           WHERE a.lrb_id = b.lrb_id AND a.lcb_no = c.lcb_no) n,
+		         eka.lst_region o,
+		         eka.lst_addr_region p,
+				 eka.mst_agent q,
+				 eka.mst_client_new r,
+				 eka.lst_policy_status s,
+				 eka.lst_wakil t
+		   WHERE pol.lstb_id = 1
+		     AND pol.lspd_id not in (0, 14, 15, 16, 25, 95, 99, 103, 999)
+		     AND pol.lssp_id not in (0, 2, 3, 5, 7, 8, 12, 13, 14)
+		     AND pol.reg_spaj = ins.reg_spaj
+		     <isEqual property="lssa_id" compareValue="3">
+			 AND ins.lssa_id in (3,4)
+			 </isEqual>
+			 <isNotEqual property="lssa_id" compareValue="3">
+			 AND ins.lssa_id = #lssa_id#
+			 </isNotEqual>
+			 <isEqual property="lssp_id" compareValue="10">
+			 <!-- AND pol.lssp_id =10 -->
+			 AND ins.lssa_id <![CDATA[<>]]> 5
+			 <!-- AND agent_prod lev_comm=4 -->
+			 AND pol.LSPD_ID<![CDATA[<>]]>99
+			 AND nvl(trunc(sysdate) - trunc(ins.mste_tgl_terima_spaj), 0)<![CDATA[>]]> 90
+	  		 AND nvl(trunc(sysdate) - trunc(ins.mste_tgl_terima_spaj), 0)<![CDATA[<]]> 730
+			 </isEqual>
+		     AND ins.mste_insured_no = prod_ins.mste_insured_no
+		     AND ins.reg_spaj = prod_ins.reg_spaj
+		     AND prod_ins.lsbs_id <![CDATA[<]]> 300
+		     AND pol.reg_spaj = agent_prod.reg_spaj
+		     AND agent_prod.lsle_id = 4
+		     AND pol.lscb_id = f.lscb_id
+		     AND prod_ins.lsbs_id = e.lsbs_id
+		     AND pol.reg_spaj = i.reg_spaj
+		     AND prod_ins.lsdbs_number = e.lsdbs_number
+		     AND pol.mspo_policy_holder = c1.mcl_id
+		     AND ins.mste_insured = c2.mcl_id
+		     AND pol.mspo_policy_holder = h.mcl_id
+		     AND agent_prod.msag_id = k.msag_id
+		     AND k.mcl_id = c3.mcl_id
+		     AND pol.lca_id = l.lca_id
+		     AND pol.mspo_plan_provider = m.mns_kd_nasabah(+)
+		     AND pol.reg_spaj = n.reg_spaj(+)
+		     AND pol.lca_id = o.lca_id
+		     AND pol.lwk_id = o.lwk_id
+		     AND pol.lsrg_id = o.lsrg_id
+		     AND pol.lca_id = t.lca_id
+			 AND pol.lwk_id = t.lwk_id
+		     AND o.lar_id = p.lar_id
+			 AND pol.mspo_ao = q.msag_id(+)
+			 AND q.mcl_id = r.mcl_id(+)
+			 AND pol.lssp_id = s.lssp_id 
+			 AND ((e.lsbs_id = 183 and e.lsdbs_number  <![CDATA[>]]> 30))
+		<isNotEmpty property="isEmailRequired">
+		 AND p.lar_email is not null 
+		</isNotEmpty>
+            )
+            <isNotEmpty property="isEmailRequired">
+			 ORDER BY nama_cabang, lwk_nama, lar_email, lssp_status, 1, 2, 3, 4, 5, 6
+			</isNotEmpty>
+			<isEmpty property="isEmailRequired">
+			 ORDER BY nama_cabang, lwk_nama,lssp_status, 1, 2, 3, 4, 5, 6
+			</isEmpty>
+	</select>
+
+</sqlMap>

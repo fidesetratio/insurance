@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using an evaluation version of JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="summary_status" printOrder="Horizontal" pageWidth="1191" pageHeight="842" orientation="Landscape" columnWidth="1181" leftMargin="5" rightMargin="5" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<property name="com.jasperassistant.designer.VGuides.Column Header" value="22"/>
+	<property name="com.jasperassistant.designer.HGuides" value="1,21,26,98,102,226,233,284,291,354,361,454,460,609,614,756,763,851,857,935,942,1052,1056"/>
+	<parameter name="tgl" class="java.util.Date">
+		<defaultValueExpression><![CDATA[new Date(2006,9,12)]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select '' spaj, a.lca_id,i.lca_nama, to_char(b.mste_input_date,'dd/mm/yyyy') mste_input_date,aa.mcl_first nama_agen,posisi.reg_spaj,a.MSPO_POLICY_NO,
+		  		 d.lsdbs_name,pp.mcl_first nama_pp,tt.mcl_first nama_tt,c.lku_id,c.mspr_tsi,
+				 posisi.lssa_id,posisi.status_accept,posisi.lspd_id,posisi.lspd_position,posisi.lus_id,posisi.msps_desc,ket.msps_Desc ket_aksep
+	  from ( 	select a.reg_spaj,a.msps_date,a.lspd_id,c.lspd_position,
+	  	   			   case
+					   	   when a.lssa_id is null then
+						   		case 
+									 when a.lspd_id>=5 then
+									 	  5
+									 else
+									 	 1
+								end
+							else
+								a.lssa_id	
+						end lssa_id,
+					   b.status_accept,a.lus_id,a.msps_desc
+	  	   		from eka.mst_position_spaj a,
+					 eka.lst_status_accept b,
+					 eka.lst_document_position c 
+				where a.lspd_id=c.lspd_id and
+					  case
+					   	   when a.lssa_id is null then
+						   		case 
+									 when a.lspd_id>=5 then
+									 	  5
+									 else
+									 	 1
+								end
+							else
+								a.lssa_id	
+						end 
+					  =b.lssa_id and
+					  a.reg_spaj='09200601277' and
+					  a.msps_date=(
+					  			 select max (b.msps_date) 
+									 from eka.mst_position_spaj a,
+									 	  ( select reg_spaj,msps_date  
+												from eka.mst_position_spaj
+												where reg_spaj='09200601277' and
+													  trunc(msps_date)=to_date('31/05/2006','dd/mm/yyyy')
+											)b		  
+									 where a.reg_spaj='09200601277'
+					  			)
+		   ) posisi,
+		   ( 	select * from eka.mst_position_spaj 
+				where lssa_id=5 and lspd_id=2 and lssp_id=10 and reg_spaj='09200601277' 
+		   )ket,
+	  	   eka.mst_policy a,
+		   eka.mst_insured b,
+		   eka.mst_product_insured c,
+		   eka.lst_det_bisnis d,
+		   eka.mst_client_new pp,
+		   eka.mst_client_new tt,
+		   eka.mst_client_new aa,
+		   eka.mst_agent e,
+		   eka.mst_agent_prod f,
+		   eka.lst_status_accept g,
+		   eka.lst_document_position h,
+		   eka.lst_cabang i
+	  where   a.reg_spaj=posisi.reg_spaj and
+	  		  a.reg_spaj=ket.reg_spaj(+) and
+	  		  a.mspo_policy_holder=pp.mcl_id and
+			  a.reg_spaj=b.reg_spaj and
+			  a.reg_spaj=c.reg_spaj and
+			  c.lsbs_id=d.lsbs_id and
+			  c.lsdbs_number=d.lsdbs_number and
+		   	  b.mste_insured=tt.mcl_id and
+			  e.msag_id=f.msag_id and
+			  a.reg_spaj=f.reg_spaj and
+		   	  e.mcl_id=aa.mcl_id and
+			  b.lssa_id=g.lssa_id and
+			  a.lspd_id=h.lspd_id and
+			  a.lca_id=i.lca_id and
+		      f.lsle_id=4 and
+			  a.reg_spaj='09200601277' and
+			   c.lsbs_id < 300]]>
+	</queryString>
+	<field name="KET_AKSEP" class="java.lang.String"/>
+	<field name="LCA_ID" class="java.lang.String"/>
+	<field name="LCA_NAMA" class="java.lang.String"/>
+	<field name="LKU_ID" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSPD_ID" class="java.math.BigDecimal"/>
+	<field name="LSPD_POSITION" class="java.lang.String"/>
+	<field name="LSSA_ID" class="java.math.BigDecimal"/>
+	<field name="LUS_ID" class="java.math.BigDecimal"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSPR_TSI" class="java.math.BigDecimal"/>
+	<field name="MSPS_DESC" class="java.lang.String"/>
+	<field name="MSTE_INPUT_DATE" class="java.lang.String"/>
+	<field name="NAMA_AGEN" class="java.lang.String"/>
+	<field name="NAMA_PP" class="java.lang.String"/>
+	<field name="NAMA_TT" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="spaj" class="java.util.HashMap"/>
+	<field name="STATUS_ACCEPT" class="java.lang.String"/>
+	<group name="Group_3">
+		<groupExpression><![CDATA[$F{spaj}.get("LCA_ID")]]></groupExpression>
+		<groupHeader>
+			<band height="14"/>
+		</groupHeader>
+	</group>
+	<title>
+		<band height="50">
+			<textField pattern="M/d/yy h:mm a" hyperlinkType="None">
+				<reportElement x="1" y="1" width="173" height="11"/>
+				<textElement>
+					<font fontName="Tahoma" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Printing Date: " + $P{REPORT_SCRIPTLET}.formatDateWithTime(new Date())]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="1" y="15" width="175" height="13"/>
+				<textElement>
+					<font fontName="Tahoma" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PT Asuransi Jiwa Sinarmas MSIG Tbk.]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="1" y="29" width="261" height="13"/>
+				<textElement>
+					<font fontName="Tahoma" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Summary Status SPAJ/Polis per Tanggal : " + $P{REPORT_SCRIPTLET}.formatDateNumber($P{tgl})]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="32">
+			<staticText>
+				<reportElement x="1" y="10" width="20" height="13"/>
+				<textElement textAlignment="Left">
+					<font fontName="Tahoma" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="26" y="10" width="63" height="13"/>
+				<textElement textAlignment="Left">
+					<font fontName="Tahoma" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tgl. Input Spaj]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="233" y="10" width="49" height="13"/>
+				<textElement textAlignment="Left">
+					<font fontName="Tahoma" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No.Spaj
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="291" y="10" width="64" height="13"/>
+				<textElement textAlignment="Left">
+					<font fontName="Tahoma" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No Polis
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="361" y="10" width="94" height="13"/>
+				<textElement textAlignment="Left">
+					<font fontName="Tahoma" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Produk
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="460" y="10" width="144" height="13"/>
+				<textElement textAlignment="Left">
+					<font fontName="Tahoma" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Pemegang Polis
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="614" y="10" width="143" height="13"/>
+				<textElement textAlignment="Left">
+					<font fontName="Tahoma" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tertanggung
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="765" y="10" width="87" height="13"/>
+				<textElement textAlignment="Left">
+					<font fontName="Tahoma" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[UP
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="858" y="10" width="78" height="13"/>
+				<textElement textAlignment="Left">
+					<font fontName="Tahoma" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Status Aksep]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="942" y="10" width="93" height="13"/>
+				<textElement textAlignment="Left">
+					<font fontName="Tahoma" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Posisi Dokumen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1056" y="10" width="126" height="13"/>
+				<textElement textAlignment="Left">
+					<font fontName="Tahoma" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Keterangan
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="103" y="10" width="124" height="13"/>
+				<textElement textAlignment="Left">
+					<font fontName="Tahoma" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Agen]]></text>
+			</staticText>
+			<line>
+				<reportElement x="1" y="3" width="1181" height="1"/>
+			</line>
+			<line>
+				<reportElement x="1" y="25" width="1181" height="1"/>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="28">
+			<textField hyperlinkType="None">
+				<reportElement x="1" y="-1" width="21" height="10"/>
+				<textElement textAlignment="Center">
+					<font fontName="Tahoma" size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="105" y="0" width="122" height="10"/>
+				<textElement>
+					<font fontName="Tahoma" size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[(String)$F{spaj}.get("NAMA_AGEN")]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="233" y="0" width="52" height="10"/>
+				<box padding="0">
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatSPAJ($F{REG_SPAJ})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="291" y="0" width="63" height="10"/>
+				<box padding="0">
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[(String)$F{spaj}.get("MSPO_POLICY_NO")]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="361" y="0" width="91" height="10"/>
+				<textElement>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[(String)$F{spaj}.get("LSDBS_NAME")]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="460" y="0" width="150" height="10"/>
+				<textElement>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[(String)$F{spaj}.get("NAMA_PP")]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="614" y="0" width="143" height="10"/>
+				<textElement>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[(String)$F{spaj}.get("NAMA_TT")]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;(#,##0.00)" hyperlinkType="None">
+				<reportElement x="781" y="0" width="71" height="10"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Double"><![CDATA[(Double)$F{spaj}.get("MSPR_TSI")]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="765" y="0" width="13" height="10"/>
+				<textElement>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[(String)$F{spaj}.get("LKU_ID")]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="861" y="0" width="75" height="10"/>
+				<textElement>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[(String)$F{spaj}.get("STATUS_ACCEPT")]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="942" y="0" width="111" height="10"/>
+				<textElement>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[(String)$F{spaj}.get("LSPD_POSITION")]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1056" y="-1" width="123" height="10"/>
+				<textElement>
+					<font fontName="Tahoma" size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[( ((Integer)$F{spaj}.get("LSSA_ID")).compareTo(new Integer(5))==0
+	?(String)$F{spaj}.get("KET_AKSEP")
+	:(String)$F{spaj}.get("MSPS_DESC")
+)]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="26" y="0" width="61" height="10"/>
+				<textElement>
+					<font fontName="Tahoma" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[(String)$F{spaj}.get("MSTE_INPUT_DATE")]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="47">
+			<textField hyperlinkType="None">
+				<reportElement x="1075" y="35" width="93" height="10"/>
+				<textElement textAlignment="Right">
+					<font fontName="Tahoma" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Page "+$V{PAGE_NUMBER}.intValue()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

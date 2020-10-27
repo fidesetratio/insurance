@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="elions.checklist">
+
+	<typeAlias alias="hashMap" type="java.util.HashMap"/>
+	<typeAlias alias="checkList" type="com.ekalife.elions.model.Checklist"/>
+
+	<select id="selectPosisiDokumenBySpaj" parameterClass="string" resultClass="int">
+		SELECT lspd_id
+		  FROM eka.mst_policy
+		 WHERE reg_spaj = RPAD (#value#, 11, ' ')	
+	</select>
+
+	<select id="selectStsAksepBySpaj" parameterClass="string" resultClass="int">
+		SELECT lssa_id
+          FROM eka.mst_insured
+         WHERE reg_spaj = RPAD (#value#, 11, ' ')	
+	</select>
+
+	<select id="selectLcaIdBySpaj" parameterClass="string" resultClass="string">
+		SELECT lca_id
+          FROM eka.mst_policy
+         WHERE reg_spaj = RPAD (#value#, 11, ' ')	
+	</select>
+
+	<select id="selectValidasiCheckListBySpaj" resultClass="hashMap" parameterClass="string">
+		SELECT NVL (SUM (DECODE (tgl_adm, NULL, 0, 1)), 0) adm,
+		       NVL (SUM (DECODE (tgl_uw, NULL, 0, 1)), 0) uw,
+		       NVL (SUM (DECODE (tgl_print, NULL, 0, 1)), 0) PRINT,
+		       NVL (SUM (DECODE (tgl_filling, NULL, 0, 1)), 0) filling
+		  FROM eka.mst_checklist
+		 WHERE reg_spaj = RPAD (#value#, 11, ' ')	
+	</select>
+
+	<select id="selectCheckListBySpaj" resultClass="checkList" parameterClass="string">
+		SELECT     level, lc.lc_nama, lc.lc_active,
+		           lc.lc_id, lc.lc_parent_id, lc.lc_urut, lc.lc_desc, lc.lc_lus_id,
+		           lc.lc_create_dt, mc.reg_spaj, mc.mc_no, mc.mc_desc, mc.lus_id_adm, mc.lus_id_bancass,
+		           mc.lus_id_uw, mc.lus_id_print, mc.lus_id_filling, mc.tgl_adm, mc.tgl_bancass,
+		           mc.tgl_uw, mc.tgl_print, mc.tgl_filling, mc.flag_adm, mc.flag_bancass, mc.flag_uw,
+		           mc.flag_print, mc.flag_filling, a.lus_login_name user_adm, 
+				   b.lus_login_name user_uw, c.lus_login_name user_print, d.lus_login_name user_filling
+		      FROM eka.lst_checklist lc,
+		           (SELECT *
+		              FROM eka.mst_checklist
+		             WHERE reg_spaj = RPAD (#value#, 11, ' ')) mc,
+		           eka.lst_user a,
+		           eka.lst_user b,
+		           eka.lst_user c,
+		           eka.lst_user d,
+		           eka.lst_user e
+		     WHERE lc.lc_active = 1 and lc.lc_uw = 1
+		       AND lc.lc_id = mc.lc_id(+)
+		       AND mc.lus_id_adm = a.lus_id(+)
+		       AND mc.lus_id_uw = b.lus_id(+)
+		       AND mc.lus_id_print = c.lus_id(+)
+		       AND mc.lus_id_filling = d.lus_id(+)
+		       AND mc.lus_id_bancass = e.lus_id(+)
+		START WITH lc.lc_id = 0
+		CONNECT BY PRIOR lc.lc_id = lc.lc_parent_id
+		  ORDER SIBLINGS BY lc.lc_urut  
+	</select>
+	
+	<select id="selectMstChecklistExist" resultClass="checkList"  parameterClass="checkList">
+		SELECT * from eka.mst_checklist	
+		WHERE REG_SPAJ = #reg_spaj# AND LC_ID = #lc_id# and flag_bancass is not null
+	</select>
+
+</sqlMap>

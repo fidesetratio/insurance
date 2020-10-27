@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="polis_expired_lbh90hr" pageWidth="2000" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="1960" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isSummaryNewPage="true" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<property name="com.jasperassistant.designer.HGuides" value="122"/>
+	<parameter name="tanggalAwal" class="java.lang.String"/>
+	<parameter name="tanggalAkhir" class="java.lang.String"/>
+	<parameter name="lca_id" class="java.lang.String"/>
+	<parameter name="judul" class="java.lang.String"/>
+	<parameter name="note" class="java.lang.String">
+		<defaultValueExpression><![CDATA["INI TESTING"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="cab_bank" class="java.lang.String"/>
+	<parameter name="yearbefore" class="java.lang.String"/>
+	<parameter name="month1" class="java.lang.String"/>
+	<parameter name="month2" class="java.lang.String"/>
+	<parameter name="month3" class="java.lang.String"/>
+	<parameter name="month4" class="java.lang.String"/>
+	<parameter name="month5" class="java.lang.String"/>
+	<parameter name="month6" class="java.lang.String"/>
+	<parameter name="month7" class="java.lang.String"/>
+	<parameter name="month8" class="java.lang.String"/>
+	<parameter name="month9" class="java.lang.String"/>
+	<parameter name="month10" class="java.lang.String"/>
+	<parameter name="month11" class="java.lang.String"/>
+	<parameter name="month12" class="java.lang.String"/>
+	<parameter name="datasource" class="net.sf.jasperreports.engine.data.JRBeanCollectionDataSource"/>
+	<queryString>
+		<![CDATA[select distinct a.reg_spaj ,a.lssp_id,
+	   a.mspo_spaj_date,temp2.msps_date tgl_kurang_data,temp2.msps_date tglTERIMA,
+	   c.lca_nama,
+	   c1.mcl_first nama_pp,
+	   c2.mcl_first nama_tt,
+	   c3.mcl_first  nama_penutup,sysdate,
+	  -- p.mspa_pay_date,
+	   deposit.msdp_pay_date,keket.msps_desc kurang_data,
+	   b.mste_tgl_terima_spaj,
+	   nvl(trunc(sysdate) - trunc(temp2.msps_date), 0) lama_proses,
+	   a.LSPD_ID, LSSP_STATUS,lb.lsbs_name lsdbs_name,ps.lus_id, lu.lus_login_name user_kurang_data
+from eka.mst_policy a, 
+	 eka.mst_insured b,
+	 eka.lst_cabang c,
+	 eka.mst_client_new c1,
+	  eka.mst_client_new c2,eka.mst_client_new c3,
+	  eka.mst_deposit_premium deposit,
+	  (select * from (
+	  		 select  * from eka.mst_position_spaj ps1
+			 where  ps1.lspd_id=2 and ps1.lssp_id=10 and ps1.lssa_id=3
+			 	   and upper(msps_desc) not like upper('TGL SPAJ%') 
+	  			   and upper(msps_desc) not like upper('NM%') 
+	  			   and  upper(msps_desc) not like upper('NON MED%') 
+	  			   and  upper(msps_desc) not like upper('MEDICAL SUB STD%')
+	  			   and  upper(msps_desc) not like upper('TRANSFER DARI U/W')
+	  			   and  upper(msps_desc) not like upper('Fund Alocation')
+	  			   and  upper(msps_desc) not like upper('EDIT%')))keket,
+	  (select s.msps_date ,cy.reg_spaj 
+	   from eka.mst_position_spaj s, eka.mst_policy cy
+	   where s.reg_spaj= cy.reg_spaj
+	    AND  upper(msps_desc) like ('TGL TERIMA%')) temp2,
+	  EKA.LST_DOCUMENT_POSITION dp,
+	  eka.mst_product_insured pi, 
+	  eka.lst_bisnis lb,
+	  eka.mst_position_spaj ps,
+	  eka.lst_user lu,
+	  EKA.LST_POLICY_STATUS pst,
+	  EKA.MST_AGENT_PROD ap, 
+	  EKA.MST_AGENT agen
+where a.reg_spaj=b.reg_spaj 
+	  and a.reg_spaj=pi.reg_spaj
+	  and a.reg_spaj=temp2.reg_spaj
+	  and a.reg_spaj=deposit.reg_spaj
+	  and a.reg_spaj=ps.reg_spaj
+	  and a.reg_spaj=ap.reg_spaj
+	  and  a.lca_id= c.lca_id
+	  and a.mspo_policy_holder=c1.mcl_id
+	  and b.mste_insured=c2.mcl_id
+	  and ap.lev_comm=4
+	  and ap.msag_id=agen.msag_id
+	  and agen.mcl_id=c3.mcl_id
+	  AND a.reg_spaj= keket.reg_spaj(+)
+	  and keket.msps_date=(select max(msps_date) from eka.mst_position_spaj s where a.reg_spaj=s.reg_spaj)
+	  and deposit.msdp_pay_date=(select max(msdp_pay_date)from eka.mst_deposit_premium d where a.reg_spaj=d.reg_spaj)
+	  and pi.lsbs_id = lb.lsbs_id 
+	  AND a.lssp_id=pst.lssp_id
+	  and ps.lus_id = lu.lus_id
+	  and a.lssp_id=10 
+	  and b.lssa_id <> 5
+	  and a.LSPD_ID<>99
+	  and lb.lsbs_id<300 
+	  and ps.msps_date=(select max(msps_date) from eka.mst_position_spaj where reg_spaj=a.reg_spaj)
+	  and nvl(trunc(sysdate) - trunc(b.mste_tgl_terima_spaj), 0)>90
+	  and nvl(trunc(sysdate) - trunc(b.mste_tgl_terima_spaj), 0)<730
+	  and a.lspd_id=dp.lspd_id]]>
+	</queryString>
+	<field name="KURANG_DATA" class="java.lang.String"/>
+	<field name="LAMA_PROSES" class="java.math.BigDecimal"/>
+	<field name="LCA_NAMA" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSPD_ID" class="java.math.BigDecimal"/>
+	<field name="LSSP_ID" class="java.math.BigDecimal"/>
+	<field name="LSSP_STATUS" class="java.lang.String"/>
+	<field name="LUS_ID" class="java.math.BigDecimal"/>
+	<field name="MSDP_PAY_DATE" class="java.util.Date"/>
+	<field name="MSPO_SPAJ_DATE" class="java.util.Date"/>
+	<field name="MSTE_TGL_TERIMA_SPAJ" class="java.util.Date"/>
+	<field name="NAMA_PENUTUP" class="java.lang.String"/>
+	<field name="NAMA_PP" class="java.lang.String"/>
+	<field name="NAMA_TT" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="SYSDATE" class="java.util.Date"/>
+	<field name="TGLTERIMA" class="java.util.Date"/>
+	<field name="TGL_KURANG_DATA" class="java.util.Date"/>
+	<field name="USER_KURANG_DATA" class="java.lang.String"/>
+	<title>
+		<band height="48">
+			<staticText>
+				<reportElement x="0" y="1" width="666" height="26"/>
+				<textElement>
+					<font fontName="SansSerif" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[List SPAJ dengan Total Hari Proses > 90 hari]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="0" y="28" width="400" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Sampai Dengan " + $P{REPORT_SCRIPTLET}.formatDateIndonesian(new Date())]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="12">
+			<staticText>
+				<reportElement x="0" y="1" width="21" height="11"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="21" y="1" width="100" height="11"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[NO SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="121" y="0" width="150" height="12"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[NAMA PENUTUP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="371" y="1" width="150" height="11"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[NAMA PEMEGANG POLIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="521" y="0" width="150" height="12"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[NAMA TERTANGGUNG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="671" y="1" width="149" height="11"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[PRODUCT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="820" y="1" width="80" height="11"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[TGL TERIMA SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="900" y="1" width="80" height="11"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[TGL BAYAR]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="980" y="1" width="80" height="11"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[TTL HARI PROSES]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1060" y="1" width="540" height="11"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[KEKURANGAN DATA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1600" y="1" width="170" height="11"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[POSISI DOKUMEN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1770" y="1" width="70" height="11"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[USER]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="271" y="0" width="100" height="12"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[CABANG]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="12">
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="21" height="12"/>
+				<box border="None" padding="0"/>
+				<textElement>
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="21" y="0" width="100" height="12"/>
+				<textElement>
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REG_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1600" y="0" width="170" height="12"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSSP_STATUS}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="271" y="0" width="100" height="12"/>
+				<textElement>
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LCA_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="121" y="0" width="150" height="12"/>
+				<textElement>
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PENUTUP}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="371" y="0" width="150" height="12"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PP}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="521" y="0" width="150" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_TT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="671" y="0" width="149" height="12"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1060" y="0" width="540" height="12"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KURANG_DATA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1770" y="0" width="70" height="12"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{USER_KURANG_DATA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="900" y="0" width="80" height="12"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{MSDP_PAY_DATE})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="980" y="0" width="80" height="12"/>
+				<textElement textAlignment="Left">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{LAMA_PROSES}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="820" y="0" width="80" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{TGLTERIMA})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

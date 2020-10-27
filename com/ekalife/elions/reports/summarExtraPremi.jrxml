@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="summary_goldlink" pageWidth="595" pageHeight="842" columnWidth="565" leftMargin="15" rightMargin="15" topMargin="15" bottomMargin="15" isFloatColumnFooter="true" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<property name="com.jasperassistant.designer.HGuides" value="520"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("13/03/2007")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("16/03/2007")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lus_login_name" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT /*+ first_rows */
+       b.jn_nasabah, a.mspo_policy_no, e.mcl_first, f.mspr_premium, d.refund
+  FROM eka.mst_policy a,
+       eka.mst_nasabah b,
+       eka.mst_insured c,
+       eka.mst_comm_reff_bii d,
+       eka.mst_client_new e,
+       eka.mst_product_insured f
+ WHERE a.reg_spaj = c.reg_spaj
+   AND a.mspo_plan_provider = b.mns_kd_nasabah
+   AND a.reg_spaj = d.reg_spaj
+   AND a.mspo_policy_holder = e.mcl_id
+   AND a.reg_spaj = f.reg_spaj
+   AND f.lsbs_id < 300
+   AND b.jn_nasabah in (3,4)
+   AND c.mste_tgl_aksep BETWEEN $P{tanggalAwal} and $P{tanggalAkhir}
+   AND d.tahun_ke = 1
+   AND d.premi_ke = 1
+   AND d.mcr_flag = 1
+ORDER BY b.jn_nasabah, a.mspo_policy_no]]>
+	</queryString>
+	<field name="JN_NASABAH" class="java.math.BigDecimal"/>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="REFUND" class="java.math.BigDecimal"/>
+	<variable name="totRefund" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{REFUND}]]></variableExpression>
+	</variable>
+	<variable name="totPremi" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{MSPR_PREMIUM}]]></variableExpression>
+	</variable>
+	<group name="Group_1">
+		<groupExpression><![CDATA[$F{JN_NASABAH}]]></groupExpression>
+		<groupHeader>
+			<band height="16">
+				<textField>
+					<reportElement positionType="Float" x="1" y="1" width="165" height="13"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Book Antiqua" size="10" isItalic="true" pdfFontName="Helvetica-Oblique"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{JN_NASABAH}.intValue()==3 ? "GOLD LINK" : 
+$F{JN_NASABAH}.intValue()==4 ? "PRO LINK" : "")]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<pageHeader>
+		<band height="32">
+			<textField>
+				<reportElement positionType="Float" x="0" y="15" width="512" height="12" isPrintWhenDetailOverflows="true"/>
+				<textElement>
+					<font fontName="Bookman Old Style" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Akseptasi Per Tanggal: " + $P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAwal}) + " s/d " + $P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAkhir})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="0" width="512" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Bookman Old Style" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Report Summary Extra Premi"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="30">
+			<textField>
+				<reportElement positionType="Float" x="350" y="0" width="141" height="10"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement positionType="Float" x="495" y="0" width="25" height="10" isPrintWhenDetailOverflows="true"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement positionType="Float" x="0" y="13" width="520" height="1"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="0" y="28" width="520" height="1"/>
+				<graphicElement/>
+			</line>
+			<staticText>
+				<reportElement positionType="Float" x="30" y="14" width="95" height="14"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No. Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="14" width="20" height="14"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="135" y="14" width="165" height="14"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Pemegang Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="420" y="14" width="100" height="14"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Extra Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="310" y="14" width="100" height="14"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi Pokok (Rp.)]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="13">
+			<textField>
+				<reportElement positionType="Float" x="30" y="0" width="95" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatPolis($F{MSPO_POLICY_NO})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="3" y="0" width="24" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{COLUMN_COUNT} + "."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="135" y="0" width="165" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MCL_FIRST}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="420" y="0" width="95" height="13"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="10"/>
+				</textElement>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="310" y="0" width="95" height="13"/>
+				<box border="None"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null, $F{MSPR_PREMIUM})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="18">
+			<textField>
+				<reportElement positionType="Float" x="-1" y="5" width="186" height="13"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Process Date: " + $P{REPORT_SCRIPTLET}.formatDateString(new Date())
++ " by: " + $P{lus_login_name}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="2" width="520" height="1"/>
+				<graphicElement/>
+			</line>
+			<textField>
+				<reportElement x="420" y="4" width="95" height="13"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+			</textField>
+			<textField>
+				<reportElement x="310" y="4" width="95" height="13"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null, $V{totPremi})]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnFooter>
+</jasperReport>

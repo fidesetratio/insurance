@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<update id="elions.worksite.update_mst_counter" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_COUNTER 
+		SET EKA.MST_COUNTER.MSCO_VALUE = #intIDCounter# 
+		WHERE EKA.MST_COUNTER.MSCO_NUMBER = #no# AND 
+			  EKA.MST_COUNTER.LCA_ID = #kodecbg#	
+	</update>
+	
+	<update id="elions.worksite.update_counter_mst_insured" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_INSURED 
+		SET EKA.MST_INSURED.NO_INVOICE = #noinvoice#
+		WHERE EKA.MST_INSURED.REG_SPAJ =  rpad(replace(#reg_spaj# ,'.'),11,' ') 
+	</update>	
+
+	<update id="elions.worksite.update_nobilling" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_BILLING
+		SET EKA.MST_BILLING.MSBI_BILL_NO = #nobill#
+		WHERE EKA.MST_BILLING.REG_SPAJ =  rpad(replace(#reg_spaj# ,'.'),11,' ') 
+		AND EKA.MST_BILLING.MSBI_PREMI_KE = 1
+	</update>	
+	
+	<update id="elions.worksite.update_mst_diskon_perusahaan" parameterClass="java.util.HashMap">
+	update eka.mst_diskon_perusahaan 
+	set nominal = #nominal#, jenis_edit_nominal = #jenis_edit_nominal#, jumlah_edit_nominal = #jumlah_edit_nominal#, 
+	user_edit_nominal = #user_edit_nominal#,
+	update_date_edit_nominal  = (select sysdate from dual) where mcl_id = #mcl_id# and periode=#periode#
+	</update>
+ 	
+ 	 <procedure id="elions.worksite.inputJournalProcess" parameterClass="java.util.Map" >
+		declare
+		test1 varchar2(100);
+		begin
+	
+		test1 := eka.pkg_worksite.FN_Journal_Bayar_Komisi
+		(
+		   #mclId#,     
+		   #periode#,              
+		   #bankId#,      
+		   #noGiro#         
+		);
+		  
+		end;
+	</procedure> 
+</sqlMap>

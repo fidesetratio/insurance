@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="surat_program_hadiah" pageWidth="595" pageHeight="842" columnWidth="525" leftMargin="35" rightMargin="35" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="ekatestdr"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<reportFont name="Roman" isDefault="false" fontName="Times New Roman" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["09201233908"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="hamid" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.direksi")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select
+    b.mcl_jenis, DECODE (b.mspe_sex, 1, 'Bpk. ', 'Ibu ') gelar, DECODE (b.mspe_sex, 1, 'Mr ', 'Mrs ') gelar2,
+    b.mcl_first, e.msap_address, e.kota, e.msap_zip_code, a.mspo_policy_no, a.mspo_date_print,
+    rtrim (xmlagg (xmlelement (e,c.mh_quantity ||' unit '||d.lh_nama || ', ' )).extract ('//text()'), ', ') hadiah
+from
+    eka.mst_policy a,
+    eka.mst_client_new b,
+    eka.mst_hadiah c,
+    eka.lst_hadiah d,
+    eka.mst_address_billing e
+where
+    a.mspo_policy_holder = b.mcl_id
+    and a.reg_spaj = c.reg_spaj
+    and c.lhc_id = d.lhc_id
+    and c.lh_id = d.lh_id
+    and a.reg_spaj = e.reg_spaj
+    and a.reg_spaj = $P{spaj}
+group by
+    b.mcl_jenis, b.mspe_sex,
+    b.mcl_first, e.msap_address, e.kota, e.msap_zip_code, a.mspo_policy_no, a.mspo_date_print]]>
+	</queryString>
+	<field name="GELAR" class="java.lang.String"/>
+	<field name="GELAR2" class="java.lang.String"/>
+	<field name="HADIAH" class="java.lang.String"/>
+	<field name="KOTA" class="java.lang.String"/>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="MCL_JENIS" class="java.math.BigDecimal"/>
+	<field name="MSAP_ADDRESS" class="java.lang.String"/>
+	<field name="MSAP_ZIP_CODE" class="java.lang.String"/>
+	<field name="MSPO_DATE_PRINT" class="java.util.Date"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<detail>
+		<band height="88">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="0" width="525" height="16"/>
+				<textElement textAlignment="Justified" markup="styled">
+					<font fontName="Times New Roman" size="12" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["\n\n\n"+
+"Jakarta, "+
+$P{REPORT_SCRIPTLET}.formatDateIndonesian(($F{MSPO_DATE_PRINT}!=null?$F{MSPO_DATE_PRINT}:new Date()))
++"\n"+
+"\n"+
+"Kepada Yth.\n"+
+($F{MCL_JENIS}.intValue()==1?"":$F{GELAR}+" ") +$F{MCL_FIRST}+"\n"+
+$F{MSAP_ADDRESS}+"\n"+
+($F{KOTA}!=null?($F{KOTA}+" "):"")+
+($F{MSAP_ZIP_CODE}!=null?" "+$F{MSAP_ZIP_CODE}:"")
++"\n"+
+"\n"+
+"Dengan Hormat,"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="23" width="525" height="16"/>
+				<textElement textAlignment="Left" markup="styled">
+					<font fontName="Times New Roman" size="12" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Atas nama SMiLe, kami mengucapkan terima kasih dan selamat menikmati manfaat- manfaat yang ditawarkan dengan bergabung menjadi keluarga SMiLe.\n\n"+
+
+"Stable Save adalah salah satu produk dari SMiLe<style isItalic=\"true\" pdfFontName=\"Times-Italic\">“Insurance for your loved ones”</style>dengan manfaat Personal Accident, dimana saat ini tersedia program tambahan hadiah selain manfaat Personal Accident. \n\n"+
+
+"Bersama ini kami menyerahkan sebuah Polis Stable Save dengan No <style isBold=\"true\" pdfFontName=\"Times-Bold\">"+$P{REPORT_SCRIPTLET}.formatPolis($F{MSPO_POLICY_NO})+". </style>\n"+
+"<style isBold=\"true\" pdfFontName=\"Times-Bold\">"+$F{HADIAH}+"</style> sebagai hadiah dari SMiLe <style isItalic=\"true\" pdfFontName=\"Times-Italic\">“Insurance for your loved ones”</style>, akan kami kirimkan segera.\n\n"+
+
+"Suatu keputusan yang tepat dengan bergabung menjadi anggota keluarga SMiLe.\n\n"+
+
+"Salam\n\n"+
+
+"SMiLe\n"+
+"Insurance for your loved ones"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="72" width="525" height="16"/>
+				<textElement textAlignment="Left" markup="styled">
+					<font fontName="Times New Roman" size="12" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Dear "+$F{GELAR2}+",\n\n"+
+
+"On behalf of SMiLe,  we would like to say thank you and welcome then enjoy a lot of benefits by becoming SMiLe Family.\n\n"+
+
+"Stable Save is one of the products from SMiLe<style isItalic=\"true\" pdfFontName=\"Times-Italic\">“Insurance for your loved ones”</style>with Personal Accident cover, for now we give you a reward in addition of Personal Accident cover.\n\n"+
+
+"Herewith we attached Stable Save Policy with  No <style isBold=\"true\" pdfFontName=\"Times-Bold\">"+$P{REPORT_SCRIPTLET}.formatPolis($F{MSPO_POLICY_NO})+"</style>. \n"+
+"<style isBold=\"true\" pdfFontName=\"Times-Bold\">"+$F{HADIAH}+"</style> as Your Reward from SMiLe <style isItalic=\"true\" pdfFontName=\"Times-Italic\">“Insurance for your loved ones”</style> will be delivered soon.\n\n"+
+
+"You do the Right things with becoming a member of SMiLe Family.\n\n"+
+
+"Best Regards,\n\n"+
+
+"SMiLe\n"+
+"Insurance for your loved ones"]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement positionType="Float" x="0" y="55" width="525" height="1"/>
+				<graphicElement>
+					<pen lineStyle="Dashed"/>
+				</graphicElement>
+			</line>
+		</band>
+	</detail>
+</jasperReport>

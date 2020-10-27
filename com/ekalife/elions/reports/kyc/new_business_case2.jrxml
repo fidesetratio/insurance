@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="new_business_case2" pageWidth="1191" pageHeight="842" orientation="Landscape" columnWidth="1151" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="3"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="3"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<property name="com.jasperassistant.designer.HGuides" value="107,112,241,389,453,509,567,570,662,790,867,872,932,939,1001,1006,1073,1077"/>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="tanggalAwal" class="java.util.Date"/>
+	<parameter name="tanggalAkhir" class="java.util.Date"/>
+	<queryString>
+		<![CDATA[SELECT i.mssur_tgl_input,rownum,b.mste_kyc_result kycResult,h.jmlh_tu, h.total_tu, a.reg_spaj, a.mspo_policy_no_format,
+		       d.mcl_first pemegang, e.mcl_first tertanggung, b.mste_beg_date,
+		       f.lsdbs_name, g.lku_symbol,
+		       (c.mspr_premium - c.mspr_discount) premi_pokok, '' topup,
+		       DECODE (a.lscb_id, 6, 'M', 1, 'Q', 2, 'SA', 3, 'A', 'SP') frek,
+		       d.mpn_job_desc, d.mkl_kerja, d.mkl_industri, d.mkl_penghasilan,
+		       d.mkl_pendanaan, d.mkl_tujuan
+		  FROM eka.mst_policy a,
+		       eka.mst_insured b,
+		       eka.mst_product_insured c,
+		       eka.mst_client_new d,
+		       eka.mst_client_new e,
+		       eka.lst_det_bisnis f,
+		       eka.lst_kurs g,
+		       (SELECT   a.reg_spaj, COUNT (*) jmlh_tu, SUM (mu_jlh_premi) total_tu
+		            FROM eka.mst_ulink a, eka.lst_transaksi b
+		           WHERE a.lt_id = b.lt_id
+		             AND a.mu_tgl_trans = (SELECT mu_tgl_trans
+		                                     FROM eka.mst_ulink
+		                                    WHERE reg_spaj = a.reg_spaj AND mu_ke = 1)
+		             AND a.lt_id IN (2, 5)
+		        GROUP BY a.reg_spaj) h,
+			eka.mst_surrender i
+		 WHERE a.lstb_id = 1
+		   and i.mssur_tgl_input >= $P{tanggalAwal}
+		   and i.mssur_tgl_input  <= $P{tanggalAkhir}
+		   and a.reg_spaj=i.reg_spaj 
+		   AND a.reg_spaj = b.reg_spaj
+		   AND a.reg_spaj = c.reg_spaj
+		   AND a.mspo_policy_holder = d.mcl_id
+		   AND b.mste_insured = e.mcl_id
+		   AND c.lsbs_id = f.lsbs_id
+		   AND c.lsdbs_number = f.lsdbs_number
+		   AND a.lku_id = g.lku_id
+		   AND a.reg_spaj = h.reg_spaj
+		   and c.lsbs_id<300
+		   and rownum=1]]>
+	</queryString>
+	<field name="frek" class="java.lang.String"/>
+	<field name="jmlh_tu" class="java.math.BigDecimal"/>
+	<field name="kycResult" class="java.lang.String"/>
+	<field name="lku_symbol" class="java.lang.String"/>
+	<field name="lsdbs_name" class="java.lang.String"/>
+	<field name="mkl_industri" class="java.lang.String"/>
+	<field name="mkl_kerja" class="java.lang.String"/>
+	<field name="mkl_pendanaan" class="java.lang.String"/>
+	<field name="mkl_penghasilan" class="java.lang.String"/>
+	<field name="mkl_tujuan" class="java.lang.String"/>
+	<field name="mpn_job_desc" class="java.lang.String"/>
+	<field name="mspo_policy_no_format" class="java.lang.String"/>
+	<field name="mste_beg_date" class="java.util.Date"/>
+	<field name="pemegang" class="java.lang.String"/>
+	<field name="premi_pokok" class="java.lang.Double"/>
+	<field name="reg_spaj" class="java.lang.String"/>
+	<field name="tertanggung" class="java.lang.String"/>
+	<field name="topup" class="java.lang.String"/>
+	<field name="total_tu" class="java.math.BigDecimal"/>
+	<field name="jns_transaksi" class="java.lang.Integer"/>
+	<field name="mssur_tgl_input" class="java.util.Date"/>
+	<variable name="Variable_1" class="java.lang.String"/>
+	<title>
+		<band height="70">
+			<image>
+				<reportElement x="0" y="0" width="120" height="32"/>
+				<graphicElement/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.ekalife")]]></imageExpression>
+			</image>
+			<textField isBlankWhenNull="true">
+				<reportElement x="126" y="35" width="436" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Daily Monitoring  KYC - Putus Kontrak / Redemption / NT"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="110" y="50" width="12" height="13"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="36" width="108" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Laporan"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="110" y="35" width="12" height="13"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy">
+				<reportElement x="228" y="49" width="88" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$P{tanggalAkhir}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy">
+				<reportElement x="126" y="49" width="73" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$P{tanggalAwal}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="201" y="49" width="22" height="13"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["s/d"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="51" width="108" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tanggal Terima SPAJ"]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="82">
+			<frame>
+				<reportElement x="0" y="24" width="1147" height="58"/>
+				<box border="1Point" padding="0"/>
+				<staticText>
+					<reportElement x="3" y="3" width="25" height="52"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[No.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="32" y="3" width="74" height="52"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[No.Register]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="118" y="3" width="114" height="52"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[Pemegang Polis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="241" y="3" width="141" height="52"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[Tertanggung]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="389" y="3" width="53" height="52"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[Efektif Polis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="570" y="3" width="82" height="52"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[Produk]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="657" y="3" width="91" height="52"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[Jumlah Premi Pertama]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="753" y="2" width="28" height="55"/>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[Frek.bayar (M/Q/SA/A)
+
+]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="795" y="3" width="61" height="52"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[Pekerjaan]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="867" y="3" width="55" height="52"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[Bidang Usaha]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="939" y="3" width="52" height="52"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[Penghasilan
+/thn]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1001" y="3" width="62" height="52"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[Sumber Dana]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1070" y="3" width="67" height="52"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[Tujuan Beli Asuransi]]></text>
+				</staticText>
+				<line>
+					<reportElement x="30" y="0" width="1" height="58"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="113" y="0" width="1" height="58"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="235" y="0" width="1" height="58"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="565" y="0" width="1" height="58"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="750" y="0" width="1" height="58"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="784" y="0" width="1" height="58"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="860" y="0" width="1" height="58"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="925" y="0" width="1" height="58"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="995" y="0" width="1" height="58"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="1065" y="0" width="1" height="58"/>
+					<graphicElement/>
+				</line>
+				<staticText>
+					<reportElement x="447" y="3" width="55" height="52"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[Jenis Transaksi]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="509" y="3" width="53" height="52"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[Tanggal transaksi]]></text>
+				</staticText>
+				<line>
+					<reportElement x="385" y="0" width="1" height="58"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="445" y="0" width="1" height="58"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="505" y="0" width="1" height="58"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="655" y="0" width="1" height="58"/>
+					<graphicElement/>
+				</line>
+			</frame>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="37">
+			<textField isBlankWhenNull="true">
+				<reportElement x="3" y="0" width="25" height="35"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="33" y="0" width="70" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{reg_spaj}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="114" y="0" width="118" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{pemegang}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="238" y="0" width="145" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{tertanggung}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="389" y="0" width="53" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{mste_beg_date}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="568" y="0" width="85" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{lsdbs_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="752" y="0" width="33" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{frek}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="788" y="0" width="70" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{mkl_kerja}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="863" y="0" width="60" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{mkl_industri}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="927" y="0" width="66" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{mkl_penghasilan}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="997" y="0" width="66" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{mkl_pendanaan}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1067" y="2" width="77" height="33"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{mkl_tujuan}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;(¤#,##0.00)">
+				<reportElement x="658" y="0" width="90" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{premi_pokok}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="0" width="1" height="36"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="0" y="35" width="1145" height="1"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="1146" y="0" width="1" height="36"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="1065" y="0" width="1" height="36"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="995" y="0" width="1" height="36"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="925" y="0" width="1" height="36"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="860" y="0" width="1" height="36"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="750" y="0" width="1" height="36"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="785" y="0" width="1" height="36"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="655" y="0" width="1" height="36"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="565" y="0" width="1" height="36"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="444" y="0" width="1" height="36"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="385" y="0" width="1" height="36"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="235" y="0" width="1" height="36"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="30" y="0" width="1" height="36"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="505" y="0" width="1" height="36"/>
+				<graphicElement/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="455" y="0" width="48" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{jns_transaksi}.intValue()==1)?
+	("NT/PK")
+:($F{jns_transaksi}.intValue()==2)?
+	("RD All")
+:($F{jns_transaksi}.intValue()==3)?
+	("RD")
+:
+	("NB")]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="508" y="0" width="54" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{mssur_tgl_input}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="112" y="0" width="1" height="36"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="13">
+			<textField>
+				<reportElement positionType="Float" x="3" y="3" width="660" height="10"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["*Polis diatas adalah polis dengan pembayaran premi > 100 juta, termasuk Top-Up (Jika ada)."]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band height="10">
+			<textField>
+				<reportElement positionType="Float" x="971" y="0" width="141" height="10"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement positionType="Float" x="1116" y="0" width="25" height="10" isPrintWhenDetailOverflows="true"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="27"/>
+	</summary>
+</jasperReport>

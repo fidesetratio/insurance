@@ -1,0 +1,666 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="surat_konfirmasi_pemulihan_polis" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="85" bottomMargin="10" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<property name="com.jasperassistant.designer.HGuides" value="11,27,51,76,213,226,305,420,546"/>
+	<parameter name="nospaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["0031491"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="stamp" class="java.lang.String">
+		<defaultValueExpression><![CDATA["1.26"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="reinsno" class="java.lang.String">
+		<defaultValueExpression><![CDATA["1220102167"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="rachel" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.rachel")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="annalisa" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.annalisa")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT SYSDATE tanggal,a.reg_spaj,d.msrt_reinstate_no,d.msrt_tanggal_aju,a.mspo_policy_no,a.mspo_policy_no_format,
+e.msur_tanggal_acc,e.msur_akhir_prm_bayar,e.msur_awal_prm_bayar,
+e.msur_awal_prm_upaid,e.msur_akhir_prm_upaid, h.lku_symbol,d.msrt_tsi,
+c1.mcl_first nama_pp, d.msrt_umur_policy_hld umur_pp,c2.mcl_first nama_tt,
+d.msrt_umur_insured umur_tt,e.msur_accept,e.msur_accept_note,
+e.msur_kondisi_note,e.msur_kondisi_polis ,e.msur_total_unbayar,e.msur_tgl_batas_paid,e.msur_total_bunga_unbayar,
+(1 + e.msur_tgl_batas_paid -e.msur_awal_prm_upaid) lama_tunggak,f.msap_address,f.msap_zip_code,g.lska_note,
+(                SELECT nvl(msbi_stamp, 0) stamp
+                  FROM eka.mst_billing
+                 WHERE eka.mst_billing.reg_spaj = rpad(replace(a.reg_spaj,'.'),11,' ') 
+                   AND eka.mst_billing.msbi_tahun_ke =
+                                             (SELECT MAX (eka.mst_billing.msbi_tahun_ke)
+                                                FROM eka.mst_billing
+                                               WHERE eka.mst_billing.reg_spaj = rpad(replace(a.reg_spaj,'.'),11,' ') )
+                   AND eka.mst_billing.msbi_premi_ke =
+                           (SELECT MAX (eka.mst_billing.msbi_premi_ke)
+                              FROM eka.mst_billing
+                             WHERE (eka.mst_billing.reg_spaj = rpad(replace(a.reg_spaj,'.'),11,' ') )
+                               AND (eka.mst_billing.msbi_tahun_ke =
+                                             (SELECT MAX (eka.mst_billing.msbi_tahun_ke)
+                                                FROM eka.mst_billing
+                                               WHERE eka.mst_billing.reg_spaj = rpad(replace(a.reg_spaj,'.'),11,' ') )
+                                   ))
+                   AND eka.mst_billing.msbi_paid = 0
+                   AND eka.mst_billing.msbi_active = 1     
+) stamp,
+e.msrt_stamp_tunggak 
+FROM eka.mst_policy a,
+               eka.mst_insured b,
+              eka.mst_client_new c1,
+              eka.mst_client_new c2,
+              eka.mst_reinstate d,
+              eka.mst_uw_reinstate e,
+              eka.mst_address_billing f,
+              eka.lst_kabupaten g,
+              eka.lst_kurs h
+WHERE a.reg_spaj=b.reg_spaj AND
+                    a.mspo_policy_holder=c1.mcl_id AND
+                    b.mste_insured=c2.mcl_id AND
+                  a.reg_spaj=d.reg_spaj AND
+                  a.reg_spaj=e.reg_spaj AND
+                  a.reg_spaj=f.reg_spaj AND 
+                  d.msrt_reinstate_no=e.msrt_reinstate_no AND
+                  f.lska_id=g.lska_id  (+) AND
+                  d.lku_id=h.lku_id AND
+                  a.reg_spaj=RPAD(REPLACE($P{nospaj},'.'),11,' ')  AND
+                  a.lstb_id=1 AND
+                  b.mste_insured_no=1
+                  AND d.msrt_reinstate_no = RPAD(REPLACE($P{reinsno},'.'),11,' ')]]>
+	</queryString>
+	<field name="LAMA_TUNGGAK" class="java.math.BigDecimal"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSKA_NOTE" class="java.lang.String"/>
+	<field name="MSAP_ADDRESS" class="java.lang.String"/>
+	<field name="MSAP_ZIP_CODE" class="java.lang.String"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSPO_POLICY_NO_FORMAT" class="java.lang.String"/>
+	<field name="MSRT_REINSTATE_NO" class="java.lang.String"/>
+	<field name="MSRT_TANGGAL_AJU" class="java.util.Date"/>
+	<field name="MSRT_TSI" class="java.math.BigDecimal"/>
+	<field name="MSUR_ACCEPT" class="java.math.BigDecimal"/>
+	<field name="MSUR_ACCEPT_NOTE" class="java.lang.String"/>
+	<field name="MSUR_AKHIR_PRM_BAYAR" class="java.util.Date"/>
+	<field name="MSUR_AKHIR_PRM_UPAID" class="java.util.Date"/>
+	<field name="MSUR_AWAL_PRM_BAYAR" class="java.util.Date"/>
+	<field name="MSUR_AWAL_PRM_UPAID" class="java.util.Date"/>
+	<field name="MSUR_KONDISI_NOTE" class="java.lang.String"/>
+	<field name="MSUR_KONDISI_POLIS" class="java.math.BigDecimal"/>
+	<field name="MSUR_TANGGAL_ACC" class="java.util.Date"/>
+	<field name="MSUR_TGL_BATAS_PAID" class="java.util.Date"/>
+	<field name="MSUR_TOTAL_BUNGA_UNBAYAR" class="java.math.BigDecimal"/>
+	<field name="MSUR_TOTAL_UNBAYAR" class="java.math.BigDecimal"/>
+	<field name="NAMA_PP" class="java.lang.String"/>
+	<field name="NAMA_TT" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="UMUR_PP" class="java.math.BigDecimal"/>
+	<field name="UMUR_TT" class="java.math.BigDecimal"/>
+	<field name="STAMP" class="java.math.BigDecimal"/>
+	<field name="MSRT_STAMP_TUNGGAK" class="java.math.BigDecimal"/>
+	<variable name="awalPremi" class="java.lang.String">
+		<variableExpression><![CDATA[($F{MSUR_AWAL_PRM_BAYAR}==null)?
+	"------"
+: ""+$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSUR_AWAL_PRM_BAYAR})]]></variableExpression>
+	</variable>
+	<variable name="akhirPremi" class="java.lang.String">
+		<variableExpression><![CDATA[($F{MSUR_AKHIR_PRM_BAYAR}==null)?
+	"------"
+: ""+$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSUR_AKHIR_PRM_BAYAR})]]></variableExpression>
+	</variable>
+	<variable name="awalTunggak" class="java.lang.String">
+		<variableExpression><![CDATA[($F{MSUR_AWAL_PRM_UPAID}==null)?
+	"------"
+: ""+$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSUR_AWAL_PRM_UPAID})]]></variableExpression>
+	</variable>
+	<variable name="akhirTunggak" class="java.lang.String">
+		<variableExpression><![CDATA[($F{MSUR_AKHIR_PRM_UPAID}==null)?
+	"------"
+: ""+$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSUR_AKHIR_PRM_UPAID})]]></variableExpression>
+	</variable>
+	<variable name="batasPaid" class="java.lang.String">
+		<variableExpression><![CDATA[($F{MSUR_TGL_BATAS_PAID}==null)?
+	"------"
+: ""+$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSUR_TGL_BATAS_PAID})]]></variableExpression>
+	</variable>
+	<variable name="totalByr" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal($F{MSUR_TOTAL_UNBAYAR}.doubleValue() 
++ $F{MSUR_TOTAL_BUNGA_UNBAYAR}.doubleValue() 
++ 
+//(new Double($P{stamp})).doubleValue()
+//$F{STAMP}.doubleValue()
+$F{MSRT_STAMP_TUNGGAK}.doubleValue()
+)]]></variableExpression>
+	</variable>
+	<title>
+		<band height="96">
+			<staticText>
+				<reportElement x="11" y="20" width="198" height="15"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Kepada Yth,]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement mode="Transparent" x="11" y="35" width="334" height="15" forecolor="#000000" backcolor="#FFFFFF"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Bapak/Ibu "+$F{NAMA_PP}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement mode="Transparent" x="11" y="50" width="410" height="45" forecolor="#000000" backcolor="#FFFFFF"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSAP_ADDRESS} +"\n"+
+($F{LSKA_NOTE} == null ? "" : $F{LSKA_NOTE}) + 
+($F{MSAP_ZIP_CODE} == null ? "" : (" - " + $F{MSAP_ZIP_CODE}))]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="313">
+			<staticText>
+				<reportElement x="0" y="4" width="557" height="26"/>
+				<box padding="0">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="SansSerif" size="14" isBold="true" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[KONFIRMASI PEMULIHAN POLIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="76" y="65" width="121" height="18"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[No. Registrasi ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="17" y="29" width="526" height="28"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Menunjuk Pengajuan Permohonan Pemulihan Polis yang telah Bapak / Ibu kirimkan ke PT Asuransi Jiwa SINARMAS MSIG Tbk. dengan data-data sebagai berikut : ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="76" y="83" width="121" height="18"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Tgl. Pengajuan ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="76" y="101" width="121" height="18"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[No. Polis ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="76" y="119" width="121" height="18"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Mulai Berlaku Polis ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="76" y="137" width="121" height="18"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Uang Pertanggungan ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="76" y="155" width="121" height="18"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Nama Pemegang Polis ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="76" y="173" width="121" height="18"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Umur Pemegang Polis  ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="76" y="191" width="121" height="18"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Nama Tertanggung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="76" y="209" width="121" height="18"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Umur Tertanggung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="213" y="65" width="13" height="18"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="213" y="83" width="13" height="18"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="213" y="101" width="13" height="18"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="213" y="155" width="13" height="18"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="213" y="137" width="13" height="18"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="213" y="119" width="13" height="18"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="213" y="209" width="13" height="18"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="213" y="191" width="13" height="18"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="213" y="173" width="13" height="18"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="11" y="230" width="526" height="31"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Maka dengan ini PT Asuransi Jiwa SINARMAS MSIG Tbk. memutuskan bahwa Pemulihan Polis yang telah Bapak / Ibu ajukan :]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="226" y="65" width="193" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatSPAJ($F{MSRT_REINSTATE_NO})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="226" y="101" width="193" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_POLICY_NO_FORMAT}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="226" y="83" width="193" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSRT_TANGGAL_AJU})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="226" y="119" width="193" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSUR_AWAL_PRM_BAYAR})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="226" y="137" width="20" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="226" y="155" width="321" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PP}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="226" y="173" width="103" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{UMUR_PP}+" Tahun"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="226" y="209" width="106" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{UMUR_TT}+" Tahun"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="226" y="191" width="321" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_TT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" hyperlinkType="None">
+				<reportElement x="246" y="137" width="173" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSRT_TSI}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement x="51" y="259" width="487" height="45"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[( $F{MSUR_ACCEPT}.intValue()== 1)?
+	 "-Diterima efektif sejak tanggal "+ $P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSUR_TANGGAL_ACC}) + " dengan kondisi sebagai berikut : " 
+:	 "-Ditolak karena \n" +$F{MSUR_ACCEPT_NOTE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement x="51" y="271" width="488" height="32"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{MSUR_ACCEPT}.intValue()== 1)?
+( $F{MSUR_ACCEPT}.intValue()== 1 && $F{MSUR_KONDISI_POLIS}.intValue()==1)?
+	"Dengan kondisi khusus : "+$F{MSUR_KONDISI_NOTE}
+: "Sesuai dengan kondisi polis semula. "
+:""]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="11" y="307" width="537" height="2"/>
+			</line>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="313">
+			<textField hyperlinkType="None">
+				<reportElement x="318" y="115" width="21" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="51" y="76" width="255" height="16" forecolor="#000000"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["- Total bunga tertunggak s/d "+$V{batasPaid}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="28" y="246" width="186" height="16" forecolor="#000000"/>
+				<textElement textAlignment="Left">
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("printing.jabatanNBUW")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="51" y="61" width="191" height="16"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[- Total premi yang tertunggak ]]></text>
+			</staticText>
+			<textField pattern="#,##0.00" hyperlinkType="None">
+				<reportElement x="340" y="60" width="81" height="16"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSUR_TOTAL_UNBAYAR}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="27" y="60" width="23" height="16"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[d.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="51" y="32" width="191" height="16"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Periode premi yang masih tertunggak]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="319" y="46" width="71" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LAMA_TUNGGAK}+" Hari"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="319" y="18" width="228" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{awalPremi}+" s/d "+$V{akhirPremi}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="25" y="244" width="165" height="1"/>
+			</line>
+			<staticText>
+				<reportElement x="27" y="45" width="23" height="16"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[c.]]></text>
+			</staticText>
+			<textField pattern="#,##0.00" hyperlinkType="None">
+				<reportElement x="337" y="115" width="83" height="16"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{totalByr}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="27" y="-4" width="159" height="21"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isBold="true" isItalic="true" isUnderline="true" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Asumsi Perhitungan Premi ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="27" y="18" width="23" height="16"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[a.]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="25" y="141" width="191" height="22" forecolor="#000000"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Jakarta, "+$P{REPORT_SCRIPTLET}.formatDateIndonesian(new Date())]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="305" y="32" width="15" height="16"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField pattern="#,##0.00" hyperlinkType="None">
+				<reportElement x="340" y="76" width="82" height="16"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSUR_TOTAL_BUNGA_UNBAYAR}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="374" y="246" width="150" height="16" forecolor="#000000"/>
+				<textElement textAlignment="Left">
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("printing.jabatanPASCLaim")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="305" y="115" width="15" height="16"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="25" y="164" width="202" height="30" forecolor="#000000"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Hormat kami,
+PT Asuransi Jiwa SINARMAS MSIG Tbk.]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="374" y="229" width="142" height="16"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["(" +$P{REPORT_SCRIPTLET}.getProperty("printing.namaUnderwriter")+" )"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="305" y="18" width="15" height="16"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<line>
+				<reportElement x="305" y="112" width="135" height="1"/>
+			</line>
+			<textField hyperlinkType="None">
+				<reportElement x="28" y="229" width="115" height="16" forecolor="#000000"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("printing.namaNBUW")]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="319" y="60" width="21" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="368" y="244" width="120" height="1"/>
+			</line>
+			<textField hyperlinkType="None">
+				<reportElement x="27" y="285" width="488" height="28" forecolor="#000000"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["- Premi dan bunga tertunggak yang dibebankan sesuai dengan asumsi tgl pembayaran."
+/*"- Perincian diatas belum termasuk biaya materai sebesar  "+	$F{LKU_SYMBOL} +$P{stamp}*/
+/*'Pembayaran premi berikut bunga tunggakan harus cair sebelum tanggal : '+ batas_date +'.'+' Setelah tanggal tersebut diatas perincian premi berikut bunga tunggakan dinyatakan tidak berlaku lagi dan bunga akan diperhitungkan kembali. */]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="27" y="32" width="23" height="16"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[b.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="51" y="115" width="191" height="16"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[* Total premi + bunga tertunggak ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="51" y="46" width="191" height="16"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Lamanya premi tertunggak ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="305" y="76" width="15" height="16"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="27" y="269" width="68" height="16"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[* Catatan : ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="51" y="18" width="228" height="16"/>
+				<textElement>
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Periode waktu premi yang telah dibayar ]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="318" y="32" width="229" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{awalTunggak}+" s/d "+$V{akhirTunggak}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="319" y="76" width="21" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="305" y="46" width="15" height="16"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="305" y="60" width="15" height="16"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="319" y="92" width="21" height="16"/>
+				<textElement markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="305" y="92" width="15" height="16"/>
+				<textElement>
+					<font fontName="sansserif" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="51" y="92" width="255" height="16" forecolor="#000000"/>
+				<textElement markup="none">
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["- Materai"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="425" y="92" width="19" height="16"/>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[+]]></text>
+			</staticText>
+			<textField pattern="#,##0.00" hyperlinkType="None">
+				<reportElement x="339" y="92" width="82" height="16"/>
+				<textElement textAlignment="Right" markup="none"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSRT_STAMP_TUNGGAK}]]></textFieldExpression>
+			</textField>
+			<image hyperlinkType="None">
+				<reportElement positionType="Float" x="26" y="192" width="188" height="36"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.nbuw")]]></imageExpression>
+			</image>
+			<image hyperlinkType="None">
+				<reportElement positionType="Float" x="374" y="197" width="81" height="37"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.ingrid")]]></imageExpression>
+			</image>
+		</band>
+	</detail>
+</jasperReport>

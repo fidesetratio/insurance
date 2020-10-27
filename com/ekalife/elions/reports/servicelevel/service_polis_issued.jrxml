@@ -1,0 +1,606 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="service_polis_issued" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="3"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="3"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<parameter name="props" class="java.lang.String"/>
+	<parameter name="user_id" class="java.lang.String"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("08/08/2008")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("05/09/2008")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT dist, reg_spaj, lsdbs_name, mste_tgl_terima_spaj, mste_tgl_spaj_doc, mste_tgl_aksep, mspo_date_print, mste_tgl_kirim_polis, lsrg_nama, 
+(case when lama_proses_nab <= 0 then 1 else lama_proses_nab end) lama_proses_nab,
+lama_proses_nab1, lama_pending, sysdate, lsbs_id, lsdbs_number, lca_id, flag_ws  FROM (
+SELECT   decode(b.lca_id,'09','Bancassurance','08','Worksite','42','Worksite',decode(g.lsgb_id,17,'Agency (UNIT LINK)', 'Agency')) dist,
+		b.reg_spaj, 
+		 (case 
+		 when h.jn_bank = 2 and c.lsbs_id = 142 and c.lsdbs_number = 2 then 'SIMAS PRIMA'
+		 when h.jn_bank = 2 and c.lsbs_id = 158 and c.lsdbs_number = 6 then 'SIMAS PRIMA MANFAAT BULANAN'
+		when h.jn_bank = 2 and c.lsbs_id = 175 and c.lsdbs_number = 2 then 'SIMAS PRIMA SYARIAH'
+		 else d.lsdbs_name
+		 end) lsdbs_name,
+a.mste_tgl_terima_spaj,
+         a.mste_tgl_spaj_doc, a.mste_tgl_aksep, b.mspo_date_print,
+         a.mste_tgl_kirim_polis, e.lsrg_nama,
+			(SELECT eka.workdays (
+				(CASE WHEN a.mste_tgl_spaj_doc is null THEN a.mste_tgl_spaj_doc WHEN a.mste_tgl_spaj_doc >= to_date(to_char(mste_tgl_spaj_doc,'dd/mm/yyyy')||' 12:00:00','dd/mm/yyyy hh24:mi:ss') THEN a.mste_tgl_spaj_doc+1 ELSE a.mste_tgl_spaj_doc END), 
+				(CASE WHEN h.jn_bank=2 THEN a.mste_tgl_aksep ELSE nvl(a.mste_tgl_valid_print, a.mste_tgl_kirim_polis) END)) 
+			FROM DUAL) lama_proses_nab,
+         (SELECT eka.workdays (b.mspo_next_bill, (CASE WHEN h.jn_bank=2 THEN a.mste_tgl_aksep ELSE nvl(a.mste_tgl_valid_print, a.mste_tgl_kirim_polis) END)) FROM DUAL) lama_proses_nab1,
+         (SELECT eka.workdays (a.mste_tgl_terima_spaj, SYSDATE) FROM DUAL) lama_pending, 
+		 SYSDATE, d.lsbs_id, d.lsdbs_number,
+         b.lca_id, DECODE (b.lca_id, '42', 1, 0) flag_ws
+    FROM eka.mst_insured a,
+         eka.mst_policy b,
+         eka.mst_product_insured c,
+         eka.lst_det_bisnis d,
+         eka.lst_region e, 
+eka.lst_bisnis g,
+eka.lst_user h
+   WHERE b.reg_spaj = a.reg_spaj
+     AND a.reg_spaj = c.reg_spaj
+     AND a.mste_insured_no = c.mste_insured_no
+     AND d.lsbs_id = c.lsbs_id
+     AND d.lsdbs_number = c.lsdbs_number
+     AND e.lca_id = b.lca_id
+     AND e.lwk_id = b.lwk_id
+     AND e.lsrg_id = b.lsrg_id
+     AND c.lsbs_id < 300
+     AND (a.mste_tgl_aksep BETWEEN $P{tanggalAwal} AND $P{tanggalAkhir})
+     AND b.lstb_id = 1
+     AND a.mste_tgl_kirim_polis IS NOT NULL
+	AND c.lsbs_id = g.lsbs_id
+and b.lus_id = h.lus_id
+ORDER BY decode(b.lca_id,'09','Bancassurance','08','Worksite','42','Worksite','Agency-Regional'), 
+	 (case 
+	 when h.jn_bank = 2 and c.lsbs_id = 142 and c.lsdbs_number = 2 then 'SIMAS PRIMA'
+	 when h.jn_bank = 2 and c.lsbs_id = 158 and c.lsdbs_number = 6 then 'SIMAS PRIMA MANFAAT BULANAN'
+	when h.jn_bank = 2 and c.lsbs_id = 175 and c.lsdbs_number = 2 then 'SIMAS PRIMA SYARIAH'
+	 else d.lsdbs_name
+	 end),
+	 b.reg_spaj)]]>
+	</queryString>
+	<field name="DIST" class="java.lang.String"/>
+	<field name="FLAG_WS" class="java.math.BigDecimal"/>
+	<field name="LAMA_PENDING" class="java.math.BigDecimal"/>
+	<field name="LAMA_PROSES_NAB" class="java.math.BigDecimal"/>
+	<field name="LAMA_PROSES_NAB1" class="java.math.BigDecimal"/>
+	<field name="LCA_ID" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="LSRG_NAMA" class="java.lang.String"/>
+	<field name="MSPO_DATE_PRINT" class="java.sql.Timestamp"/>
+	<field name="MSTE_TGL_AKSEP" class="java.sql.Timestamp"/>
+	<field name="MSTE_TGL_KIRIM_POLIS" class="java.sql.Timestamp"/>
+	<field name="MSTE_TGL_SPAJ_DOC" class="java.sql.Timestamp"/>
+	<field name="MSTE_TGL_TERIMA_SPAJ" class="java.sql.Timestamp"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="SYSDATE" class="java.sql.Timestamp"/>
+	<variable name="indikator_link" class="java.lang.String">
+		<variableExpression><![CDATA[$P{REPORT_SCRIPTLET}.isUnitLink($F{LSBS_ID}.toString())]]></variableExpression>
+	</variable>
+	<variable name="warna1" class="java.lang.String">
+		<variableExpression><![CDATA[$V{indikator_link}.equals("1") ? 
+ ($V{proses_nab_link}.equals("0")  ?  "0" : "1")
+ :
+ ($V{proses_nab_nonlink}.equals("1")  ?  "1" : "0")]]></variableExpression>
+	</variable>
+	<variable name="proses_nab_link" class="java.lang.String">
+		<variableExpression><![CDATA[$V{lama_proses} != null ? ($V{lama_proses}.intValue() > 2 ? "1" : "0" ) : "0"]]></variableExpression>
+	</variable>
+	<variable name="proses_nab_nonlink" class="java.lang.String">
+		<variableExpression><![CDATA[$V{lama_proses} != null ? ($V{lama_proses}.intValue() > 1 ? "1" : "0" ) : "0"]]></variableExpression>
+	</variable>
+	<variable name="warna" class="java.lang.String">
+		<variableExpression><![CDATA[$V{indikator_link}.equals("1") ? 
+ ($V{proses_nab_link}.equals("0")  ?  "0" : "1")
+ :
+ ($V{proses_nab_nonlink}.equals("1")  ?  "1" : "0")]]></variableExpression>
+	</variable>
+	<variable name="nab_ws" class="java.lang.Integer">
+		<variableExpression><![CDATA[$F{LAMA_PROSES_NAB1} == null ?  new Integer(0) :
+ ( $F{LAMA_PROSES_NAB1}.intValue() < 0  ? new Integer(0) :  new Integer($F{LAMA_PROSES_NAB1}.intValue()) )]]></variableExpression>
+	</variable>
+	<variable name="lama_proses" class="java.lang.Integer">
+		<variableExpression><![CDATA[$F{FLAG_WS}.intValue() == 1 ?
+(
+	$V{nab_ws}.intValue() ==0 ? new Integer($F{LAMA_PROSES_NAB}.intValue()) :
+		( $V{nab_ws}.intValue() < $F{LAMA_PROSES_NAB}.intValue() ? new Integer($V{nab_ws}.intValue()) : new Integer($F{LAMA_PROSES_NAB}.intValue())  )	
+ )	 : new Integer($F{LAMA_PROSES_NAB}.intValue())]]></variableExpression>
+	</variable>
+	<group name="Group_1" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{DIST}]]></groupExpression>
+		<groupHeader>
+			<band height="13">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="0" y="0" width="405" height="13" isPrintWhenDetailOverflows="true" forecolor="#000000"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Arial" size="9" isItalic="true" isUnderline="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{DIST}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<title>
+		<band height="27">
+			<staticText>
+				<reportElement x="0" y="6" width="802" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="12" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[SERVICE LEVEL (SL)  POLICY ISSUE]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="83">
+			<staticText>
+				<reportElement x="0" y="0" width="99" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PERIODE :]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="99" y="0" width="460" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($P{tanggalAwal})
++ " s/d " + 
+$P{REPORT_SCRIPTLET}.formatDateIndonesian($P{tanggalAkhir})
++ " (Tanggal Akseptasi) "]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="12" width="99" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SERVICE LEVEL :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="99" y="12" width="96" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Link         :   2 hari]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="99" y="24" width="96" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Non Link :   1 hari]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="99" y="36" width="459" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[Lama Proses NB : jumlah hari kerja sejak SPAJ lengkap s/d tgl.polis dikirim ke GA / Branch Admin]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="99" y="48" width="459" height="27"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[Khusus WS -Lama proses NB : jumlah hari kerja sejak SPAJ lengkap dan premi  sdh dibayar,
+ mana yang terakhir  s/d  tgl. Polis dikirim ke GA/BA																														]]></text>
+			</staticText>
+			<elementGroup/>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="23">
+			<staticText>
+				<reportElement x="0" y="1" width="24" height="21" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="24" y="1" width="165" height="21" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[BRANCH]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="189" y="1" width="75" height="21" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO. SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="264" y="1" width="192" height="21" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NAMA PRODUK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="456" y="1" width="90" height="21" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TANGGAL
+TERIMA SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="546" y="1" width="90" height="21" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TANGGAL
+SPAJ LENGKAP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="636" y="1" width="90" height="21" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TANGGAL
+POLIS DIKIRIM]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="726" y="1" width="75" height="21" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[LAMA PROSES (hk)]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="22" width="802" height="1"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="0" y="0" width="802" height="1"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="14">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="264" y="0" width="192" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() > 2)
+:
+new Boolean($V{lama_proses}.intValue() > 1)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="0" width="24" height="14" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() > 2)
+:
+new Boolean($V{lama_proses}.intValue() > 1)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement x="456" y="0" width="90" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() > 2)
+:
+new Boolean($V{lama_proses}.intValue() > 1)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_TERIMA_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="189" y="0" width="75" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() > 2)
+:
+new Boolean($V{lama_proses}.intValue() > 1)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatSPAJ($F{REG_SPAJ})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="726" y="0" width="75" height="14" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() > 2)
+:
+new Boolean($V{lama_proses}.intValue() > 1)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{lama_proses}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement x="546" y="0" width="90" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() > 2)
+:
+new Boolean($V{lama_proses}.intValue() > 1)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_SPAJ_DOC}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement x="636" y="0" width="90" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() > 2)
+:
+new Boolean($V{lama_proses}.intValue() > 1)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_KIRIM_POLIS}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="24" y="0" width="165" height="14" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() > 2)
+:
+new Boolean($V{lama_proses}.intValue() > 1)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSRG_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="0" width="24" height="14">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() <= 2)
+:
+new Boolean($V{lama_proses}.intValue() <= 1)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="24" y="0" width="165" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() <= 2)
+:
+new Boolean($V{lama_proses}.intValue() <= 1)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSRG_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="189" y="0" width="75" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() <= 2)
+:
+new Boolean($V{lama_proses}.intValue() <= 1)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatSPAJ($F{REG_SPAJ})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="264" y="0" width="192" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() <= 2)
+:
+new Boolean($V{lama_proses}.intValue() <= 1)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="726" y="0" width="75" height="14">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() <= 2)
+:
+new Boolean($V{lama_proses}.intValue() <= 1)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{LAMA_PROSES_NAB}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement x="456" y="0" width="90" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() <= 2)
+:
+new Boolean($V{lama_proses}.intValue() <= 1)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_TERIMA_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement x="546" y="0" width="90" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() <= 2)
+:
+new Boolean($V{lama_proses}.intValue() <= 1)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_SPAJ_DOC}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement x="636" y="0" width="90" height="14" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$V{indikator_link}.equals("1") ?
+new Boolean($V{lama_proses}.intValue() <= 2)
+:
+new Boolean($V{lama_proses}.intValue() <= 1)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSTE_TGL_KIRIM_POLIS}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<lastPageFooter>
+		<band height="21">
+			<textField>
+				<reportElement x="3" y="6" width="749" height="14"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Printed date : "+$P{REPORT_SCRIPTLET}.formatDateWithTime(new Date()) +"  by User :  "+$P{user_id}]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="465">
+			<subreport>
+				<reportElement x="18" y="84" width="325" height="183"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_issued_agencyreg")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="459" y="84" width="325" height="183"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_issued_bancass")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="18" y="282" width="325" height="183"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_issued_worksite")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="459" y="282" width="325" height="183"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_issued")+".jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement x="0" y="0" width="99" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PERIODE :]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="99" y="0" width="460" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($P{tanggalAwal})
++ " s/d " + 
+$P{REPORT_SCRIPTLET}.formatDateIndonesian($P{tanggalAkhir})
++ " (Tanggal Akseptasi) "]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="99" y="48" width="459" height="27"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[Khusus WS -Lama proses NB : jumlah hari kerja sejak SPAJ lengkap dan premi  sdh dibayar,
+ mana yang terakhir  s/d  tgl. Polis dikirim ke GA/BA																														]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="99" y="24" width="96" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Non Link :   1 hari]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="99" y="12" width="96" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Link         :   2 hari]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="12" width="99" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SERVICE LEVEL :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="99" y="36" width="459" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[Lama Proses NB : jumlah hari kerja sejak SPAJ lengkap s/d tgl.polis dikirim ke GA / Branch Admin]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

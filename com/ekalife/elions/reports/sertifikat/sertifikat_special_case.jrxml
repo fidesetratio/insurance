@@ -1,0 +1,600 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="sertifikat_banksinarmas" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="4"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="4"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<property name="com.jasperassistant.designer.HGuides" value="32,400,768"/>
+	<import value="net.sf.jasperreports.engine.xml.JRXmlLoader"/>
+	<import value="com.ibatis.common.resources.Resources"/>
+	<import value="net.sf.jasperreports.engine.design.JRJdtCompiler"/>
+	<reportFont name="Tahoma" isDefault="false" fontName="Tahoma" size="9" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Tahoma" pdfEncoding="Cp1252" isPdfEmbedded="true"/>
+	<parameter name="spaj" class="java.lang.String">
+		<parameterDescription><![CDATA[Nomor SPAJ]]></parameterDescription>
+		<defaultValueExpression><![CDATA["01201701908"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="ingrid" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{props}.get("images.ttd.direksi")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="seri" class="java.lang.String"/>
+	<parameter name="meterai" class="java.lang.String"/>
+	<parameter name="izin" class="java.lang.String"/>
+	<parameter name="tipePolis" class="java.lang.String">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="info" class="java.lang.String"/>
+	<parameter name="logoQr" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{props}.get("logoQr")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Print" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{props}.get("Print")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select p.mspo_policy_no no_polis_induk,
+		p.mspo_policy_no,
+		p.mspo_spaj_date,
+	   (EXTRACT(YEAR FROM i.mste_beg_date) - EXTRACT(YEAR FROM tt.mspe_date_birth))  mste_age,
+		p.reg_spaj,
+     ((select upper(lti_note || ' ') from eka.lst_title where lti_id = pp.lti_id) || pp.mcl_first || decode(pp.mcl_gelar,null,'',', '||pp.mcl_gelar)) nama_pp, 
+     ((select upper(lti_note || ' ') from eka.lst_title where lti_id = tt.lti_id) || tt.mcl_first || decode(tt.mcl_gelar,null,'',', '||tt.mcl_gelar)) nama_tt,
+     (case when alamat_rumah is not null then (alamat_rumah) 
+    else (alamat_kantor)
+    end) alamat1,
+    (case when alamat_rumah is not null then (kota_rumah || ' ' || kd_pos_rumah) 
+    else (kota_kantor || ' ' || kd_pos_kantor)
+    end) alamat2,
+     (s.mss_premi+s.mss_bunga) nilai_tunai_pertama,
+     tt.mspe_date_birth,
+     c.lsbs_id,
+     c.mspr_tsi, c.mspr_premium,
+     (select lscb_pay_mode from eka.lst_pay_mode where lscb_id = p.lscb_id) cara_bayar,
+     
+     s.mss_rate mps_rate,
+     s.mss_rate mps_prm_interest,
+     s.mss_mgi mps_jangka_inv,
+     s.mss_bunga mps_prm_deposit,
+     (select LKU_SYMBOL from eka.lst_kurs where LKU_ID = p.lku_Id) LKU_SYMBOL,
+     i.mste_beg_date,
+      i.mste_end_date,
+      (EXTRACT(YEAR FROM i.mste_end_date) - EXTRACT(YEAR FROM i.mste_beg_date)) premiyear,
+      p.lku_id,
+      p.lscb_id,
+      c.lsdbs_number,
+      sysdate mps_batas_date
+      
+     from eka.mst_policy p,
+     eka.mst_client_new pp,
+     eka.mst_client_new tt,
+     eka.mst_insured i,
+     eka.mst_address_new o,
+     eka.mst_product_insured c,
+     eka.mst_ssave s
+     
+      where p.mspo_policy_holder = pp.mcl_id 
+       and
+       i.reg_spaj = p.reg_spaj
+       AND 
+       tt.mcl_id = i.mste_insured
+       and i.mste_insured = o.mcl_id
+       and c.reg_spaj = p.reg_spaj
+       and s.reg_spaj = p.reg_spaj
+       AND s.mss_kode = 5
+        
+      and 
+    p.reg_spaj = rpad($P{spaj},11,' ')]]>
+	</queryString>
+	<field name="ALAMAT1" class="java.lang.String"/>
+	<field name="CARA_BAYAR" class="java.lang.String"/>
+	<field name="ALAMAT2" class="java.lang.String"/>
+	<field name="LKU_ID" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSCB_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="MPS_BATAS_DATE" class="java.sql.Timestamp"/>
+	<field name="MPS_JANGKA_INV" class="java.math.BigDecimal"/>
+	<field name="NILAI_TUNAI_PERTAMA" class="java.math.BigDecimal"/>
+	<field name="MPS_PRM_INTEREST" class="java.math.BigDecimal"/>
+	<field name="MPS_RATE" class="java.math.BigDecimal"/>
+	<field name="MSPE_DATE_BIRTH" class="java.sql.Timestamp"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSPO_SPAJ_DATE" class="java.sql.Timestamp"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="MSPR_TSI" class="java.math.BigDecimal"/>
+	<field name="MSTE_AGE" class="java.math.BigDecimal"/>
+	<field name="PREMIYEAR" class="java.math.BigDecimal"/>
+	<field name="MSTE_BEG_DATE" class="java.sql.Timestamp"/>
+	<field name="MSTE_END_DATE" class="java.sql.Timestamp"/>
+	<field name="NAMA_PP" class="java.lang.String"/>
+	<field name="NAMA_TT" class="java.lang.String"/>
+	<field name="NO_POLIS_INDUK" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<background>
+		<band>
+			<printWhenExpression><![CDATA[Boolean.FALSE]]></printWhenExpression>
+		</band>
+	</background>
+	<detail>
+		<band height="513">
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="244" y="172" width="264" height="16"/>
+				<textElement verticalAlignment="Top" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_TT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="32" y="188" width="204" height="16"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[Tanggal Lahir Tertanggung (Usia)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="236" y="188" width="5" height="16"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="32" y="249" width="204" height="16"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[Masa Garansi Investasi (MGI)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="236" y="237" width="5" height="16"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="32" y="80" width="204" height="16"/>
+				<textElement verticalAlignment="Top">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[No. Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="236" y="80" width="5" height="16"/>
+				<textElement verticalAlignment="Top">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="512" y="144" width="124" height="16"/>
+				<textElement verticalAlignment="Top">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[Mulai Berlaku Asuransi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="512" y="112" width="124" height="16"/>
+				<textElement verticalAlignment="Top">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[No. SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="649" y="112" width="5" height="16"/>
+				<textElement verticalAlignment="Top">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="512" y="128" width="124" height="16"/>
+				<textElement verticalAlignment="Top">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[Mata Uang]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="649" y="128" width="5" height="16"/>
+				<textElement verticalAlignment="Top">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="236" y="204" width="5" height="16"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="236" y="252" width="5" height="16"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="32" y="220" width="204" height="16"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[Besarnya Premi Pertama]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="236" y="220" width="5" height="16"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="32" y="172" width="204" height="16"/>
+				<textElement verticalAlignment="Top">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[Nama Tertanggung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="236" y="172" width="5" height="16"/>
+				<textElement verticalAlignment="Top">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="244" y="80" width="525" height="16"/>
+				<textElement verticalAlignment="Top" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatPolis($F{MSPO_POLICY_NO})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="660" y="144" width="124" height="16"/>
+				<textElement verticalAlignment="Top" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSTE_BEG_DATE})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="244" y="188" width="264" height="16"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSPE_DATE_BIRTH}) + " (" + $F{MSTE_AGE} + " Tahun)"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="244" y="249" width="264" height="16"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MPS_JANGKA_INV} + " Bulan"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="660" y="112" width="124" height="16"/>
+				<textElement verticalAlignment="Top" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REG_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="660" y="128" width="124" height="16"/>
+				<textElement verticalAlignment="Top" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{LKU_ID}.equals("01")?"Rupiah":
+$F{LKU_ID}.equals("02")?"US Dollar":
+$F{LKU_ID}.equals("03")?"Singaporean Dollar":
+$F{LKU_ID}.equals("04")?"Euro":"Rupiah")]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="244" y="204" width="264" height="16"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_SYMBOL}, $F{MSPR_TSI})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="244" y="265" width="264" height="16"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MPS_PRM_INTEREST}.intValue() <=0? $P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_SYMBOL}, new BigDecimal(0)) :
+(
+$F{LSBS_ID}.intValue() == 177 ? 
+$P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_SYMBOL}, $F{MPS_PRM_INTEREST})
+:
+$P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_SYMBOL}, $F{MPS_PRM_INTEREST}.add($F{MSPR_PREMIUM}))
+)]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="244" y="220" width="264" height="16"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_SYMBOL}, $F{MSPR_PREMIUM})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="552" y="390" width="216" height="16"/>
+				<textElement textAlignment="Center">
+					<font fontName="Tahoma" size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[,]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="552" y="373" width="216" height="16"/>
+				<textElement textAlignment="Center">
+					<font fontName="Tahoma" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Jakarta, " + $P{REPORT_SCRIPTLET}.formatDateIndonesian(new Date())]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="552" y="493" width="216" height="16"/>
+				<textElement textAlignment="Center">
+					<font fontName="Tahoma" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("printing.jabatanDirektur")]]></textFieldExpression>
+			</textField>
+			<image hAlign="Center" vAlign="Middle" isUsingCache="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="584" y="411" width="141" height="71"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{ingrid}]]></imageExpression>
+			</image>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="552" y="462" width="216" height="16"/>
+				<textElement textAlignment="Center">
+					<font fontName="Tahoma" size="12" isBold="true" isUnderline="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("printing.namaDirektur")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="532" y="389" width="236" height="16"/>
+				<textElement textAlignment="Center">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<text><![CDATA[PT Asuransi Jiwa Sinarmas MSIG Tbk.]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="18" width="800" height="55"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="styled">
+					<font fontName="Tahoma" size="16" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["SMiLe PROGRESSIVE SAVE"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="32" y="112" width="204" height="16"/>
+				<textElement verticalAlignment="Top">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[Alamat]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="236" y="112" width="5" height="16"/>
+				<textElement verticalAlignment="Top">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="649" y="144" width="5" height="16"/>
+				<textElement verticalAlignment="Top">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="512" y="160" width="124" height="16"/>
+				<textElement verticalAlignment="Top">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[Berakhirnya Asuransi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="649" y="160" width="5" height="16"/>
+				<textElement verticalAlignment="Top">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="660" y="160" width="124" height="16"/>
+				<textElement verticalAlignment="Top" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSTE_END_DATE})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="32" y="265" width="204" height="16"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="false" pdfFontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSBS_ID}.intValue() == 177 ? "Hasil Investasi Pertama" : "Hasil Investasi Pertama"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="30" y="296" width="204" height="16"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[Tingkat Investasi Pada MGI Pertama]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="236" y="285" width="5" height="16"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="243" y="296" width="264" height="16"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MPS_RATE} + "% p.a"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="244" y="112" width="264" height="60"/>
+				<textElement verticalAlignment="Top" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ALAMAT1}
++" - "
++$F{ALAMAT2}
++""]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="32" y="334" width="736" height="29"/>
+				<textElement markup="styled">
+					<font fontName="Tahoma" size="11" isBold="false" pdfFontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Polis ini diterbitkan sebagai bukti penutupan Asuransi Jiwa SMiLe PROGRESSIVE SAVE . Polis ini tunduk pada Syarat-Syarat Umum dan endorsemen Polis (jika ada) yang dilekatkan dan merupakan bagian yang tidak terpisahkan dari Polis No : " + $P{REPORT_SCRIPTLET}.formatPolis($F{MSPO_POLICY_NO})+
+". Apabila Pemegang Polis akan mengambil seluruh Nilai Tunai, maka Polis ini harus dikembalikan kepada Penanggung"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="32" y="281" width="204" height="16"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="false" pdfFontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Nilai Tunai Akhir MGI Pertama"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="236" y="268" width="5" height="16"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="244" y="281" width="264" height="16"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_SYMBOL}, $F{NILAI_TUNAI_PERTAMA})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="32" y="96" width="204" height="16"/>
+				<textElement verticalAlignment="Top">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[Nama Pemegang Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="236" y="96" width="5" height="16"/>
+				<textElement verticalAlignment="Top">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="244" y="96" width="525" height="16"/>
+				<textElement verticalAlignment="Top" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PP}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="32" y="204" width="204" height="16"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="false" pdfFontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Uang Pertanggungan " + ($F{MSTE_AGE}.intValue() >= 69 ? "*)" : "")]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="320" y="482" width="160" height="12">
+					<printWhenExpression><![CDATA[new Boolean($P{meterai}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Tahoma" size="8" pdfFontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Izin No. " + $P{izin}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="340" y="470" width="120" height="12">
+					<printWhenExpression><![CDATA[new Boolean($P{meterai}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Tahoma" size="8" pdfFontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{meterai}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="340" y="458" width="120" height="12">
+					<printWhenExpression><![CDATA[new Boolean($P{meterai}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Tahoma" size="8" pdfFontName="Tahoma"/>
+				</textElement>
+				<text><![CDATA[BEA METERAI LUNAS]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="494" y="32" width="306" height="16" isRemoveLineWhenBlank="true"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tipePolis}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="32" y="234" width="204" height="16"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[Cara Bayar]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="244" y="234" width="264" height="16"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CARA_BAYAR}]]></textFieldExpression>
+			</textField>
+			<image hyperlinkType="None">
+				<reportElement x="0" y="0" width="221" height="65"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.ekalife")]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement positionType="Float" x="511" y="175" width="138" height="26"/>
+				<textElement verticalAlignment="Top">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[Premi Dibayarkan Selama]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="661" y="175" width="124" height="16"/>
+				<textElement verticalAlignment="Top" markup="styled">
+					<font fontName="Tahoma" size="12" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PREMIYEAR} + " tahun"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="650" y="178" width="5" height="16"/>
+				<textElement verticalAlignment="Top">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="236" y="298" width="5" height="16"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma" size="12"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+		</band>
+	</detail>
+</jasperReport>

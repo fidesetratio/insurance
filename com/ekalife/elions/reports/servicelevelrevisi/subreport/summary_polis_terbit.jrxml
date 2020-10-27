@@ -1,0 +1,1026 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="summary_polis_terbit" pageWidth="325" pageHeight="183" whenNoDataType="BlankPage" columnWidth="325" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperFunctionReport">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="3"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="3"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<import value="com.ekalife.utils.Products"/>
+	<parameter name="props" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{props}]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("08/08/2008")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("05/09/2008")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select reg_spaj, lsdbs_name, mste_tgl_terima_spaj, mste_tgl_spaj_doc, mste_tgl_aksep, mspo_date_print,
+	   mste_tgl_kirim_polis, lsrg_nama, (case when lama_proses_nab <= 0 then 0 else lama_proses_nab end) lama_proses_nab, lama_proses_nab1, lama_proses_nab2,
+	   lama_pending, flag_ws, sysdate, lsbs_id, lsdbs_number, lca_id
+from(
+SELECT   b.reg_spaj, d.lsdbs_name, a.mste_tgl_terima_spaj,
+         a.mste_tgl_spaj_doc, a.mste_tgl_aksep, b.mspo_date_print,
+         a.mste_tgl_kirim_polis, e.lsrg_nama,
+			nvl((SELECT eka.workdays (
+								(CASE 
+									  WHEN a.mste_tgl_terima_spaj is null
+									       THEN a.mste_tgl_spaj_doc
+                                      WHEN a.mste_tgl_spaj_doc is null 
+									  	   THEN a.mste_tgl_spaj_doc 
+									  WHEN (a.mste_tgl_terima_spaj >= to_date(to_char(mste_tgl_terima_spaj,'dd/mm/yyyy')||' 12:00:00','dd/mm/yyyy hh24:mi:ss') 
+									  	   and to_char(a.mste_tgl_terima_spaj,'dd/mm/yyyy') = to_char(a.mste_tgl_kirim_polis+1,'dd/mm/yyyy')
+									  	   and to_char(a.mste_tgl_terima_spaj,'dd/mm/yyyy') = to_char(a.mste_tgl_spaj_doc,'dd/mm/yyyy'))   
+										   or 
+										   (a.mste_tgl_terima_spaj >= to_date(to_char(mste_tgl_terima_spaj,'dd/mm/yyyy')||' 12:00:00','dd/mm/yyyy hh24:mi:ss') 
+									  	   and to_char(a.mste_tgl_terima_spaj,'dd/mm/yyyy') = to_char(a.mste_tgl_kirim_polis+1,'dd/mm/yyyy')
+									  	   and to_char(a.mste_tgl_terima_spaj,'dd/mm/yyyy') = to_char(a.mste_tgl_spaj_doc+1,'dd/mm/yyyy'))
+										   or 
+										   (a.mste_tgl_terima_spaj <= to_date(to_char(mste_tgl_terima_spaj,'dd/mm/yyyy')||' 12:00:00','dd/mm/yyyy hh24:mi:ss') 
+									  	   and to_char(a.mste_tgl_terima_spaj,'dd/mm/yyyy') = to_char(a.mste_tgl_kirim_polis,'dd/mm/yyyy')
+									  	   and to_char(a.mste_tgl_terima_spaj,'dd/mm/yyyy') = to_char(a.mste_tgl_spaj_doc,'dd/mm/yyyy'))
+										   or
+										   (a.mste_tgl_terima_spaj >= to_date(to_char(mste_tgl_terima_spaj,'dd/mm/yyyy')||' 12:00:00','dd/mm/yyyy hh24:mi:ss')) 			  
+									  THEN a.mste_tgl_spaj_doc+1 
+									  ELSE a.mste_tgl_spaj_doc 
+									  END),
+								(CASE WHEN h.jn_bank=2 THEN (select min(msps_date) msps_date from eka.mst_position_spaj where reg_spaj=a.reg_spaj and lssa_id in ('5','10') ) ELSE nvl(a.mste_tgl_valid_print, a.mste_tgl_kirim_polis) END))-1 FROM DUAL),0) lama_proses_nab,
+         nvl((SELECT eka.workdays (b.mspo_next_bill, (CASE WHEN h.jn_bank=2 THEN (select min(msps_date) msps_date from eka.mst_position_spaj where reg_spaj=a.reg_spaj and lssa_id in ('5','10') ) ELSE nvl(a.mste_tgl_valid_print, a.mste_tgl_kirim_polis) END)) FROM DUAL),0) lama_proses_nab1,
+         nvl((SELECT eka.workdays ((CASE WHEN a.mste_tgl_spaj_doc is null THEN a.mste_tgl_spaj_doc WHEN a.mste_tgl_spaj_doc >= to_date(to_char(mste_tgl_spaj_doc,'dd/mm/yyyy')||' 12:00:00','dd/mm/yyyy hh24:mi:ss') THEN a.mste_tgl_spaj_doc+1 ELSE a.mste_tgl_spaj_doc END), b.mspo_next_bill) FROM DUAL), 0) lama_proses_nab2,
+         --nvl((SELECT eka.workdays ((CASE WHEN h.jn_bank=2 THEN (select min(msps_date) msps_date from eka.mst_position_spaj where reg_spaj=a.reg_spaj and lssa_id in ('5','10') ) ELSE nvl(a.mste_tgl_valid_print, a.mste_tgl_kirim_polis) END), b.mspo_next_bill) FROM DUAL), 0) lama_proses_nab2,
+         nvl((SELECT eka.workdays (a.mste_tgl_terima_spaj, SYSDATE) FROM DUAL), 0) lama_pending, 
+		 SYSDATE, d.lsbs_id, d.lsdbs_number, b.lca_id, DECODE (b.lca_id, '42', 1, 0) flag_ws
+    FROM eka.mst_policy b,
+         eka.mst_insured a,
+         eka.mst_product_insured c,
+         eka.lst_det_bisnis d,
+         eka.lst_region e,
+		 eka.lst_bisnis g,
+		 eka.lst_user h,
+		 eka.mst_production i
+   WHERE b.reg_spaj = a.reg_spaj
+     AND a.reg_spaj = i.reg_spaj
+     AND b.lstb_id = 1
+	 AND (i.mspro_prod_date BETWEEN $P{tanggalAwal} AND $P{tanggalAkhir})
+     AND b.reg_spaj = c.reg_spaj
+     AND c.lsbs_id < 300
+     AND c.lsbs_id = d.lsbs_id
+     AND c.lsdbs_number = d.lsdbs_number
+     AND b.lca_id = e.lca_id
+     AND b.lwk_id = e.lwk_id
+     AND b.lsrg_id = e.lsrg_id
+	 AND c.lsbs_id = g.lsbs_id
+	 AND i.mspro_prod_ke = 1
+and b.lus_id = h.lus_id
+ORDER BY a.mste_tgl_terima_spaj, b.reg_spaj
+)]]>
+	</queryString>
+	<field name="FLAG_WS" class="java.math.BigDecimal"/>
+	<field name="LAMA_PENDING" class="java.math.BigDecimal"/>
+	<field name="LAMA_PROSES_NAB" class="java.math.BigDecimal"/>
+	<field name="LAMA_PROSES_NAB1" class="java.math.BigDecimal"/>
+	<field name="LAMA_PROSES_NAB2" class="java.math.BigDecimal"/>
+	<field name="LCA_ID" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="LSRG_NAMA" class="java.lang.String"/>
+	<field name="MSPO_DATE_PRINT" class="java.util.Date"/>
+	<field name="MSTE_TGL_AKSEP" class="java.util.Date"/>
+	<field name="MSTE_TGL_KIRIM_POLIS" class="java.util.Date"/>
+	<field name="MSTE_TGL_SPAJ_DOC" class="java.util.Date"/>
+	<field name="MSTE_TGL_TERIMA_SPAJ" class="java.util.Date"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="SYSDATE" class="java.util.Date"/>
+	<variable name="indikator_link" class="java.lang.String">
+		<variableExpression><![CDATA[$P{REPORT_SCRIPTLET}.isUnitLink($F{LSBS_ID}.toString())]]></variableExpression>
+	</variable>
+	<variable name="lm_proses" class="java.lang.Integer">
+		<variableExpression><![CDATA[$F{FLAG_WS}.intValue() == 1 ?
+(
+	$V{nab_ws}.intValue() ==0 ? new Integer($F{LAMA_PROSES_NAB}.intValue()) :
+		( $V{nab_ws}.intValue() < $F{LAMA_PROSES_NAB}.intValue() ? new Integer($V{nab_ws}.intValue()) : new Integer($F{LAMA_PROSES_NAB}.intValue())  )	
+ )	 : new Integer($F{LAMA_PROSES_NAB}.intValue())]]></variableExpression>
+	</variable>
+	<variable name="jml_non_link1" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($V{indikator_link}.equals("0") && $V{lm_proses}.intValue() == 0 ) ? new Integer(1) : new Integer(0)]]></variableExpression>
+	</variable>
+	<variable name="jml_non_link2" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($V{indikator_link}.equals("0") && $V{lm_proses}.intValue() == 1) ? new Integer(1) : new Integer(0)]]></variableExpression>
+	</variable>
+	<variable name="jml_non_link3" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($V{indikator_link}.equals("0") && $V{lm_proses}.intValue() == 2)  ? new Integer(1) : new Integer(0)]]></variableExpression>
+	</variable>
+	<variable name="jml_non_link4" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($V{indikator_link}.equals("0") && $V{lm_proses}.intValue() == 3)  ? new Integer(1) : new Integer(0)]]></variableExpression>
+	</variable>
+	<variable name="jml_non_link5" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($V{indikator_link}.equals("0") && $V{lm_proses}.intValue() == 4)  ? new Integer(1) : new Integer(0)]]></variableExpression>
+	</variable>
+	<variable name="total_non_link" class="java.lang.Integer">
+		<variableExpression><![CDATA[new Integer(
+	$V{jml_non_link1}.intValue() + 
+	$V{jml_non_link2}.intValue() + 
+	$V{jml_non_link3}.intValue() + 
+	$V{jml_non_link4}.intValue() +
+	$V{jml_non_link5}.intValue() +
+	$V{jml_non_link6}.intValue() +
+	$V{jml_non_link7}.intValue()
+)]]></variableExpression>
+	</variable>
+	<variable name="jml_link1" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($V{indikator_link}.equals("1") && $V{lm_proses}.intValue() == 0 ) ? new Integer(1) : new Integer(0)]]></variableExpression>
+	</variable>
+	<variable name="jml_link2" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($V{indikator_link}.equals("1") && $V{lm_proses}.intValue() == 1) ? new Integer(1) : new Integer(0)]]></variableExpression>
+	</variable>
+	<variable name="jml_link3" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($V{indikator_link}.equals("1") && $V{lm_proses}.intValue() == 2)  ? new Integer(1) : new Integer(0)]]></variableExpression>
+	</variable>
+	<variable name="jml_link4" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($V{indikator_link}.equals("1") && $V{lm_proses}.intValue() == 3)  ? new Integer(1) : new Integer(0)]]></variableExpression>
+	</variable>
+	<variable name="jml_link5" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($V{indikator_link}.equals("1") && $V{lm_proses}.intValue() == 4)  ? new Integer(1) : new Integer(0)]]></variableExpression>
+	</variable>
+	<variable name="total_link" class="java.lang.Integer">
+		<variableExpression><![CDATA[new Integer(
+	(( $V{jml_link1}.intValue() + 
+	$V{jml_link2}.intValue() + 
+	$V{jml_link3}.intValue() + 
+	$V{jml_link4}.intValue() + 
+	$V{jml_link5}.intValue() +
+	$V{jml_link6}.intValue() +
+	$V{jml_link7}.intValue() ) == 0? 1 : ( $V{jml_link1}.intValue() + 
+	$V{jml_link2}.intValue() + 
+	$V{jml_link3}.intValue() + 
+	$V{jml_link4}.intValue() + 
+	$V{jml_link5}.intValue() +
+	$V{jml_link6}.intValue() +
+	$V{jml_link7}.intValue() ))
+)]]></variableExpression>
+	</variable>
+	<variable name="lama_proses" class="java.lang.Integer">
+		<variableExpression><![CDATA[$F{FLAG_WS}.intValue() == 1 ?
+(
+($F{LAMA_PROSES_NAB1} == null ? 0 : $F{LAMA_PROSES_NAB1}.intValue()) < 0 ?
+$F{LAMA_PROSES_NAB} == null ? new Integer(0) : new Integer($F{LAMA_PROSES_NAB}.intValue())
+ : 
+	($F{LAMA_PROSES_NAB1} == null ? new Integer(0) : new Integer($F{LAMA_PROSES_NAB1}.intValue()))
+ )	
+  :
+  ($F{LAMA_PROSES_NAB} == null ? new Integer(0) : new Integer($F{LAMA_PROSES_NAB}.intValue()))]]></variableExpression>
+	</variable>
+	<variable name="nab_ws" class="java.lang.Integer">
+		<variableExpression><![CDATA[$F{LAMA_PROSES_NAB1} == null ?  new Integer(0) :
+ ( $F{LAMA_PROSES_NAB1}.intValue() < 0  ? new Integer(0) :  new Integer($F{LAMA_PROSES_NAB1}.intValue()) )]]></variableExpression>
+	</variable>
+	<variable name="lm_prs_nab" class="java.lang.Integer">
+		<variableExpression><![CDATA[$F{LAMA_PROSES_NAB} == null ? new Integer(0) : new Integer($F{LAMA_PROSES_NAB}.intValue())]]></variableExpression>
+	</variable>
+	<variable name="lm_prs_nab1" class="java.lang.Integer">
+		<variableExpression><![CDATA[$F{LAMA_PROSES_NAB1} == null ? new Integer(0) : new Integer($F{LAMA_PROSES_NAB1}.intValue())]]></variableExpression>
+	</variable>
+	<variable name="persen_nonlink1" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{jml_non_link1}.doubleValue() == 0 ? new BigDecimal(0) :
+new BigDecimal(
+ ($V{jml_non_link1}.doubleValue()*100) /$V{total_non_link}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="persen_nonlink2" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{jml_non_link2}.doubleValue() == 0 ? new BigDecimal(0) :
+new BigDecimal(
+ ($V{jml_non_link2}.doubleValue()*100) /$V{total_non_link}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="persen_nonlink3" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{jml_non_link3}.doubleValue() == 0 ? new BigDecimal(0) :
+new BigDecimal(
+ ($V{jml_non_link3}.doubleValue()*100) /$V{total_non_link}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="persen_nonlink4" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{jml_non_link4}.doubleValue() == 0 ? new BigDecimal(0) :
+new BigDecimal(
+ ($V{jml_non_link4}.doubleValue()*100) /$V{total_non_link}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="persen_nonlink5" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{jml_non_link5}.doubleValue() == 0 ? new BigDecimal(0) :
+new BigDecimal(
+ ($V{jml_non_link5}.doubleValue()*100) /$V{total_non_link}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="persen_link1" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{jml_link1}.doubleValue() == 0 ? new BigDecimal(0) :
+new BigDecimal(($V{jml_link1}.doubleValue()* 100) / $V{total_link}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="persen_link2" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{jml_link2}.doubleValue() == 0 ? new BigDecimal(0) :
+new BigDecimal(($V{jml_link2}.doubleValue()* 100) / $V{total_link}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="persen_link3" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{jml_link3}.doubleValue() == 0 ? new BigDecimal(0) :
+new BigDecimal(($V{jml_link3}.doubleValue()* 100) / $V{total_link}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="persen_link4" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{jml_link4}.doubleValue() == 0 ? new BigDecimal(0) :
+new BigDecimal(($V{jml_link4}.doubleValue()* 100) / $V{total_link}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="persen_link5" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{jml_link5}.doubleValue() == 0 ? new BigDecimal(0) :
+new BigDecimal(($V{jml_link5}.doubleValue()* 100) / $V{total_link}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="tglnab2" class="java.lang.Integer">
+		<variableExpression><![CDATA[$F{LAMA_PROSES_NAB2} == null ? new Integer(0) : new Integer($F{LAMA_PROSES_NAB2}.intValue())]]></variableExpression>
+	</variable>
+	<variable name="jml_non_link6" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($V{indikator_link}.equals("0") && $V{lm_proses}.intValue() == 5)  ? new Integer(1) : new Integer(0)]]></variableExpression>
+	</variable>
+	<variable name="jml_non_link7" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($V{indikator_link}.equals("0") && $V{lm_proses}.intValue() >= 6)  ? new Integer(1) : new Integer(0)]]></variableExpression>
+	</variable>
+	<variable name="jml_link6" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($V{indikator_link}.equals("1") && $V{lm_proses}.intValue() == 5)  ? new Integer(1) : new Integer(0)]]></variableExpression>
+	</variable>
+	<variable name="jml_link7" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($V{indikator_link}.equals("1") && $V{lm_proses}.intValue() >= 6)  ? new Integer(1) : new Integer(0)]]></variableExpression>
+	</variable>
+	<variable name="persen_nonlink6" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{jml_non_link6}.doubleValue() == 0 ? new BigDecimal(0) :
+new BigDecimal(
+ ($V{jml_non_link6}.doubleValue()*100) /$V{total_non_link}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="persen_nonlink7" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{jml_non_link7}.doubleValue() == 0 ? new BigDecimal(0) :
+new BigDecimal(
+ ($V{jml_non_link7}.doubleValue()*100) /$V{total_non_link}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="persen_link6" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{jml_link6}.doubleValue() == 0 ? new BigDecimal(0) :
+new BigDecimal(($V{jml_link6}.doubleValue()* 100) / $V{total_link}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="persen_link7" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{jml_link7}.doubleValue() == 0 ? new BigDecimal(0) :
+new BigDecimal(($V{jml_link7}.doubleValue()* 100) / $V{total_link}.doubleValue())]]></variableExpression>
+	</variable>
+	<summary>
+		<band height="183">
+			<staticText>
+				<reportElement x="0" y="12" width="72" height="24" isPrintWhenDetailOverflows="true"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[JUMLAH HARI KERJA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="198" y="24" width="63" height="12" isPrintWhenDetailOverflows="true"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[LINK ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="135" y="24" width="63" height="12" isPrintWhenDetailOverflows="true"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[% ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="72" y="24" width="63" height="12" isPrintWhenDetailOverflows="true"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[NON LINK ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="72" y="12" width="253" height="12" isPrintWhenDetailOverflows="true"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[JUMLAH POLIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="261" y="24" width="64" height="12" isPrintWhenDetailOverflows="true"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[% ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="36" width="72" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[0 hK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="48" width="72" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[1 hK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="60" width="72" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[2 hK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="72" width="72" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[3 hK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="84" width="72" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[4 hK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="120" width="72" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="132" width="72" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[% Pencapaian]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="144" width="72" height="39"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[% Pencapaian dari seluruh polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="72" y="156" width="253" height="27" isPrintWhenDetailOverflows="true"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[ = jumlah polis (Non Link + Link) yang mencapai service level /  jumlah polis yang diterbitkan]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="72" y="36" width="63" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_non_link1} + "  "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="72" y="48" width="63" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_non_link2} + "  "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="72" y="60" width="63" height="12" forecolor="#000000"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_non_link3} + "  "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="72" y="72" width="63" height="12" forecolor="#000000"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_non_link4} + "  "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="72" y="84" width="63" height="12" forecolor="#000000"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_non_link5} + "  "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="72" y="120" width="63" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{total_non_link} + "  "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="135" y="36" width="63" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_non_link1}.doubleValue() == 0 ? "0 " :
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(
+ ($V{jml_non_link1}.doubleValue()*100) /$V{total_non_link}.doubleValue())) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="135" y="48" width="63" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_non_link2}.doubleValue() == 0  ? "0 " :
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{jml_non_link2}.doubleValue()*100 /$V{total_non_link}.doubleValue())) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="135" y="60" width="63" height="12" forecolor="#000000"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_non_link3}.doubleValue() == 0 ? "0 " :
+$P{REPORT_SCRIPTLET}.format2Digit(
+new BigDecimal($V{jml_non_link3}.doubleValue()*100 /$V{total_non_link}.doubleValue())) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="135" y="72" width="63" height="12" forecolor="#000000"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_non_link4}.doubleValue() == 0 ? "0 " :
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{jml_non_link4}.doubleValue()*100 /$V{total_non_link}.doubleValue())) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="135" y="84" width="63" height="12" forecolor="#000000"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_non_link5}.doubleValue() == 0 ? "0 " :
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{jml_non_link5}.doubleValue()*100 /$V{total_non_link}.doubleValue())) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="135" y="120" width="63" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(
+new BigDecimal(
+($V{persen_nonlink1}.doubleValue()) + 
+($V{persen_nonlink2}.doubleValue()) +
+($V{persen_nonlink3}.doubleValue()) +
+($V{persen_nonlink4}.doubleValue()) +
+($V{persen_nonlink5}.doubleValue()) +
+($V{persen_nonlink6}.doubleValue()) + 
+($V{persen_nonlink7}.doubleValue())  
+) ) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="198" y="36" width="63" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_link1} + "  "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="198" y="48" width="63" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_link2} + "  "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="198" y="60" width="63" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_link3} + "  "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="198" y="72" width="63" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_link4} + "  "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="198" y="84" width="63" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_link5} + "  "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="198" y="120" width="63" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{total_link} + "  "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="261" y="36" width="64" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_link1}.doubleValue() == 0 ? "0 " :
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($V{jml_link1}.doubleValue()* 100) / $V{total_link}.doubleValue())) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="261" y="48" width="64" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_link2}.doubleValue() == 0 ? "0 " :
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($V{jml_link2}.doubleValue()* 100) / $V{total_link}.doubleValue())) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="261" y="60" width="64" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_link3}.doubleValue() == 0 ? "0 " :
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($V{jml_link3}.doubleValue()* 100) / $V{total_link}.doubleValue())) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="261" y="72" width="64" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_link4}.doubleValue() == 0 ? "0 " :
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($V{jml_link4}.doubleValue()* 100) / $V{total_link}.doubleValue())) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="261" y="84" width="64" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_link5}.doubleValue() == 0 ? "0 " :
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($V{jml_link5}.doubleValue()* 100) / $V{total_link}.doubleValue())) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="261" y="120" width="64" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(
+new BigDecimal(
+($V{persen_link1}.doubleValue()) + 
+($V{persen_link2}.doubleValue()) +
+($V{persen_link3}.doubleValue()) +
+($V{persen_link4}.doubleValue()) +
+($V{persen_link5}.doubleValue()) +
+($V{persen_link6}.doubleValue()) +
+($V{persen_link7}.doubleValue())) ) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="72" y="132" width="63" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[new BigDecimal(
+	$V{jml_non_link1}.doubleValue() + $V{jml_non_link2}.doubleValue()
+).toString() + "  "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="135" y="132" width="63" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(
+	new BigDecimal(
+		$V{persen_nonlink1}.doubleValue() + $V{persen_nonlink2}.doubleValue()
+	)
+) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="261" y="132" width="64" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(
+	new BigDecimal(
+		$V{persen_link1}.doubleValue() + $V{persen_link2}.doubleValue() + $V{persen_link3}.doubleValue()
+	)
+) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="198" y="132" width="63" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[new BigDecimal(
+	$V{jml_link1}.doubleValue() + $V{jml_link2}.doubleValue() + $V{jml_link3}.doubleValue()
+).toString() + "  "]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="72" y="144" width="253" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(
+	new BigDecimal(
+		($V{jml_non_link1}.doubleValue() + $V{jml_non_link2}.doubleValue() + $V{jml_link1}.doubleValue() + $V{jml_link2}.doubleValue() + $V{jml_link3}.doubleValue()) / ($V{total_non_link}.doubleValue() + $V{total_link}.doubleValue()) * 100
+	)
+) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement x="0" y="0" width="325" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["SUMMARY SL PENERBITAN POLIS ALL"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="96" width="72" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[5 hK]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="198" y="96" width="63" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_link6} + "  "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="72" y="96" width="63" height="12" forecolor="#000000"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_non_link6} + "  "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="135" y="96" width="63" height="12" forecolor="#000000"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_non_link6}.doubleValue() == 0 ? "0 " :
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{jml_non_link6}.doubleValue()*100 /$V{total_non_link}.doubleValue())) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="261" y="96" width="64" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_link6}.doubleValue() == 0 ? "0 " :
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($V{jml_link6}.doubleValue()* 100) / $V{total_link}.doubleValue())) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="135" y="108" width="63" height="12" forecolor="#000000"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_non_link7}.doubleValue() == 0 ? "0 " :
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{jml_non_link7}.doubleValue()*100 /$V{total_non_link}.doubleValue())) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="198" y="108" width="63" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_link7} + "  "]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="108" width="72" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[>= 6 hK]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="261" y="108" width="64" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_link7}.doubleValue() == 0 ? "0 " :
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($V{jml_link7}.doubleValue()* 100) / $V{total_link}.doubleValue())) + " % "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="72" y="108" width="63" height="12" forecolor="#000000"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{jml_non_link7} + "  "]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

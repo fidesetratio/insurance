@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+   	<!--Update mst_insured_medical-->
+	<update id="elions.uw.update.mst_policy_bonus" parameterClass="java.util.HashMap">
+		 UPDATE EKA.MST_POLICY  
+		 SET MSPO_UNDER_TABLE = #ldec_bonus#  
+		 WHERE EKA.MST_POLICY.REG_SPAJ = #txtnospaj#   
+	</update>
+	
+	<!--Update dw1 MST_ULINK -->
+	<update id="elions.uw.update.mst_ulinks" parameterClass="java.util.HashMap">
+		UPDATE  EKA.MST_ULINK
+        SET MU_PERIODIC_TU =#mu_periodic_tu#,   
+        	MU_JLH_TU=#mu_jlh_tu#
+      	WHERE ( EKA.MST_ULINK.REG_SPAJ = #txtnospaj# ) AND  
+        ( EKA.MST_ULINK.MU_KE = #ar_ke# )    
+		
+	</update>
+	
+	  <!--Update mst_ulink-->
+	<update id="elions.uw.update.mst_ulink" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_ULINK  
+		SET MU_JLH_PREMI= #mu_jlh_premi#,
+			MU_TGL_TRANS=#mu_tgl_trans#,
+			MU_TGL_SURAT=#mu_tgl_surat#
+		WHERE ( EKA.MST_ULINK.REG_SPAJ = #reg_spaj# ) AND  
+		       ( EKA.MST_ULINK.MU_KE =#mu_ke#)
+		
+		<!-- UPDATE EKA.MST_ULINK  
+	   	SET MU_LSPD_ID = #lspd_id#, MU_TGL_TRANS = #ldt_aksep#  
+		 WHERE ( EKA.MST_ULINK.REG_SPAJ = #txtnospaj# ) AND  
+		       ( EKA.MST_ULINK.MU_KE IN (1, 2) )    -->
+   	</update>
+   	
+   	<!--Update mst_ulink-->
+	<update id="elions.uw.update.mst_ulink2" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_ULINK  
+		SET MU_JLH_PREMI= #mu_jlh_premi#,
+			MU_TGL_TRANS=#mu_tgl_trans#,
+			LT_ID=#lt_id#,
+			MU_LSPD_ID=#mu_lspd_id#,
+			MU_TGL_SURAT=#mu_tgl_surat#
+		WHERE ( EKA.MST_ULINK.REG_SPAJ = #reg_spaj# ) AND  
+		       ( EKA.MST_ULINK.MU_KE =#mu_ke#)
+   	</update>
+   	
+	<update id="elions.uw.update.mst_biaya_ulink2" parameterClass="java.util.HashMap">
+		UPDATE  EKA.MST_BIAYA_ULINK
+        SET <isNotEmpty property="mbu_persen">MBU_PERSEN=#mbu_persen# ,</isNotEmpty>
+        MBU_JUMLAH=#mbu_jumlah#,
+		LJB_ID=#ljb_id#
+  		 WHERE ( EKA.MST_BIAYA_ULINK.REG_SPAJ = #reg_spaj# ) AND  
+         ( EKA.MST_BIAYA_ULINK.MU_KE = #mu_ke# )  
+	</update>
+  
+	<parameterMap id="mapBiayaUlink" class="java.util.HashMap" >
+		<parameter property="mbu_persen" javaType="double" jdbcType="number" />
+		<parameter property="mbu_jumlah" javaType="double" jdbcType="number" />
+		<parameter property="reg_spaj" javaType="string" jdbcType="text" />
+		<parameter property="mu_ke" javaType="int" jdbcType="number" />
+		<parameter property="ljb_id" javaType="int" jdbcType="number" />
+		
+	</parameterMap>
+	<!--Update dw2 MST_DET_ULINK -->
+	<update id="elions.uw.update.mst_det_ulink" parameterClass="java.util.HashMap">
+		UPDATE  EKA.MST_DET_ULINK
+        SET
+         <isNotEmpty property="mdu_persen">MDU_PERSEN=#mdu_persen#,</isNotEmpty>
+         <isNotEmpty property="mdu_persen_tu">MDU_PERSEN_TU=#mdu_persen#,</isNotEmpty>
+         MDU_JUMLAH=#mdu_jumlah#
+  		 WHERE ( EKA.MST_DET_ULINK.REG_SPAJ = #reg_spaj# ) AND  
+         ( EKA.MST_DET_ULINK.MU_KE = #mu_ke# ) AND  
+         ( EKA.MST_DET_ULINK.MDU_AKTIF = #mdu_aktif# )AND
+         ( EKA.MST_DET_ULINK.LJI_ID=#lji_id#)   
+		
+	</update>
+	
+	
+	<!--Update dw3 MST_BIAYA_ULINK -->
+	<update id="elions.uw.update.mst_biaya_ulink" parameterMap="mapBiayaUlink">
+		UPDATE  EKA.MST_BIAYA_ULINK
+        SET <isNotEmpty property="mbu_persen">MBU_PERSEN=#mbu_persen# ,</isNotEmpty>
+        MBU_JUMLAH=#mbu_jumlah#
+  		 WHERE ( EKA.MST_BIAYA_ULINK.REG_SPAJ = #reg_spaj# ) AND  
+         ( EKA.MST_BIAYA_ULINK.MU_KE = #mu_ke# )   AND
+         ( EKA.MST_BIAYA_ULINK.LJB_ID =#ljb_id#)   
+		
+	</update>
+	<!-- 
+	<update id="elions.uw.update.mst_biaya_ulink2" parameterMap="mapBiayaUlink">
+		UPDATE  EKA.MST_BIAYA_ULINK
+        SET <isNotEmpty property="mbu_persen">MBU_PERSEN=#mbu_persen# ,</isNotEmpty>
+        MBU_JUMLAH=#mbu_jumlah#
+  		 WHERE ( EKA.MST_BIAYA_ULINK.REG_SPAJ = #reg_spaj# ) AND  
+         ( EKA.MST_BIAYA_ULINK.MU_KE = #mu_ke# )   AND
+         ( EKA.MST_BIAYA_ULINK.LJB_ID =#ljb_id#)   
+		
+	</update> -->
+	
+ </sqlMap>

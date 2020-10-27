@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="premi_tambahan_167" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="spaj" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT c.lku_symbol, a.reg_spaj, a.mspr_premium premi_tambahan,
+       (CASE
+           WHEN (SELECT lsbs_id
+                   FROM eka.mst_product_insured
+                  WHERE reg_spaj = RPAD ($P{spaj}, 11, ' ') AND lsbs_id < 300) = 167
+              THEN decode(a.lsbs_id, 814, 'Waiver of Premium for Disability', 815, 'Payor''s Clause', b.lsbs_name)
+           ELSE b.lsbs_name
+        END
+       ) nama_premi_tambahan,
+       (CASE
+           WHEN (SELECT lsbs_id
+                   FROM eka.mst_product_insured
+                  WHERE reg_spaj = RPAD ($P{spaj}, 11, ' ') AND lsbs_id < 300) = 167
+              THEN e.lscb_print
+           ELSE ''
+        END
+       ) lscb_print,
+	   (select count(lsbs_id) from eka.mst_product_insured where lsbs_id >=800 and reg_spaj= RPAD ($P{spaj}, 11, ' ')) total_rider
+  FROM eka.mst_product_insured a,
+       eka.lst_bisnis b,
+       eka.lst_kurs c,
+       eka.mst_policy d,
+       eka.lst_pay_mode e
+ WHERE a.reg_spaj = RPAD ($P{spaj}, 11, ' ')
+   AND a.mspr_active = 1
+   AND a.lsbs_id >= 800
+   AND a.mste_insured_no = 1
+   AND a.lsbs_id = b.lsbs_id
+   AND a.lku_id = c.lku_id
+   AND a.reg_spaj = d.reg_spaj
+   AND d.lscb_id = e.lscb_id]]>
+	</queryString>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSCB_PRINT" class="java.lang.String"/>
+	<field name="NAMA_PREMI_TAMBAHAN" class="java.lang.String"/>
+	<field name="PREMI_TAMBAHAN" class="java.math.BigDecimal"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="TOTAL_RIDER" class="java.math.BigDecimal"/>
+	<columnHeader>
+		<band height="12">
+			<textField>
+				<reportElement positionType="Float" x="0" y="0" width="115" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean($F{TOTAL_RIDER}.intValue()!=0)]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Tahoma" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TOTAL_RIDER}.intValue()==0?"":"Premi Asuransi Tambahan"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement positionType="Float" x="140" y="0" width="65" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean($F{TOTAL_RIDER}.intValue()!=0)]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Tahoma" size="9" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement positionType="Float" x="131" y="0" width="5" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean($F{TOTAL_RIDER}.intValue()!=0)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Tahoma" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TOTAL_RIDER}.intValue()==0 ? "" : ""]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="16">
+			<textField>
+				<reportElement positionType="Float" x="10" y="0" width="120" height="16" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean($F{TOTAL_RIDER}.intValue()!=0)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PREMI_TAMBAHAN}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="140" y="0" width="360" height="16" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean($F{TOTAL_RIDER}.intValue()!=0)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma" size="8" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_SYMBOL}+" ", $F{PREMI_TAMBAHAN}) +
+($F{LSCB_PRINT}!=null?(" "+$F{LSCB_PRINT}):"")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="131" y="0" width="5" height="16" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean($F{TOTAL_RIDER}.intValue()!=0)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Tahoma" size="8" isBold="false"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+		</band>
+	</detail>
+</jasperReport>

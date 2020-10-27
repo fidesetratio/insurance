@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="validasi_by_sales_bii_detail" pageWidth="1200" pageHeight="1146" whenNoDataType="AllSectionsNoDetail" columnWidth="1180" leftMargin="10" rightMargin="10" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet" isIgnorePagination="true">
+	<property name="com.jasperassistant.designer.DataSource" value="Ekatest10"/>
+	<property name="com.jasperassistant.designer.Grid" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("01/02/2010")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("28/02/2010")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<queryString>
+		<![CDATA[SELECT /*+first_rows */ a.mspo_input_date,
+       d.create_dt,
+       NVL (f.nama_ref, g.nama_bfa) nama_ref, h.nama_cabang, a.reg_spaj,
+       i.mcl_first, j.lsdbs_name, c.mspr_tsi, decode(a.lku_id, '01','Rp ','$ ') kurs
+  FROM eka.mst_policy a,
+       eka.mst_insured b,
+       eka.mst_product_insured c,
+	   eka.mst_questionnaire d,
+       eka.mst_nasabah e,
+       eka.lst_referrer_bii f,
+       eka.mst_bfa g,
+       eka.lst_cab_bii h,
+       eka.mst_client_new i,
+       eka.lst_det_bisnis j
+ WHERE a.lstb_id = 1
+   AND a.lca_id = '09'
+   AND a.reg_spaj = b.reg_spaj
+   AND b.reg_spaj = c.reg_spaj
+   AND b.mste_insured_no = c.mste_insured_no
+   AND a.reg_spaj = d.reg_spaj
+   AND d.create_dt between $P{tanggalAwal} and $P{tanggalAkhir}
+   AND a.mspo_plan_provider = e.mns_kd_nasabah
+   AND e.referrer_id = f.referrer_id(+)
+   AND e.referrer_fa = g.msag_id(+)
+   AND e.kd_region = h.kd_region
+   AND e.kd_koord = h.kd_koord
+   AND e.kd_area = h.kd_area
+   AND e.kd_cabang = h.kd_cabang
+   AND a.mspo_policy_holder = i.mcl_id
+   AND c.lsbs_id = j.lsbs_id
+   AND c.lsdbs_number = j.lsdbs_number
+   GROUP BY a.mspo_input_date,
+       d.create_dt,
+       NVL (f.nama_ref, g.nama_bfa), h.nama_cabang, a.reg_spaj,
+       i.mcl_first, j.lsdbs_name, c.mspr_tsi, a.lku_id
+   ORDER BY a.mspo_input_date]]>
+	</queryString>
+	<field name="CREATE_DT" class="java.sql.Timestamp"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="MSPO_INPUT_DATE" class="java.sql.Timestamp"/>
+	<field name="MSPR_TSI" class="java.math.BigDecimal"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="KURS" class="java.lang.String"/>
+	<field name="NAMA_CABANG" class="java.lang.String"/>
+	<field name="NAMA_REF" class="java.lang.String"/>
+	<variable name="reportCount" class="java.lang.Integer">
+		<variableExpression><![CDATA[$V{REPORT_COUNT}]]></variableExpression>
+	</variable>
+	<group name="salesGroup">
+		<groupExpression><![CDATA[$F{NAMA_REF}]]></groupExpression>
+		<groupHeader>
+			<band height="75">
+				<textField pattern="M/d/yy h:mm:ss a">
+					<reportElement x="85" y="5" width="500" height="15"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_REF}]]></textFieldExpression>
+				</textField>
+				<textField pattern="M/d/yy h:mm:ss a">
+					<reportElement x="85" y="35" width="500" height="15"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAwal}) 
++ " sampai " + 
+$P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAkhir})
++ " ( tgl.adalah tgl. validasi )"]]></textFieldExpression>
+				</textField>
+				<textField pattern="M/d/yy h:mm:ss a">
+					<reportElement x="0" y="20" width="71" height="15"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Cabang"]]></textFieldExpression>
+				</textField>
+				<textField pattern="M/d/yy h:mm:ss a">
+					<reportElement x="75" y="5" width="5" height="15"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+				</textField>
+				<textField pattern="M/d/yy h:mm:ss a">
+					<reportElement x="75" y="35" width="5" height="15"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+				</textField>
+				<textField pattern="M/d/yy h:mm:ss a">
+					<reportElement x="0" y="5" width="71" height="15"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Nama Sales"]]></textFieldExpression>
+				</textField>
+				<textField pattern="M/d/yy h:mm:ss a">
+					<reportElement x="85" y="20" width="500" height="15"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_CABANG}]]></textFieldExpression>
+				</textField>
+				<textField pattern="M/d/yy h:mm:ss a">
+					<reportElement x="75" y="20" width="5" height="15"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+				</textField>
+				<textField pattern="M/d/yy h:mm:ss a">
+					<reportElement x="0" y="35" width="71" height="15"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Periode"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="0" y="55" width="25" height="20"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["No."]]></textFieldExpression>
+				</textField>
+				<textField pattern="dd/MM/yyyy (hh:mm)">
+					<reportElement x="125" y="55" width="100" height="20"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Tgl Validasi"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="225" y="55" width="80" height="20"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["No SPAJ"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="445" y="55" width="110" height="20"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Produk"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="555" y="55" width="90" height="20"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["UP"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="645" y="55" width="290" height="20"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Hasil Validasi SPAJ"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="305" y="55" width="140" height="20"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Pemegang Polis"]]></textFieldExpression>
+				</textField>
+				<textField pattern="dd/MM/yyyy (hh:mm)">
+					<reportElement x="25" y="55" width="100" height="20"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Tgl Input SPAJ"]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<pageHeader>
+		<band height="27">
+			<staticText>
+				<reportElement x="0" y="0" width="550" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="14" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[PT Asuransi Jiwa Sinarmas MSIG Tbk. - Laporan Validasi by Sales BII (Detail)]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="20">
+			<textField pattern="dd/MM/yyyy (hh:mm)">
+				<reportElement x="25" y="0" width="100" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSPO_INPUT_DATE}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy (hh:mm)">
+				<reportElement x="125" y="0" width="100" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{CREATE_DT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="225" y="0" width="80" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REG_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="305" y="0" width="140" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MCL_FIRST}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="445" y="0" width="110" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="555" y="0" width="90" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrencyNoDigit($F{KURS}, $F{MSPR_TSI})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="0" width="25" height="20"/>
+				<box border="None"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{reportCount} + "."]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement x="645" y="0" width="290" height="20"/>
+				<subreportParameter name="reg_spaj">
+					<subreportParameterExpression><![CDATA[$F{REG_SPAJ}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("subreport.questionnaire.non_clean_case")+".jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="17">
+			<textField evaluationTime="Report">
+				<reportElement x="925" y="5" width="12" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="918" y="5" width="7" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["/"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="907" y="5" width="12" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

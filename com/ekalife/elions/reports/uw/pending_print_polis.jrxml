@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="pending_print_polis" pageWidth="1020" pageHeight="595" orientation="Landscape" columnWidth="980" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("22/08/2013")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("29/09/2013")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lusId" class="java.lang.String"/>
+	<parameter name="props" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select pending.akseptor, pending.spaj, pending.produk, pending.pp, pending.tt, pending.prov, pending.tgl_aksep, pending.tgl_cek,
+pending.lar_admin, pending.pending_print, pending.tgl_fund, pending.cabang_bsm, pending.msps_date
+from
+(/*NON LINK*/
+select distinct e.akseptor, a.reg_spaj spaj, 
+        d.lsdbs_name produk, x.mcl_first pp, y.mcl_first tt, (case when a.mspo_provider = 2 then 'PROVIDER' else 'NON PROVIDER' end) prov, to_char(e.msps_date,'dd/MM/yyyy') tgl_aksep,
+        nvl((select to_char(dd.msps_date,'dd/MM/yyyy') tgl_cek from eka.mst_position_spaj dd where dd.reg_spaj = a.reg_spaj and dd.msps_desc like 'CETAK ALOKASI_DANA'
+         and dd.msps_date = (select max(ee.msps_date) from eka.mst_position_spaj ee where ee.reg_spaj = a.reg_spaj and ee.msps_desc like 'CETAK ALOKASI_DANA')),'-') tgl_cek,
+         g.lar_admin, eka.workdays(e.msps_date,SYSDATE) pending_print, 
+         'NON LINK' tgl_fund,
+         nvl(j.nama_cabang,'-') cabang_bsm,e.msps_date
+from eka.mst_policy a, eka.mst_insured b, eka.mst_product_insured c, eka.lst_det_bisnis d,
+        eka.mst_client_new x, eka.mst_client_new y, eka.lst_region f, eka.lst_addr_region g, eka.mst_insured o,
+        eka.mst_trans_history h, eka.mst_reff_bii i, eka.lst_cabang_bii j,
+        (select distinct aa.reg_spaj, trunc(aa.msps_date) msps_date, upper(bb.lus_full_name) akseptor,
+                (select count(cc.msps_desc)
+                 from eka.mst_position_spaj cc
+                 where (cc.msps_desc like 'VALID FOR PRINT%' or cc.msps_desc like 'PRINT POLIS%' or cc.msps_desc like 'CETAK POLIS%' or cc.msps_desc like 'KIRIM SOFTCOPY POLIS%' or upper(cc.msps_desc) like 'KIRIM SOFTCOPY OTOMATIS KE%' or upper(cc.msps_desc) like 'GENERATE OUTSOURCE%')
+                         and cc.reg_spaj = aa.reg_spaj) valid
+         from eka.mst_position_spaj aa, eka.lst_user bb
+         where (aa.msps_desc like 'AC:%' or aa.msps_desc like 'AK:%'
+                        or (aa.msps_desc like 'TRANSFER KE PRINT POLIS'
+                            and not exists (select reg_spaj from eka.mst_position_spaj where reg_spaj = aa.reg_spaj and (msps_desc like 'AC:%' or msps_desc like 'AK:%'))
+                        )
+                    )
+                 and aa.lus_id = bb.lus_id
+                 and aa.msps_date between $P{tanggalAwal} and $P{tanggalAkhir} 
+                 ) e,
+        (select reg_spaj,max(no_urut) as no_urut from eka.mst_reff_bii group by reg_spaj) k,
+        eka.mst_position_spaj l
+where a.reg_spaj = b.reg_spaj
+        and a.reg_spaj = c.reg_spaj
+        and a.reg_spaj = e.reg_spaj
+        and a.reg_spaj = o.reg_spaj
+        and a.lca_id = f.lca_id
+        and a.lwk_id = f.lwk_id
+        and a.lsrg_id = f.lsrg_id
+        and f.lar_id = g.lar_id (+)
+        /*and a.lca_id in ('37','52')*/
+        /*and a.lspd_id != 95*/
+        /*and a.lspd_id not in (7,95)*/
+        AND a.lspd_id in (6,8)
+        and a.mspo_policy_holder = x.mcl_id
+        and b.mste_insured = y.mcl_id
+        and c.lsbs_id = d.lsbs_id
+        and c.lsdbs_number = d.lsdbs_number
+        and a.reg_spaj = h.reg_spaj
+        and a.reg_spaj = i.reg_spaj(+)
+        and i.reg_spaj = k.reg_spaj(+)
+        and i.no_urut = k.no_urut(+)
+        and i.lcb_reff = j.lcb_no(+)
+        and d.lsbs_id < 300
+        and e.valid = 0
+        and o.lssa_id not in (2,9)
+        and (c.lsbs_id || '-' ||c.lsdbs_number) not in ('142-2','158-6','188-2','164-11','175-2','73-12','73-13','73-14')
+        and c.lsbs_id not in ('77','84','87','97','100','101','102','107','113','115','116','117','118','119','120','121','122','127','128','129','134','138','139','140','141','152','153','154','159','160','162','164','165','166','174','186','190','191','199','200','202','213','215','216','217','218','220','224')
+        and a.reg_spaj = l.reg_spaj(+)
+        and l.lssa_id(+) = 8
+        and l.msps_desc(+) like 'FA%'
+        and (SUBSTR(a.reg_spaj,1,2) not in ('09')) 
+        and not exists (select 1 from 
+eka.mst_spaj_temp aa, eka.mst_product_temp bb 
+where aa.no_temp = bb.no_temp and bb.lsbs_id = 212 and bb.lsdbs_number = 6 and bb.reg_Spaj = a.reg_Spaj)
+
+UNION ALL
+
+/*LINK*/
+select distinct e.akseptor, a.reg_spaj spaj, 
+        --c.lsbs_id, c.lsdbs_number,
+        d.lsdbs_name produk, x.mcl_first pp, y.mcl_first tt, (case when a.mspo_provider = 2 then 'PROVIDER' else 'NON PROVIDER' end) prov, to_char(e.msps_date,'dd/MM/yyyy') tgl_aksep,
+        nvl((select to_char(dd.msps_date,'dd/MM/yyyy') tgl_cek from eka.mst_position_spaj dd where dd.reg_spaj = a.reg_spaj and dd.msps_desc like 'CETAK ALOKASI_DANA'
+         and dd.msps_date = (select max(ee.msps_date) from eka.mst_position_spaj ee where ee.reg_spaj = a.reg_spaj and ee.msps_desc like 'CETAK ALOKASI_DANA')),'-') tgl_cek,
+         g.lar_admin, eka.workdays(e.msps_date,SYSDATE) pending_print, 
+         nvl(to_char(nvl(h.tgl_fund_allocation,l.msps_date),'dd/mm/yyyy hh24:mi:ss'),'-') tgl_fund,
+         nvl(j.nama_cabang,'-') cabang_bsm,e.msps_date
+from eka.mst_policy a, eka.mst_insured b, eka.mst_product_insured c, eka.lst_det_bisnis d,
+        eka.mst_client_new x, eka.mst_client_new y, eka.lst_region f, eka.lst_addr_region g, eka.mst_insured o,
+        eka.mst_trans_history h, eka.mst_reff_bii i, eka.lst_cabang_bii j,
+        (select distinct aa.reg_spaj, trunc(aa.msps_date) msps_date, upper(bb.lus_full_name) akseptor,
+                (select count(cc.msps_desc)
+                 from eka.mst_position_spaj cc
+                 where (cc.msps_desc like 'VALID FOR PRINT%' or cc.msps_desc like 'PRINT POLIS%' or cc.msps_desc like 'CETAK POLIS%' or cc.msps_desc like 'KIRIM SOFTCOPY POLIS%' or upper(cc.msps_desc) like 'KIRIM SOFTCOPY OTOMATIS KE%' or upper(cc.msps_desc) like 'GENERATE OUTSOURCE%')
+                         and cc.reg_spaj = aa.reg_spaj) valid
+         from eka.mst_position_spaj aa, eka.lst_user bb
+         where (aa.msps_desc like 'AC:%' or aa.msps_desc like 'AK:%'
+                        or (aa.msps_desc like 'TRANSFER KE PRINT POLIS'
+                            and not exists (select reg_spaj from eka.mst_position_spaj where reg_spaj = aa.reg_spaj and (msps_desc like 'AC:%' or msps_desc like 'AK:%'))
+                        )
+                    )
+                 and aa.lus_id = bb.lus_id
+                 and aa.msps_date between $P{tanggalAwal} and $P{tanggalAkhir}  
+                 ) e,
+        (select reg_spaj,max(no_urut) as no_urut from eka.mst_reff_bii group by reg_spaj) k,
+        eka.mst_position_spaj l
+where a.reg_spaj = b.reg_spaj
+        and a.reg_spaj = c.reg_spaj
+        and a.reg_spaj = e.reg_spaj
+        and a.reg_spaj = o.reg_spaj
+        and a.lca_id = f.lca_id
+        and a.lwk_id = f.lwk_id
+        and a.lsrg_id = f.lsrg_id
+        and f.lar_id = g.lar_id (+)
+        /*and a.lca_id in ('37','52')*/
+        /*and a.lspd_id != 95*/
+        /*and a.lspd_id not in (7,95)*/
+        AND a.lspd_id in (6,8)
+        and a.mspo_policy_holder = x.mcl_id
+        and b.mste_insured = y.mcl_id
+        and c.lsbs_id = d.lsbs_id
+        and c.lsdbs_number = d.lsdbs_number
+        and a.reg_spaj = h.reg_spaj
+        and a.reg_spaj = i.reg_spaj(+)
+        and i.reg_spaj = k.reg_spaj(+)
+        and i.no_urut = k.no_urut(+)
+        and i.lcb_reff = j.lcb_no(+)
+        and d.lsbs_id < 300
+        and e.valid = 0
+        and o.lssa_id not in (2,9)
+        and (c.lsbs_id || '-' ||c.lsdbs_number) not in ('142-2','158-6','188-2','164-11','175-2','73-12','73-13','73-14')
+		and c.lsbs_id in ('77','84','87','97','100','101','102','107','113','115','116','117','118','119','120','121','122','127','128','129','134','138','139','140','141','152','153','154','159','160','162','164','165','166','174','186','190','191','199','200','202','213','215','216','217','218','220','224')
+        and a.reg_spaj = l.reg_spaj(+)
+        and l.lssa_id(+) = 8
+        and l.msps_desc(+) like 'FA%'
+        and (SUBSTR(a.reg_spaj,1,2) not in ('09')) 
+		and ((h.tgl_fund_allocation is not null) or (l.msps_date is not null))
+        and not exists (select 1 from 
+eka.mst_spaj_temp aa, eka.mst_product_temp bb 
+where aa.no_temp = bb.no_temp and bb.lsbs_id = 212 and bb.lsdbs_number = 6 and bb.reg_Spaj = a.reg_Spaj)) pending
+order by pending.msps_date asc]]>
+	</queryString>
+	<field name="AKSEPTOR" class="java.lang.String"/>
+	<field name="LAR_ADMIN" class="java.lang.String"/>
+	<field name="PENDING_PRINT" class="java.lang.Integer"/>
+	<field name="PP" class="java.lang.String"/>
+	<field name="PRODUK" class="java.lang.String"/>
+	<field name="PROV" class="java.lang.String"/>
+	<field name="SPAJ" class="java.lang.String"/>
+	<field name="TGL_AKSEP" class="java.lang.String"/>
+	<field name="TGL_CEK" class="java.lang.String"/>
+	<field name="TT" class="java.lang.String"/>
+	<field name="TGL_FUND" class="java.lang.String"/>
+	<field name="CABANG_BSM" class="java.lang.String"/>
+	<title>
+		<band height="70">
+			<staticText>
+				<reportElement x="0" y="0" width="485" height="18"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement>
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[REPORT POLIS SUDAH DIAKSEP UW TETAPI BELUM DICETAK]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="23" width="485" height="15"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tanggal Report: " + $P{REPORT_SCRIPTLET}.formatDateWithTime(new Date()) + " by Underwriting Department."]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="38" width="485" height="15"/>
+				<textElement markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Periode Akseptasi Tanggal: " + $P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAwal}) + " s/d " + $P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAkhir})]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="15">
+			<staticText>
+				<reportElement x="0" y="0" width="20" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Segoe UI" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="20" y="0" width="90" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Akseptor]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="110" y="0" width="55" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="165" y="0" width="120" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Produk]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="285" y="0" width="100" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Pemegang Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="385" y="0" width="100" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Tertanggung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="555" y="0" width="45" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Tgl Aksep]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="600" y="0" width="45" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Tgl Cek]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="645" y="0" width="115" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Cabang Agency]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="860" y="0" width="40" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Pending]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="485" y="0" width="70" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Provider/Non]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="900" y="0" width="80" height="15"/>
+				<box padding="0">
+					<pen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Waktu Fund]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="760" y="0" width="100" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Cabang BSM]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="20" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Number"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="20" y="0" width="90" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{AKSEPTOR}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="110" y="0" width="55" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="165" y="0" width="120" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PRODUK}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="285" y="0" width="100" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="385" y="0" width="100" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="485" y="0" width="70" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PROV}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="555" y="0" width="45" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_AKSEP}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="600" y="0" width="45" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_CEK}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="645" y="0" width="115" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LAR_ADMIN}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="860" y="0" width="40" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PENDING_PRINT} + ""]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="900" y="0" width="80" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_FUND}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="760" y="0" width="100" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CABANG_BSM}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="34">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="699" y="16" width="100" height="18"/>
+				<box padding="2">
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top" markup="none">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Halaman " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

@@ -1,0 +1,1653 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="outstanding_summary" pageWidth="1215" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="1185" leftMargin="15" rightMargin="15" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="dataprod"/>
+	<parameter name="username" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Yusuf S."]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("01/03/2016")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("31/03/2016")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT   mpm.periode, mpm.tahun, mpm.bulan, nvl(wilayah.nama_cabang, 'Lainnya') wilayah,
+         nvl(cabang_induk.nama_cabang, ' ') cabang_induk, cabang.nama_cabang cabang,
+         (case mpm.nama_plan when 'POWER SAVE' then 'SIMAS PRIMA' else mpm.nama_plan end) nama_plan, mpm.lku_id, lk.lku_symbol, mpm.lsbp_nama, mpm.saldo_awal_tb saldo_awal,
+         mpm.masuk, mpm.deposit, mpm.bunga, mpm.saldo_akhir_tb saldo_akhir, mpm.polis_in, mpm.polis_out, (mpm.polis_in - mpm.polis_out)jumlah_polis
+    FROM eka.mst_powersave_monthly mpm,
+         eka.lst_cabang_bii cabang,
+         eka.lst_cabang_bii cabang_induk,
+         eka.lst_cabang_bii wilayah,
+         eka.lst_kurs lk
+   WHERE mpm.lsbp_id = 156
+     AND mpm.periode BETWEEN trunc($P{tanggalAwal},'mm') and trunc($P{tanggalAkhir},'mm')
+     AND mpm.lcb_id = cabang.lcb_no
+     AND mpm.lku_id = lk.lku_id
+	 AND cabang.jenis = 2
+	AND substr(mpm.lcb_id, 1, 1) = 'S'
+     AND cabang.head_no = cabang_induk.lcb_no(+)
+     AND cabang.wil_no = wilayah.lcb_no(+)
+ORDER BY mpm.periode,
+         wilayah.nama_cabang,
+         cabang_induk.nama_cabang,
+         cabang.nama_cabang,
+         mpm.nama_plan,
+         mpm.lku_id]]>
+	</queryString>
+	<field name="BULAN" class="java.lang.String"/>
+	<field name="BUNGA" class="java.math.BigDecimal"/>
+	<field name="CABANG" class="java.lang.String"/>
+	<field name="CABANG_INDUK" class="java.lang.String"/>
+	<field name="DEPOSIT" class="java.math.BigDecimal"/>
+	<field name="JUMLAH_POLIS" class="java.math.BigDecimal"/>
+	<field name="LKU_ID" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSBP_NAMA" class="java.lang.String"/>
+	<field name="MASUK" class="java.math.BigDecimal"/>
+	<field name="NAMA_PLAN" class="java.lang.String"/>
+	<field name="PERIODE" class="java.sql.Timestamp"/>
+	<field name="POLIS_IN" class="java.math.BigDecimal"/>
+	<field name="POLIS_OUT" class="java.math.BigDecimal"/>
+	<field name="SALDO_AKHIR" class="java.math.BigDecimal"/>
+	<field name="SALDO_AWAL" class="java.math.BigDecimal"/>
+	<field name="TAHUN" class="java.lang.String"/>
+	<field name="WILAYAH" class="java.lang.String"/>
+	<variable name="subtotwil_saldo_awal_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01") ? $F{SALDO_AWAL} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_saldo_awal_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02") ? $F{SALDO_AWAL} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_masuk_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02") ? $F{MASUK} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_masuk_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01") ? $F{MASUK} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_deposit_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01") ? $F{DEPOSIT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_deposit_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02") ? $F{DEPOSIT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_bunga_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01") ? $F{BUNGA} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_bunga_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02") ? $F{BUNGA} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_saldo_akhir_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01") ? $F{SALDO_AKHIR} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_saldo_akhir_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02") ? $F{SALDO_AKHIR} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_saldo_awal_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01") ? $F{SALDO_AWAL} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_saldo_awal_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02") ? $F{SALDO_AWAL} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_masuk_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01") ? $F{MASUK} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_masuk_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02") ? $F{MASUK} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_deposit_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01") ? $F{DEPOSIT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_deposit_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02") ? $F{DEPOSIT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_bunga_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01") ? $F{BUNGA} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_bunga_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02") ? $F{BUNGA} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_saldo_akhir_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01") ? $F{SALDO_AKHIR} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_saldo_akhir_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02") ? $F{SALDO_AKHIR} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_saldo_awal_p_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("01"))? $F{SALDO_AWAL} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_saldo_awal_p_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("02"))? $F{SALDO_AWAL} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_saldo_awal_sl_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("01"))? $F{SALDO_AWAL} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_saldo_awal_sl_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("02"))? $F{SALDO_AWAL} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_masuk_p_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("01"))? $F{MASUK} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_masuk_p_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("02"))? $F{MASUK} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_masuk_sl_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("01"))? $F{MASUK} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_masuk_sl_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("02"))? $F{MASUK} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_deposit_p_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("01"))? $F{DEPOSIT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_deposit_p_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("02"))? $F{DEPOSIT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_deposit_sl_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("01"))? $F{DEPOSIT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_deposit_sl_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("02"))? $F{DEPOSIT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_bunga_p_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("01"))? $F{BUNGA} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_bunga_p_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("02"))? $F{BUNGA} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_bunga_sl_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("01"))? $F{BUNGA} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_bunga_sl_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("02"))? $F{BUNGA} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_saldo_akhir_p_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("01"))? $F{SALDO_AKHIR}: new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_saldo_akhir_p_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("02"))? $F{SALDO_AKHIR}: new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_saldo_akhir_sl_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("01"))? $F{SALDO_AKHIR} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_saldo_akhir_sl_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("02"))? $F{SALDO_AKHIR} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_saldo_awal_p_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("01"))? $F{SALDO_AWAL} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_saldo_awal_p_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("02"))? $F{SALDO_AWAL} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_saldo_awal_sl_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("01"))? $F{SALDO_AWAL} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_saldo_awal_sl_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("02"))? $F{SALDO_AWAL} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_masuk_p_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("01"))? $F{MASUK} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_masuk_p_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("02"))? $F{MASUK} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_bunga_sl_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("02"))? $F{BUNGA} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_saldo_akhir_p_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("02"))? $F{SALDO_AKHIR}: new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_saldo_akhir_sl_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("01"))? $F{SALDO_AKHIR} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_saldo_akhir_sl_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("02"))? $F{SALDO_AKHIR} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_masuk_sl_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("01"))? $F{MASUK} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_masuk_sl_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("02"))? $F{MASUK} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_deposit_p_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("01"))? $F{DEPOSIT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_deposit_p_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("02"))? $F{DEPOSIT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_deposit_sl_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("01"))? $F{DEPOSIT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_deposit_sl_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("02"))? $F{DEPOSIT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_bunga_p_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("01"))? $F{BUNGA} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_bunga_p_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("02"))? $F{BUNGA} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_bunga_sl_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("01"))? $F{BUNGA} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_saldo_akhir_p_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("01"))? $F{SALDO_AKHIR}: new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_polisin_p_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("01"))? $F{POLIS_IN} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_polisin_p_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("02"))? $F{POLIS_IN} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_polisin_sl_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("01"))? $F{POLIS_IN} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_polisin_sl_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("02"))? $F{POLIS_IN} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_polisin_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02") ? $F{POLIS_IN} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_polisin_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01") ? $F{POLIS_IN} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_polisin_p_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("01"))? $F{POLIS_IN} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_polisin_p_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("02"))? $F{POLIS_IN} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_polisin_sl_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("01"))? $F{POLIS_IN} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_polisin_sl_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("02"))? $F{POLIS_IN} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_polisin_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02") ? $F{POLIS_IN} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_polisin_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01") ? $F{POLIS_IN} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_polisout_p_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("01"))? $F{POLIS_OUT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_polisout_p_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("02"))? $F{POLIS_OUT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_polisout_sl_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("01"))? $F{POLIS_OUT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_polisout_sl_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("02"))? $F{POLIS_OUT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_polisout_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02") ? $F{POLIS_OUT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_polisout_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01") ? $F{POLIS_OUT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_polisout_p_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("01"))? $F{POLIS_OUT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_polisout_p_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("02"))? $F{POLIS_OUT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_polisout_sl_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("01"))? $F{POLIS_OUT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_polisout_sl_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("02"))? $F{POLIS_OUT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_polisout_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02") ? $F{POLIS_OUT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_polisout_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01") ? $F{POLIS_OUT} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_jumlah_polis_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01") ? $F{JUMLAH_POLIS} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_jumlah_polis_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02") ? $F{JUMLAH_POLIS} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_jumlah_polis_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01") ? $F{JUMLAH_POLIS} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_jumlah_polis_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02") ? $F{JUMLAH_POLIS} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_jumlah_polis_p_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("01"))? $F{JUMLAH_POLIS}: new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_jumlah_polis_p_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("02"))? $F{JUMLAH_POLIS} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_jumlah_polis_sl_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("01"))? $F{JUMLAH_POLIS} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotwil_jumlah_polis_sl_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="wilayah" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("02"))? $F{JUMLAH_POLIS} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_jumlah_polis_p_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("02"))? $F{JUMLAH_POLIS} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_jumlah_polis_sl_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("01"))? $F{JUMLAH_POLIS} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_jumlah_polis_sl_usd" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("STABLE LINK") &&$F{LKU_ID}.equals("02"))? $F{JUMLAH_POLIS} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="subtotper_jumlah_polis_p_idr" class="java.math.BigDecimal" resetType="Group" resetGroup="bulan" calculation="Sum">
+		<variableExpression><![CDATA[($F{NAMA_PLAN}.equals("SIMAS PRIMA") &&$F{LKU_ID}.equals("01"))? $F{JUMLAH_POLIS} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<group name="bulan" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{PERIODE}]]></groupExpression>
+		<groupHeader>
+			<band height="26">
+				<textField hyperlinkType="None">
+					<reportElement x="975" y="0" width="100" height="26"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["SALDO AKHIR"]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="165" y="0" width="110" height="26"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["PRODUK"]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="275" y="0" width="35" height="26"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["KURS"]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="875" y="0" width="100" height="26"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" markup="none"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["POLIS OUT"]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="1075" y="0" width="100" height="26"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" markup="none"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["JUMLAH POLIS"]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="310" y="0" width="165" height="26"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" markup="none"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["KANWIL"]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="775" y="0" width="100" height="26"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["KELUAR"]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="575" y="0" width="100" height="26"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["MASUK"]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="475" y="0" width="100" height="26"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["SALDO AWAL"]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="0" y="0" width="165" height="26"/>
+					<box>
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["CABANG"]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="675" y="0" width="100" height="26"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" markup="none"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["POLIS IN"]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="76">
+				<textField isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="285" y="0" width="190" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Subtotal Per Periode Simas Prima (IDR) : "]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="475" y="0" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_saldo_awal_p_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="670" y="0" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="775" y="0" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_deposit_p_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="570" y="0" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="775" y="13" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_deposit_p_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="570" y="13" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="975" y="0" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_saldo_akhir_p_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="975" y="13" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_saldo_akhir_p_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="575" y="0" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_masuk_p_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="1070" y="13" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="670" y="13" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="475" y="13" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_saldo_awal_p_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="575" y="13" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_masuk_p_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="1070" y="0" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="285" y="13" width="190" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Subtotal Per Periode Simas Prima (USD) : "]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="285" y="25" width="190" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Subtotal Per Periode Simas Stabil Link (IDR) : "]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="285" y="38" width="190" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Subtotal Per Periode Simas Stabil Link (USD) : "]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="475" y="25" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_saldo_awal_sl_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="475" y="38" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_saldo_awal_sl_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="570" y="38" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="570" y="25" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="575" y="25" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_masuk_sl_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="575" y="38" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_masuk_sl_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="670" y="38" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="670" y="25" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="775" y="25" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_deposit_sl_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="775" y="38" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_deposit_sl_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="975" y="25" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_saldo_akhir_sl_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="975" y="38" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_saldo_akhir_sl_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="1070" y="38" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="1070" y="25" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="285" y="50" width="190" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Subtotal Per Periode (IDR) : "]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="285" y="63" width="190" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Subtotal Per Periode (USD) : "]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="475" y="50" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_saldo_awal_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="475" y="63" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_saldo_awal_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="570" y="63" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="570" y="50" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="575" y="50" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_masuk_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="575" y="63" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_masuk_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="670" y="63" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="670" y="50" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="775" y="50" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_deposit_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="775" y="63" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_deposit_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="975" y="50" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_saldo_akhir_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="975" y="63" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_saldo_akhir_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="1070" y="63" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="1070" y="50" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="870" y="38" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="870" y="25" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="870" y="50" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="870" y="63" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="870" y="13" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="870" y="0" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="675" y="50" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_polisin_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="770" y="25" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="770" y="13" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="770" y="38" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="675" y="0" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_polisin_p_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="675" y="38" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_polisin_sl_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="770" y="63" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="675" y="63" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_polisin_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="675" y="13" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_polisin_p_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="770" y="0" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="770" y="50" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="675" y="25" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_polisin_sl_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="970" y="63" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="875" y="38" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_polisout_sl_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="875" y="63" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_polisout_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="970" y="25" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="875" y="13" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_polisout_p_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="970" y="13" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="875" y="0" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_polisout_p_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="970" y="0" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="970" y="38" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="875" y="50" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_polisout_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="970" y="50" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="875" y="25" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_polisout_sl_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="1170" y="0" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="1170" y="25" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="1170" y="63" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="1170" y="13" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="1075" y="25" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_jumlah_polis_sl_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="1075" y="38" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_jumlah_polis_sl_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="1170" y="38" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="1075" y="50" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_jumlah_polis_idr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="1075" y="13" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_jumlah_polis_p_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="1075" y="63" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_jumlah_polis_usd}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="1170" y="50" width="5" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="1075" y="0" width="95" height="13" forecolor="#0000A0"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{subtotper_jumlah_polis_p_idr}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="wilayah">
+		<groupExpression><![CDATA[$F{WILAYAH}]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+	</group>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<detail>
+		<band height="13">
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="165" y="0" width="110" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{NAMA_PLAN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="275" y="0" width="35" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="0" y="0" width="165" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{CABANG}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="475" y="0" width="95" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{SALDO_AWAL}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="575" y="0" width="95" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MASUK}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="775" y="0" width="95" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{DEPOSIT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="975" y="0" width="95" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{SALDO_AKHIR}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1070" y="0" width="5" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="670" y="0" width="5" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="570" y="0" width="5" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="870" y="0" width="5" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="675" y="0" width="95" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{POLIS_IN}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="770" y="0" width="5" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="970" y="0" width="5" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="875" y="0" width="95" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{POLIS_OUT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1170" y="0" width="5" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.##;(#,##0.##)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1075" y="0" width="95" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{JUMLAH_POLIS}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="310" y="0" width="165" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{WILAYAH}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="12">
+			<textField evaluationTime="Report" hyperlinkType="None">
+				<reportElement x="1158" y="0" width="12" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1151" y="0" width="7" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["/"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="1140" y="0" width="12" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

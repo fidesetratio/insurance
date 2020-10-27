@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_pending_kirim_polis" pageWidth="1035" pageHeight="595" orientation="Landscape" columnWidth="995" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("01/02/2018")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("09/02/2018")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select b.reg_spaj,d.lsdbs_name produk,e.mcl_first pp,(case when b.mspo_provider = 2 then 'PROVIDER' else 'NON PROVIDER' end) provider,g.lar_admin cabang,nvl(i.nama_cabang,'-') cabang_bsm,l.lssp_status status_polis,
+    eka.workdays((select max(msps_date) from eka.mst_position_spaj where reg_spaj = a.reg_spaj and msps_desc like 'TRANSFER%PRINT POLIS'),sysdate) pending,
+    (select max(msps_date)
+        from eka.mst_position_spaj
+        where reg_spaj = a.reg_spaj
+            and (msps_desc  like 'PRINT POLIS%' or msps_desc like 'CETAK POLIS%')
+            and msps_desc not like '%DIRECT PRINT%') tgl_print,
+    (select max(msps_date)
+        from eka.mst_position_spaj
+        where reg_spaj = a.reg_spaj
+            and msps_desc like '%DIRECT PRINT%') direct_print,
+    (select max(msps_date)
+        from eka.mst_position_spaj
+        where reg_spaj = a.reg_spaj
+            and msps_desc like 'SCHEDULE PRINT%') schedule_print,
+    (select max(msps_date)
+        from eka.mst_position_spaj
+        where reg_spaj = a.reg_spaj
+            and msps_desc like 'VALID FOR PRINT%') tgl_valid,
+    (select max(msps_date)
+        from eka.mst_position_spaj
+        where reg_spaj = a.reg_spaj
+            and msps_desc like 'QC1_%') tgl_qc
+from
+    (select distinct
+        aa.reg_spaj,
+        trunc(aa.msps_date) msps_date,
+        (select count(reg_spaj)
+            from eka.mst_position_spaj
+            where reg_spaj = aa.reg_spaj
+                and (msps_desc like 'VALID FOR PRINT%' or msps_desc like 'PRINT POLIS%' or msps_desc like 'CETAK POLIS%' or msps_desc like 'SCHEDULER PRINT%' or msps_desc like 'KIRIM SOFTCOPY POLIS%')
+                and (lspd_id = 6 and lssp_id = 1 and lssa_id in (5,10))) print,
+        (select count(reg_spaj)
+            from eka.mst_position_spaj
+            where reg_spaj = aa.reg_spaj
+                and (msps_desc like 'TGL KIRIM POLIS%' or msps_desc like 'POLIS TELAH DIKIRIM%' or msps_desc like 'KIRIM SOFTCOPY POLIS%')) kirim
+    from
+        eka.mst_position_spaj aa
+    where
+        (aa.msps_desc like 'AC:%' or aa.msps_desc like 'AK:')
+        and aa.msps_date between $P{tanggalAwal} and $P{tanggalAkhir}) a,
+    eka.mst_policy b,
+    eka.mst_product_insured c,
+    eka.lst_det_bisnis d,
+    eka.mst_client_new e,
+    eka.lst_region f,
+    eka.lst_addr_region g,
+    eka.mst_reff_bii h,
+    eka.lst_cabang_bii i,
+    (select reg_spaj,max(no_urut) as no_urut from eka.mst_reff_bii group by reg_spaj) j,
+    eka.mst_insured k,
+    eka.lst_policy_status l
+where
+    a.reg_spaj = b.reg_spaj
+    and b.reg_spaj = c.reg_spaj
+    and c.lsbs_id < 300
+    and c.lsbs_id = d.lsbs_id
+    and c.lsdbs_number = d.lsdbs_number
+    and b.mspo_policy_holder = e.mcl_id
+    and b.lca_id = f.lca_id
+    and b.lwk_id = f.lwk_id
+    and b.lsrg_id = f.lsrg_id
+    and f.lar_id = g.lar_id
+    and b.reg_spaj = h.reg_spaj(+)
+    and h.lcb_reff = i.lcb_no(+)
+    and h.reg_spaj = j.reg_spaj(+)
+    and h.no_urut = j.no_urut(+)
+    and b.reg_spaj = k.reg_spaj
+    and b.lssp_id = l.lssp_id
+    and a.print = 1
+    and a.kirim = 0
+    and k.lssa_id not in (2,9)
+    and (c.lsbs_id || '-' ||c.lsdbs_number) not in ('142-2','158-6','188-2','164-11','175-2','73-12','73-13','73-14')
+order by
+    a.msps_date]]>
+	</queryString>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="PRODUK" class="java.lang.String"/>
+	<field name="PP" class="java.lang.String"/>
+	<field name="PROVIDER" class="java.lang.String"/>
+	<field name="TGL_PRINT" class="java.util.Date"/>
+	<field name="DIRECT_PRINT" class="java.util.Date"/>
+	<field name="SCHEDULE_PRINT" class="java.util.Date"/>
+	<field name="TGL_VALID" class="java.util.Date"/>
+	<field name="TGL_QC" class="java.util.Date"/>
+	<field name="CABANG" class="java.lang.String"/>
+	<field name="CABANG_BSM" class="java.lang.String"/>
+	<field name="PENDING" class="java.lang.Integer"/>
+	<field name="STATUS_POLIS" class="java.lang.String"/>
+	<title>
+		<band height="70">
+			<staticText>
+				<reportElement x="0" y="0" width="550" height="18"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement>
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[REPORT POLIS SUDAH DICETAK TETAPI BELUM DIKIRIM]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="23" width="550" height="15"/>
+				<textElement markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tanggal Report: " + $P{REPORT_SCRIPTLET}.formatDateWithTime(new Date()) + " by Underwriting Department."]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="38" width="550" height="15"/>
+				<textElement markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Periode Akseptasi Tanggal: " + $P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAwal}) + " s/d " + $P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAkhir})]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="15">
+			<staticText>
+				<reportElement x="0" y="0" width="20" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Segoe UI" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="20" y="0" width="60" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Segoe UI" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="80" y="0" width="120" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Segoe UI" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Produk]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="200" y="0" width="100" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Segoe UI" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Pemegang Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="300" y="0" width="70" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Segoe UI" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Provider/Non]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="370" y="0" width="50" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Segoe UI" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Tgl Print]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="420" y="0" width="60" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Segoe UI" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Direct Print]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="480" y="0" width="70" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Segoe UI" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Schedule Print]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="550" y="0" width="50" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Segoe UI" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Tgl Valid]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="600" y="0" width="50" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Segoe UI" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Tgl QC]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="650" y="0" width="115" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Segoe UI" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Cabang Agency]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="765" y="0" width="100" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Segoe UI" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Cabang BSM]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="865" y="0" width="50" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Segoe UI" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Pending]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="915" y="0" width="80" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Segoe UI" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Status Polis]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="20" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Number"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="20" y="0" width="60" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REG_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="80" y="0" width="120" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PRODUK}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="200" y="0" width="100" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="300" y="0" width="70" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PROVIDER}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="370" y="0" width="50" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_PRINT} == null ? "-" : new SimpleDateFormat("dd/MM/yyyy").format($F{TGL_PRINT})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="420" y="0" width="60" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{DIRECT_PRINT} == null ? "-" : new SimpleDateFormat("dd/MM/yyyy").format($F{DIRECT_PRINT})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="480" y="0" width="70" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{SCHEDULE_PRINT} == null ? "-" : new SimpleDateFormat("dd/MM/yyyy").format($F{SCHEDULE_PRINT})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="550" y="0" width="50" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_VALID} == null ? "-" : new SimpleDateFormat("dd/MM/yyyy").format($F{TGL_VALID})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="600" y="0" width="50" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_QC} == null ? "-" : new SimpleDateFormat("dd/MM/yyyy").format($F{TGL_QC})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="650" y="0" width="115" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CABANG}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="765" y="0" width="100" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CABANG_BSM}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="865" y="0" width="50" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{PENDING}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="915" y="0" width="80" height="15"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{STATUS_POLIS}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="34">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="699" y="16" width="100" height="18"/>
+				<box padding="2">
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top" markup="none">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Halaman " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

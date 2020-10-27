@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="summary_per_plan" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<property name="com.jasperassistant.designer.HGuides" value="12,43"/>
+	<parameter name="tgl1" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("07/10/2000")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tgl2" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("07/11/2001")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lus_id" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT EKA.MST_POLICY.MSPO_POLICY_HOLDER,   
+         EKA.MST_INSURED.MSTE_FLAG_CC,   
+         EKA.MST_INSURED.lus_id,   
+         EKA.MST_PRODUCT_INSURED.REG_SPAJ,   
+         EKA.MST_PRODUCT_INSURED.MSPR_PREMIUM,   
+         EKA.V_CLIENT.NAMA,   
+         EKA.MST_ACCOUNT_RECUR.MAR_JENIS,   
+         EKA.MST_ACCOUNT_RECUR.MAR_ACC_NO,   
+         EKA.MST_ACCOUNT_RECUR.MAR_HOLDER,   
+         EKA.MST_ACCOUNT_RECUR.MAR_EXPIRED,   
+         EKA.MST_INSURED.REG_SPAJ,   
+         EKA.MST_INSURED.MSTE_TGL_RECUR,   
+         EKA.MST_PRODUCT_INSURED.LSBS_ID,   
+         EKA.LST_BISNIS.LSBS_NAME  
+    FROM EKA.MST_POLICY,   
+         EKA.MST_INSURED,   
+         EKA.MST_PRODUCT_INSURED,   
+         EKA.V_CLIENT,   
+         EKA.MST_ACCOUNT_RECUR,   
+         EKA.LST_BISNIS  
+   WHERE ( EKA.MST_INSURED.REG_SPAJ = EKA.MST_ACCOUNT_RECUR.REG_SPAJ ) and  
+         ( EKA.MST_INSURED.REG_SPAJ = EKA.MST_PRODUCT_INSURED.REG_SPAJ ) and  
+         ( EKA.MST_INSURED.MSTE_INSURED_NO = EKA.MST_PRODUCT_INSURED.MSTE_INSURED_NO ) and  
+         ( EKA.MST_POLICY.MSPO_POLICY_HOLDER = EKA.V_CLIENT.MCL_ID ) and  
+         ( EKA.MST_POLICY.REG_SPAJ = EKA.MST_INSURED.REG_SPAJ ) and  
+         ( EKA.MST_PRODUCT_INSURED.LSBS_ID = EKA.LST_BISNIS.LSBS_ID ) and  
+         ( ( trunc(EKA.MST_INSURED.MSTE_TGL_RECUR) >= $P{tgl1} ) AND  
+         ( trunc(EKA.MST_INSURED.MSTE_TGL_RECUR) <= $P{tgl2} ) AND  
+         ( EKA.MST_INSURED.LSPD_ID = 34 ) AND  
+         ( EKA.MST_INSURED.MSTE_FLAG_RECUR is null ) )   
+ORDER BY EKA.MST_PRODUCT_INSURED.LSBS_ID asc,EKA.V_CLIENT.NAMA ASC]]>
+	</queryString>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSBS_NAME" class="java.lang.String"/>
+	<field name="LUS_ID" class="java.math.BigDecimal"/>
+	<field name="MAR_ACC_NO" class="java.lang.String"/>
+	<field name="MAR_EXPIRED" class="java.util.Date"/>
+	<field name="MAR_HOLDER" class="java.lang.String"/>
+	<field name="MAR_JENIS" class="java.math.BigDecimal"/>
+	<field name="MSPO_POLICY_HOLDER" class="java.lang.String"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="MSTE_FLAG_CC" class="java.math.BigDecimal"/>
+	<field name="MSTE_TGL_RECUR" class="java.util.Date"/>
+	<field name="NAMA" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<variable name="premi" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{MSPR_PREMIUM}]]></variableExpression>
+	</variable>
+	<variable name="premi_tot" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{MSPR_PREMIUM}]]></variableExpression>
+	</variable>
+	<group name="Group_1">
+		<groupHeader>
+			<band height="21">
+				<textField hyperlinkType="None">
+					<reportElement x="18" y="2" width="182" height="14"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{LSBS_NAME}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="25">
+				<staticText>
+					<reportElement x="43" y="5" width="163" height="14"/>
+					<textElement>
+						<font size="11" isBold="true"/>
+					</textElement>
+					<text><![CDATA[TOTAL PREMI Per Plan]]></text>
+				</staticText>
+				<line>
+					<reportElement x="12" y="2" width="806" height="1"/>
+				</line>
+				<textField hyperlinkType="None">
+					<reportElement x="254" y="3" width="94" height="16"/>
+					<textElement textAlignment="Right"/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($V{premi})]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<pageHeader>
+		<band height="117">
+			<textField hyperlinkType="None">
+				<reportElement x="13" y="12" width="483" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Printed :"+ $P{REPORT_SCRIPTLET}.formatDateWithTime(new Date())]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="12" y="26" width="274" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PT Asuransi Jiwa Sinarmas MSIG Tbk.]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="14" y="48" width="298" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Report Summary "+$F{LSBS_NAME} + "Per Recuring Date"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="14" y="65" width="486" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Periode Of" +$P{REPORT_SCRIPTLET}.formatDateNumber($P{tgl1})+" s/d "+ $P{REPORT_SCRIPTLET}.formatDateNumber($P{tgl2})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="18" y="95" width="24" height="20"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="53" y="95" width="80" height="20"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No. Spaj]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="158" y="96" width="80" height="20"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Policy Holder]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="271" y="97" width="80" height="20"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jumlah Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="364" y="97" width="80" height="20"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Pay mode]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="456" y="95" width="80" height="20"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Account Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="574" y="96" width="80" height="20"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Account No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="677" y="95" width="80" height="20"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Expired Date]]></text>
+			</staticText>
+			<elementGroup>
+				<elementGroup>
+					<line>
+						<reportElement x="15" y="87" width="806" height="1"/>
+					</line>
+					<line>
+						<reportElement x="15" y="84" width="806" height="1"/>
+					</line>
+				</elementGroup>
+			</elementGroup>
+			<line>
+				<reportElement x="17" y="115" width="806" height="1"/>
+			</line>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="16">
+			<textField hyperlinkType="None">
+				<reportElement x="43" y="1" width="80" height="15"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatSPAJ($F{REG_SPAJ})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="149" y="1" width="80" height="15"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="267" y="1" width="80" height="15"/>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($F{MSPR_PREMIUM})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="357" y="1" width="80" height="15"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{MSTE_FLAG_CC}.intValue()==1)
+	?("Kartu Kredit")
+: ("Tabungan")]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="448" y="1" width="80" height="15"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MAR_HOLDER}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="563" y="1" width="80" height="15"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MAR_ACC_NO}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="669" y="1" width="80" height="15"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{MAR_EXPIRED})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="26">
+			<staticText>
+				<reportElement x="43" y="8" width="82" height="15"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TOTAL PREMI]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="256" y="8" width="94" height="14"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($V{premi_tot})]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="12" y="5" width="806" height="1"/>
+			</line>
+			<line>
+				<reportElement x="12" y="3" width="806" height="1"/>
+			</line>
+		</band>
+	</pageFooter>
+</jasperReport>

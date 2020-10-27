@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<insert id="elions.refund.insertMstRefund" parameterClass="com.ekalife.elions.web.refund.vo.RefundDbVO">
+	    INSERT INTO EKA.MST_REFUND (
+            REG_SPAJ,
+            POSISI_NO,
+            KLI_NOREK,
+            TINDAKAN_CD,
+            ALASAN_CD,
+            ULINK_FLAG,
+            NO_VOUCHER,
+            PREMI_REFUND,
+            REG_SPAJ_BARU,
+            KLI_NAMA,
+            KLI_NAMA_BANK,
+            KLI_CABANG_BANK,
+            KLI_KOTA_BANK,
+            ALASAN_LAIN,
+            PAYMENT,
+            PAYMENT_DATE,
+            CREATE_WHEN,
+            CREATE_WHO,
+            UPDATE_WHEN,
+            UPDATE_WHO,
+            HAS_UNIT_FLAG,
+            LAMPIRAN,
+            NO_SURAT,
+            PREV_LSPD_ID,
+            FLAG_USER_CABANG
+        ) VALUES (
+            #spajNo#,
+            #posisiNo#,
+            #kliNorek#,
+            #tindakanCd#,
+            #alasanCd#,
+            #ulinkFlag#,
+            #noVoucher#,
+            #premiRefund#,
+            #spajBaruNo#,
+            #kliNama#,
+            #kliNamaBank#,
+            #kliCabangBank#,
+            #kliKotaBank#,
+            #alasanLain#,
+            #payment#,
+            #paymentDate#,
+            #createWhen#,
+            #createWho#,
+            #updateWhen#,
+            #updateWho#,
+            #hasUnitFlag#,
+            #lampiran#,
+            #noSurat#,
+            #prevLspdId#,
+            #flagUserCabang#
+        )
+    </insert>
+
+    <insert id="elions.refund.insertMstDetRefund" parameterClass="com.ekalife.elions.web.refund.vo.RefundDetDbVO">
+		INSERT INTO eka.mst_det_refund
+	   		( reg_spaj, item_no, ljb_id, jumlah, deskripsi, tipe, unit, lji_id, lku_id )
+	    VALUES
+			( #spajNo#, #itemNo#, #ljbId#, #jumlah#, #deskripsi#, #tipeNo#, #unit#, #ljiId#, #lkuId# )
+	</insert>
+
+	<insert id="elions.refund.insertMstDetRefundLamp" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_det_refund_lampiran(REG_SPAJ, LAMPIRAN, CHECKED, NO_URUT)
+		VALUES(#regSpaj#,#lampiran#,#checked#, #noUrut#)
+	</insert>
+
+	<insert id="elions.refund.insertMstTbankJurnalBalik" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_tbank 
+		( no_pre, position, tgl_input, tgl_jurnal, kas, jumlah, lus_id )
+		<isEqual property="jumlah" compareValue="0">
+			( SELECT #no_pre_new#, 1, sysdate, trunc(sysdate), decode(kas, 'K', 'M', 'D', 'B', 'C', 'A', 'M', 'K', 'B', 'D', 'A', 'C'), jumlah, #lus_id# FROM eka.mst_tbank WHERE no_pre = #no_pre#)
+		</isEqual>
+        <isNotEqual property="jumlah" compareValue="0">
+			( SELECT #no_pre_new#, 1, sysdate, trunc(sysdate), decode(kas, 'K', 'M', 'D', 'B', 'C', 'A', 'M', 'K', 'B', 'D', 'A', 'C'), #jumlah#, #lus_id# FROM eka.mst_tbank WHERE no_pre = #no_pre#)
+		</isNotEqual>
+	</insert>
+
+	<insert id="elions.refund.insertMstDbankJurnalBalik" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_dbank (no_pre, no_jurnal, kode_cash_flow, keterangan, kas, jumlah, key_jurnal , type_trx ) 
+		<isEqual property="jumlah" compareValue="0">
+			(
+				SELECT #no_pre_new#, no_jurnal, kode_cash_flow, 'B A N K RF ' || #no_voucher#, 'K', jumlah, #spaj# , 1
+	        	FROM eka.mst_dbank WHERE no_pre = #no_pre# and no_jurnal = 1
+				UNION
+				SELECT #no_pre_new#, no_jurnal, kode_cash_flow, 'REFUND PREMI ' || (SELECT kli_nama FROM eka.mst_refund WHERE reg_spaj = rpad(replace(#spaj#,'.'),11,' ')) || ' ' || #spaj#, 'C', jumlah, #spaj# , 1
+	        	FROM eka.mst_dbank WHERE no_pre = #no_pre# and no_jurnal = 2
+	        )
+		</isEqual>
+		<isNotEqual property="jumlah" compareValue="0">
+			(
+				<isNull property="fee">
+					SELECT #no_pre_new#, no_jurnal, kode_cash_flow, 'B A N K RF ' || #no_voucher#, 'K', #jumlah#, #spaj#, 1
+		        	FROM eka.mst_dbank WHERE no_pre = #no_pre# and no_jurnal = 1
+					UNION
+					SELECT #no_pre_new#, no_jurnal, kode_cash_flow, 'REFUND PREMI ' || (SELECT kli_nama FROM eka.mst_refund WHERE reg_spaj = rpad(replace(#spaj#,'.'),11,' ')) || ' ' || #spaj#, 'C', #jumlah#, #spaj#, 1
+		        	FROM eka.mst_dbank WHERE no_pre = #no_pre# and no_jurnal = 2
+		        </isNull>
+		        <isNotNull property="fee">
+		        	SELECT #no_pre_new#, no_jurnal, kode_cash_flow, 'B A N K RF ' || #no_voucher#, 'K', #jumlah#, #spaj#, 1
+	                FROM eka.mst_dbank WHERE no_pre = #no_pre# and no_jurnal = 1
+	                UNION
+	                SELECT #no_pre_new#, no_jurnal, kode_cash_flow, 'REFUND PREMI ' || (SELECT kli_nama FROM eka.mst_refund WHERE reg_spaj = rpad(replace(#spaj#,'.'),11,' ')) || ' ' || #spaj#, 'C', (#jumlah# - #fee#), #spaj#, 1
+	                FROM eka.mst_dbank WHERE no_pre = #no_pre# and no_jurnal = 2
+	                UNION
+	                SELECT #no_pre_new#, 3, 27, 'MERCHANT FEE', 'D', #fee#, #spaj#, 1
+	                FROM eka.mst_dbank WHERE no_pre = #no_pre# and no_jurnal = 2
+	            </isNotNull>
+	        )
+		</isNotEqual>
+	</insert>
+
+	<insert id="elions.refund.insertMstPtcTmJurnalBalik" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_ptc_tm
+			( no_jm, mtm_position, tgl_jurnal, no_pre, user_input, tgl_input, no_jm_ref ) 
+		VALUES
+			( #no_jm_new#, 1, trunc(sysdate), #no_pre_new#, #lus_id#, sysdate, #no_jm# )
+	</insert>
+
+	<insert id="elions.refund.insertMstPtcJmJurnalBalik" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_ptc_jm ( no_jm, no_jurnal, keterangan, mjm_jumlah, mjm_cd, mjm_project, mjm_budget, type_trx, key_jurnal, msag_id, lsbs_id ) 
+		( SELECT #no_jm_new#, no_jurnal+#flagjm#, 'JB ' || keterangan || '( REFF NO JM ' || #no_jm# || ' )', mjm_jumlah, decode(mjm_cd, 'D', 'C', 'C', 'D'), mjm_project, mjm_budget, type_trx, key_jurnal, msag_id, lsbs_id 
+		FROM eka.mst_ptc_jm WHERE no_jm = #no_jm# )
+	</insert>
+	
+	<insert id="elions.refund.insertMstPembayaran" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_pembayaran
+			(trans_id, jenis, no_pre, tgl_bayar, lku_id, lsbp_id, mrc_cabang, mrc_kota, mrc_atas_nama, mrc_no_ac, nominal, active, lus_id, tgl_input)
+		VALUES
+			(#trans_id#, 8, #no_pre#, SYSDATE+1, #lku_id#, #lsbp_id#, #mrc_cabang#, #mrc_kota#, #mrc_atas_nama#, #mrc_no_ac#, #nominal#, 1, #lus_id#, SYSDATE)
+	</insert>
+	
+	<insert id="elions.refund.insertMstTempPremiRefund" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_temp_premi_refund
+			(reg_spaj, status, jenis, mstp_norek, mstp_nama, mstp_bank, mstp_cabang_bank, mstp_kota_bank, mstp_payment, lku_id,
+			mstp_nilai_kurs, mstp_nopre_masuk, mstp_novoc_masuk, mstp_input_date, mstp_user_input, no_trx, keterangan, tindakan)
+		VALUES
+			(#reg_spaj#, #status#, #jenis#, #mstp_norek#, upper(#mstp_nama#), #mstp_bank#, upper(#mstp_cabang_bank#), upper(#mstp_kota_bank#), #mstp_payment#, #lku_id#, 
+			#mstp_nilai_kurs#, #nopre_msk#, #novoc_msk#, SYSDATE, #mstp_user_input#, #no_trx#, #keterangan#, #tindakan#)
+	</insert>
+	
+	<insert id="elions.refund.insertMstTempPremiRefundMod" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_temp_premi_refund
+			(reg_spaj, status, jenis, mstp_norek, mstp_nama, mstp_bank, mstp_cabang_bank, mstp_kota_bank, mstp_payment, lku_id, mstp_nilai_kurs,
+			mstp_nopre_masuk, mstp_novoc_masuk, mstp_input_date, mstp_user_input, no_trx, keterangan, tindakan, mstp_nojmsa_masuk, tgl_rk, premi_ke)
+		VALUES
+			(#reg_spaj#, #status#, #jenis#, #mstp_norek#, upper(#mstp_nama#), #mstp_bank#, upper(#mstp_cabang_bank#), upper(#mstp_kota_bank#), #mstp_payment#, #lku_id#, 
+			#mstp_nilai_kurs#, #nopre_msk#, #novoc_msk#, SYSDATE, #mstp_user_input#, #no_trx#, #keterangan#, #tindakan#, #nojmsa#, #tgl_rk#, #premi_ke#)
+	</insert>
+	
+	<insert id="elions.refund.insertMstPtcJmJurnalBalikSA" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_ptc_jm ( no_jm, no_jurnal, keterangan, mjm_jumlah, mjm_cd, mjm_project, mjm_budget, type_trx, key_jurnal, msag_id, lsbs_id ) 
+		(
+			SELECT #no_jm_sa_new#, 1, keterangan, mjm_jumlah, 'D', mjm_project, mjm_budget, type_trx, key_jurnal, msag_id, lsbs_id
+			FROM eka.mst_ptc_jm
+			WHERE no_jm = #no_jm_sa#
+			    AND keterangan like 'TITIPAN PREMI%'
+			UNION
+			SELECT #no_jm_sa_new#, 2, keterangan, #jumlah#, 'C', project_no, budget_no, 1, #reg_spaj#, msag_id, lsbs_id
+			FROM eka.mst_bvoucher
+			WHERE no_pre = #no_pre#
+			    AND keterangan like 'B A N K'
+		)
+	</insert>
+	
+	<insert id="elions.refund.insertMstDbankJurnalBalikSA" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_dbank (no_pre, no_jurnal, kode_cash_flow, keterangan, kas, jumlah, key_jurnal, type_trx ) 
+		(
+            <isNull property="fee">
+	            SELECT #no_pre_new#, 1, (select kode_cash_flow from eka.mst_dbank where no_pre = #no_pre# and no_jurnal = 1), keterangan, 'K', #jumlah#, #reg_spaj#, 1
+	            FROM eka.mst_bvoucher
+	            WHERE no_pre = #no_pre#
+	                AND keterangan like 'B A N K'
+	            UNION
+	            SELECT #no_pre_new#, 2, 1, #ket#, 'C', #jumlah#, key_jurnal, 1
+	            FROM eka.mst_ptc_jm
+	            WHERE no_jm = #no_jm_sa#
+	                AND keterangan like 'TITIPAN PREMI%'
+            </isNull>
+            <isNotNull property="fee">
+            	SELECT #no_pre_new#, 1, (select kode_cash_flow from eka.mst_dbank where no_pre = #no_pre# and no_jurnal = 1), keterangan, 'K', #jumlah#, #reg_spaj#, 1
+	            FROM eka.mst_bvoucher
+	            WHERE no_pre = #no_pre#
+	                AND keterangan like 'B A N K'
+	            UNION
+	            SELECT #no_pre_new#, 2, 1, #ket#, 'C', (#jumlah# - #fee#), key_jurnal, 1
+	            FROM eka.mst_ptc_jm
+	            WHERE no_jm = #no_jm_sa#
+	                AND keterangan like 'TITIPAN PREMI%'
+	            UNION
+	            SELECT #no_pre_new#, 3, 27, 'MERCHANT FEE', 'D', #fee#, key_jurnal, 1
+	            FROM eka.mst_ptc_jm
+	            WHERE no_jm = #no_jm_sa#
+	                AND keterangan like 'TITIPAN PREMI%'
+            </isNotNull>
+	    )
+	</insert>
+	
+	<insert id="elions.refund.insertMstUlinkRedeem" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_ulink
+			(reg_spaj, mu_ke, lt_id, mu_tgl_trans, mu_wdraw_cnt, mu_lspd_id, mu_tgl_input, mu_aktif, mu_flag_print, mu_bonus)
+		(
+			SELECT a.reg_spaj, (select max(mu_ke)+1 from eka.mst_ulink where reg_spaj = a.reg_spaj), 13,
+				#tgl_trans#, 0, 42, sysdate, 1, 0, 0
+			FROM eka.mst_ulink a
+			WHERE a.reg_spaj = #reg_spaj#
+			GROUP BY a.reg_spaj
+		)
+	</insert>
+	
+	<insert id="elions.refund.insertMstDetUlinkRedeem" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_det_ulink
+			(reg_spaj, mu_ke, lji_id, mdu_persen, mdu_jumlah, mdu_unit, mdu_saldo_unit, 
+			 mdu_persen_tu, mdu_flag_min, mdu_aktif, mdu_saldo_unit_pp, mdu_saldo_unit_tu)
+		(
+			SELECT a.reg_spaj, (select max(mu_ke)+1 from eka.mst_det_ulink where reg_spaj = a.reg_spaj), a.lji_id, a.mdu_persen,
+			    0, a.mdu_saldo_unit, 0, 0, 0, 1, 0, 0
+			FROM eka.mst_det_ulink a
+			WHERE a.reg_spaj = #reg_spaj#
+				AND a.mu_ke = (select max(mu_ke) from eka.mst_det_ulink where reg_spaj = a.reg_spaj)
+		)
+	</insert>
+	
+	<insert id="elions.refund.insertMstTransUlinkRedeem" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_trans_ulink
+			(reg_spaj, mu_ke, mtu_ke, mtu_tgl_trans, lt_id, lji_id, mtu_desc, mtu_jumlah, mtu_unit, mtu_dk,
+			 mtu_saldo_unit, mtu_tgl_input, lus_id, lspd_id, mtu_flag_lock, mtu_saldo_unit_pp, mtu_saldo_unit_tu)
+		(
+			SELECT a.reg_spaj, (select max(mu_ke)+1 from eka.mst_trans_ulink where reg_spaj = a.reg_spaj), a.mtu_ke,
+				#tgl_trans#, 13, a.lji_id, 'With-draw Pembatalan', 0, sum(a.mtu_unit)*(-1), 'K', 0, sysdate, #lus_id#, 42, 0, 0, 0
+			FROM eka.mst_trans_ulink a
+			WHERE a.reg_spaj = #reg_spaj#
+			GROUP BY a.reg_spaj, a.mtu_ke, a.lji_id
+		)
+	</insert>
+	
+	<insert id="elions.refund.insertMstPtcJmSaJurnalBalik" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_ptc_jm
+			( no_jm, no_jurnal, keterangan, mjm_jumlah, mjm_cd, mjm_project, mjm_budget, type_trx, key_jurnal, msag_id, lsbs_id ) 
+		(
+			SELECT #no_jm_new#, no_jurnal, keterangan, mjm_jumlah, decode(mjm_cd, 'D', 'C', 'C', 'D'), mjm_project, mjm_budget, type_trx, key_jurnal, msag_id, lsbs_id 
+			FROM eka.mst_ptc_jm
+			WHERE no_jm = #no_jm#
+		)
+	</insert>
+	
+	<insert id="elions.refund.insertMstDrekDetBatal" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_drek_det
+			( no_trx, jumlah, no_spaj, payment_id, create_id, create_date, flag_active, no_pre, norek_ajs, jenis, tgl_trx, no_jm, no_jurnal, flag_batal )
+		(
+			SELECT no_trx, (jumlah * -1) jumlah, no_spaj, null, 0, sysdate, flag_active, no_pre, norek_ajs, jenis, tgl_trx, #no_jm#, no_jurnal, 1
+			FROM eka.mst_drek_det
+			WHERE no_spaj = #reg_spaj#
+				AND payment_id = #payment_id#
+		)
+	</insert>
+</sqlMap>

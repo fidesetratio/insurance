@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="print_polis_per_useruw_all" pageWidth="595" pageHeight="842" whenNoDataType="BlankPage" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.HGuides" value="439"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<property name="com.jasperassistant.designer.VGuides.Title" value="30,47"/>
+	<parameter name="tanggalAwal" class="java.lang.String">
+		<defaultValueExpression><![CDATA["20/05/2010"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.lang.String">
+		<defaultValueExpression><![CDATA["20/05/2010"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT   eka.utils.user_input (b.lus_id) user_cetak,c.lus_id,
+           a.reg_spaj,
+           a.mspo_policy_no,
+           eka.utils.pemegang (a.reg_spaj) pemegang,
+           A.MSPO_DATE_PRINT,
+           (select count(*)reg_spaj
+            from eka.mst_policy d , eka.mst_position_spaj f
+            where  d.reg_spaj=f.reg_spaj
+                    and  (f.msps_desc = 'PRINT POLIS (E-LIONS)'
+                OR f.msps_desc LIKE 'PRINT SERTIFIKAT%')
+                  AND d.mspo_date_print >= to_date($P{tanggalAwal},'dd/mm/yyyy') 
+          		AND d.mspo_date_print <= to_date($P{tanggalAkhir},'dd/mm/yyyy') +1
+                and c.lus_id=f.lus_id
+            ) jm
+    FROM   EKA.MST_POLICY A, EKA.MST_POSITION_SPAJ B, eka.lst_user c
+   WHERE       A.LSTB_ID = 1
+           AND A.REG_SPAJ = B.REG_SPAJ
+           and b.lus_id= c.lus_id
+            AND a.mspo_date_print >= to_date($P{tanggalAwal},'dd/mm/yyyy') 
+          AND a.mspo_date_print <= to_date($P{tanggalAkhir},'dd/mm/yyyy') +1
+           AND (b.msps_desc = 'PRINT POLIS (E-LIONS)'
+                OR b.msps_desc LIKE 'PRINT SERTIFIKAT%')
+           and lde_id=11 
+ORDER BY   user_cetak, mspo_date_print   ]]>
+	</queryString>
+	<field name="JM" class="java.math.BigDecimal"/>
+	<field name="LUS_ID" class="java.math.BigDecimal"/>
+	<field name="MSPO_DATE_PRINT" class="java.util.Date"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="PEMEGANG" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="USER_CETAK" class="java.lang.String"/>
+	<group name="user">
+		<groupExpression><![CDATA[$F{USER_CETAK}]]></groupExpression>
+		<groupHeader>
+			<band height="41">
+				<staticText>
+					<reportElement x="0" y="0" width="59" height="20"/>
+					<box border="None"/>
+					<textElement verticalAlignment="Top">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[User Print  :]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="60" y="1" width="380" height="19"/>
+					<box border="None"/>
+					<textElement verticalAlignment="Top">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{USER_CETAK}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="30" y="20" width="130" height="21"/>
+					<box topBorder="1Point" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+					<textElement textAlignment="Left">
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[  NO Polis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="160" y="20" width="150" height="21"/>
+					<box border="1Point"/>
+					<textElement textAlignment="Left">
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[  Nama Pemegang Polis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="310" y="20" width="130" height="21"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+					<textElement textAlignment="Center">
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[  Tanggal Cetak]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="20" width="30" height="21"/>
+					<box topBorder="1Point" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[  No]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="35">
+				<staticText>
+					<reportElement x="0" y="0" width="440" height="20"/>
+					<box border="1Point"/>
+					<textElement/>
+					<text><![CDATA[]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="1" width="160" height="19"/>
+					<box border="1Point"/>
+					<textElement textAlignment="Center"/>
+					<text><![CDATA[Total Polis     ]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="160" y="1" width="280" height="19"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+					<textElement textAlignment="Left"/>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{JM}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<title>
+		<band height="55">
+			<staticText>
+				<reportElement x="0" y="0" width="432" height="30"/>
+				<textElement>
+					<font fontName="Arial" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[REPORT PRINT POLIS UW INDIVIDU]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="30" width="55" height="25"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[Tanggal ]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="60" y="30" width="80" height="25"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggalAwal}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="140" y="30" width="20" height="25"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[s/d]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="160" y="30" width="80" height="25"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggalAkhir}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="55" y="30" width="5" height="25"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+		</band>
+	</title>
+	<detail>
+		<band height="16">
+			<textField>
+				<reportElement x="0" y="0" width="30" height="16"/>
+				<box topBorder="None" leftBorder="1Point" bottomBorder="None" rightBorder="1Point"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["  " + $V{REPORT_COUNT}+"."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="30" y="0" width="130" height="16"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" '"+ $F{MSPO_POLICY_NO}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="160" y="0" width="150" height="16"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["  "+  $F{PEMEGANG}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="310" y="0" width="130" height="16"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{MSPO_DATE_PRINT})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

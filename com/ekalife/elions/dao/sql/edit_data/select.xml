@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="elions.edit_data">
+
+	<typeAlias alias="hashMap" type="java.util.HashMap"/>
+
+	<typeAlias alias="titipan" type="com.ekalife.elions.model.DepositPremium"/>
+	<typeAlias alias="payment" type="com.ekalife.elions.model.Payment"/>
+
+	<select id="selectDataAgenUntukTesting" resultClass="string">
+		SELECT msag_id
+		  FROM eka.mst_agent
+		 WHERE msag_active = 1
+		   AND lstb_id = 1
+		   AND lsle_id = 4
+		   AND lca_id NOT IN ('09', '42', '08')
+		   AND msag_npwp IS NOT NULL
+	</select>
+
+	<select id="selectCommissionWSLanjutanYgTertinggalper2010" parameterClass="string" resultClass="hashMap">
+		select /*+ first_rows */ a.reg_spaj, c.mspo_policy_no, a.mspro_prod_date, a.mspro_prod_ke, a.msbi_tahun_ke, a.msbi_premi_ke
+		from eka.mst_production a, eka.mst_agent_prod b, eka.mst_policy c
+		where a.reg_spaj = c.reg_spaj
+		and c.reg_spaj = b.reg_spaj
+		and a.lstb_id = 1
+		and mspro_prod_ke <![CDATA[>]]>1
+		and mspro_prod_date between '20 jan 2010' and '31 jan 2010'
+		and b.msag_id = #msag#
+		and b.lsle_id = 4
+		and exists
+		(select 1
+		from eka.mst_commission x
+		where x.reg_spaj = a.reg_spaj
+		and   x.msbi_tahun_ke = a.msbi_tahun_ke
+		and   x.msbi_premi_ke = a.msbi_premi_ke 
+		and x.msag_id <![CDATA[<>]]> b.msag_id )
+	</select>
+	
+	<select id="selectDataBonusStableLinkYangKetinggalan" resultClass="com.ekalife.elions.model.Commission">
+		SELECT a.msl_premi premi, b.*
+		  FROM eka.mst_slink a, eka.mst_commission b
+		 WHERE a.msl_input_date >= '1 sep 2009'
+		   AND a.msl_new = 1
+		   AND a.reg_spaj = b.reg_spaj
+		   AND a.msl_tahun_ke = b.msbi_tahun_ke
+		   AND a.msl_premi_ke = b.msbi_premi_ke
+		   AND (b.reg_spaj, b.msbi_tahun_ke, b.msbi_premi_ke) NOT IN (
+		                                 SELECT reg_spaj, msbi_tahun_ke, msbi_premi_ke FROM eka.mst_comm_bonus)
+	</select>
+
+	<select id="selectTitipanPremiBySpaj" parameterClass="string" resultClass="titipan">
+		SELECT   a.reg_spaj, a.msdp_number, a.lsrek_id, a.msdp_date_book,
+		         a.msdp_no_pre, a.msdp_no_voucher, a.msdp_pay_date, a.lsjb_id,
+		         a.lku_id, a.msdp_payment, a.no_kttp, a.msdp_old_policy,
+		         a.msdp_selisih_kurs, a.msdp_desc, a.client_bank, a.msdp_no_rek,
+		         a.msdp_due_date, b.lus_login_name, a.msdp_input_date
+		    FROM eka.mst_deposit_premium a, eka.lst_user b
+		   WHERE a.lus_id = b.lus_id AND a.reg_spaj = RPAD (#value#, 11, ' ')
+		ORDER BY a.msdp_number
+	</select>
+
+	<select id="selectPaymentBySpaj" parameterClass="string" resultClass="payment">
+		SELECT   a.mspa_payment_id, a.reg_spaj, a.msdp_number, a.lsrek_id,
+		         a.mspa_date_book, a.mspa_no_pre, a.mspa_no_voucher, a.mspa_pay_date,
+		         a.lsjb_id, a.lku_id, a.mspa_payment, a.mspa_old_policy,
+		         a.mspa_nilai_kurs, a.mspa_desc, a.client_bank, a.mspa_no_rek,
+		         a.mspa_due_date, b.lus_login_name, a.mspa_input_date
+		    FROM eka.mst_payment a, eka.lst_user b
+		   WHERE a.lus_id = b.lus_id
+		     AND a.reg_spaj = RPAD (#value#, 11, ' ')
+		     AND a.msdp_number IS NULL
+		ORDER BY a.mspa_payment_id	
+	</select>
+
+</sqlMap>

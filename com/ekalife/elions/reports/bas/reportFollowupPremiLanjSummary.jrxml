@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="reportFollowupPremiLanjSummary" pageWidth="400" pageHeight="842" whenNoDataType="NoDataSection" columnWidth="360" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="dataajsmuat"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<parameter name="bdate" class="java.lang.String"/>
+	<parameter name="edate" class="java.lang.String"/>
+	<parameter name="jn_tgl" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[ SELECT DISTINCT user_name, COUNT (report.reg_spaj) total_spaj
+    FROM (  SELECT TO_CHAR (b.msbi_beg_date, 'dd/mm/yyyy') msbi_beg_date,
+                   TO_CHAR (b.msbi_end_date, 'dd/mm/yyyy') msbi_end_date,
+                   TO_CHAR (b.msbi_due_date, 'dd/mm/yyyy') msbi_due_date,
+                   c.mspo_policy_no_format,
+                   eka.utils.pemegang (a.reg_spaj) pemegang,
+                   a.msfu_urut,
+                   d.lsfu_desc,
+                   eka.utils.user_input (a.lus_id) user_name,
+                   a.msfu_ket,
+                   a.msfu_status,
+                   DECODE (a.msfu_status,  0, 'Follow Up',  1, 'Closed',  '-')
+                      status,
+                   TO_CHAR (a.msfu_create_date, 'dd/mm/yyyy') create_date,
+                   a.reg_spaj,
+                   a.msbi_tahun_ke,
+                   a.msbi_premi_ke,
+                   a.msfu_attachment
+              FROM eka.mst_followup a,
+                   eka.mst_billing b,
+                   eka.mst_policy c,
+                   eka.lst_followup d,
+                   eka.lst_region e,
+                   eka.lst_user_admin f,
+                   eka.lst_user g
+             WHERE     a.reg_spaj = b.reg_spaj
+                   AND a.msbi_tahun_ke = b.msbi_tahun_ke
+                   AND a.msbi_premi_ke = b.msbi_premi_ke
+                   AND a.reg_spaj = c.reg_spaj
+                   AND a.lsfu_id = d.lsfu_id
+                   AND c.lca_id = e.lca_id
+                   AND c.lwk_id = e.lwk_id
+                   AND c.lsrg_id = e.lsrg_id
+                   AND e.lar_id = f.lar_id
+                   AND f.lus_id = g.lus_id
+                   AND (b.MSBI_BEG_DATE BETWEEN TO_DATE ('01/02/2016', 'DD/MM/YYYY')
+                                            AND TO_DATE ('02/02/2016', 'DD/MM/YYYY'))
+                   AND a.lus_id IN (2475,
+                                    4180,
+                                    690,
+                                    3041)
+          GROUP BY b.msbi_beg_date,
+                   b.msbi_end_date,
+                   b.msbi_due_date,
+                   c.mspo_policy_no_format,
+                   a.reg_spaj,
+                   a.msfu_urut,
+                   d.lsfu_desc,
+                   a.lus_id,
+                   a.msfu_ket,
+                   a.msfu_status,
+                   a.msfu_create_date,
+                   a.reg_spaj,
+                   a.msbi_tahun_ke,
+                   a.msbi_premi_ke,
+                   a.msfu_attachment
+          ORDER BY b.msbi_beg_date, a.reg_spaj, a.msfu_urut ASC) report
+GROUP BY report.user_name
+ORDER BY report.user_name ASC]]>
+	</queryString>
+	<field name="TOTAL_SPAJ" class="java.math.BigDecimal"/>
+	<field name="USER_NAME" class="java.lang.String"/>
+	<variable name="Tot_FU" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTAL_SPAJ}]]></variableExpression>
+	</variable>
+	<group name="user">
+		<groupHeader>
+			<band height="71">
+				<staticText>
+					<reportElement x="30" y="51" width="140" height="20" forecolor="#000000" backcolor="#808080"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[User Input]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="51" width="30" height="20" forecolor="#000000" backcolor="#808080"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[No.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="170" y="51" width="96" height="20" forecolor="#000000" backcolor="#808080"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[Jumlah Follow Up]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="2" y="0" width="278" height="20"/>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Report Summary Total Follow Up per User]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="1" y="20" width="349" height="20"/>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Kriteria Tanggal "+ $P{jn_tgl}+"  : "+  $P{bdate}+" s/d "+ $P{edate}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<detail>
+		<band height="20">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="30" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Number"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="30" y="0" width="140" height="20"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{USER_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="170" y="0" width="96" height="20"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{TOTAL_SPAJ}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="20">
+			<staticText>
+				<reportElement x="0" y="0" width="170" height="20"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Follow Up ]]></text>
+			</staticText>
+			<textField>
+				<reportElement stretchType="RelativeToTallestObject" x="170" y="0" width="96" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[ $V{Tot_FU}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

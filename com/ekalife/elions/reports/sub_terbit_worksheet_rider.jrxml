@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="sub_terbit_worksheet_rider" pageWidth="300" pageHeight="842" columnWidth="300" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperFunctionReport">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="6"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="6"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="user" class="java.lang.String">
+		<defaultValueExpression><![CDATA["ucup"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["52201400259"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<queryString>
+		<![CDATA[select a.reg_spaj, c.lsbs_id, c.lsdbs_number, b.mste_age, d.lsdbs_name, e.lku_symbol
+,eka.HITUNG_SAR(c.reg_spaj, c.lsbs_id, c.lsdbs_number, 1, 1, 1, b.mste_age, (case when c.lsbs_id = 835 then 2 else 1 end)) rate_rider
+from eka.mst_policy a,
+     eka.mst_insured b,
+     eka.mst_product_insured c,
+     eka.lst_det_bisnis d,
+     eka.lst_kurs e
+where a.reg_spaj = b.reg_spaj
+and a.reg_spaj = c.reg_spaj
+and c.lsbs_id = d.lsbs_id
+and c.lsdbs_number = d.lsdbs_number
+and a.lku_id = e.lku_id
+and c.lsbs_id between 800 and 899
+and a.reg_spaj = $P{spaj}]]>
+	</queryString>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="MSTE_AGE" class="java.math.BigDecimal"/>
+	<field name="RATE_RIDER" class="java.math.BigDecimal"/>
+	<detail>
+		<band height="13">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="300" height="13"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["- " + $F{LSDBS_NAME} + ($F{RATE_RIDER}==null || $F{RATE_RIDER}.doubleValue()==0 ?"":" ("+ $F{LKU_SYMBOL} +" " +$P{REPORT_SCRIPTLET}.format2Digit($F{RATE_RIDER})+") ")]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

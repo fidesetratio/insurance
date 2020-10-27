@@ -1,0 +1,771 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="sph_banksinarmas_rate" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="25" bottomMargin="25" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="4"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="4"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<property name="com.jasperassistant.designer.VGuides.Title" value="84"/>
+	<property name="com.jasperassistant.designer.HGuides" value="379,420,788"/>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="spaj" class="java.lang.String"/>
+	<parameter name="ajudate" class="java.util.Date"/>
+	<queryString>
+		<![CDATA[SELECT 
+(a.lca_id || '.' || d.lsbs_id || '.' || substr(a.reg_spaj,3,4) || '.' || lpad(n.jenis,2,0)) no_polis_induk,
+l.lpr_begdate,l.lpr_enddate,a.reg_spaj, a.mspo_policy_no_format, (b.mcl_first || decode(b.mcl_gelar, null, '', ', '||b.mcl_gelar)) pemegang,
+       c.alamat_rumah alamat,
+       TRIM (NVL (c.kota_rumah, '') || ' ' || NVL (c.kd_pos_rumah, '')) kota,
+       e.lsbs_name, g.lku_symbol, h.mrc_nama, h.mrc_cabang, h.mrc_no_ac,
+       h.mrc_kota, i.lsbp_nama, j.lku_symbol kurs_rek, 
+	   (0.8 * k.nilai_tunai) pinjaman,(0.2 * k.nilai_tunai) bayaran, k.nilai_tunai, 
+	   (l.lpr_rate + decode(j.lku_id,'01',1,'02',0.1,0)) lpr_rate, add_months(k.mpr_mature_date-1,1) tgl_lunas, 
+       (case when m.cab_bank is not null then 'SIMAS PRIMA' else f.lsdbs_name end) lsdbs_name
+  FROM eka.mst_policy a,
+       eka.mst_client_new b,
+       eka.mst_address_new c,
+       eka.mst_product_insured d,
+       eka.lst_bisnis e,
+       eka.lst_det_bisnis f,
+       eka.lst_kurs g,
+       eka.mst_rek_client h,
+       eka.lst_bank_pusat i,
+       eka.lst_kurs j,
+	   (
+			SELECT reg_spaj, 
+				   (mpr_deposit+
+				   		(case when mpr_bayar_prm = 0 and mpr_jns_ro in (1,3) then mpr_interest else 0 end)
+					) nilai_tunai, mpr_mature_date
+			  FROM eka.mst_powersave_ro wahaha
+			 WHERE reg_spaj = (select reg_spaj from eka.mst_policy where reg_spaj = rpad(replace($P{spaj},'.'),11,' ') OR mspo_policy_no = rpad(replace($P{spaj},'.'),14,' '))
+			   AND mpr_mature_date =
+			                (SELECT MAX (mpr_mature_date) 
+								FROM eka.mst_powersave_ro 
+								WHERE reg_spaj = wahaha.reg_spaj)
+	   ) k,
+	   eka.lst_pwrsave_rate l, eka.lst_user m,
+(select a.reg_spaj, B.NAMA_REFF, B.JENIS, C.NAMA_CABANG 
+from eka.mst_refF_bii A, EKA.LST_REFF_BII B, EKA.LST_CABANG_BII C
+WHERE A.LRB_ID = B.LRB_ID
+AND A.LCB_NO = C.LCB_NO) n
+ WHERE a.mspo_policy_holder = b.mcl_id
+   AND b.mcl_id = c.mcl_id
+   AND a.reg_spaj = d.reg_spaj
+   AND d.lsbs_id = e.lsbs_id
+   AND e.lsbs_id < 300
+   AND d.lsbs_id = f.lsbs_id
+   AND d.lsdbs_number = f.lsdbs_number
+   AND a.lku_id = g.lku_id
+   AND a.reg_spaj = h.reg_spaj
+   AND h.lsbp_id = i.lsbp_id
+   AND h.mrc_kurs = j.lku_id
+   AND a.reg_spaj = k.reg_spaj(+)
+   AND (a.reg_spaj = rpad(replace($P{spaj},'.'),11,' ') OR a.mspo_policy_no = rpad(replace($P{spaj},'.'),14,' '))
+   AND l.lpr_jenis = 10
+   AND l.lpr_flag = (case when (d.lsbs_id = 155 and d.lsdbs_number = 1) then 1
+							   when (d.lsbs_id = 155 and d.lsdbs_number = 2) then 6
+							   when (d.lsbs_id = 155 and d.lsdbs_number = 3) then 8 else 2 end)
+   AND a.lku_id = l.lku_id
+   AND l.lpr_begdate <= $P{ajudate}
+   AND l.lpr_enddate >= $P{ajudate}
+   AND l.lpr_dari <= k.nilai_tunai
+   AND l.lpr_akhir >= k.nilai_tunai
+   AND a.lus_id = m.lus_id
+   AND a.reg_spaj = n.reg_spaj]]>
+	</queryString>
+	<field name="ALAMAT" class="java.lang.String"/>
+	<field name="BAYARAN" class="java.math.BigDecimal"/>
+	<field name="KOTA" class="java.lang.String"/>
+	<field name="KURS_REK" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LPR_BEGDATE" class="java.util.Date"/>
+	<field name="LPR_ENDDATE" class="java.util.Date"/>
+	<field name="LPR_RATE" class="java.math.BigDecimal"/>
+	<field name="LSBP_NAMA" class="java.lang.String"/>
+	<field name="LSBS_NAME" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="MRC_CABANG" class="java.lang.String"/>
+	<field name="MRC_KOTA" class="java.lang.String"/>
+	<field name="MRC_NAMA" class="java.lang.String"/>
+	<field name="MRC_NO_AC" class="java.lang.String"/>
+	<field name="MSPO_POLICY_NO_FORMAT" class="java.lang.String"/>
+	<field name="NILAI_TUNAI" class="java.math.BigDecimal"/>
+	<field name="NO_POLIS_INDUK" class="java.lang.String"/>
+	<field name="PEMEGANG" class="java.lang.String"/>
+	<field name="PINJAMAN" class="java.math.BigDecimal"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="TGL_LUNAS" class="java.util.Date"/>
+	<background>
+		<band height="535">
+			<rectangle radius="20">
+				<reportElement x="0" y="40" width="392" height="492"/>
+				<graphicElement/>
+			</rectangle>
+			<rectangle radius="20">
+				<reportElement x="408" y="40" width="393" height="492"/>
+				<graphicElement/>
+			</rectangle>
+		</band>
+	</background>
+	<title>
+		<band height="535">
+			<textField>
+				<reportElement x="120" y="191" width="260" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{TGL_LUNAS})]]></textFieldExpression>
+			</textField>
+			<rectangle radius="20">
+				<reportElement mode="Transparent" x="420" y="388" width="368" height="128"/>
+				<graphicElement/>
+			</rectangle>
+			<image>
+				<reportElement x="0" y="0" width="120" height="32"/>
+				<graphicElement/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.ekalife")]]></imageExpression>
+			</image>
+			<textField>
+				<reportElement x="12" y="84" width="184" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Pemegang Polis (\"Peminjam\")"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="48" width="380" height="28"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="12" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["PERJANJIAN PINJAMAN POLIS\n"+
+"DENGAN PELUNASAN NILAI TUNAI"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="96" width="96" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Nama Pemegang Polis"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="108" width="96" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Alamat"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="167" width="96" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Jumlah Pinjaman"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="191" width="96" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tanggal Pelunasan"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="155" width="184" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["(Diisi oleh Penanggung)"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="179" width="96" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Besarnya Suku Bunga"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="108" y="96" width="10" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="108" y="108" width="10" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="108" y="167" width="10" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="108" y="179" width="10" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="108" y="191" width="10" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="120" y="96" width="260" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PEMEGANG}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="120" y="108" width="260" height="34"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ALAMAT} + "\n" + 
+$F{KOTA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="120" y="167" width="260" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_SYMBOL}, $F{PINJAMAN})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="120" y="179" width="260" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LPR_RATE} + " % p.a."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="205" width="184" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Penanggung (\"Pemberi Pinjaman\")"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="217" width="96" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Nama Penanggung"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="108" y="217" width="10" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="120" y="217" width="260" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("company.name")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="228" width="275" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Syarat dan Ketentuan Pinjaman Polis :"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="240" width="15" height="11"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["1."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="28" y="240" width="352" height="32"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Sebagai jaminan Pinjaman ini, Peminjam harus menyerahkan Polis Asli kepada Penanggung. "+
+"Selanjutnya ketentuan yang berlaku untuk Pinjaman adalah sebagaimana tercantum dalam Perjanjian ini."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="28" y="272" width="352" height="21"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Perjanjian Pinjaman ini akan berakhir otomatis jika jumlah Pinjaman beserta bunganya lebih besar dari Nilai Tunai Polis."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="28" y="293" width="352" height="21"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Penanggung berhak untuk melakukan perjumpaan hutang (set off) atas saldo Pinjaman dengan Nilai Tunai Polis pada tanggal jatuh temponya Pinjaman ini."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="272" width="15" height="11"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["2."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="293" width="15" height="11"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["3."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="314" width="15" height="11"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["4."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="28" y="314" width="352" height="24"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Segala resiko dan/atau pajak-pajak yang timbul sehubungan dengan atau akibat dari Pinjaman ini apabila ada akan menjadi tanggung jawab Peminjam."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="338" width="15" height="11"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["5."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="28" y="338" width="352" height="32"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Peminjam dan Penanggung menyatakan melepaskan ketentuan-ketentuan Pasal 1266 Kitab Undang-Undang Hukum Perdata yang berkenaan dengan syarat-syarat intervensi yuridis untuk mengakhiri Perjanjian ini."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="370" width="15" height="11"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["6."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="28" y="370" width="352" height="52"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Segala perselisihan dan/atau persengketaan yang timbul sehubungan dengan atau akibat dari Perjanjian ini harus diselesaikan secara musyawarah. " + 
+"Kegagalan untuk menyelesaikan perselisihan dan/atau persengketaan tersebut akan diselesaikan melalui pengadilan. "+
+"Penanggung dan Peminjam dengan ini setuju untuk memilih pengadilan yang memiliki yurisdiksi atas Peminjam sebagai domisili."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="423" width="368" height="32"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Sehubungan dengan Pinjaman Polis dengan Pelunasan Nilai Tunai, "+
+"Peminjam setuju untuk menundukkan diri kepada Syarat dan Ketentuan sebagaimana tercantum pada Perjanjian ini."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="455" width="184" height="16"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["_______________, " + $P{REPORT_SCRIPTLET}.formatDateNumber($P{ajudate})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="471" width="184" height="8"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font fontName="Arial" size="6" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tempat,                                   tgl/ bln/ thn"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="479" width="184" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Pemberi Pinjaman,"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="208" y="455" width="172" height="24"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Peminjam,\n" + 
+"Materai Rp. 6.000,-"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="508" width="184" height="12"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["__________________________"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="209" y="508" width="171" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" isUnderline="true" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PEMEGANG}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="209" y="520" width="171" height="8"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="Arial" size="6" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["(Nama Lengkap dan Tanda Tangan Peminjam)"]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="120" y="179" width="260" height="1"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="120" y="203" width="260" height="1"/>
+				<graphicElement/>
+			</line>
+			<textField>
+				<reportElement x="12" y="520" width="184" height="8"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="6" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["*) Coret yang tidak perlu"]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="420" y="192" width="369" height="1"/>
+				<graphicElement/>
+			</line>
+			<textField>
+				<reportElement x="420" y="48" width="369" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="12" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["PERMINTAAN PEMBAYARAN \n"+
+"NILAI TUNAI ASURANSI " + $F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="280" width="15" height="11"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["2."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="548" y="460" width="11" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="560" y="484" width="221" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MRC_NO_AC}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="560" y="472" width="221" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSBP_NAMA} + " " + $F{MRC_CABANG} + " " + $F{MRC_KOTA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="460" y="484" width="88" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Nomor Rekening"]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="452" y="436" width="300" height="1"/>
+				<graphicElement/>
+			</line>
+			<textField>
+				<reportElement x="428" y="396" width="352" height="28"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Mohon agar Dana Nilai Tunai Asuransi tersebut diatas \n"+
+"dan / atau Dana Pinjaman Polis sejumlah:"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="268" width="15" height="11"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["1."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="212" width="369" height="32"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Dengan telah dibayarkannya Nilai Tunai Asuransi tersebut di atas, maka saya membebaskan Penanggung dari segala tuntutan, "+
+"gugatan dan/atau upaya hukum lainnya dari pihak manapun yang berkenaan dengan " + 
+"pembayaran Nilai Tunai Asuransi ini."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="436" y="280" width="353" height="11"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Fotokopi bukti identitas saya (KTP/SIM/PASPOR/KITAS) yang masih berlaku."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="80" width="185" height="14"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Pemegang Polis (\"Peminjam\")"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="372" width="184" height="8"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="6" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["(Nama Lengkap dan Tanda Tangan Pemegang Polis)"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="360" width="184" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" isUnderline="true" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PEMEGANG}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="548" y="472" width="11" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="460" y="460" width="88" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Atas nama"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="436" y="268" width="353" height="11"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Polis Asli."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="452" y="444" width="300" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Dapat ditransfer ke rekening"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="160" width="369" height="14"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Mengajukan permintaan pembayaran Nilai Tunai Asuransi atas Polis saya tersebut sejumlah"]]></textFieldExpression>
+			</textField>
+			<image>
+				<reportElement x="412" y="0" width="120" height="32"/>
+				<graphicElement/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.ekalife")]]></imageExpression>
+			</image>
+			<textField>
+				<reportElement x="420" y="520" width="184" height="8"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="6" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["*) Coret yang tidak perlu"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="460" y="472" width="88" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Bank"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="256" width="277" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Bersama formulir ini saya sampaikan pula :"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="548" y="484" width="11" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="560" y="460" width="221" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MRC_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="108" width="96" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Alamat"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="528" y="96" width="260" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PEMEGANG}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="516" y="108" width="10" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="96" width="96" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Nama Pemegang Polis"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="516" y="96" width="10" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="528" y="108" width="260" height="35"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ALAMAT} + "\n" + 
+$F{KOTA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="296" width="184" height="16"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["_______________, " + $P{REPORT_SCRIPTLET}.formatDateNumber($P{ajudate})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="312" width="184" height="8"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font fontName="Arial" size="6" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tempat,                                   tgl/ bln/ thn"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="460" y="496" width="88" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Mata Uang Rekening"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="548" y="496" width="11" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="560" y="496" width="221" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KURS_REK}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="180" width="369" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_SYMBOL}, $F{BAYARAN})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="452" y="424" width="300" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_SYMBOL}, $F{NILAI_TUNAI})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="605" y="520" width="184" height="8"/>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font fontName="Arial" size="6" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Print Date: " + $P{REPORT_SCRIPTLET}.formatDateWithTime(new Date())]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="142" width="96" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["No. Sertifikat"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="108" y="142" width="10" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="120" y="142" width="260" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_POLICY_NO_FORMAT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="143" width="96" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["No. Sertifikat"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="516" y="143" width="10" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="528" y="143" width="260" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_POLICY_NO_FORMAT}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+</jasperReport>

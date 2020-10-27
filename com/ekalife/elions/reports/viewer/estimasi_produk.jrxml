@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="estimasi_produk" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="100" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperFunctionReport">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="props" class="java.lang.String"/>
+	<parameter name="tgl1" class="java.lang.String"/>
+	<parameter name="tgl2" class="java.lang.String"/>
+	<parameter name="tanggal1" class="java.lang.String"/>
+	<parameter name="tanggal2" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select count(eka.mst_product_insured.reg_spaj) jumlah, eka.mst_stamp_hist.msth_jumlah,
+	   eka.mst_product_insured.lsbs_id , eka.mst_product_insured.lsdbs_number ,
+	   eka.lst_det_bisnis.lsdbs_name
+from eka.mst_stamp_hist,
+	 eka.mst_product_insured,
+	 eka.lst_det_bisnis
+where eka.mst_stamp_hist.msth_ref_no = eka.mst_product_insured.reg_spaj and
+	  eka.mst_product_insured.lsbs_id = eka.lst_det_bisnis.lsbs_id and
+	  eka.mst_product_insured.lsdbs_number = eka.lst_det_bisnis.lsdbs_number and
+	  eka.mst_product_insured.lsbs_id < 300 and
+     (to_char( eka.mst_stamp_hist.msth_tgl_bayar,'yyyymmdd') between $P{tgl1} and $P{tgl2})
+group by eka.mst_stamp_hist.msth_jumlah,
+	   eka.mst_product_insured.lsbs_id , 
+	   eka.mst_product_insured.lsdbs_number,
+	   eka.lst_det_bisnis.lsdbs_name
+order by eka.lst_det_bisnis.lsdbs_name	]]>
+	</queryString>
+	<field name="JUMLAH" class="java.math.BigDecimal"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="MSTH_JUMLAH" class="java.math.BigDecimal"/>
+	<variable name="total" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal($F{JUMLAH}.intValue() * $F{MSTH_JUMLAH}.doubleValue())]]></variableExpression>
+	</variable>
+	<pageHeader>
+		<band height="62">
+			<staticText>
+				<reportElement x="117" y="7" width="335" height="23"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PEMAKAIAN BEA METERAI PER PRODUK
+ PT ASURANSI JIWA SINARMAS MSIG Tbk.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4" y="43" width="49" height="14"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Periode :]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="58" y="43" width="237" height="14"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggal1} +" s/d "+ $P{tanggal2}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="22">
+			<staticText>
+				<reportElement x="5" y="5" width="17" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="24" y="5" width="191" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NAMA PRODUK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="217" y="5" width="67" height="13"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[JUMLAH]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="286" y="5" width="124" height="13"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SALDO (RP)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="412" y="5" width="124" height="13"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[JUMLAH PEMAKAIAN (Rp)]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField>
+				<reportElement x="24" y="4" width="191" height="13"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="286" y="4" width="124" height="13"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(" ",$F{MSTH_JUMLAH})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="217" y="4" width="67" height="13"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{JUMLAH}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="412" y="4" width="124" height="13"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(" ",$V{total})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="5" y="4" width="17" height="13"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

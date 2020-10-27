@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<insert id="elions.finance.insertDeduct" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_deduct
+		            (msco_id, msdd_number, lsjd_id, msdd_date, msdd_deduct,
+		             <isNotEmpty property="msdd_tax">msdd_tax, </isNotEmpty>
+		             msdd_desc, lus_id
+		            )
+		     VALUES (#msco_id#, (select count(*)+1 from eka.mst_deduct where msco_id=#msco_id#), #lsjd_id#, #msdd_date#, #msdd_deduct#,
+		             <isNotEmpty property="msdd_tax">#msdd_tax#, </isNotEmpty>
+		             #msdd_desc#, #lus_id#
+		            )
+	</insert>
+	
+	<update id="elions.finance.updateDeduct" parameterClass="java.util.HashMap">
+		UPDATE eka.mst_deduct
+		<dynamic prepend=" set ">
+			<isNotNull removeFirstPrepend="true" prepend="," property="lsjd_id">lsjd_id = #lsjd_id# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="msdd_date">msdd_date = #msdd_date# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="msdd_deduct">msdd_deduct = #msdd_deduct# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="msdd_tax">msdd_tax = #msdd_tax# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="msdd_desc">msdd_desc = #msdd_desc# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="lus_id">lus_id = #lus_id# </isNotNull>
+		</dynamic>
+		WHERE MSCO_ID = #msco_id#
+		AND MSDD_NUMBER = #msdd_number#
+	</update>
+
+	<update id="elions.finance.updatePayDate" parameterClass="java.util.HashMap">
+		UPDATE eka.mst_commission
+		   SET msco_pay_date = TRUNC (SYSDATE),
+		       lus_id = #lus_id#
+		 WHERE msco_id = #co_id#
+	</update>
+
+	<delete id="elions.finance.deleteUpload" parameterClass="string">
+		DELETE FROM eka.mst_upload
+		      WHERE msco_id = #value#
+	</delete>
+	
+	<delete id="elions.finance.deleteUploadFa" parameterClass="string">
+		DELETE FROM eka.mst_upload_fa
+		      WHERE msco_id = #value#
+	</delete>
+	
+	<delete id="elions.finance.deleteUploadLippo" parameterClass="string">
+		DELETE FROM eka.mst_upload_lippo
+		      WHERE msco_id = #value#
+	</delete>
+	
+	<delete id="elions.finance.deleteUploadNon" parameterClass="string">
+		DELETE FROM eka.mst_upload_non
+		      WHERE msco_id = #value#
+	</delete>
+	
+	<insert id="elions.finance.insertUpload" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_upload
+		            (msco_id, tgl_kom, no_cek, agent_id, kd_pt,
+		             account_pt, account_agent, amount, bl_thn
+		            )
+		     VALUES (#co_id#, TRUNC (SYSDATE), #no_cek#, #ag_id#, #pt#,
+		             #acc_pt#, #acc_agent#, #ldec_kom#, to_char(sysdate,'mmyy')
+		            )	
+	</insert>
+	
+	<insert id="elions.finance.insertUploadFa" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_upload_fa
+		            (msco_id, tgl_kom, no_cek, agent_id, kd_pt,
+		             account_pt, account_agent, amount, bl_thn
+		            )
+		     VALUES (#co_id#, TRUNC (SYSDATE), #no_cek#, #ag_id#, #pt#,
+		             #acc_pt#, #acc_agent#, #ldec_kom#, to_char(sysdate,'mmyy')
+		            )	
+	</insert>
+	
+	<insert id="elions.finance.insertUploadLippo" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_upload_lippo
+		            (msco_id, tgl_kom, tgl_paid, agent_id, no_rek, amount)
+		     VALUES (#co_id#, TRUNC (SYSDATE), null, #ag_id#, #acc_agent#, #ldec_kom#)
+	</insert>
+
+	<insert id="elions.finance.insertUploadNon" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_upload_non
+		            (msco_id, tgl_kom, tgl_paid, agent_id, amount, sts_aktif
+		            )
+		     VALUES (#co_id#, TRUNC (SYSDATE), null, #ag_id#, #ldec_kom#, 1
+		            )	
+	</insert>
+
+	<insert id="elions.finance.insertDplk" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_dplk_trans
+		            (mdt_id, lstbo_id, msco_id, reg_spaj, msag_id, mdt_nama_agent,
+		             mdt_level_agent, mdt_tgl_rk, mdt_iuran_peserta, mdt_iuran_pt,
+		             mdt_tgl_trans, mdt_flag_trans, mdt_aktif
+		            )
+		     VALUES (#sekuens#, NULL, #co_id#, #reg_spaj#, #ag_id#, #mcl_first#,
+		             #lsle_id#, TRUNC (SYSDATE), #dplk#, #dplk_pt#,
+		             NULL, 0, 1
+		            )
+	</insert>
+	
+	<update id="elions.finance.updateRewards" parameterClass="java.util.HashMap">
+		UPDATE eka.mst_reward
+		   SET msco_pay_date = TRUNC (SYSDATE),
+		       flag_upload = #flagUpload#
+		 WHERE (reg_spaj = rpad(replace(#spaj#,'.'),11,' '))
+		   AND (msbi_tahun_ke = #tahun#)
+		   AND (msbi_premi_ke = #premi#)
+	</update>
+	
+	<update id="elions.finance.updateMstTtsFlagPrint" parameterClass="java.util.HashMap">
+		update eka.mst_tts 
+			set flag_print=#flag# 
+				where mst_no=#mst_no#
+	</update>
+	
+	<update id="elions.finance.updateMstTtsFlagPrintAndKet" parameterClass="java.util.HashMap">
+		update eka.mst_tts 
+		set flag_print=#flag#
+		where mst_no=#mst_no#
+	</update>
+	
+	<update id="elions.finance.update.mst_counter_tts" parameterClass="java.util.HashMap">
+		UPDATE eka.mst_counter_tts
+		   SET msco_value = #nilai#
+		 WHERE msco_number = #aplikasi# AND lca_id= #cabang#
+   	</update>
+   	
+   	<update id="elions.finance.update.MstTtsTglSetor" parameterClass="java.util.HashMap">
+		 update eka.mst_tts set mst_tgl_setor=#tgl_setor# where mst_no=#mst_no#
+	</update>
+   	
+    <update id="elions.finance.update.MstTtsBatal" parameterClass="java.util.HashMap">
+		update eka.mst_tts 
+			set mst_flag_batal=#flag#
+			<isNotNull property="mst_no_batal">	
+				,mst_no_Reff_btl=#mst_no_batal#
+			</isNotNull>
+			<isNotNull property="mst_no_new">	
+				,mst_no_Reff_new=#mst_no_new#
+			</isNotNull>	
+		where mst_no=#mst_no#
+	</update>
+   	
+   <update id="elions.finance.updateResetMstCounterTts" parameterClass="java.util.HashMap">
+		UPDATE eka.mst_counter_tts
+		   SET msco_value = 0,
+		       msco_month_year = TO_CHAR (SYSDATE, 'mmyyyy')
+		 WHERE msco_number = #aplikasi# AND lca_id = #cabang#
+	</update>
+   	
+</sqlMap>

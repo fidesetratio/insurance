@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="surat_slink_rincian_trans_topup" pageWidth="555" pageHeight="842" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="3"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="3"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<reportFont name="Roman" isDefault="false" fontName="Times New Roman" size="9" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["09200800392"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="elionsManager" class="com.ekalife.elions.service.ElionsManager"/>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="tu_ke" class="java.lang.String">
+		<defaultValueExpression><![CDATA["4"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="FLAG_BULANAN" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[new BigDecimal(1)]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT EKA.MST_SLINK.MSL_NAB,   
+         EKA.MST_SLINK.MSL_UNIT,   
+         EKA.MST_SLINK.MSL_PROSES_DATE,   
+         0 as saldo_awal,   
+         EKA.MST_SLINK.LJI_ID,   
+         EKA.MST_SLINK.MSL_TGL_NAB,   
+         EKA.MST_SLINK.MSL_PREMI,   
+         EKA.MST_SLINK.REG_SPAJ,   
+         EKA.MST_SLINK.MSL_NO,   
+			EKA.MST_SLINK.MSL_DESC,
+			EKA.MST_SLINK.NO_REG,
+			EKA.MST_SLINK.MSL_KODE,
+			EKA.MST_SLINK.MSL_TU_KE,
+			EKA.MST_SLINK.MSL_NILAI_POLIS,
+         EKA.LST_JENIS_INVEST.LJI_INVEST, 
+         EKA.MST_SLINK.MSL_BDATE,   
+         EKA.MST_SLINK.MSL_EDATE,   
+         EKA.MST_SLINK.MSL_BUNGA,   
+         EKA.MST_SLINK.MSL_PRINT_DATE,   
+         'STABLE LINK' AS JUDUL,   
+         EKA.MST_SLINK.MSL_RATE,
+			EKA.MST_SLINK.MSL_MGI,
+			EKA.MST_SLINK.MSL_BP_PT,
+			EKA.MST_SLINK.MSL_BP,
+			EKA.MST_POLICY.LKU_ID,
+			EKA.MST_POLICY.MSPO_POLICY_NO,
+			EKA.LST_KURS.LKU_SYMBOL,
+			0 as checkbox,
+			3 as judul_id,
+			EKA.MST_PRODUCT_INSURED.LSBS_ID,
+			EKA.MST_PRODUCT_INSURED.LSDBS_NUMBER,
+			(decode(EKA.MST_POLICY.LKU_ID,'01',20000,'02',2) * EKA.MST_SLINK.MSL_MGI) komisi_bank,
+         MST_CLIENT_a.MCL_FIRST as nm_tt,   
+         MST_CLIENT_b.MCL_FIRST as nm_pp,
+         EKA.MST_ADDRESS_BILLING.MSAP_ADDRESS,   
+         EKA.MST_ADDRESS_BILLING.MSAP_ZIP_CODE,   
+         EKA.LST_KABUPATEN.LSKA_NOTE,
+			EKA.MST_INSURED.MSTE_AGE,
+			EKA.MST_SLINK.FLAG_BULANAN,
+			CASE WHEN EKA.MST_SLINK.FLAG_BULANAN = 1 THEN EKA.MST_SLINK_BAYAR.MSLB_BUNGA ELSE 0 END AS TARGET_AWAL
+    FROM EKA.MST_SLINK,
+			EKA.MST_POLICY,   
+         EKA.LST_JENIS_INVEST,   
+         EKA.LST_KURS,
+			EKA.MST_PRODUCT_INSURED,
+			EKA.MST_CLIENT MST_CLIENT_a,
+			EKA.MST_CLIENT MST_CLIENT_b,
+         EKA.LST_KABUPATEN,  
+         EKA.MST_ADDRESS_BILLING,
+		 EKA.MST_INSURED,
+		EKA.MST_SLINK_BAYAR
+   WHERE ( EKA.MST_SLINK.REG_SPAJ = EKA.MST_POLICY.REG_SPAJ ) and  
+				( EKA.MST_SLINK.LJI_ID = EKA.LST_JENIS_INVEST.LJI_ID ) and  
+				( EKA.MST_POLICY.LKU_ID = EKA.LST_KURS.LKU_ID ) and  
+				( EKA.MST_POLICY.REG_SPAJ = EKA.MST_INSURED.REG_SPAJ ) and  
+				( EKA.MST_POLICY.REG_SPAJ = EKA.MST_PRODUCT_INSURED.REG_SPAJ ) and  
+				( EKA.MST_INSURED.MSTE_INSURED = MST_CLIENT_a.MCL_ID ) and  
+				( EKA.MST_POLICY.MSPO_POLICY_HOLDER = MST_CLIENT_b.MCL_ID ) and  
+				( EKA.MST_POLICY.REG_SPAJ = EKA.MST_ADDRESS_BILLING.REG_SPAJ ) and
+				( EKA.MST_ADDRESS_BILLING.LSKA_ID = EKA.LST_KABUPATEN.LSKA_ID (+) ) and
+				( EKA.MST_SLINK.REG_SPAJ = EKA.MST_SLINK_BAYAR.REG_SPAJ (+) ) and
+				( EKA.MST_SLINK.MSL_NO = EKA.MST_SLINK_BAYAR.MSL_NO (+) ) and
+				( EKA.MST_SLINK.MSL_BDATE = EKA.MST_SLINK_BAYAR.MSLB_BEG_PERIOD (+) ) and
+				( ( EKA.MST_SLINK.REG_SPAJ = $P{spaj} ) and  
+				( EKA.MST_SLINK.MSL_TU_KE = $P{tu_ke} ) and   
+				( EKA.MST_SLINK.MSL_KODE = 5 ) and  
+				( EKA.MST_PRODUCT_INSURED.LSBS_ID < 300 ) )]]>
+	</queryString>
+	<field name="CHECKBOX" class="java.math.BigDecimal"/>
+	<field name="FLAG_BULANAN" class="java.math.BigDecimal"/>
+	<field name="JUDUL" class="java.lang.String"/>
+	<field name="JUDUL_ID" class="java.math.BigDecimal"/>
+	<field name="KOMISI_BANK" class="java.math.BigDecimal"/>
+	<field name="LJI_ID" class="java.lang.String"/>
+	<field name="LJI_INVEST" class="java.lang.String"/>
+	<field name="LKU_ID" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="LSKA_NOTE" class="java.lang.String"/>
+	<field name="MSAP_ADDRESS" class="java.lang.String"/>
+	<field name="MSAP_ZIP_CODE" class="java.lang.String"/>
+	<field name="MSL_BDATE" class="java.util.Date"/>
+	<field name="MSL_BP" class="java.math.BigDecimal"/>
+	<field name="MSL_BP_PT" class="java.math.BigDecimal"/>
+	<field name="MSL_BUNGA" class="java.math.BigDecimal"/>
+	<field name="MSL_DESC" class="java.lang.String"/>
+	<field name="MSL_EDATE" class="java.util.Date"/>
+	<field name="MSL_KODE" class="java.math.BigDecimal"/>
+	<field name="MSL_MGI" class="java.math.BigDecimal"/>
+	<field name="MSL_NAB" class="java.math.BigDecimal"/>
+	<field name="MSL_NILAI_POLIS" class="java.math.BigDecimal"/>
+	<field name="MSL_NO" class="java.math.BigDecimal"/>
+	<field name="MSL_PREMI" class="java.math.BigDecimal"/>
+	<field name="MSL_PRINT_DATE" class="java.util.Date"/>
+	<field name="MSL_PROSES_DATE" class="java.util.Date"/>
+	<field name="MSL_RATE" class="java.math.BigDecimal"/>
+	<field name="MSL_TGL_NAB" class="java.util.Date"/>
+	<field name="MSL_TU_KE" class="java.math.BigDecimal"/>
+	<field name="MSL_UNIT" class="java.math.BigDecimal"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSTE_AGE" class="java.math.BigDecimal"/>
+	<field name="NM_PP" class="java.lang.String"/>
+	<field name="NM_TT" class="java.lang.String"/>
+	<field name="NO_REG" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="SALDO_AWAL" class="java.math.BigDecimal"/>
+	<field name="TARGET_AWAL" class="java.math.BigDecimal"/>
+	<variable name="tot_mtu_jumlah" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{MSL_PREMI}]]></variableExpression>
+	</variable>
+	<variable name="tot_msl_bunga" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{MSL_BUNGA}]]></variableExpression>
+	</variable>
+	<variable name="tot_all" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{tot_mtu_jumlah}.add($V{tot_msl_bunga})]]></variableExpression>
+	</variable>
+	<group name="JenisInvestasi">
+		<groupExpression><![CDATA[$F{LJI_ID}]]></groupExpression>
+		<groupHeader>
+			<band height="25">
+				<textField hyperlinkType="None">
+					<reportElement positionType="Float" mode="Opaque" x="0" y="2" width="555" height="11" backcolor="#C0C0C0"/>
+					<textElement verticalAlignment="Middle" markup="styled">
+						<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[" "+"<style isBold=\"true\" pdfFontName=\"Times-Bold\">"+$F{LJI_INVEST}+"</style>"]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement positionType="Float" x="0" y="14" width="313" height="11"/>
+					<textElement verticalAlignment="Middle">
+						<font reportFont="Roman" size="9" isBold="true" pdfFontName="Times-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[" "+$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSL_TGL_NAB})]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="115">
+				<textField hyperlinkType="None">
+					<reportElement positionType="Float" x="394" y="11" width="158" height="11">
+						<printWhenExpression><![CDATA[new Boolean($P{FLAG_BULANAN}.intValue()!=1)]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($V{tot_msl_bunga}) + " "]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement positionType="Float" x="394" y="11" width="158" height="11">
+						<printWhenExpression><![CDATA[new Boolean($P{FLAG_BULANAN}.intValue()==1)]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font reportFont="Roman" size="9" isBold="true" pdfFontName="Times-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($F{TARGET_AWAL}) + " "]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement positionType="Float" x="91" y="11" width="303" height="11"/>
+					<textElement verticalAlignment="Middle" markup="styled">
+						<font reportFont="Roman" size="9" isBold="false" pdfFontName="Times"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{FLAG_BULANAN}.intValue()==1?"<style isBold=\"true\" pdfFontName=\"Times-Bold\">Target Investasi  Ulang Bulan Polis ke-1 *)</style>":"Target Investasi  pada MTI Pertama"]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement positionType="Float" x="91" y="22" width="303" height="11">
+						<printWhenExpression><![CDATA[new Boolean($P{FLAG_BULANAN}.intValue()!=1)]]></printWhenExpression>
+					</reportElement>
+					<textElement verticalAlignment="Middle">
+						<font reportFont="Roman" size="9" isBold="true" pdfFontName="Times-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("product.syariah").indexOf($F{LSBS_ID}.toString())>-1?"Nilai Investasi Awal + Target Investasi pada MPI Pertama":"Nilai Investasi Awal + Target Investasi pada MTI Pertama"]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement positionType="Float" x="91" y="0" width="303" height="11"/>
+					<textElement verticalAlignment="Middle">
+						<font reportFont="Roman" size="9" isBold="true" pdfFontName="Times-Bold"/>
+					</textElement>
+					<text><![CDATA[Nilai Investasi Awal]]></text>
+				</staticText>
+				<textField hyperlinkType="None">
+					<reportElement positionType="Float" x="394" y="0" width="158" height="11"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($V{tot_mtu_jumlah}) + " "]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement positionType="Float" x="394" y="22" width="158" height="11">
+						<printWhenExpression><![CDATA[new Boolean($P{FLAG_BULANAN}.intValue()!=1)]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($V{tot_all}) + " "]]></textFieldExpression>
+				</textField>
+				<image hyperlinkType="None">
+					<reportElement x="432" y="57" width="34" height="37"/>
+					<imageExpression class="java.lang.String"><![CDATA["com/ekalife/utils/images/andrew_bain.png"]]></imageExpression>
+				</image>
+				<textField hyperlinkType="None">
+					<reportElement x="388" y="92" width="130" height="11"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="9" isBold="false" isUnderline="true" pdfFontName="Times-Roman"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[" Andrew Bain"]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="388" y="104" width="130" height="11"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="9" isBold="false" pdfFontName="Times-Roman"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Direktur"]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="386" y="33" width="146" height="22"/>
+					<textElement textAlignment="Center">
+						<font fontName="Times New Roman" size="9" pdfFontName="Times-Roman"/>
+					</textElement>
+					<text><![CDATA[Atas Nama 
+PT Asuransi Jiwa Sinarmas MSIG Tbk.]]></text>
+				</staticText>
+				<textField hyperlinkType="None">
+					<reportElement positionType="Float" x="24" y="33" width="330" height="21">
+						<printWhenExpression><![CDATA[new Boolean($P{FLAG_BULANAN}.intValue()==1)]]></printWhenExpression>
+					</reportElement>
+					<textElement verticalAlignment="Middle">
+						<font reportFont="Roman" size="9" isBold="false" pdfFontName="Times-Roman"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["*) Target investasi pada setiap ulang bulan polis dapat berubah sesuai jumlah hari yang dilewati setiap ulang bulan dan  target investasi yang berlaku pada masa/periode  MTI."]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<title>
+		<band height="18">
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="0" width="553" height="16"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="styled">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["<style isBold=\"true\" isUnderline=\"true\" pdfFontName=\"Times-Bold\">RINCIAN TRANSAKSI</style>"]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="13">
+			<textField hyperlinkType="None">
+				<reportElement x="393" y="0" width="162" height="13"/>
+				<box padding="0">
+					<topPen lineWidth="2.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="2.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font reportFont="Roman" fontName="Times New Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Jumlah (" + $F{LKU_SYMBOL} + ")  "]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="91" y="0" width="304" height="13"/>
+				<box padding="0">
+					<topPen lineWidth="2.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="2.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[Transaksi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="2" y="0" width="89" height="13"/>
+				<box padding="0">
+					<topPen lineWidth="2.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="2.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[ No. Reg.]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="12">
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="91" y="0" width="303" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSL_DESC}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="394" y="0" width="158" height="11"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($F{MSL_PREMI})+ " "]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="1" y="1" width="90" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "+$F{NO_REG}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="62">
+			<staticText>
+				<reportElement x="7" y="1" width="80" height="11"/>
+				<textElement>
+					<font fontName="Times New Roman" size="9" isUnderline="true" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[Catatan :]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement x="25" y="12" width="530" height="11"/>
+				<box padding="0">
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font fontName="Times New Roman" size="8" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Harga Unit pada Tanggal Perhitungan Unit adalah sebesar " + $P{REPORT_SCRIPTLET}.format4Digit($F{MSL_NAB})+ " dan Total Unit pada Tanggal Perhitungan Unit adalah sebesar " + $P{REPORT_SCRIPTLET}.format4Digit($F{MSL_UNIT})+ "."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="FixRelativeToBottom" stretchType="RelativeToBandHeight" x="25" y="26" width="530" height="22"/>
+				<box padding="0">
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font fontName="Times New Roman" size="8" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Harga Unit yang digunakan adalah Harga Unit pada tanggal t-3 yaitu Harga Unit pada tanggal 3 (tiga) hari kerja sebelum uang diterima di rekening Penanggung ( " +$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSL_TGL_NAB})+ " )."]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="25" y="49" width="530" height="11"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font fontName="Times New Roman" size="8" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[Harga Unit digunakan sebagai dasar pengenaan Biaya Investasi.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="15" y="13" width="7" height="11"/>
+				<textElement>
+					<font fontName="Times New Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[-]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="15" y="27" width="7" height="11"/>
+				<textElement>
+					<font fontName="Times New Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[-]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="15" y="49" width="7" height="11"/>
+				<textElement>
+					<font fontName="Times New Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[-]]></text>
+			</staticText>
+			<line>
+				<reportElement positionType="Float" x="2" y="61" width="553" height="1"/>
+				<graphicElement>
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+		</band>
+	</summary>
+</jasperReport>

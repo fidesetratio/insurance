@@ -1,0 +1,755 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="elions.common">
+
+	<insert id="insertMstMessageDaily" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_message_daily
+		            (msmd_id, msmd_message,
+		             msmd_create_dt, msmd_lus_id,
+		             msmd_active)
+		     VALUES (#msmd_id:TIMESTAMP#, UPPER (#msmd_message:VARCHAR#),
+		             #msmd_create_dt:TIMESTAMP#, #msmd_lus_id:INTEGER#,
+		             #msmd_active:INTEGER#)
+	</insert>
+
+	<insert id="insertLstCabangBii" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.LST_CABANG_BII 
+         ( <isNotEmpty property="ls_kd_cabang">LCB_NO,</isNotEmpty>   
+           <isNotEmpty property="nm_cabang">NAMA_CABANG,</isNotEmpty>
+           LEVEL_ID,  
+           JENIS   
+           <isNotEmpty property="kd_cabang">,KODE</isNotEmpty> )  
+  		VALUES ( <isNotEmpty property="ls_kd_cabang">#ls_kd_cabang#,</isNotEmpty>   
+           <isNotEmpty property="nm_cabang">#nm_cabang#,</isNotEmpty>
+           #level_id#,  
+           #jenis#   
+           <isNotEmpty property="kd_cabang">,#kd_cabang#</isNotEmpty> )
+	</insert>
+	
+	<insert id="insertLstReffBiiBSM" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.LST_REFF_BII 
+         ( <isNotEmpty property="lrb_id">LRB_ID, </isNotEmpty>  
+           <isNotEmpty property="nm_agent">NAMA_REFF,</isNotEmpty>   
+           <isNotEmpty property="lcb_no">LCB_NO,</isNotEmpty>   
+           <isNotNull property="aktif">FLAG_AKTIF,</isNotNull>   
+           JENIS,
+           TGL_UPLOAD   
+           <isNotEmpty property="kd_agent">,AGENT_CODE</isNotEmpty>  
+           <isNotNull property="ref">,FLAG_LISENSI</isNotNull> 
+           <isNotNull property="tglAktif">,TGL_AKTIF</isNotNull>
+           <isNotNull property="tglNonAktif">,TGL_NON_AKTIF</isNotNull>
+           <isNotNull property="tglUpdate">,TGL_UPDATE</isNotNull>
+           <isNotNull property="lus_id">,USER_UPLOAD</isNotNull> 
+           <isNotNull property="pos_code">,LRBJ_ID</isNotNull>
+           <isNotNull property="nik">,NIK</isNotNull>
+           <isNotNull property="tnik">,PRE_NIK</isNotNull>
+            )              
+  		VALUES 
+  		( <isNotEmpty property="lrb_id">#lrb_id#,</isNotEmpty>   
+           <isNotEmpty property="nm_agent">#nm_agent#,</isNotEmpty>   
+           <isNotEmpty property="lcb_no">#lcb_no#,</isNotEmpty>  
+           <isNotNull property="aktif">#aktif#,</isNotNull> 
+           #jn_bank#,
+           sysdate 
+           <isNotEmpty property="kd_agent">,trim(#kd_agent#)</isNotEmpty>
+           <isNotNull property="ref">,#ref#</isNotNull> 
+           <isNotNull property="tglAktif">,#tglAktif#</isNotNull>
+           <isNotNull property="tglNonAktif">,#tglNonAktif#</isNotNull>
+           <isNotNull property="tglUpdate">,#tglUpdate#</isNotNull>
+           <isNotNull property="lus_id">,#lus_id#</isNotNull>
+           <isNotNull property="pos_code">,(select lrbj_id from eka.lst_reff_bii_jab where n_id_bsim=#pos_code#)</isNotNull>
+           <isNotNull property="nik">,#nik#</isNotNull>
+           <isNotNull property="tnik">,#tnik#</isNotNull>
+           )       
+	</insert>
+
+	<insert id="insertLstReffBii" parameterClass="com.ekalife.elions.model.AddReffBii">
+		INSERT INTO EKA.LST_REFF_BII
+				(lrb_id, nama_reff, lcb_no, cab_rek, 
+				 flag_aktif, npk, jenis, agent_code, flag_lisensi
+				)
+		VALUES  (UPPER (#lrb_id#), UPPER (#namaReff#), UPPER (#kode#), UPPER (#nama_cabang#),
+				 UPPER (#flag_aktif#), UPPER (#npk#), #jenis#, trim(#kodeAgent#), #lisensi#
+				)
+	</insert>
+	
+	<insert id="insertLampiranMstHistoryUpload" parameterClass="com.ekalife.elions.model.HistoryUpload">
+		INSERT INTO EKA.MST_HISTORY_UPLOAD
+				(upload_id, code_id, old_code_id,
+				 filename, temp_filename, revisi_date,
+				 upload_jenis, status, revisi,
+				 lus_id, keterangan, path, jabatan, ketentuan, upload_date
+				)
+		VALUES  (UPPER (#upload_id#), UPPER (#code_id#), UPPER (#old_code_id#),
+				 UPPER (#filename#), UPPER (#temp_filename#), #revisi_date#,
+				 UPPER (#upload_jenis#), UPPER (#status#), #revisi#,
+				 #lus_id#, UPPER (#keterangan#), UPPER (#path#), UPPER (#jabatan#), UPPER (#ketentuan#), #upload_date#
+				)
+	</insert>
+	
+	<insert id="insertMstKuesionerBrand" parameterClass="com.ekalife.elions.model.KuesionerBrand">
+		INSERT INTO eka.mst_kuesioner_brand
+				(
+			lus_id,
+	mkb_cr_msig_1,        
+	mkb_cr_msig_2,
+	mkb_cr_msig_3,
+	mkb_cr_msig_4,
+	mkb_cr_msig_5,
+	mkb_cr_aset_1,      
+	mkb_cr_aset_2,  
+	mkb_cr_aset_3,  
+	mkb_cr_aset_4,  
+	mkb_cr_aset_5,  
+	mkb_cr_pelanggan_1,   
+	mkb_cr_pelanggan_2, 
+	mkb_cr_pelanggan_3, 
+	mkb_cr_pelanggan_4, 
+	mkb_cr_pelanggan_5, 
+	mkb_cr_prima_1,       
+	mkb_cr_prima_2,  
+	mkb_cr_prima_3,  
+	mkb_cr_prima_4,  
+	mkb_cr_prima_5,  
+	mkb_pr_terbaik_1,     
+	mkb_pr_terbaik_2,     
+	mkb_pr_terbaik_3,     
+	mkb_pr_terbaik_4,     
+	mkb_pr_terbaik_5,     
+	mkb_pr_fleksibilias_1,
+	mkb_pr_fleksibilias_2,
+	mkb_pr_fleksibilias_3,
+	mkb_pr_fleksibilias_4,
+	mkb_pr_fleksibilias_5,
+	mkb_pr_asuransi_1,    
+	mkb_pr_asuransi_2,    
+	mkb_pr_asuransi_3,    
+	mkb_pr_asuransi_4,    
+	mkb_pr_asuransi_5,    
+	mkb_pr_produk_1,      
+	mkb_pr_produk_2,   
+	mkb_pr_produk_3,   
+	mkb_pr_produk_4,   
+	mkb_pr_produk_5,   
+	mkb_im_internasional_1,
+	mkb_im_internasional_2,
+	mkb_im_internasional_3,
+	mkb_im_internasional_4,
+	mkb_im_internasional_5,
+	mkb_im_positif_1,    
+	mkb_im_positif_2,
+	mkb_im_positif_3,
+	mkb_im_positif_4,
+	mkb_im_positif_5,
+	mkb_im_moderen_1,     
+	mkb_im_moderen_2, 
+	mkb_im_moderen_3, 
+	mkb_im_moderen_4, 
+	mkb_im_moderen_5, 
+	mkb_im_komitmen_1,    
+	mkb_im_komitmen_2,    
+	mkb_im_komitmen_3,    
+	mkb_im_komitmen_4,    
+	mkb_im_komitmen_5,    
+	mkb_em_waspada_1,     
+	mkb_em_waspada_2,     
+	mkb_em_waspada_3,     
+	mkb_em_waspada_4,     
+	mkb_em_waspada_5,     
+	mkb_em_kenyamanan_1,  
+	mkb_em_kenyamanan_2,  
+	mkb_em_kenyamanan_3,  
+	mkb_em_kenyamanan_4,  
+	mkb_em_kenyamanan_5,  
+	mkb_em_pengertian_1,  
+	mkb_em_pengertian_2,  
+	mkb_em_pengertian_3,  
+	mkb_em_pengertian_4,  
+	mkb_em_pengertian_5,  
+	mkb_em_ketulusan_1, 
+	mkb_em_ketulusan_2, 
+	mkb_em_ketulusan_3, 
+	mkb_em_ketulusan_4, 
+	mkb_em_ketulusan_5, 
+	mkb_input_date
+				)
+		VALUES  (
+	#lus_id#,
+	#mkb_cr_msig_1#,        
+	#mkb_cr_msig_2#,
+	#mkb_cr_msig_3#,
+	#mkb_cr_msig_4#,
+	#mkb_cr_msig_5#,
+	#mkb_cr_aset_1#,      
+	#mkb_cr_aset_2#,  
+	#mkb_cr_aset_3#,  
+	#mkb_cr_aset_4#,  
+	#mkb_cr_aset_5#,  
+	#mkb_cr_pelanggan_1#,   
+	#mkb_cr_pelanggan_2#, 
+	#mkb_cr_pelanggan_3#, 
+	#mkb_cr_pelanggan_4#, 
+	#mkb_cr_pelanggan_5#, 
+	#mkb_cr_prima_1#,       
+	#mkb_cr_prima_2#,  
+	#mkb_cr_prima_3#,  
+	#mkb_cr_prima_4#,  
+	#mkb_cr_prima_5#,  
+	#mkb_pr_terbaik_1#,     
+	#mkb_pr_terbaik_2#,     
+	#mkb_pr_terbaik_3#,     
+	#mkb_pr_terbaik_4#,     
+	#mkb_pr_terbaik_5#,     
+	#mkb_pr_fleksibilias_1#,
+	#mkb_pr_fleksibilias_2#,
+	#mkb_pr_fleksibilias_3#,
+	#mkb_pr_fleksibilias_4#,
+	#mkb_pr_fleksibilias_5#,
+	#mkb_pr_asuransi_1#,    
+	#mkb_pr_asuransi_2#,    
+	#mkb_pr_asuransi_3#,    
+	#mkb_pr_asuransi_4#,    
+	#mkb_pr_asuransi_5#,    
+	#mkb_pr_produk_1#,      
+	#mkb_pr_produk_2#,   
+	#mkb_pr_produk_3#,   
+	#mkb_pr_produk_4#,   
+	#mkb_pr_produk_5#,   
+	#mkb_im_internasional_1#,
+	#mkb_im_internasional_2#,
+	#mkb_im_internasional_3#,
+	#mkb_im_internasional_4#,
+	#mkb_im_internasional_5#,
+	#mkb_im_positif_1#,    
+	#mkb_im_positif_2#,
+	#mkb_im_positif_3#,
+	#mkb_im_positif_4#,
+	#mkb_im_positif_5#,
+	#mkb_im_moderen_1#,     
+	#mkb_im_moderen_2#, 
+	#mkb_im_moderen_3#, 
+	#mkb_im_moderen_4#, 
+	#mkb_im_moderen_5#, 
+	#mkb_im_komitmen_1#,    
+	#mkb_im_komitmen_2#,    
+	#mkb_im_komitmen_3#,    
+	#mkb_im_komitmen_4#,    
+	#mkb_im_komitmen_5#,    
+	#mkb_em_waspada_1#,     
+	#mkb_em_waspada_2#,     
+	#mkb_em_waspada_3#,     
+	#mkb_em_waspada_4#,     
+	#mkb_em_waspada_5#,     
+	#mkb_em_kenyamanan_1#,  
+	#mkb_em_kenyamanan_2#,  
+	#mkb_em_kenyamanan_3#,  
+	#mkb_em_kenyamanan_4#,  
+	#mkb_em_kenyamanan_5#,  
+	#mkb_em_pengertian_1#,  
+	#mkb_em_pengertian_2#,  
+	#mkb_em_pengertian_3#,  
+	#mkb_em_pengertian_4#,  
+	#mkb_em_pengertian_5#,  
+	#mkb_em_ketulusan_1#, 
+	#mkb_em_ketulusan_2#, 
+	#mkb_em_ketulusan_3#, 
+	#mkb_em_ketulusan_4#, 
+	#mkb_em_ketulusan_5#, 
+	#mkb_input_date#
+				)
+	</insert>
+	
+	<insert id="insertMstHistoryUpload" parameterClass="com.ekalife.elions.model.HistoryUpload">
+		INSERT INTO EKA.MST_HISTORY_UPLOAD
+				(upload_id, code_id, old_code_id,
+				 filename, temp_filename, revisi_date,
+				 upload_jenis, status, revisi,
+				 lus_id, keterangan, path, upload_date
+				)
+		VALUES  (UPPER (#upload_id#), UPPER (#code_id#), UPPER (#old_code_id#),
+				 UPPER (#filename#), UPPER (#temp_filename#), #revisi_date#,
+				 UPPER (#upload_jenis#), UPPER (#status#), #revisi#,
+				 #lus_id#, UPPER (#keterangan#), UPPER (#path#), #upload_date#
+				)
+	</insert>
+	
+	<insert id="insertAksesHist" parameterClass="com.ekalife.elions.model.AksesHist">
+		INSERT INTO eka.mst_akses_hist
+		            (msah_jenis, lus_id,
+		             msah_spaj, msah_date,
+		             msah_uri, msah_ip
+		            )
+		     VALUES (#msah_jenis:INTEGER#, #lus_id:INTEGER#,
+		             UPPER (#msah_spaj:VARCHAR#), #msah_date:TIMESTAMP#,
+		             UPPER (#msah_uri:VARCHAR#), UPPER (#msah_ip:VARCHAR#)
+		            )
+	</insert>
+	
+	<insert id="insertMstMatrixAdv" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_MATRIX_ADV
+                ( MNS_KD_NASABAH, LSBS_ID, MSMA_FUND )   
+            VALUES ( #mns_kd_nasabah#, #lsbs_id#, #msma_fund# )
+	</insert>
+	
+	<insert id="insertCurrency" parameterClass="com.ekalife.elions.model.Currency">
+		INSERT INTO EKA.LST_DAILY_CURRENCY (
+		LKU_ID, LKH_DATE, LKH_CURRENCY,
+		LKH_KURS_JUAL, LKH_KURS_BELI, LKH_CREATE_DT)
+		VALUES (
+			#lku_id#, 
+			<isNotEmpty property="lkh_date">#lkh_date#</isNotEmpty>
+			<isEmpty property="lkh_date">trunc(sysdate)</isEmpty>
+			, #lkh_currency#, #lkh_kurs_jual#, #lkh_kurs_beli#, sysdate
+		)
+	</insert>
+
+	<insert id="insertTaxCurrency" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.LST_TAX_CURRENCY (LKU_ID, LTC_CURRENCY, LTC_BEG_DATE, LTC_END_DATE, LTC_CREATE_DATE) 
+		VALUES (upper(#lku_id#), #ltc_currency#, to_date(#ltc_beg_date#,'dd/mm/yyyy'), to_date(#ltc_end_date#,'dd/mm/yyyy'), SYSDATE)                                                                               	
+	</insert>
+
+	<insert id="insertMenuAkses" parameterClass="java.util.HashMap">
+		insert into eka.lst_menu_user_new (menu_id, lus_id)
+		(select menu_id, #lus# from eka.lst_menu_new
+		where flag_public <![CDATA[<>]]> 'Y' and menu_id in ($nilai$))
+	</insert>
+
+	<insert id="insertAllCabang" parameterClass="string">
+		insert into eka.lst_user_cab(lus_id,lca_id) (select #value#, lca_id from eka.lst_cabang)
+	</insert>
+	
+	<insert id="insertSelectedCabang" parameterClass="java.util.HashMap">
+		insert into eka.lst_user_cab(lus_id,lca_id) (select #lus#, lca_id from eka.lst_cabang 
+		where lca_id in ($nilai$))
+	</insert>
+		
+	<insert id="insertMstCompany" parameterClass="com.ekalife.elions.model.Personal">
+		insert into eka.mst_company (
+		   mcl_id, lju_id, mpt_usaha_desc, 
+		   mpt_term, mpt_npwp, mpt_contact, 
+		   lca_id, lwk_id, lsrg_id, 
+		   lbn_id, lsbp_id,
+		   tgl_print_inv,tgl_print_kw,flag_ws,lus_admin_ws,flag_gws,flag_group) 
+		values(
+		   #mcl_id#, #lju_id#, upper(#mpt_usaha_desc#), 
+		   #mpt_term#, #mpt_npwp#, upper(#mpt_contact#), 
+		   #lca_id#, #lwk_id#, #lsrg_id#, 
+		   #lbn_id#, #lsbp_id#,
+		   to_date(#s_tgl_print_inv#,'dd/mm/yyyy'),to_date(#s_tgl_print_kw#,'dd/mm/yyyy'),
+		   #flag_ws#, #lus_admin_ws#,#flag_gws#,#flag_group#)
+	</insert>
+		
+	<insert id="insertMstCompanyContact" parameterClass="com.ekalife.elions.model.ContactPerson">
+		   insert into eka.mst_company_contact (
+		   mcl_id, no_urut, flag_ut, nama_lengkap, telp_kantor, 
+		   telp_hp, email, cara_bayar, 
+		   rek_no, rek_nama, rek_bank, 
+		   rek_bank_cabang, rek_bank_kota, lus_id, 
+		   input_date,mste_sex, jenis_badan, npwp, flag_komisi) 
+		values (
+		   #mcl_id#, #no_urut#, #flag_ut#, upper(#nama_lengkap#), #telp_kantor#, 
+		   #telp_hp#, upper(#email#), #cara_bayar#, 
+		   #rek_no#, upper(#rek_nama#), upper(#rek_bank#), 
+		   upper(#rek_bank_cabang#), upper(#rek_bank_kota#), #lus_id#, 
+		   sysdate,#mste_sex#, #jenis_badan#, #npwp#, #flag_komisi#) 
+	</insert>
+		
+	<insert id="insertMstCompanyAddress" parameterClass="com.ekalife.elions.model.AddressNew">
+		INSERT INTO eka.mst_address_new
+		            (mcl_id, alamat_rumah,
+		             kd_pos_rumah, kota_rumah,
+		             area_code_rumah,
+		             telpon_rumah, alamat_kantor,
+		             kd_pos_kantor, kota_kantor,
+		             area_code_kantor,
+		             telpon_kantor, email,
+		             no_hp, no_hp2,
+		             no_fax, area_code_rumah2,
+		             telpon_rumah2,
+		             area_code_kantor2,
+		             telpon_kantor2, area_code_fax
+		            )
+		     VALUES (UPPER (#mcl_id:CHAR#), UPPER (#alamat_rumah:VARCHAR#),
+		             UPPER (#kd_pos_rumah:VARCHAR#), UPPER (#kota_rumah:VARCHAR#),
+		             UPPER (#area_code_rumah:VARCHAR#),
+		             UPPER (#telpon_rumah:VARCHAR#), UPPER (#alamat_kantor:VARCHAR#),
+		             UPPER (#kd_pos_kantor:VARCHAR#), UPPER (#kota_kantor:VARCHAR#),
+		             UPPER (#area_code_kantor:VARCHAR#),
+		             UPPER (#telpon_kantor:VARCHAR#), UPPER (#email:VARCHAR#),
+		             UPPER (#no_hp:VARCHAR#), UPPER (#no_hp2:VARCHAR#),
+		             UPPER (#no_fax:VARCHAR#), UPPER (#area_code_rumah2:VARCHAR#),
+		             UPPER (#telpon_rumah2:VARCHAR#),
+		             UPPER (#area_code_kantor2:VARCHAR#),
+		             UPPER (#telpon_kantor2:VARCHAR#), UPPER (#area_code_fax:VARCHAR#)
+		            )	
+	</insert>
+	
+	<insert id="insertMstTandatangan" parameterClass="com.ekalife.elions.model.TandaTangan">
+		INSERT INTO eka.mst_tandatangan
+		            (mstt_id, mstt_nama,
+		             mcl_id, reg_spaj, mstt_image,
+		             mstt_ext, create_id, create_dt)
+		     VALUES ((select count(*) from eka.mst_tandatangan)+1, UPPER (#mstt_nama:VARCHAR#),
+		             UPPER (#mcl_id:CHAR#), UPPER (#reg_spaj:CHAR#), #mstt_image#,
+		             UPPER (#mstt_ext:VARCHAR#), #create_id:INTEGER#, sysdate)
+	</insert>
+	<insert id="insertLstMenuNew" parameterClass="com.ekalife.elions.model.Menu">
+		INSERT INTO EKA.LST_MENU_NEW (
+				    MENU_ID, PARENT_MENU_ID, LST_MENU_ID, 
+				    NAMA_MENU, LINK_MENU, FLAG_AKTIF, 
+				    FLAG_PUBLIC, TINGKAT, URUTAN, 
+				    JENIS,JENIS_ID , ICON) 
+		VALUES ( 	#menu_id#, #parent_menu_id#, #lst_menu_id#, 
+				 	#nama_menu#, #link_menu#, #flag_aktif#, 
+				  	#flag_public#, #tingkat#, #urutan#, 
+				   	#jenis#, #jenis#, #icon#) 
+	</insert>
+
+	<insert id="insertMstJiffyKdNasabah" parameterClass="string">
+		INSERT INTO EKA.MST_JIFFY  
+            	( MNS_KD_NASABAH )
+     	 VALUES ( #mns_kd_nasabah# )
+	</insert>
+
+	<insert id="insertMstAktivitas" parameterClass="java.util.HashMap">
+	 INSERT INTO EKA.MST_AKTIVITAS  
+				( MNS_KD_NASABAH,   
+				  PERT_KE,   
+				  KD_AKTIVITAS,   
+				  TGL_PERT,   
+				  KETERANGAN,   
+				  STATUS,   
+				  APPROVAL )  
+	  VALUES ( 	  #kd_nasabah#,   
+				  #pert_ke#,   
+				  #kd_aktivitas#,   
+				  SYSDATE,   
+				  #keterangan#,   
+				  #status#,   
+				  #approval#)  
+	</insert>
+
+	<insert id="insertMstAgentFa" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_AGENT_FA  
+			( MNS_KD_NASABAH	,MSAG_ID		,LEVEL_ID	,LEV_COM	,FLAG_JAB )  
+		VALUES 
+			( #kdNasabah#	,#msagId#	,#levelId#		,#levCom#		, #flagJab#) 
+	</insert>
+
+	<insert id="insertMstDetNasabah" parameterClass="com.ekalife.elions.model.Nasabah">
+		INSERT INTO EKA.MST_DET_NASABAH(
+			MNS_KD_NASABAH, NO_COUNT, REFERRER_ID, LEADER_REF1, LEADER_REF2, LEADER_REF3
+		)
+		VALUES(
+			#mns_kd_nasabah#, 1, #referrer_id#, #leader_ref1#, #leader_ref2#, #leader_ref3#
+		)
+	</insert>
+
+	<insert id="insertMstNasabah" parameterClass="com.ekalife.elions.model.Nasabah">
+		INSERT INTO EKA.MST_NASABAH (
+		   MNS_KD_NASABAH, MNS_NO_REF, MNS_NAMA, 
+		   MNS_SEX, MNS_DCIF, MNS_TIPE_NASABAH, 
+		   MNS_AREA_KANTOR, MNS_TLPKANTOR, MNS_AREA_RUMAH, 
+		   MNS_TLPRUMAH, MNS_AREA_HP, MNS_HP, 
+		   MNS_TGL_APP, MNS_WAKTU_HUB, LJL_JENIS, 
+		   MNS_LAYANAN, MNS_ST_JELAS, MNS_NAMA_LEAD, 
+		   MSAG_ID, KD_ASM, KD_SM, 
+		   KD_LEADER, KD_RM, MNS_NAMA_FA, 
+		   KD_REGION, KD_KOORD, KD_AREA, 
+		   KD_CABANG, REFERRER_ID, REFERRER_FA, 
+		   KODE, MNS_REFF_CAB, MNS_REK_BII, 
+		   MNS_USIA, MNS_TGLINPUT, MNS_TT_NASABAH, 
+		   MNS_TGL_TT, LSBS_ID, MNS_OK_SARAN, 
+		   MNS_UP, MNS_FREK_REVIEW, LSPD_ID,JN_NASABAH,
+		   LEADER_REF1, LEADER_REF2, LEADER_REF3, JN_LEAD, LUS_ID) 
+		VALUES(
+		   #mns_kd_nasabah#,#mns_no_ref#,upper(#mns_nama#),
+		   #mns_sex#,#mns_dcif#,#mns_tipe_nasabah#, 
+		   #mns_area_kantor#,#mns_tlpkantor#,#mns_area_rumah#, 
+		   #mns_tlprumah#,#mns_area_hp#,#mns_hp#,
+		   sysdate,#mns_waktu_hub#,#ljl_jenis#, 
+		   #mns_layanan#,#mns_st_jelas#,#mns_nama_lead#, 
+		   #msag_id#,#kd_asm#,#kd_sm#,
+		   #kd_leader#,#kd_rm#,#mns_nama_fa#, 
+		   #kd_region#,#kd_koord#,#kd_area#, 
+		   #kd_cabang#,#referrer_id#,#referrer_fa#, 
+		   #kode#,#mns_reff_cab#,#mns_rek_bii#,
+		   #mns_usia#,sysdate,#mns_tt_nasabah#, 
+		   #mns_tgl_tt#,#lsbs_id#,#mns_ok_saran#,
+		   #mns_up#,#mns_frek_review#,#lspd_id#,#platinum#,
+		   #leader_ref1#, #leader_ref2#, #leader_ref3#, #jn_lead#, #lus_id#)		
+	</insert>
+	
+	<insert id="insertMstClientHistory" parameterClass="com.ekalife.elions.model.ClientHistory">
+			INSERT INTO EKA.MST_CLIENT_HISTORY (
+			   MSPO_POLICY_NO, MSCH_NO_URUT, LSSH_ID, 
+			   MSCH_NO_SERI, MSCH_NAMA_PP, 
+			   MSCH_NAMA_TT, MSCH_NAMA_PRODUK, MSCH_CABANG, 
+			   MSCH_ALAMAT, MSCH_KOTA, MSCH_ZIP_CODE, 
+			   MSCH_TGL_KIRIM, MSCH_TGL_TERIMA, MSCH_PENERIMA, 
+			   LUS_ID,MSCH_TGL_UPLOAD,MSCH_BAS_TGL_TERIMA,MSCH_HISTORY,MSCH_STATUS_INPUT) 
+			VALUES ( rpad(replace(#mspo_policy_no#,'.'),14,' '), #msch_no_urut#, #lssh_id#, 
+			   #msch_no_seri#, #msch_nama_pp#, 
+			   #msch_nama_tt#, #msch_nama_produk#, #msch_cabang#, 
+			   #msch_alamat#, #msch_kota#, #msch_zip_code#, 
+			   #msch_tgl_kirim#, #msch_tgl_terima#, #msch_penerima#, 
+			   #lus_id#,sysdate,#msch_bas_tgl_terima#,#msch_history#,#msch_status_input#)
+	</insert>		
+	
+	<insert id="insertMReasTempNew" parameterClass="java.util.HashMap">
+	   INSERT INTO eka.m_reas_temp_new
+            (reg_spaj, lsbs_id, lsdbs_number, mste_reas, lku_id, tsi, sar,
+             retensi, reas,flag_ins)VALUES
+   			(#REG_SPAJ#, #LSBS_ID#, #LSDBS_NUMBER#, #MSTE_REAS#, #LKU_ID#, #TSI#, #SAR#,
+             #RETENSI#, #REAS#,#FLAG_INS#)
+	</insert>
+	
+	<insert id="insertMstRelasiNasabah" parameterClass="com.ekalife.elions.model.RelasiNasabah">
+		INSERT INTO EKA.MST_RELASI_NASABAH
+			(MNS_KD_NASABAH, MRN_NO_RELASI, MRN_NAMA, MRN_ALAMAT, MRN_CONTACT_NO,
+			 MRN_KET_RELASI, MRN_ALASAN, MRN_REF_TO_BII, REFERRER_ID)
+		VALUES(#mns_kd_nasabah#, #mrn_no_relasi#, upper(#mrn_nama#), upper(#mrn_alamat#), #mrn_contact_no#,
+			   upper(#mrn_ket_relasi#), upper(#mrn_alasan#), #mrn_ref_to_bii#, #referrer_id# )
+	</insert>
+	
+	<insert id="insertMstChildren" parameterClass="com.ekalife.elions.model.Children">
+		INSERT INTO EKA.MST_CHILDREN
+			(MNS_KD_NASABAH, MCH_ID, MCH_JN_RELASI, MCH_NAMA, MCH_BIRTH_DATE, MCH_USIA, MCH_PEKERJAAN,
+			 MCH_RENC_STUDI, MCH_TEMPAT_STUDI, MCH_WAKTU_REALISASI, MCH_BIAYA, MCH_RENC_SKRG, MCH_PENGATURAN)
+		VALUES(#mns_kd_nasabah#, #mch_id#, #mch_jn_relasi#, upper(#mch_nama#), #mch_birth_date#, #mch_usia#, upper(#mch_pekerjaan#),
+			   upper(#mch_renc_studi#), upper(#mch_tempat_studi#), upper(#mch_waktu_realisasi#), #mch_biaya#, upper(#mch_renc_skrg#), upper(#mch_pengaturan#) )
+	</insert>
+	
+	<insert id="insertNasabahInMstSurplus" parameterClass="string">
+		INSERT INTO EKA.MST_SURPLUS_CALC
+        	( MNS_KD_NASABAH )
+  		VALUES ( #mns_kd_nasabah# )
+	</insert>
+	
+	<insert id="insertNasabahInMstProtect" parameterClass="string">
+		INSERT INTO EKA.MST_PROTECT_CALC
+         	( MNS_KD_NASABAH )
+  		VALUES ( #mns_kd_nasabah# )
+	</insert>
+	
+	<insert id="insertNasabahInMstIncome" parameterClass="string">
+		INSERT INTO EKA.MST_INCOME_CALC
+         	( MNS_KD_NASABAH )
+  		VALUES ( #mns_kd_nasabah# )
+	</insert>
+	
+	<insert id="insertNasabahInMstKebutuhan" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_KEBUTUHAN
+            ( MNS_KD_NASABAH, LJK_ID, MKB_NO )
+     	 VALUES ( #mns_kd_nasabah#, #ljk_id#, #mkb_no#)
+	</insert>
+	
+	<insert id="insertNasabahInMstPendapatan" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_PENDAPATAN
+            ( MNS_KD_NASABAH, LSP_ID, LSP_IN_OUT )
+      	VALUES ( #mns_kd_nasabah#, #lsp_id#, #lsp_in_out# )
+	</insert>
+	
+	<insert id="insertMstProdBank" parameterClass="com.ekalife.elions.model.ProdBank">
+		INSERT INTO EKA.MST_PROD_BANK (                                                                                                                       
+			MNS_KD_NASABAH                                                                                                                                        
+			, LPB_ID                                                                                                                                              
+			, MPB_NO                                                                                                                                              
+			, MPB_STATUS                                                                                                                                          
+			, MPB_NM_BANK                                                                                                                                         
+			, MPB_TABUNGAN                                                                                                                                        
+			, MPB_NM_TABUNGAN                                                                                                                                     
+			, MPB_JML_TABUNGAN                                                                                                                                    
+			, MPB_KET_NM_BANK                                                                                                                                     
+			, MPB_NOTE                                                                                                                                            
+			) 
+		VALUES (                                                                                                                                            
+			 #mns_kd_nasabah#                                                                                                                         
+			, #lpb_id#                                                                                                                                    
+			, #mpb_no#                                                                                                                                    
+			, #mpb_status#                                                                                                                                
+			, upper(#mpb_nm_bank#)                                                                                                                        
+			, #mpb_tabungan#                                                                                                                              
+			, upper(#mpb_nm_tabungan#)                                                                                                                    
+			, #mpb_jml_tabungan#                                                                                                                          
+			, upper(#mpb_ket_nm_bank#)                                                                                                                    
+			, upper(#mpb_note#)                                                                                                                           
+			)
+	</insert>
+
+	<insert id="insertMstAktivitasUsingModel" parameterClass="com.ekalife.elions.model.Aktivitas">
+		INSERT INTO EKA.MST_AKTIVITAS (                                                                                                                       
+			MNS_KD_NASABAH                                                                                                                                        
+			, PERT_KE                                                                                                                                             
+			, KD_AKTIVITAS                                                                                                                                        
+			, TGL_PERT                                                                                                                                            
+			, KETERANGAN                                                                                                                                          
+			, STATUS                                                                                                                                              
+			, APPROVAL                                                                                                                                            
+			, TGL_TRANSFER                                                                                                                                        
+			) values (                                                                                                                                            
+			upper(#mns_kd_nasabah#)                                                                                                                          
+			, #pert_ke#                                                                                                                                
+			, #kd_aktivitas#                                                                                                                            
+			, #tgl_pert#                                                                                                                                
+			, upper(#keterangan#)                                                                                                                         
+			, #status#                                                                                                                                    
+			, #approval#                                                                                                                                
+			, #tgl_transfer#                                                                                                                            
+			)    
+	</insert>
+	
+	<insert id="insertMstAspirasi" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_ASPIRASI
+          ( MNS_KD_NASABAH, MSAS_NO )   
+      VALUES ( #mns_kd_nasabah#, #msas_no# )
+	</insert>
+	
+	<insert id="insertMstRekomendasi" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_REKOMENDASI
+          ( MNS_KD_NASABAH, MSREK_NO )   
+      VALUES ( #mns_kd_nasabah#, #msrek_no# )
+	</insert>
+	
+	<insert id="insertIcdCode" parameterClass="com.ekalife.elions.model.Icd">
+		INSERT INTO EKA.LST_ICD (LIC_ID, LIC_DESC, LIC_TYPE, 
+								 ACTIVE, LIC_LUS_ID, LIC_INPUT_DATE) 
+						 VALUES (upper(#lic_id:VARCHAR#), upper(#lic_desc:VARCHAR#), 
+						 		 #lic_type:INTEGER#, 1, #msdi_lus_id:INTEGER#, 
+						 		 #msdi_input_date:TIMESTAMP#)                                                                               		
+	</insert>
+	
+	<insert id="insertDaftarSk" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.LST_HRD_SURAT_OTORISASI (SURAT_ID, REGIONAL_FLAG, AKM_FLAG)
+			VALUES(#surat_id#, #regional_flag#, #akm_flag#)
+	</insert>
+	
+	<insert id="insertMstAgentAbsen" parameterClass="java.util.HashMap">
+		insert into eka.mst_agent_absen (msag_id, tanggal, jam_masuk, jam_keluar,lus_id)
+		values (#msag_id#, trunc(sysdate), sysdate, null,#lus_id#)
+	</insert>
+	
+	<insert id="insertMstHistDownload" parameterClass="java.util.HashMap">
+		insert into eka.mst_hist_download (lus_id, filename, download_date, modified_date, filetype)
+		values (#lus_id#, #filename#, sysdate, #modified_date#, #filetype#)
+	</insert>	
+	
+	<insert id="insertVoucherTaxi" parameterClass="com.ekalife.elions.model.VoucherTaxi">
+	    insert into eka.mst_voucher_taxi@eb (
+	        msvt_no, 
+	        msvt_msag_id, 
+	        msvt_user_dept, 
+	        msvt_from, 
+	        msvt_to, 
+	        <isNotNull property="msvt_cost">msvt_cost,</isNotNull> 
+	        <isNotNull property="msvt_release_date">msvt_release_date,</isNotNull> 
+	        <isNotNull property="msvt_return_date">msvt_return_date,</isNotNull> 
+	        lus_id, 
+	        msvt_insert_date,
+	        msvt_status_flag,
+	        msvt_status_desc
+	    ) values (
+	        trim(#msvt_no:VARCHAR#), 
+	        trim(#msvt_msag_id:VARCHAR#), 
+	        upper(#msvt_user_dept:VARCHAR#), 
+	        upper(trim(#msvt_from:VARCHAR#)), 
+	        upper(trim(#msvt_to:VARCHAR#)), 
+	        <isNotNull property="msvt_cost">#msvt_cost:NUMBER#,</isNotNull> 
+	        <isNotNull property="msvt_release_date">#msvt_release_date:DATE#,</isNotNull> 
+	        <isNotNull property="msvt_return_date">#msvt_return_date:DATE#,</isNotNull> 
+	        trim(#lus_id:VARCHAR#), 
+	        #msvt_insert_date:TIMESTAMP#,
+	        #msvt_status_flag:NUMBER#,
+	        upper(trim(#msvt_status_desc:VARCHAR#))
+	    )
+	</insert>
+	
+	<insert id="insertDataSuratTsr" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_TSR_SURAT(
+						nip,
+						nama,
+						alamat,
+						no_ktp,
+						no_surat,
+						no_surat_direksi,
+						tgl_awal,
+						tgl_akhir,
+						evaluasi,
+						nama_atasan,
+						jabatan_atasan,
+						jabatan,
+						tgl_kirim,
+						jangka,
+						lde_id
+					)
+		values(
+				#nip#,
+				upper(#nama#),
+				upper(#alamat#),
+				#ktp#,
+        		upper(#shasil#),
+        		upper(#sk#),
+        		to_date(#bdate#,'dd/MM/yyyy'),
+       			to_date(#edate#,'dd/MM/yyyy'),
+       			#eva#,
+       			upper(#atasan#),
+       			upper(#jbt#),
+        		upper(#jabatan#),
+        		sysdate,
+        		#jangka#,
+        		#dept#)
+	</insert>
+	
+	<insert id="insertMstUrlSecure" parameterClass="java.util.HashMap">
+		INSERT INTO eka.mst_url_secure (id_secure_1, id_secure_2, id_encrypt_1, id_encrypt_2, key_id, link, create_date)
+		VALUES (#id1#, #id2#, eka.encrypt(#id1#), eka.encrypt(#id2#), #no_polis#, #link#, SYSDATE)
+	</insert>
+	
+	<insert id="insertDataJne" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_JNE_POD(
+						mspo_no_pengiriman,
+						reg_spaj,
+						mstj_tujuan,
+						mstj_consignee,
+						mstj_tgl_terima,
+						mstj_receiver,
+						lus_id,
+						mstj_tgl_upload					
+					)
+		values(
+				#s_connote#,
+				RPAD (REPLACE (#spaj#, '.'), 11, ' '),
+				upper(#s_dest#),
+				upper(#s_consignee#),
+				to_date(#d_tglTerima#,'dd/MM/yyyy'),
+				upper(#s_penerima#),
+				#lus_id#,sysdate				
+				)
+	</insert>
+	<!--<insert id="insertLstSalesTm" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.LST_SALES_TM@eb(
+							TM_ID,
+							SPV_CODE,
+							TM_CODE,
+							FLAG_AKTIF,
+							TGL_INPUT,
+							NIK,
+							BASIC_SALARY,
+							TEAM,
+							EMAIL,
+							CALLCENTER_CODE
+						)
+		VALUES(
+			#nik#,
+			'002612 ',
+			#nm_agent#,
+			#aktif#,
+			SYSDATE,
+			#nik#,
+			null,
+			null,
+			null,
+			#cc_code#
+		)
+	</insert>-->
+</sqlMap>

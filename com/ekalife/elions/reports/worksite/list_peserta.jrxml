@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="list_peserta" pageWidth="940" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="900" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="tgl1" class="java.lang.String">
+		<defaultValueExpression><![CDATA["20080701"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tgl2" class="java.lang.String">
+		<defaultValueExpression><![CDATA["20080731"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="customer" class="java.lang.String">
+		<defaultValueExpression><![CDATA["010000164784"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<queryString>
+		<![CDATA[SELECT   t1.*, ROWNUM rn
+FROM (
+        SELECT DISTINCT a.reg_spaj, c.mcl_first nama_pp,
+                i.mcl_first nama_ttg, k.lsdbs_name, 
+                nvl((select sum(mu_jlh_premi) from eka.mst_ulink x 
+                where reg_spaj = a.reg_spaj and lt_id !=10 and mu_tgl_trans = (select mu_tgl_trans from eka.mst_ulink where reg_spaj = a.reg_spaj and mu_ke = 1)), h.mspr_premium) mspr_premium,                  
+                a.lscb_id, l.lca_id, a.mspo_customer, a.lstb_id,
+                a.lspd_id, b.mste_flag_cc, j.lsle_id, h.lsbs_id,
+                b.lssa_id, e.mpt_contact, d.mcl_first nama_pt,
+                g.alamat_kantor, f.nik,
+                SUBSTR (a.reg_spaj, 1, 2)
+                || '.'
+                || SUBSTR (a.reg_spaj, 3, 4)
+                || '.'
+                || SUBSTR (a.reg_spaj, 7) spaj_formatted,
+                DECODE (a.lscb_id, 6, 'M', 'A') cara_bayar,
+                DECODE (b.lssa_id, 1, 'STANDAR',
+                        DECODE (b.lssa_id, 9, 'STANDAR', 
+                        DECODE (b.lssa_id, 2, 'TOLAK', 'PENDING'))
+                ) status,
+                c.mspe_date_birth,
+                decode(m.sub_id, 1, 'PENDING PREMIUM', '') status_tambahan
+                FROM eka.mst_policy a,
+                        eka.mst_insured b,
+                        eka.mst_client_new c,
+                        eka.mst_client_new d,
+                        eka.mst_company e,
+                        eka.mst_worksite_flag f,
+                        eka.mst_address_new g,
+                        eka.mst_product_insured h,
+                        eka.mst_client_new i,
+                        eka.mst_agent_prod j,
+                        eka.lst_det_bisnis k,
+                        eka.mst_agent l,
+                        eka.lst_status_accept_sub m,
+                        eka.mst_position_spaj n
+                WHERE a.reg_spaj = b.reg_spaj
+                        AND a.mspo_policy_holder = c.mcl_id
+                        AND a.mspo_customer = d.mcl_id(+)
+                        AND a.mspo_customer = e.mcl_id(+)
+                        AND a.reg_spaj = f.reg_spaj(+)
+                        AND a.reg_spaj = n.reg_spaj
+                        AND a.lssp_id = n.lssp_id
+                        AND a.lspd_id = n.lspd_id
+                        AND d.mcl_id = g.mcl_id
+                        AND b.reg_spaj = h.reg_spaj
+                        AND b.mste_insured_no = h.mste_insured_no
+                        AND b.mste_insured = i.mcl_id
+                        AND b.lssa_id = n.lssa_id
+                        AND h.reg_spaj = j.reg_spaj
+                        AND h.lsbs_id = k.lsbs_id
+                        AND h.lsdbs_number = k.lsdbs_number
+                        AND j.msag_id = l.msag_id
+                        AND n.lssa_id = m.lssa_id
+                        AND n.sub_id = m.sub_id
+                        AND to_date(n.msps_date,'dd/mm/yyyy') = (select to_date(max(msps_date),'dd/mm/yyyy') from eka.mst_position_spaj where reg_spaj = a.reg_spaj)
+                        AND b.mste_flag_cc = 3
+                        AND a.lspd_id in (1,2)
+                        AND a.lstb_id = 1
+                        AND a.mspo_customer = $P{customer}
+                        AND l.lca_id = '42'
+                        AND TRUNC (b.mste_input_date) BETWEEN TO_DATE
+                                        ($P{tgl1}, 'yyyymmdd')
+                                AND TO_DATE
+                                        ($P{tgl1}, 'yyyymmdd')
+                        AND j.lsle_id = 4
+                UNION
+                SELECT DISTINCT a.reg_spaj, c.mcl_first nama_pp,
+                        i.mcl_first nama_ttg, k.lsdbs_name, 
+                        nvl((select sum(mu_jlh_premi) from eka.mst_ulink x 
+                        where reg_spaj = a.reg_spaj and lt_id !=10 and mu_tgl_trans = (select mu_tgl_trans from eka.mst_ulink where reg_spaj = a.reg_spaj and mu_ke = 1)), h.mspr_premium) mspr_premium,                  
+                        a.lscb_id, l.lca_id, a.mspo_customer, a.lstb_id,
+                        a.lspd_id, b.mste_flag_cc, j.lsle_id, h.lsbs_id,
+                        b.lssa_id, e.mpt_contact, d.mcl_first nama_pt,
+                        g.alamat_kantor, f.nik,
+                        SUBSTR (a.reg_spaj, 1, 2)
+                        || '.'
+                        || SUBSTR (a.reg_spaj, 3, 4)
+                        || '.'
+                        || SUBSTR (a.reg_spaj, 7) spaj_formatted,
+                        DECODE (a.lscb_id, 6, 'M', 'A') cara_bayar,
+                        DECODE (b.lssa_id, 1, 'STANDAR',
+                                DECODE (b.lssa_id, 9, 'STANDAR', 
+                                DECODE (b.lssa_id, 2, 'TOLAK', 'PENDING'))
+                        ) status,
+                        c.mspe_date_birth,
+                        null  status_tambahan
+                FROM eka.mst_policy a,
+                        eka.mst_insured b,
+                        eka.mst_client_new c,
+                        eka.mst_client_new d,
+                        eka.mst_company e,
+                        eka.mst_worksite_flag f,
+                        eka.mst_address_new g,
+                        eka.mst_product_insured h,
+                        eka.mst_client_new i,
+                        eka.mst_agent_prod j,
+                        eka.lst_det_bisnis k,
+                        eka.mst_agent l
+                WHERE a.reg_spaj = b.reg_spaj
+                        AND a.mspo_policy_holder = c.mcl_id
+                        AND a.mspo_customer = d.mcl_id(+)
+                        AND a.mspo_customer = e.mcl_id(+)
+                        AND a.reg_spaj = f.reg_spaj(+)
+                        AND d.mcl_id = g.mcl_id
+                        AND b.reg_spaj = h.reg_spaj
+                        AND b.mste_insured_no = h.mste_insured_no
+                        AND b.mste_insured = i.mcl_id
+                        AND h.reg_spaj = j.reg_spaj
+                        AND h.lsbs_id = k.lsbs_id
+                        AND h.lsdbs_number = k.lsdbs_number
+                        AND j.msag_id = l.msag_id
+                        AND b.mste_flag_cc = 3
+                        AND a.lstb_id = 1
+                        AND ( l.lca_id = '42' OR h.lsbs_id IN (140, 141, 148, 149, 156, 158) )
+                        AND j.lsle_id = 4
+                        AND a.lspd_id in (1,2)
+                        AND b.lssa_id in (1,9)
+                        AND a.mspo_customer = $P{customer}) t1
+WHERE t1.lsbs_id < 300
+ORDER BY t1.lspd_id, t1.lssa_id, t1.reg_spaj]]>
+	</queryString>
+	<field name="ALAMAT_KANTOR" class="java.lang.String"/>
+	<field name="CARA_BAYAR" class="java.lang.String"/>
+	<field name="LCA_ID" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSCB_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSLE_ID" class="java.math.BigDecimal"/>
+	<field name="LSPD_ID" class="java.math.BigDecimal"/>
+	<field name="LSSA_ID" class="java.math.BigDecimal"/>
+	<field name="LSTB_ID" class="java.math.BigDecimal"/>
+	<field name="MPT_CONTACT" class="java.lang.String"/>
+	<field name="MSPE_DATE_BIRTH" class="java.util.Date"/>
+	<field name="MSPO_CUSTOMER" class="java.lang.String"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="MSTE_FLAG_CC" class="java.math.BigDecimal"/>
+	<field name="NAMA_PP" class="java.lang.String"/>
+	<field name="NAMA_PT" class="java.lang.String"/>
+	<field name="NAMA_TTG" class="java.lang.String"/>
+	<field name="NIK" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="RN" class="java.math.BigDecimal"/>
+	<field name="SPAJ_FORMATTED" class="java.lang.String"/>
+	<field name="STATUS" class="java.lang.String"/>
+	<field name="STATUS_TAMBAHAN" class="java.lang.String"/>
+	<variable name="total_premi" class="java.math.BigDecimal" resetType="Group" resetGroup="Group_3" calculation="Sum">
+		<variableExpression><![CDATA[$F{LSSA_ID}.intValue() == 1 ? $F{MSPR_PREMIUM} :  $F{MSPR_PREMIUM}]]></variableExpression>
+	</variable>
+	<group name="Group_1">
+		<groupExpression><![CDATA[$F{MSPO_CUSTOMER}]]></groupExpression>
+		<groupHeader>
+			<band height="93">
+				<textField isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="150" y="39" width="309" height="12"/>
+					<textElement>
+						<font fontName="Microsoft Sans Serif" size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{MPT_CONTACT}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="5" y="71" width="133" height="13"/>
+					<textElement>
+						<font fontName="Microsoft Sans Serif" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[BULAN]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="5" y="39" width="134" height="14"/>
+					<textElement>
+						<font fontName="Microsoft Sans Serif" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[UP]]></text>
+				</staticText>
+				<textField isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="150" y="6" width="308" height="13"/>
+					<textElement>
+						<font fontName="Microsoft Sans Serif" size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PT}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="5" y="54" width="134" height="13"/>
+					<textElement>
+						<font fontName="Microsoft Sans Serif" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[CARA PEMBAYARAN]]></text>
+				</staticText>
+				<textField isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="150" y="22" width="400" height="13"/>
+					<textElement>
+						<font fontName="Microsoft Sans Serif" size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{ALAMAT_KANTOR}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="5" y="6" width="137" height="14"/>
+					<textElement>
+						<font fontName="Microsoft Sans Serif" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[NAMA PERUSAHAAN]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="5" y="22" width="136" height="12"/>
+					<textElement>
+						<font fontName="Microsoft Sans Serif" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[ALAMAT]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="150" y="54" width="308" height="12"/>
+					<textElement>
+						<font fontName="Microsoft Sans Serif" size="9"/>
+					</textElement>
+					<text><![CDATA[BULANAN (PAYROLL DEDUCTION)]]></text>
+				</staticText>
+				<textField pattern="MMM yyyy" hyperlinkType="None">
+					<reportElement x="151" y="68" width="141" height="20"/>
+					<textElement>
+						<font fontName="Microsoft Sans Serif"/>
+					</textElement>
+					<textFieldExpression class="java.util.Date"><![CDATA[$P{REPORT_SCRIPTLET}.convertstringdate($P{tgl2})]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="Group_3">
+		<groupExpression><![CDATA[$F{LSSA_ID}]]></groupExpression>
+		<groupHeader>
+			<band height="49">
+				<staticText>
+					<reportElement x="2" y="21" width="23" height="14"/>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[NO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="36" y="21" width="56" height="13"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[NO REG]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="593" y="21" width="80" height="13"/>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[TOTAL PREMI]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="94" y="21" width="96" height="14"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[NAMA PEMEGANG POLIS]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="253" y="21" width="90" height="13"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[NIK]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="462" y="21" width="122" height="13"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[NAMA PRODUK]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="346" y="21" width="114" height="12"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[NAMA TERTANGGUNG]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="679" y="21" width="62" height="21" isPrintWhenDetailOverflows="true"/>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[CARA BAYAR]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="744" y="21" width="45" height="12"/>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[STATUS]]></text>
+				</staticText>
+				<textField hyperlinkType="None">
+					<reportElement x="265" y="5" width="306" height="14"/>
+					<textElement textAlignment="Center">
+						<font fontName="Microsoft Sans Serif" isBold="true" isUnderline="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["DAFTAR PESERTA DENGAN STATUS  "+$F{STATUS}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="192" y="21" width="58" height="14"/>
+					<textElement>
+						<font fontName="Microsoft Sans Serif" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[TGL LHR]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="796" y="21" width="102" height="12"/>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[STATUS TAMBAHAN]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="18">
+				<staticText>
+					<reportElement x="373" y="3" width="137" height="14"/>
+					<textElement textAlignment="Left">
+						<font fontName="Microsoft Sans Serif" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[TOTAL TAGIHAN PREMI]]></text>
+				</staticText>
+				<textField pattern="Rp #,###.-;(¤#,##0.00)" hyperlinkType="None">
+					<reportElement x="537" y="3" width="136" height="13"/>
+					<textElement textAlignment="Right">
+						<font fontName="Microsoft Sans Serif" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("Rp ", $V{total_premi})]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="Group_4">
+		<groupExpression><![CDATA[$F{REG_SPAJ}]]></groupExpression>
+		<groupHeader>
+			<band height="20">
+				<printWhenExpression><![CDATA[new Boolean($F{LSBS_ID}.intValue() < 300)]]></printWhenExpression>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="346" y="2" width="114" height="14"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_TTG}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="462" y="2" width="122" height="14"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="36" y="2" width="58" height="14"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{SPAJ_FORMATTED}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="253" y="2" width="91" height="14"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{NIK}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="94" y="2" width="92" height="14"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PP}]]></textFieldExpression>
+				</textField>
+				<textField pattern="Rp ##0.-;(¤#,##0.00)" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="593" y="2" width="80" height="14"/>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("Rp ", $F{MSPR_PREMIUM})]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="679" y="2" width="60" height="14"/>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{CARA_BAYAR}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="743" y="2" width="48" height="14"/>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{STATUS}]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="2" y="2" width="29" height="14"/>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Integer"><![CDATA[new Integer($V{REPORT_COUNT}.intValue() + 1)]]></textFieldExpression>
+				</textField>
+				<textField pattern="dd/MM/yyyy" hyperlinkType="None">
+					<reportElement x="192" y="2" width="58" height="14"/>
+					<textElement verticalAlignment="Top">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.util.Date"><![CDATA[$F{MSPE_DATE_BIRTH}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="796" y="2" width="102" height="14"/>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="Microsoft Sans Serif" size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{STATUS_TAMBAHAN}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<pageHeader>
+		<band height="55">
+			<elementGroup/>
+			<elementGroup/>
+			<image hyperlinkType="None">
+				<reportElement x="6" y="4" width="186" height="43"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.ekalife")]]></imageExpression>
+			</image>
+		</band>
+	</pageHeader>
+</jasperReport>

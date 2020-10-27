@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="list_rk_kosong" pageWidth="920" pageHeight="1146" whenNoDataType="AllSectionsNoDetail" columnWidth="900" leftMargin="10" rightMargin="10" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet" isIgnorePagination="true">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<parameter name="username" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Timmy Walandaru"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lsbp_id" class="java.lang.String">
+		<defaultValueExpression><![CDATA["156"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="kode_cab" class="java.lang.String">
+		<defaultValueExpression><![CDATA["TSM"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT   drek.norek_ajs, rbp.lsbp_nama bank_pusat_ajs, rb.lbn_nama bank_ajs, drek.tgl_trx, cab.nama_cab, drek.no_trx, drek.lsbp_id, drek.jenis,
+		         drek.lku_id, drek.nilai_trx, drek.no_spaj,
+		         drek.tgl_input, drek.flag_proses, drek.flag_update, drek.tgl_proses,
+		         drek.user_input, drek.user_proses, drek.ket, drek.kode_cab,
+		         bank.lsbp_nama, kurs.lku_symbol, user_input.lus_full_name nama_input,
+		         user_proses.lus_full_name nama_proses, nvl(drek.flag_recheck, 0) flag_recheck
+			FROM eka.mst_drek drek,
+		         eka.lst_bank_pusat bank,
+		         eka.lst_kurs kurs,
+		         eka.lst_user user_input,
+		         eka.lst_user user_proses,
+		         eka.cab_bsm cab,
+				 eka.lst_rek_ekalife r,
+				 eka.lst_bank rb,
+				 eka.lst_bank_pusat rbp
+  		   WHERE drek.tgl_trx = eka.add_workdays(sysdate,-4)
+  		   	 AND drek.nilai_trx between 0 and 999999999999
+		     AND drek.lsbp_id = 156
+		     AND drek.lsbp_id = bank.lsbp_id(+)
+		     AND drek.lku_id = kurs.lku_id(+)
+		     AND drek.user_input = user_input.lus_id(+)
+		     AND drek.user_proses = user_proses.lus_id(+)
+		     AND drek.kode_cab = cab.kode(+)
+			 AND drek.norek_ajs = replace(replace(replace(r.lre_acc_no,'.'),'-'),' ')
+			 AND drek.norek_ajs in ('0000791814','0000791822','0001238299','0001238288')
+			 AND r.lbn_id = rb.lbn_id
+			 AND rb.lsbp_id = rbp.lsbp_id
+			 AND drek.tgl_proses is null
+			 AND replace(upper(drek.kode_cab),' ','') = replace(upper($P{kode_cab}),' ','')
+			 AND (upper(drek.ket) not like '%TOP%' and upper(drek.ket) not like '%UP%')
+		ORDER BY drek.norek_ajs, rbp.lsbp_nama, rb.lbn_nama, drek.tgl_trx, cab.nama_cab]]>
+	</queryString>
+	<field name="BANK_AJS" class="java.lang.String"/>
+	<field name="BANK_PUSAT_AJS" class="java.lang.String"/>
+	<field name="FLAG_PROSES" class="java.math.BigDecimal"/>
+	<field name="FLAG_RECHECK" class="java.math.BigDecimal"/>
+	<field name="FLAG_UPDATE" class="java.math.BigDecimal"/>
+	<field name="JENIS" class="java.lang.String"/>
+	<field name="KET" class="java.lang.String"/>
+	<field name="KODE_CAB" class="java.lang.String"/>
+	<field name="LKU_ID" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSBP_ID" class="java.math.BigDecimal"/>
+	<field name="LSBP_NAMA" class="java.lang.String"/>
+	<field name="NAMA_CAB" class="java.lang.String"/>
+	<field name="NAMA_INPUT" class="java.lang.String"/>
+	<field name="NAMA_PROSES" class="java.lang.String"/>
+	<field name="NILAI_TRX" class="java.math.BigDecimal"/>
+	<field name="NOREK_AJS" class="java.lang.String"/>
+	<field name="NO_SPAJ" class="java.lang.String"/>
+	<field name="NO_TRX" class="java.lang.String"/>
+	<field name="TGL_INPUT" class="java.util.Date"/>
+	<field name="TGL_PROSES" class="java.util.Date"/>
+	<field name="TGL_TRX" class="java.util.Date"/>
+	<field name="USER_INPUT" class="java.math.BigDecimal"/>
+	<field name="USER_PROSES" class="java.math.BigDecimal"/>
+	<variable name="sum_idr" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[new Double($F{LKU_ID}.equals("01") ? $F{NILAI_TRX}.doubleValue() : (double) 0)]]></variableExpression>
+	</variable>
+	<variable name="sum_usd" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[new Double($F{LKU_ID}.equals("02") ? $F{NILAI_TRX}.doubleValue() : (double) 0)]]></variableExpression>
+	</variable>
+	<group name="lsrek_id" isStartNewPage="true" isResetPageNumber="true" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{NOREK_AJS}]]></groupExpression>
+		<groupHeader>
+			<band height="90">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="50" y="25" width="500" height="15"/>
+					<box border="None" topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="arial" size="10"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{BANK_PUSAT_AJS} + " " + $F{BANK_AJS} + " [" + $F{NOREK_AJS} + "]"]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="0" width="776" height="20"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="14" pdfFontName="Arial-Bold"/>
+					</textElement>
+					<text><![CDATA[PT Asuransi Jiwa Sinarmas MSIG Tbk. - List Setoran Premi yang belum diketahui Pemegang Polisnya]]></text>
+				</staticText>
+				<textField pattern="M/d/yy h:mm:ss a">
+					<reportElement x="0" y="55" width="45" height="15"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Oleh"]]></textFieldExpression>
+				</textField>
+				<textField pattern="M/d/yy h:mm:ss a">
+					<reportElement x="0" y="40" width="45" height="15"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Tanggal"]]></textFieldExpression>
+				</textField>
+				<textField pattern="M/d/yy h:mm:ss a">
+					<reportElement x="50" y="40" width="500" height="15"/>
+					<box border="None" topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{TGL_TRX}) + " sampai " + $P{REPORT_SCRIPTLET}.formatDateNumber($F{TGL_TRX})]]></textFieldExpression>
+				</textField>
+				<textField pattern="M/d/yy h:mm:ss a">
+					<reportElement x="45" y="40" width="5" height="15"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+				</textField>
+				<textField pattern="M/d/yy h:mm:ss a">
+					<reportElement x="45" y="55" width="5" height="15"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+				</textField>
+				<textField pattern="M/d/yy h:mm:ss a">
+					<reportElement x="50" y="55" width="500" height="15"/>
+					<box border="None" topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{username} + " pada " + $P{REPORT_SCRIPTLET}.formatDateWithTime(new Date())]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="0" y="70" width="550" height="1"/>
+					<graphicElement/>
+				</line>
+				<textField pattern="M/d/yy h:mm:ss a">
+					<reportElement x="0" y="25" width="45" height="15"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Bank"]]></textFieldExpression>
+				</textField>
+				<textField pattern="M/d/yy h:mm:ss a">
+					<reportElement x="45" y="25" width="5" height="15"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="10" pdfFontName="Arial"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="780" y="75" width="90" height="15"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["USER PROSES"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="676" y="75" width="104" height="15"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["TGL PROSES"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="545" y="75" width="131" height="15"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["KETERANGAN"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="444" y="75" width="101" height="15"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["TGL DOWNLOAD RK"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="368" y="75" width="76" height="15"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["NO SPAJ"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="287" y="75" width="81" height="15"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["NILAI TRANS"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="220" y="75" width="31" height="15"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["JNS"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="251" y="75" width="36" height="15"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["KURS"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="106" y="75" width="114" height="15"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["NO TRANS"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="65" y="75" width="41" height="15"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["CAB"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="0" y="75" width="65" height="15"/>
+					<box topBorder="1Point" leftBorder="1Point" bottomBorder="None" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["TGL"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="870" y="75" width="26" height="15"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["CEK"]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="5">
+				<line>
+					<reportElement x="0" y="0" width="895" height="1"/>
+					<graphicElement/>
+				</line>
+			</band>
+		</groupFooter>
+	</group>
+	<detail>
+		<band height="15">
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="65" height="15"/>
+				<box topBorder="1Point" leftBorder="1Point" bottomBorder="None" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{TGL_TRX}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="65" y="0" width="41" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KODE_CAB}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="106" y="0" width="114" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{NO_TRX}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="220" y="0" width="31" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{JENIS}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="251" y="0" width="36" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement x="287" y="0" width="81" height="15"/>
+				<box topBorder="1Point" topPadding="0" leftBorder="None" leftPadding="0" bottomBorder="None" bottomPadding="0" rightBorder="1Point" rightPadding="5"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{NILAI_TRX}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="545" y="0" width="131" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{KET}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy (HH:mm)" isBlankWhenNull="true">
+				<reportElement x="444" y="0" width="101" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{TGL_INPUT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy (HH:mm)" isBlankWhenNull="true">
+				<reportElement x="676" y="0" width="104" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{TGL_PROSES}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="780" y="0" width="90" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PROSES} != null ? (" " + $F{NAMA_PROSES}) : ""]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="368" y="0" width="76" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NO_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="870" y="0" width="26" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="1Point"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{FLAG_RECHECK}.intValue() == 0 ? "T" : "Y"]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="17">
+			<textField evaluationTime="Report">
+				<reportElement x="880" y="5" width="12" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="873" y="5" width="7" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["/"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="862" y="5" width="12" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="0" width="895" height="1"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="30">
+			<textField>
+				<reportElement x="251" y="0" width="115" height="15"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("Rp. ", new BigDecimal($V{sum_idr}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="251" y="15" width="115" height="15"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("US$. ", new BigDecimal($V{sum_usd}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="190" y="0" width="62" height="15"/>
+				<box border="None"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Total IDR :"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="190" y="15" width="62" height="15"/>
+				<box border="None"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Total USD :"]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
+</jasperReport>

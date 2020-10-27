@@ -1,0 +1,1212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<select id="elions.refund.selectKategoriUW" resultClass="string" parameterClass="string">
+	select distinct 
+		    (case
+		    when a.lca_id in ('40','58') then 'DMTM'
+		    when b.lcb_no is not null then 'BANCASS2'
+		    when c.mns_kd_nasabah is not null then 'BANCASS1'
+		    else 'AGENCYWORKSITE'
+		    end) kategori_uw
+		from 
+		    eka.mst_policy a, 
+		    (select mrb.reg_spaj, mrb.lcb_no
+		    from eka.mst_reff_bii mrb, eka.lst_reff_bii lrb 
+		    where mrb.level_id = 4 and mrb.no_urut = (select max(no_urut) from eka.mst_reff_bii where reg_spaj = mrb.reg_spaj and level_id = 4)
+		    and mrb.lcb_no = lrb.lcb_no 
+		    and lrb.jenis = 2) b,
+		    eka.mst_nasabah c
+		where 
+		    a.reg_spaj = b.reg_spaj(+)
+		    and a.reg_spaj = rpad(replace(#value#,'.'),11,' ')
+		    and a.mspo_plan_provider = c.mns_kd_nasabah(+)	
+	</select>
+
+    <select id="elions.refund.selectNewNoSuratRefund" resultClass="java.lang.Double">
+        select a.MSCO_VALUE
+        from EKA.MST_COUNTER a
+        where
+        a.MSCO_NUMBER = 89 and LCA_ID = '01'
+        for update
+    </select>
+
+    <select id="elions.refund.selectMaxNoSuratRefund" resultClass="java.lang.Double">
+        select a.MSCO_MAX
+        from EKA.MST_COUNTER a
+        where
+        a.MSCO_NUMBER = 89 and LCA_ID = '01'
+    </select>
+
+    <resultMap id="elions.refund.selectInfoBatalBySpaj.result" class="com.ekalife.elions.web.refund.vo.InfoBatalVO">
+        <result property="regSpaj" column="reg_spaj" javaType="java.lang.String" jdbcType="CHAR"/>
+    </resultMap>
+
+    <select id="elions.refund.selectInfoBatalBySpaj" parameterClass="java.lang.String" resultMap="elions.refund.selectInfoBatalBySpaj.result">
+        select a.REG_SPAJ
+        from EKA.MST_BATAL a
+        where a.REG_SPAJ = rpad(replace(#regSpaj#,'.'),11,' ')
+    </select>
+
+    <resultMap id="elions.refund.selectPolicyInfoBySpaj.result" class="com.ekalife.elions.web.refund.vo.PolicyInfoVO">
+        <result property="spajNo" column="reg_spaj" javaType="java.lang.String" jdbcType="CHAR"/>
+        <result property="policyNo" column="mspo_policy_no" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="lsbsId" column="lsbs_id" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="namaProduk" column="lsdbs_name" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="namaPp" column="nama_pp" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="namaTt" column="nama_tt" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="lkuId" column="lku_id" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="lsgbId" column="lsgb_id" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="posisi" column="posisi" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="fu" column="fu" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="kliAtasNama" column="mrc_nama" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="kliNoRek" column="mrc_no_ac" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="kliNamaBank" column="lsbp_nama" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="kliCabangBank" column="mrc_cabang" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="kliKotaBank" column="mrc_kota" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="lspdId" column="lspd_id" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="lsbsLineBus" column="lsbs_linebus" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="begDate" column="mste_beg_date" javaType="java.util.Date" jdbcType="DATE"/>
+        <result property="endDate" column="mste_end_date" javaType="java.util.Date" jdbcType="DATE"/>
+        <result property="prevLspdId" column="prev_lspd_id" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="blankoNo" column="no_blanko" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="kodeAgent" column="kode_agent" javaType="java.lang.String" jdbcType="CHAR"/>
+        <result property="namaAgent" column="nama_agent" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="lus_full_name" column="lus_full_name" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="premi" column="premi" javaType="java.math.BigDecimal" jdbcType="NUMBER"/>
+        <result property="uangPertanggungan" column="uang_pertanggungan" javaType="java.math.BigDecimal" jdbcType="NUMBER"/>
+        <result property="flagUserCabang" column="flag_user_cabang" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="lca_id" column="lca_id" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="lssp_id" column="lssp_id" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+    </resultMap>
+
+    <select id="elions.refund.selectPolicyInfoBySpaj" parameterClass="java.lang.String" resultMap="elions.refund.selectPolicyInfoBySpaj.result">
+        SELECT  q.lus_full_name,
+            a.reg_spaj,a.mspo_policy_no, a.lspd_id, h.mcl_first as nama_pp, a.lku_id,
+			c.mspr_tsi, p.lca_nama, c.lsbs_id, c.lsdbs_number, eka.f_lsbs(a.reg_spaj, c.lsbs_id)lsbs_name,
+            eka.f_lsdbs(a.reg_spaj, c.lsbs_id, c.lsdbs_number) lsdbs_name, f.mcl_id, f.mcl_first as nama_tt, f.mspe_date_birth,
+			f.mspe_sex, g.alamat_rumah, g.kd_pos_rumah, g.kota_rumah, d.lsgb_id,
+			j.FU, j.LABEL as posisi, l.lsbp_nama, k.mrc_cabang, k.mrc_nama,
+			k.mrc_no_ac, k.mrc_kota, m.lku_symbol, d.lsbs_linebus, b.mste_beg_date, 
+			b.mste_end_date, i.prev_lspd_id, a.mspo_no_blanko as no_blanko, m.msag_id as kode_agent, o.mcl_first as nama_agent,
+			c.mspr_premium as premi, c.mspr_tsi as uang_pertanggungan, i.flag_user_cabang, a.lca_id, a.lssp_id
+        FROM
+            eka.mst_policy a
+		LEFT JOIN eka.mst_insured b
+			 ON a.reg_spaj = b.reg_spaj
+	    LEFT JOIN eka.mst_product_insured c
+			 ON b.reg_spaj = c.reg_spaj AND b.mste_insured_no = c.mste_insured_no
+		LEFT JOIN eka.mst_client_new f
+			 ON b.mste_insured = f.mcl_id
+		LEFT JOIN eka.mst_client_new h
+			 ON a.mspo_policy_holder = h.mcl_id
+		LEFT JOIN eka.lst_cabang p
+			 ON a.lca_id = p.lca_id
+		LEFT JOIN eka.lst_bisnis d
+			 ON c.lsbs_id = d.lsbs_id
+	    LEFT JOIN eka.lst_det_bisnis e
+			 ON d.lsbs_id = e.lsbs_id AND c.lsbs_id = e.lsbs_id AND c.lsdbs_number = e.lsdbs_number
+		LEFT JOIN eka.mst_address_new g
+			 ON f.mcl_id = g.mcl_id
+		LEFT JOIN eka.mst_rek_client k
+			 ON k.reg_spaj = a.reg_spaj
+		LEFT JOIN eka.lst_bank_pusat l
+			 ON k.lsbp_id = l.lsbp_id
+		LEFT JOIN eka.lst_kurs m
+			 ON k.mrc_kurs = m.lku_id
+        LEFT JOIN eka.mst_refund i
+			 ON i.reg_spaj = a.reg_spaj
+		LEFT JOIN eka.mst_posisi_refund j
+			 ON i.POSISI_NO = j.POSISI_NO AND i.ULINK_FLAG = j.ULINK_FLAG AND i.TINDAKAN_CD = j.TINDAKAN_CD
+		LEFT JOIN eka.mst_agent_prod m
+			 ON m.lsle_id = 4 and a.reg_spaj = m.reg_spaj	
+		LEFT JOIN eka.mst_agent n
+			 ON m.msag_id = n.msag_id
+		LEFT JOIN eka.mst_client_new o
+			 ON o.mcl_id = n.mcl_id
+		LEFT JOIN eka.lst_user q
+             ON i.cancel_who = q.lus_id
+        WHERE a.lstb_id = '1'
+            AND d.lsbs_id <![CDATA[<]]> 300
+            AND a.reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ') 
+    </select>
+    
+    <select id="elions.refund.selectPolicyInfoBySpajList" parameterClass="java.util.HashMap" resultMap="elions.refund.selectPolicyInfoBySpaj.result">
+        SELECT q.lus_full_name,
+            a.reg_spaj,a.mspo_policy_no, a.lspd_id, h.mcl_first as nama_pp, a.lku_id,
+			c.mspr_tsi, p.lca_nama, c.lsbs_id, c.lsdbs_number, eka.f_lsbs(a.reg_spaj, c.lsbs_id)lsbs_name,
+            eka.f_lsdbs(a.reg_spaj, c.lsbs_id, c.lsdbs_number) lsdbs_name, f.mcl_id, f.mcl_first as nama_tt, f.mspe_date_birth,
+			f.mspe_sex, g.alamat_rumah, g.kd_pos_rumah, g.kota_rumah, d.lsgb_id,
+			j.FU, j.LABEL as posisi, l.lsbp_nama, k.mrc_cabang, k.mrc_nama,
+			k.mrc_no_ac, k.mrc_kota, m.lku_symbol, d.lsbs_linebus, b.mste_beg_date, 
+			b.mste_end_date, i.prev_lspd_id, a.mspo_no_blanko as no_blanko, m.msag_id as kode_agent, o.mcl_first as nama_agent,
+			c.mspr_premium as premi, c.mspr_tsi as uang_pertanggungan, i.flag_user_cabang, a.lca_id, a.lssp_id
+        FROM
+            eka.mst_policy a
+		LEFT JOIN eka.mst_insured b
+			 ON a.reg_spaj = b.reg_spaj
+	    LEFT JOIN eka.mst_product_insured c
+			 ON b.reg_spaj = c.reg_spaj AND b.mste_insured_no = c.mste_insured_no
+		LEFT JOIN eka.mst_client_new f
+			 ON b.mste_insured = f.mcl_id
+		LEFT JOIN eka.mst_client_new h
+			 ON a.mspo_policy_holder = h.mcl_id
+		LEFT JOIN eka.lst_cabang p
+			 ON a.lca_id = p.lca_id
+		LEFT JOIN eka.lst_bisnis d
+			 ON c.lsbs_id = d.lsbs_id
+	    LEFT JOIN eka.lst_det_bisnis e
+			 ON d.lsbs_id = e.lsbs_id AND c.lsbs_id = e.lsbs_id AND c.lsdbs_number = e.lsdbs_number
+		LEFT JOIN eka.mst_address_new g
+			 ON f.mcl_id = g.mcl_id
+		LEFT JOIN eka.mst_rek_client k
+			 ON k.reg_spaj = a.reg_spaj
+		LEFT JOIN eka.lst_bank_pusat l
+			 ON k.lsbp_id = l.lsbp_id
+		LEFT JOIN eka.lst_kurs m
+			 ON k.mrc_kurs = m.lku_id
+        LEFT JOIN eka.mst_refund i
+			 ON i.reg_spaj = a.reg_spaj
+		LEFT JOIN eka.mst_posisi_refund j
+			 ON i.POSISI_NO = j.POSISI_NO AND i.ULINK_FLAG = j.ULINK_FLAG AND i.TINDAKAN_CD = j.TINDAKAN_CD
+		LEFT JOIN eka.mst_agent_prod m
+			 ON m.lsle_id = 4 and a.reg_spaj = m.reg_spaj	
+		LEFT JOIN eka.mst_agent n
+			 ON m.msag_id = n.msag_id
+		LEFT JOIN eka.mst_client_new o
+			 ON o.mcl_id = n.mcl_id
+		LEFT JOIN eka.lst_user q
+             ON i.cancel_who = q.lus_id
+        WHERE a.lstb_id = '1'
+            AND d.lsbs_id <![CDATA[<]]> 300
+        <iterate prepend="AND a.reg_spaj in" property="spajList" open="(" close=")" conjunction=",">
+        #spajList[]#
+        </iterate>
+    </select>
+    
+
+
+    <resultMap id="elions.refund.selectInfoForRekap.result" class="com.ekalife.elions.web.refund.vo.RekapInfoVO">
+        <result property="spajNo" column="reg_spaj" javaType="java.lang.String" jdbcType="CHAR"/>
+        <result property="policyNo" column="mspo_policy_no" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="namaProduk" column="lsdbs_name" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="namaPp" column="nama_pp" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="lsgbId" column="lsgb_id" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="posisi" column="posisi" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="fu" column="fu" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="lsbsId" column="lsbs_id" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="lsdbsNumber" column="lsdbs_number" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="lsbsName" column="lsbs_name" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="alasan" column="msb_alasan" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="tglBatal" column="msb_tgl_batal" javaType="java.util.Date" jdbcType="DATE"/>
+        <result property="alasanCd" column="alasan_cd" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="userUw" column="user_uw" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="tglKirimDokFisik" column="tgl_kirim_dok_fisik" javaType="java.util.Date" jdbcType="DATE"/>
+        <result property="tindakanCd" column="tindakan_cd" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        
+    </resultMap>
+    
+	<select id="elions.refund.selectInfoForRekap" parameterClass="java.util.HashMap" resultMap="elions.refund.selectInfoForRekap.result">
+		SELECT i.tindakan_cd, 
+            a.reg_spaj,a.mspo_policy_no, h.mcl_first as nama_pp, 
+			 c.lsbs_id, c.lsdbs_number, eka.f_lsbs(a.reg_spaj, c.lsbs_id)lsbs_name,
+            eka.f_lsdbs(a.reg_spaj, c.lsbs_id, c.lsdbs_number) lsdbs_name, d.lsgb_id,
+			j.FU, j.LABEL as posisi,l.msb_alasan, l.msb_tgl_batal, i.alasan_cd, k.lus_full_name as user_uw, i.tgl_kirim_dok_fisik
+        FROM
+            eka.mst_policy a
+		LEFT JOIN eka.mst_insured b
+			 ON a.reg_spaj = b.reg_spaj
+	    LEFT JOIN eka.mst_product_insured c
+			 ON b.reg_spaj = c.reg_spaj AND b.mste_insured_no = c.mste_insured_no
+		LEFT JOIN eka.mst_client_new h
+			 ON a.mspo_policy_holder = h.mcl_id
+		LEFT JOIN eka.lst_cabang p
+			 ON a.lca_id = p.lca_id
+		LEFT JOIN eka.lst_bisnis d
+			 ON c.lsbs_id = d.lsbs_id
+	    LEFT JOIN eka.lst_det_bisnis e
+			 ON d.lsbs_id = e.lsbs_id AND c.lsbs_id = e.lsbs_id AND c.lsdbs_number = e.lsdbs_number
+        LEFT JOIN eka.mst_refund i
+			 ON i.reg_spaj = a.reg_spaj
+		LEFT JOIN eka.mst_posisi_refund j
+			 ON i.POSISI_NO = j.POSISI_NO AND i.ULINK_FLAG = j.ULINK_FLAG AND i.TINDAKAN_CD = j.TINDAKAN_CD
+		LEFT JOIN eka.lst_user k
+			 ON k.lus_id = i.cancel_who	
+	    LEFT JOIN eka.mst_batal l
+			 ON i.reg_spaj = l.reg_spaj
+        WHERE a.lstb_id = '1'
+            AND d.lsbs_id <![CDATA[<]]> 300
+            AND l.msb_tgl_batal <![CDATA[>=]]> #tglBatalAwal# 
+            AND l.msb_tgl_batal <![CDATA[<=]]> #tglBatalAkhir# 
+            AND lower(j.label) like '%cancel%'
+            order by a.reg_spaj Asc
+	</select>
+    
+	<resultMap id="elions.refund.selectInfoForRekapKeAccFinance.result" class="com.ekalife.elions.web.refund.vo.RekapInfoVO">
+        <result property="spajNo" column="reg_spaj" javaType="java.lang.String" jdbcType="CHAR"/>
+        <result property="policyNo" column="mspo_policy_no" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="namaProduk" column="lsdbs_name" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="namaPp" column="nama_pp" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="lsgbId" column="lsgb_id" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="posisi" column="posisi" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="fu" column="fu" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="lsbsId" column="lsbs_id" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="lsdbsNumber" column="lsdbs_number" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="lsbsName" column="lsbs_name" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="alasan" column="msb_alasan" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="tglBatal" column="msb_tgl_batal" javaType="java.util.Date" jdbcType="DATE"/>
+        <result property="alasanCd" column="alasan_cd" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="userUw" column="user_uw" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="tglKirimDokFisik" column="tgl_kirim_dok_fisik" javaType="java.util.Date" jdbcType="DATE"/>
+        <result property="tindakanCd" column="tindakan_cd" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+	</resultMap>
+    
+    <select id="elions.refund.selectNoPre" parameterClass="java.lang.String" resultClass="java.util.HashMap" >
+    	select mspa_no_pre, mspa_payment from eka.mst_payment 
+		where mspa_payment_id in(
+			select a.mspa_payment_id
+			from  eka.mst_tag_payment a,
+			eka.mst_production b
+			where a.reg_spaj = b.reg_spaj
+				and a.msbi_tahun_ke = b.msbi_tahun_ke
+				and a.msbi_premi_ke = b.msbi_premi_ke
+				and a.reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ')
+		) and mspa_no_pre is not null
+    </select>
+    
+	<select id="elions.refund.selectInfoForRekapKeAccFinance" parameterClass="java.util.HashMap" resultMap="elions.refund.selectInfoForRekapKeAccFinance.result">
+		SELECT i.tindakan_cd,
+            a.reg_spaj,a.mspo_policy_no, h.mcl_first as nama_pp, 
+			 c.lsbs_id, c.lsdbs_number, eka.f_lsbs(a.reg_spaj, c.lsbs_id)lsbs_name,
+            eka.f_lsdbs(a.reg_spaj, c.lsbs_id, c.lsdbs_number) lsdbs_name, d.lsgb_id,
+			j.FU, j.LABEL as posisi,l.msb_alasan, l.msb_tgl_batal, 
+			i.alasan_cd, k.lus_full_name as user_uw, i.tgl_kirim_dok_fisik
+        FROM
+            eka.mst_policy a
+		LEFT JOIN eka.mst_insured b
+			 ON a.reg_spaj = b.reg_spaj
+	    LEFT JOIN eka.mst_product_insured c
+			 ON b.reg_spaj = c.reg_spaj AND b.mste_insured_no = c.mste_insured_no
+		LEFT JOIN eka.mst_client_new h
+			 ON a.mspo_policy_holder = h.mcl_id
+		LEFT JOIN eka.lst_cabang p
+			 ON a.lca_id = p.lca_id
+		LEFT JOIN eka.lst_bisnis d
+			 ON c.lsbs_id = d.lsbs_id
+	    LEFT JOIN eka.lst_det_bisnis e
+			 ON d.lsbs_id = e.lsbs_id AND c.lsbs_id = e.lsbs_id AND c.lsdbs_number = e.lsdbs_number
+        LEFT JOIN eka.mst_refund i
+			 ON i.reg_spaj = a.reg_spaj
+		LEFT JOIN eka.mst_posisi_refund j
+			 ON i.POSISI_NO = j.POSISI_NO AND i.ULINK_FLAG = j.ULINK_FLAG AND i.TINDAKAN_CD = j.TINDAKAN_CD
+		LEFT JOIN eka.lst_user k
+			 ON k.lus_id = i.cancel_who
+	    LEFT JOIN eka.mst_batal l
+			 ON i.reg_spaj = l.reg_spaj
+        WHERE a.lstb_id = '1'
+            AND d.lsbs_id <![CDATA[<]]> 300
+            AND i.tgl_kirim_dok_fisik is not null
+            <isNotNull property = "tglBatalAwal">
+            AND i.tgl_kirim_dok_fisik <![CDATA[>=]]> #tglBatalAwal# 
+            </isNotNull>
+             <isNotNull property = "tglBatalAkhir">
+            AND i.tgl_kirim_dok_fisik <![CDATA[<=]]> #tglBatalAkhir# 
+            </isNotNull>
+            AND lower(j.label) like '%cancel%'
+            order by a.reg_spaj Asc
+    </select>
+    
+    
+    <resultMap id="elions.refund.selectSpajInfoBySpaj.result" class="com.ekalife.elions.web.refund.vo.SpajInfoVO">
+        <result property="spajNo" column="reg_spaj" javaType="java.lang.String" jdbcType="CHAR"/>
+        <result property="policyNo" column="mspo_policy_no" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+    </resultMap>
+
+    <select id="elions.refund.selectSpajInfoBySpaj" parameterClass="java.lang.String" resultMap="elions.refund.selectSpajInfoBySpaj.result">
+        SELECT
+            a.reg_spaj,a.mspo_policy_no
+        FROM
+            eka.mst_policy a
+        WHERE
+            a.lstb_id = '1'
+            AND a.reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ')
+    </select>
+
+    <resultMap id="elions.refund.selectSetoranPremiBySpaj.result" class="com.ekalife.elions.web.refund.vo.SetoranPremiDbVO">
+        <result property="titipanKe" column="msdp_number" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="tglSetor" column="msdp_date_book" javaType="java.util.Date" jdbcType="DATE"/>
+        <result property="jumlah" column="msdp_payment" javaType="java.math.BigDecimal" jdbcType="NUMBER"/>
+        <result property="lkuId" column="lku_id" javaType="java.lang.String" jdbcType="CHAR"/>
+        <result property="kurs" column="kurs" javaType="java.math.BigDecimal" jdbcType="NUMBER"/>
+        <result property="noPre" column="no_pre" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="noVoucher" column="no_voucher" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+    </resultMap>
+
+    <select id="elions.refund.selectSetoranPremiBySpaj" parameterClass="java.lang.String" resultMap="elions.refund.selectSetoranPremiBySpaj.result">
+        select msdp_number, msdp_date_book, msdp_payment, lku_id, msdp_selisih_kurs as kurs, msdp_no_pre as no_pre, msdp_no_voucher as no_voucher
+        from eka.mst_deposit_premium
+        where reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ')
+        union
+        select msdp_number, mspa_date_book, mspa_payment, lku_id, mspa_nilai_kurs as kurs, mspa_no_pre as no_pre, mspa_no_voucher as no_voucher
+        from eka.mst_payment
+        where reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ') and msdp_number is null
+    </select>
+
+    <resultMap id="elions.refund.selectPenarikanUlink.result" class="com.ekalife.elions.web.refund.vo.PenarikanUlinkDbVO">
+        <result property="ljiId" column="lji_id" javaType="java.lang.String" jdbcType="VARCHAR"/>
+        <result property="ljiInvest" column="lji_invest" javaType="java.lang.String" jdbcType="VARCHAR"/>
+        <result property="jumlahUnit" column="jumlah_unit" javaType="java.math.BigDecimal" jdbcType="NUMBER"/>
+    </resultMap>
+
+    <select id="elions.refund.selectPenarikanUlink" parameterClass="java.lang.String" resultMap="elions.refund.selectPenarikanUlink.result">
+        SELECT   a.lji_id, b.lji_invest, sum( mtu_unit ) as jumlah_unit
+        FROM eka.mst_trans_ulink a, eka.lst_jenis_invest b
+        WHERE a.reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ') AND a.lji_id = b.lji_id
+        GROUP BY a.lji_id, b.lji_invest
+    </select>
+
+    <resultMap id="elions.refund.selectBiayaUlink.result" class="com.ekalife.elions.web.refund.vo.BiayaUlinkDbVO">
+        <result property="descr" column="ljb_biaya" javaType="java.lang.String" jdbcType="VARCHAR"/>
+        <result property="amount" column="mbu_jumlah" javaType="java.math.BigDecimal" jdbcType="NUMBER"/>
+        <result property="ljbId" column="ljb_id" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+    </resultMap>
+
+    <select id="elions.refund.selectBiayaUlink" parameterClass="java.lang.String" resultMap="elions.refund.selectBiayaUlink.result">
+        SELECT a.mu_ke, a.mbu_jumlah, b.ljb_biaya, b.ljb_id
+        FROM eka.mst_biaya_ulink a, eka.lst_jenis_biaya b
+        WHERE a.reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ') AND a.ljb_id = b.ljb_id AND a.mbu_jumlah != 0
+        and b.ljb_biaya !='Kekurangan Premi'
+        ORDER BY a.mu_ke, b.ljb_biaya
+    </select>
+
+    <!--pesenya SPAJ tidak dapat dibatalkan karena sudah ada proses pembayaran bunga, hub LB-->
+    <select id="elions.refund.selectPowerSaveInterestPaid" parameterClass="java.lang.String" resultClass="java.lang.Integer">
+        select count(*) from eka.mst_prosave_bayar where reg_spaj = rpad(replace(#regSpaj#,'.'),11,' ')
+    </select>
+
+    <!--pesenya SPAJ tidak dapat dibatalkan karena polis sudah pernah roll over hub LB -->
+    <select id="elions.refund.selectPowerSaveRollOver" parameterClass="java.lang.String" resultClass="java.lang.Integer">
+        select count(*) from eka.mst_powersave_ro where mps_kode in (2,3) and reg_spaj = rpad(replace(#regSpaj#,'.'),11,' ')
+    </select>
+
+    <select id="elions.refund.selectCheckSpaj" parameterClass="java.lang.String" resultClass="java.lang.Integer">    
+		select count(*)
+		from eka.mst_det_refund c where reg_spaj = rpad(replace(#regSpaj#,'.'),11,' ')	
+    </select>
+        
+	<select id="elions.refund.selectPenarikanUlinkSortedByMsdpNumber" parameterClass="java.lang.String" resultMap="elions.refund.selectSetoranPremiBySpaj.result">
+		select msdp_number, msdp_date_book, msdp_payment, lku_id, msdp_selisih_kurs as kurs, msdp_no_pre as no_pre, msdp_no_voucher as no_voucher from eka.mst_deposit_premium where reg_spaj = rpad(replace(#regSpaj#,'.'),11,' ')
+        union
+        select msdp_number, mspa_date_book, mspa_payment, lku_id, mspa_nilai_kurs   as kurs, mspa_no_pre as no_pre, mspa_no_voucher as no_voucher from eka.mst_payment where reg_spaj = rpad(replace(#regSpaj#,'.'),11,' ')
+		order by msdp_number Asc
+	</select>
+
+
+
+
+
+
+    <typeAlias alias="RefundViewVO" type="com.ekalife.elions.web.refund.vo.RefundViewVO"/>
+
+    <resultMap id="elions.refund.selectRefundList.result" class="RefundViewVO">
+        <result property="spaj" column="REG_SPAJ" javaType="java.lang.String" jdbcType="NUMBER"/>
+        <result property="lastUpdate" column="LAST_UPDATE" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="updateWho" column="LUS_FULL_NAME" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="deskripsi" column="DESKRIPSI" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="label" column="LABEL" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="tindakan" column="TINDAKAN" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="posisiCd" column="POSISI_NO" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+        <result property="tindakanCd" column="TINDAKAN_CD" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+        <result property="newSpaj" column="REG_SPAJ_BARU" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="noPolis" column="mspo_policy_no" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="tglKirimDokFisik" column="tgl_kirim_dok_fisik" javaType="java.util.Date" jdbcType="DATE"/>
+        <result property="cancelWho" column="CANCEL_WHO" javaType="java.math.BigDecimal" jdbcType="NUMBER"/>
+        <result property="alasan" column="ALASAN_LAIN" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="hasUnitFlag" column="HAS_UNIT_FLAG" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="ulinkFlag" column="ULINK_FLAG" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <select id="elions.refund.selectRefundList"
+            parameterClass="java.util.HashMap"
+            resultMap="elions.refund.selectRefundList.result">
+        SELECT * FROM
+        (
+            SELECT ROWNUM as row_number, a.REG_SPAJ, a.REG_SPAJ_BARU, a.POSISI_NO, a.TINDAKAN_CD, to_char( a.UPDATE_WHEN, 'dd/MM/YYYY HH24:MI:SS' ) as LAST_UPDATE,
+            b.DESKRIPSI, b.FU, b.LABEL, DECODE (a.TINDAKAN_CD, 1, 'Tidak ada', 2, 'Refund Premi', 3, 'Ganti Tertanggung', 4 , 'Ganti Plan', 'Lain-lain' ) as TINDAKAN,
+            c.LUS_FULL_NAME, d.mspo_policy_no,  a.tgl_kirim_dok_fisik, a.cancel_who, a.alasan_lain, a.HAS_UNIT_FLAG, a.ULINK_FLAG
+            FROM eka.MST_REFUND a, eka.MST_POSISI_REFUND b, eka.LST_USER c, eka.mst_policy d
+            WHERE 1=1
+            AND a.POSISI_NO = b.POSISI_NO
+            AND a.ULINK_FLAG = b.ULINK_FLAG
+            AND a.TINDAKAN_CD = b.TINDAKAN_CD
+            AND c.LUS_ID = a.UPDATE_WHO
+            AND a.REG_SPAJ = d.REG_SPAJ
+            <isNotEmpty property="lastUpdateBy">
+                AND UPPER( c.LUS_FULL_NAME ) LIKE '%' || UPPER( TRIM( #lastUpdateBy# ) ) || '%'
+            </isNotEmpty>
+            <isNotEmpty property="tindakanCd">
+                AND a.TINDAKAN_CD = #tindakanCd#
+            </isNotEmpty>
+            <isNotEmpty property="posisi">
+                AND UPPER( b.LABEL ) LIKE '%' || UPPER( TRIM( #posisi# ) ) || '%'
+            </isNotEmpty>
+            <isNotEmpty property="regSpaj">
+                AND UPPER( a.REG_SPAJ ) LIKE '%' || UPPER( TRIM( #regSpaj# ) ) || '%'
+            </isNotEmpty>
+               <isNotEmpty property="noPolis">
+                AND UPPER( d.mspo_policy_no ) LIKE '%' || UPPER( TRIM( #noPolis# ) ) || '%'
+            </isNotEmpty>
+            <isNotEmpty property="updateFrom">
+                AND a.UPDATE_WHEN <![CDATA[>=]]> #updateFrom#
+            </isNotEmpty>
+            <isNotEmpty property="updateTo">
+                AND a.UPDATE_WHEN <![CDATA[<=]]> #updateTo#
+            </isNotEmpty> 
+            <isNotEmpty property="page">
+                AND a.TGL_KIRIM_DOK_FISIK is not null
+            </isNotEmpty> 
+            <isNotEmpty property="tglAwalKirim">
+                AND a.TGL_KIRIM_DOK_FISIK <![CDATA[>=]]> #tglAwalKirim#
+            </isNotEmpty>     
+            <isNotEmpty property="tglAkhirKirim">
+                AND a.TGL_KIRIM_DOK_FISIK <![CDATA[<=]]> #tglAkhirKirim#
+            </isNotEmpty>  
+            ORDER BY a.UPDATE_WHEN DESC
+        ) z
+        WHERE
+            ( row_number <![CDATA[>]]> ( ( #currentPage# - 1 ) * #noOfRowsPerPage# ) )
+            AND ( row_number <![CDATA[<=]]> ( #currentPage# * #noOfRowsPerPage# ) )
+    </select>
+
+    <select id="elions.refund.selectRefundTotalOfPages"
+            parameterClass="java.util.HashMap"
+            resultClass="java.lang.Integer">
+        SELECT CEIL( count( a.reg_spaj ) / #noOfRowsPerPage# ) as total_pages
+        FROM eka.MST_REFUND a, eka.MST_POSISI_REFUND b, eka.LST_USER c
+            WHERE 1=1
+            AND a.POSISI_NO = b.POSISI_NO
+            AND a.ULINK_FLAG = b.ULINK_FLAG
+            AND a.TINDAKAN_CD = b.TINDAKAN_CD
+            AND c.LUS_ID = a.UPDATE_WHO
+            <isNotEmpty property="lastUpdateBy">
+                AND UPPER( c.LUS_FULL_NAME ) LIKE '%' || UPPER( TRIM( #lastUpdateBy# ) ) || '%'
+            </isNotEmpty>
+            <isNotEmpty property="tindakanCd">
+                AND a.TINDAKAN_CD = #tindakanCd#
+            </isNotEmpty>
+            <isNotEmpty property="posisi">
+                AND UPPER( b.LABEL ) LIKE '%' || UPPER( TRIM( #posisi# ) ) || '%'
+            </isNotEmpty>
+            <isNotEmpty property="regSpaj">
+                AND UPPER( a.REG_SPAJ ) LIKE '%' || UPPER( TRIM( #regSpaj# ) ) || '%'
+            </isNotEmpty>
+            <isNotEmpty property="updateFrom">
+                AND a.UPDATE_WHEN <![CDATA[>=]]> #updateFrom#
+            </isNotEmpty>
+            <isNotEmpty property="updateTo">
+                AND a.UPDATE_WHEN <![CDATA[<=]]> #updateTo#
+            </isNotEmpty>
+    </select>
+
+    <typeAlias alias="RefundDbVO" type="com.ekalife.elions.web.refund.vo.RefundDbVO"/>
+
+    <resultMap id="elions.refund.selectRefundByCd.result" class="RefundDbVO">
+        <result property="spajNo" column="REG_SPAJ" javaType="java.lang.String" jdbcType="CHAR"/>
+        <result property="noSurat" column="NO_SURAT" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="posisiNo" column="POSISI_NO" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="tindakanCd" column="TINDAKAN_CD" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="alasanCd" column="ALASAN_CD" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="ulinkFlag" column="ULINK_FLAG" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="noVoucher" column="NO_VOUCHER" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="premiRefund" column="PREMI_REFUND" javaType="java.math.BigDecimal" jdbcType="NUMBER"/>
+        <result property="spajBaruNo" column="REG_SPAJ_BARU" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="kliNama" column="KLI_NAMA" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="kliNorek" column="KLI_NOREK" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="kliNamaBank" column="KLI_NAMA_BANK" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="kliCabangBank" column="KLI_CABANG_BANK" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="kliKotaBank" column="KLI_KOTA_BANK" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="alasanLain" column="ALASAN_LAIN" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="payment" column="PAYMENT" javaType="java.math.BigDecimal" jdbcType="NUMBER"/>
+        <result property="paymentDate" column="PAYMENT_DATE" javaType="java.sql.Timestamp" jdbcType="DATE"/>
+        <result property="createWhen" column="CREATE_WHEN" javaType="java.sql.Timestamp" jdbcType="DATE"/>
+        <result property="updateWhen" column="UPDATE_WHEN" javaType="java.sql.Timestamp" jdbcType="DATE"/>
+        <result property="createWho" column="CREATE_WHO" javaType="java.math.BigDecimal" jdbcType="NUMBER"/>
+        <result property="updateWho" column="UPDATE_WHO" javaType="java.math.BigDecimal" jdbcType="NUMBER"/>
+        <result property="hasUnitFlag" column="HAS_UNIT_FLAG" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="lampiran" column="LAMPIRAN" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="cancelWho" column="CANCEL_WHO" javaType="java.math.BigDecimal" jdbcType="NUMBER"/>
+        <result property="cancelWhen" column="CANCEL_WHEN" javaType="java.sql.Timestamp" jdbcType="DATE"/>
+        <result property="flagUserCabang" column="FLAG_USER_CABANG" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+    </resultMap>
+
+    <select id="elions.refund.selectRefundByCd"
+            parameterClass="java.lang.String"
+            resultMap="elions.refund.selectRefundByCd.result">
+        SELECT ROWNUM as row_number
+            , a.REG_SPAJ
+            , to_char( a.UPDATE_WHEN, 'MM/dd/YYYY HH24:MI:SS' ) as LAST_UPDATE
+            , b.DESKRIPSI
+            , b.FU
+            , b.LABEL
+            , DECODE (a.TINDAKAN_CD, 1, 'Tidak ada', 2, 'Refund Premi', 3, 'Ganti Tertanggung',4,'Ganti Plan' ) as TINDAKAN
+            , a.NO_SURAT
+            , a.POSISI_NO
+            , a.TINDAKAN_CD
+            , a.ALASAN_CD
+            , a.ULINK_FLAG
+            , a.NO_VOUCHER
+            , a.PREMI_REFUND
+            , a.REG_SPAJ_BARU
+            , a.KLI_NAMA
+            , a.KLI_NOREK
+            , a.KLI_NAMA_BANK
+            , a.KLI_CABANG_BANK
+            , a.KLI_KOTA_BANK
+            , a.ALASAN_LAIN
+            , a.PAYMENT
+            , a.PAYMENT_DATE
+            , a.CREATE_WHEN
+            , a.CREATE_WHO
+            , a.UPDATE_WHEN
+            , a.UPDATE_WHO
+            , a.HAS_UNIT_FLAG
+            , a.lampiran
+            , a.cancel_who
+            , a.cancel_when
+            , a.flag_user_cabang
+        FROM eka.MST_REFUND a, eka.MST_POSISI_REFUND b
+        WHERE 1=1
+        AND a.POSISI_NO = b.POSISI_NO
+        AND a.ULINK_FLAG = b.ULINK_FLAG
+        AND a.TINDAKAN_CD = b.TINDAKAN_CD
+        AND a.REG_SPAJ = rpad(replace(#regSpaj#,'.'),11,' ')
+    </select>
+    
+	<select id="elions.refund.selectMstRefund"
+            parameterClass="java.lang.String"
+            resultMap="elions.refund.selectRefundByCd.result">
+        SELECT ROWNUM as row_number
+            , a.REG_SPAJ
+            , to_char( a.UPDATE_WHEN, 'MM/dd/YYYY HH24:MI:SS' ) as LAST_UPDATE
+            , DECODE (a.TINDAKAN_CD, 1, 'Tidak ada', 2, 'Refund Premi', 3, 'Ganti Tertanggung',4,'Ganti Plan' ) as TINDAKAN
+            , a.NO_SURAT
+            , a.POSISI_NO
+            , a.TINDAKAN_CD
+            , a.ALASAN_CD
+            , a.ULINK_FLAG
+            , a.NO_VOUCHER
+            , a.PREMI_REFUND
+            , a.REG_SPAJ_BARU
+            , a.KLI_NAMA
+            , a.KLI_NOREK
+            , a.KLI_NAMA_BANK
+            , a.KLI_CABANG_BANK
+            , a.KLI_KOTA_BANK
+            , a.ALASAN_LAIN
+            , a.PAYMENT
+            , a.PAYMENT_DATE
+            , a.CREATE_WHEN
+            , a.CREATE_WHO
+            , a.UPDATE_WHEN
+            , a.UPDATE_WHO
+            , a.HAS_UNIT_FLAG
+            , a.lampiran
+            , a.cancel_who
+            , a.cancel_when
+            , a.flag_user_cabang
+        FROM eka.MST_REFUND a
+        WHERE 
+        a.lampiran is not null
+    </select>
+
+    <resultMap id="elions.refund.selectRefundDetList.result" class="com.ekalife.elions.web.refund.vo.RefundDetDbVO">
+        <result property="spajNo" column="reg_spaj" javaType="java.lang.String" jdbcType="CHAR"/>
+        <result property="itemNo" column="item_no" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="ljbId" column="ljb_id" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="jumlah" column="jumlah" javaType="java.math.BigDecimal" jdbcType="NUMBER"/>
+        <result property="deskripsi" column="deskripsi" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="unit" column="unit" javaType="java.math.BigDecimal" jdbcType="NUMBER"/>
+        <result property="ljiId" column="lji_id" javaType="java.lang.String" jdbcType="CHAR"/>
+        <result property="tipeNo" column="tipe" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+        <result property="lkuId" column="lku_id" javaType="java.lang.String" jdbcType="CHAR"/>
+    </resultMap>
+
+    <select id="elions.refund.selectRefundDetList" parameterClass="java.util.HashMap" resultMap="elions.refund.selectRefundDetList.result">
+        SELECT a.reg_spaj, a.item_no, a.ljb_id,
+            <isEqual property="tipeNo" compareValue="4">
+            	(case when a.jumlah is null then 
+	            	(select (case when mtu_jumlah = 0 then null else mtu_jumlah end)
+						from eka.mst_trans_ulink where reg_spaj = a.reg_spaj and lji_id = a.lji_id and lt_id = 13)
+				 else a.jumlah end) as jumlah,
+            </isEqual>
+            <isNotEqual property="tipeNo" compareValue="4">
+				a.jumlah,
+			</isNotEqual>
+            a.deskripsi, a.unit, a.lji_id, a.tipe, a.lku_id
+        FROM eka.mst_det_refund a
+        WHERE
+            a.reg_spaj = rpad(replace(#regSpaj#,'.'),11,' ')
+            <isNotEmpty property="tipeNo">
+                AND a.tipe = #tipeNo#
+            </isNotEmpty>
+            <isNotEmpty property="ljbId">
+                AND a.ljb_id = #ljbId#
+            </isNotEmpty>
+        ORDER BY a.item_no
+    </select>
+
+    <select id="elions.refund.selectJenisInvestByLjiId"
+            parameterClass="java.lang.String"
+            resultClass="java.lang.String">
+        SELECT a.lji_invest
+        FROM eka.LST_JENIS_INVEST a
+        WHERE 1=1
+            AND a.LJI_ID = #ljiId#
+    </select>
+
+    <select id="elions.refund.selectFilterRefundSpaj" parameterClass="java.util.HashMap" resultMap="elions.refund.result.filterRefundSpaj">
+        <isEqual property="tipe" compareValue="0">
+            select reg_spaj from eka.mst_policy where lstb_id = 1 and
+            <isEqual property="isNewSpaj" compareValue="true">
+					lspd_id != 95 and
+			</isEqual>
+            <isNotEqual property="isNewSpaj" compareValue="true">
+					lspd_id in (1,2,4,6,7) and
+			</isNotEqual>
+            reg_spaj $kata$
+            order by reg_spaj
+        </isEqual>
+        <isEqual property="tipe" compareValue="1">
+            select reg_spaj from eka.mst_policy where lstb_id = 1 and
+            <isEqual property="isNewSpaj" compareValue="true">
+					lspd_id != 95 and
+			</isEqual>
+            <isNotEqual property="isNewSpaj" compareValue="true">
+					lspd_id in (1,2,4,6,7) and
+			</isNotEqual>
+            mspo_policy_no $kata$
+            order by reg_spaj
+        </isEqual>
+        <isEqual property="tipe" compareValue="2">
+            select a.reg_spaj from eka.mst_policy a, eka.mst_client_new b where a.lstb_id = 1 and
+            <isEqual property="isNewSpaj" compareValue="true">
+					lspd_id != 95 and
+			</isEqual>
+            <isNotEqual property="isNewSpaj" compareValue="true">
+					lspd_id in (1,2,4,6,7) and
+			</isNotEqual>
+            a.mspo_policy_holder = b.mcl_id and b.mcl_first $kata$
+            <isNotEmpty property="tgl_lahir" prepend=" and "> b.mspe_date_birth = to_date(#tgl_lahir#, 'dd/mm/yyyy')</isNotEmpty>
+            order by b.mcl_first
+        </isEqual>
+        <isEqual property="tipe" compareValue="3">
+            select p.reg_spaj from eka.mst_policy p, eka.mst_insured a, eka.mst_client_new b where p.lstb_id = 1 and
+            <isEqual property="isNewSpaj" compareValue="true">
+					lspd_id != 95 and
+			</isEqual>
+            <isNotEqual property="isNewSpaj" compareValue="true">
+					lspd_id in (1,2,4,6,7) and
+			</isNotEqual>
+            p.reg_spaj = a.reg_spaj and a.mste_insured = b.mcl_id and b.mcl_first $kata$
+            <isNotEmpty property="tgl_lahir" prepend=" and "> b.mspe_date_birth = to_date(#tgl_lahir#, 'dd/mm/yyyy')</isNotEmpty>
+            order by b.mcl_first
+        </isEqual>
+        <isEqual property="tipe" compareValue="4">
+            select reg_spaj from eka.mst_policy a
+            where a.mspo_customer in (select mcl_id from eka.mst_client_new where mcl_first $kata$ )
+            <isEqual property="isNewSpaj" compareValue="true">
+					lspd_id != 95 and
+			</isEqual>
+            <isNotEqual property="isNewSpaj" compareValue="true">
+					lspd_id in (1,2,4,6,7) and
+			</isNotEqual>
+        </isEqual>
+
+    </select>
+
+    <select id="elions.refund.selectPosisiDocumentBySpaj" parameterClass="java.lang.String" resultClass="java.lang.Integer">
+        SELECT a.lspd_id
+        FROM
+			eka.mst_policy a
+        WHERE 1=1
+            AND a.reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ')
+    </select>
+    
+	<select id="elions.refund.selectLusFullName" parameterClass="java.math.BigDecimal" resultClass="java.lang.String">
+		select lus_full_name from eka.lst_user where lus_id = #lusId#
+    </select>
+    
+	<select id="elions.refund.selectNowDate" resultClass="java.util.Date" >
+		select sysdate from dual
+	</select>
+    
+	<select id="elions.refund.selectTglKirimDokFisik" parameterClass="java.lang.String" resultClass="java.util.Date" >
+		select tgl_kirim_dok_fisik from eka.mst_refund where reg_spaj = rpad(replace(#regSpaj#,'.'),11,' ')
+    </select>
+    
+    <select id="elions.refund.selectNoSuratList" resultClass="java.lang.Integer" parameterClass="java.lang.String">
+    	select max( substr( trim( no_surat ), 1, 3 ) ) as NO_SURAT from eka.mst_refund where substr( trim( no_surat ), -5) like #noSuratDate#
+    </select>
+    
+    
+	<resultMap id="elions.refund.selectCheckSpajInDb.result" class="com.ekalife.elions.web.refund.vo.CheckSpajParamsVO">
+        <result property="noSpaj" column="REG_SPAJ" javaType="java.lang.String" jdbcType="CHAR"/>
+        <result property="noSurat" column="NO_SURAT" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+	</resultMap>
+   
+	<select id="elions.refund.selectCheckSpajInDb" resultMap="elions.refund.selectCheckSpajInDb.result" parameterClass="java.lang.String">
+		select REG_SPAJ, NO_SURAT from eka.mst_refund where
+			REG_SPAJ = rpad(replace(#regSpaj#,'.'),11,' ')
+	</select>
+     
+	<select id="elions.refund.selectMspoDatePrint" resultClass="java.util.Date" parameterClass="java.lang.String">
+		select mspo_date_print from eka.mst_policy where reg_spaj = rpad(replace(#regSpaj#,'.'),11,' ')
+	</select>
+     
+	<select id="elions.refund.selectSpajAlreadyCancelMstRefund" resultMap="elions.refund.selectCheckSpajInDb.result" parameterClass="java.lang.String">
+		select a.REG_SPAJ, a.NO_SURAT from eka.mst_refund a, eka.mst_posisi_refund b 
+		where
+			a.POSISI_NO = b.POSISI_NO AND 
+			a.ULINK_FLAG = b.ULINK_FLAG AND 
+			a.TINDAKAN_CD = b.TINDAKAN_CD AND 
+			lower(b.label) like '%cancel%' AND
+			REG_SPAJ = rpad(replace(#regSpaj#,'.'),11,' ')
+	</select>
+     
+	<resultMap id="elions.refund.spajCancelMstBatal.result" class="com.ekalife.elions.web.refund.vo.MstBatalParamsVO">
+        <result property="regSpaj" column="reg_spaj" javaType="java.lang.String" jdbcType="CHAR"/>
+        <result property="msbNoBatal" column="msb_no_batal" javaType="java.lang.String" jdbcType="CHAR"/>
+    	<result property="msbTglBatal" column="msb_tgl_batal" javaType="java.util.Date" jdbcType="DATE"/>
+        <result property="msbAlasan" column="msb_alasan" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="lusId" column="lus_id" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+	</resultMap>
+   
+	<select id="elions.refund.selectSpajCancelMstBatal" resultMap="elions.refund.spajCancelMstBatal.result" parameterClass="java.lang.String">
+		select reg_spaj, msb_no_batal, msb_tgl_batal,msb_alasan, lus_id from eka.mst_batal
+		where REG_SPAJ = rpad(replace(#regSpaj#,'.'),11,' ')
+	</select>
+     
+     
+	<resultMap id="elions.refund.setoranPremiPokokDanTopUpResult.result" class="com.ekalife.elions.web.refund.vo.SetoranPokokDanTopUpVO">
+        <result property="regSpaj" column="reg_spaj" javaType="java.lang.String" jdbcType="CHAR"/>
+        <result property="msbiTahunKe" column="msbi_tahun_ke" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+    	<result property="msbiPremiKe" column="msbi_premi_ke" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="msdbPremium" column="msdb_premium" javaType="java.math.BigDecimal" jdbcType="NUMBER"/>
+        <result property="ltTransksi" column="lt_transksi" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="muTglTrans" column="mu_tgl_trans" javaType="java.util.Date" jdbcType="DATE"/>
+        <result property="ltId" column="lt_id" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="lkuId" column="lku_id" javaType="java.lang.String" jdbcType="CHAR"/>
+	</resultMap>
+   
+	<select id="elions.refund.selectSetoranPremiPokokDanTopUp" resultMap="elions.refund.setoranPremiPokokDanTopUpResult.result" parameterClass="java.lang.String">
+		select a.reg_spaj, a.msbi_tahun_ke, a.msbi_premi_ke, a.msdb_premium, c.lt_transksi, b.mu_tgl_trans, c.lt_id , d.lku_id
+		from eka.mst_det_billing a, eka.mst_ulink b, eka.lst_transaksi c, eka.mst_policy d
+		where 
+		a.reg_spaj = #regSpaj#
+		and a.reg_spaj = b.reg_spaj 
+		and a.reg_spaj = d.reg_spaj
+		and b.reg_spaj = d.reg_spaj
+		and a.MSBI_TAHUN_KE = b.MU_TAHUN_KE
+		and a.MSBI_PREMI_KE = b.MU_PREMI_KE
+		and b.lt_id = c.lt_id
+		and c.lt_id in (1,2,5)
+		order by msbi_premi_ke
+	</select>
+
+
+	<select id="elions.refund.selectAksesPembatalanCabang" resultClass="java.math.BigDecimal" parameterClass="java.util.HashMap">
+		SELECT lus_id FROM eka.mst_policy
+        WHERE
+            REG_SPAJ = rpad(replace(#regSpaj#,'.'),11,' ')
+            AND (lca_id, lwk_id, lsrg_id ) IN
+            (
+                SELECT lca_id, lwk_id, lsrg_id
+                FROM eka.lst_user_admin a, eka.lst_region b
+                WHERE a.lus_id = #lusId# AND a.lar_id = b.lar_id
+            )
+	</select>
+
+	<select id="elions.refund.selectMtuUnitTransUlink" resultClass="java.lang.String" parameterClass="java.lang.String">
+		select sum(mtu_unit) from eka.mst_trans_ulink where reg_spaj = rpad(replace(#regSpaj#,'.'),11,' ')
+	</select>
+    
+	<select id="elions.refund.selectLkuIdFromMstPolicy" resultClass="java.util.HashMap" parameterClass="java.lang.String">
+		select lku_id from eka.mst_policy where reg_spaj = rpad(replace(#regSpaj#,'.'),11,' ')
+	</select>
+    
+	<resultMap id="elions.refund.selectMstDetRefundLamp.result" class="com.ekalife.elions.web.refund.vo.LampiranListVO">
+        <result property="lampiranLabel" column="LAMPIRAN" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="checkBox" column="CHECKED" javaType="java.lang.String" jdbcType="NUMBER"/>
+    	<result property="regSpaj" column="REG_SPAJ" javaType="java.lang.String" jdbcType="CHAR"/>
+        <result property="noUrut" column="NO_URUT" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+	</resultMap>
+   
+	<select id="elions.refund.selectMstDetRefundLamp" resultMap="elions.refund.selectMstDetRefundLamp.result" parameterClass="java.lang.String">
+    	SELECT reg_spaj, no_urut, (case when(checked = 1) then 'true' else null end) as checked, lampiran 
+    	FROM eka.mst_det_refund_lampiran 
+    	WHERE reg_spaj = rpad(replace(#regSpaj#,'.'),11,' ')
+    </select>
+    
+    <select id="elions.refund.selectMaxNoUrutMstDetRefLamp" resultClass="java.lang.Integer" parameterClass="java.lang.String">
+    	select max(no_urut) from eka.mst_det_refund_lampiran where reg_spaj = rpad(replace(#regSpaj#,'.'),11,' ')
+    </select>
+    
+	<select id="elions.refund.selectLstDocumentPosition" resultClass="java.lang.String" parameterClass="java.lang.String">
+    	select b.lspd_position
+		from eka.mst_policy a,
+			eka.lst_document_position b
+		where a.lspd_id = b.lspd_id
+		and a.reg_spaj = rpad(replace(#regSpaj#,'.'),11,' ')
+	</select>
+    
+	<select id="elions.refund.selectMsteTglKirimPolis" resultClass="java.util.Date" parameterClass="java.lang.String">
+		select MSTE_TGL_KIRIM_POLIS from eka.mst_insured where reg_spaj = rpad(replace(#regSpaj# ,'.'),11,' ')   
+    </select>
+    
+	<resultMap id="elions.refund.selectMstPtcTm.result" class="com.ekalife.elions.web.refund.vo.MstPtcTmVO">
+		<result property="no_jm" column="no_jm" javaType="java.lang.String" jdbcType="CHAR"/>
+        <result property="mtm_position" column="mtm_position" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="tgl_jurnal" column="tgl_jurnal" javaType="java.util.Date" jdbcType="DATE"/>
+        <result property="no_pre" column="no_pre" javaType="java.lang.String" jdbcType="VARCHAR2"/>
+        <result property="mtm_print" column="mtm_print" javaType="java.lang.String" jdbcType="CHAR"/>
+        <result property="user_input" column="user_input" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+        <result property="tgl_input" column="tgl_input" javaType="java.util.Date" jdbcType="DATE"/>
+        <result property="tgl_trans" column="tgl_trans" javaType="java.util.Date" jdbcType="DATE"/>
+	</resultMap>
+    
+	<select id="elions.refund.selectMstPtcTm" resultMap="elions.refund.selectMstPtcTm.result" parameterClass="java.lang.String">
+    	select * from eka.mst_ptc_tm where no_pre = #no_pre#
+	</select>
+    
+	<select id="elions.refund.selectPositionMstTbank" resultClass="java.lang.Integer" parameterClass="java.lang.String">
+		select position from eka.mst_tbank where no_pre=#no_pre#
+    </select>
+    
+	<select id="elions.refund.selectPositionMstPtcTm" resultClass="java.lang.Integer" parameterClass="java.lang.String">
+		select mtm_position from eka.mst_ptc_tm where no_jm=#no_jm#
+	</select>
+    
+	<select id="elions.refund.selectDocBatal" resultClass="java.util.HashMap" parameterClass="java.lang.String">
+    	select
+		    a.reg_spaj, a.tindakan_cd, a.cancel_when, 
+		    to_char(a.cancel_when,'yyyyMMdd')cancel_when_tgl, 
+		    to_char(a.cancel_when,'hh24miss')cancel_when_jam,
+    		to_char(a.cancel_when, 'dd/MM/yyyy hh24:mi')cancel_when_all
+		from
+		    eka.mst_refund a
+		where
+		    a.reg_spaj = rpad(replace(#value#,'.'),11,' ')
+		    and tindakan_cd in (2,3,4)
+	</select>
+    
+	<select id="elions.refund.selectBillingRefund" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+        select msbi_paid_date, msbi_remain, lku_id
+        from eka.mst_billing
+        where reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ')
+            and msbi_active = 1
+            <isEqual property="paid" compareValue="1">	
+            	and msbi_paid = 1
+			</isEqual>
+    </select>
+    
+	<select id="elions.refund.selectSumRefAksep" parameterClass="java.lang.String" resultClass="java.util.HashMap" >
+        select nama_bank, rtrim (xmlagg (xmlelement (e, pre_masuk || chr(10))).extract ('//text()'), chr(10)) as pre_masuk, rtrim (xmlagg (xmlelement (e, pre_keluar || chr(10))).extract ('//text()'), chr(10)) as pre_keluar, count(distinct no_rek) as jml_rek, sum(premi_refund) as premi_refund
+        from (     
+	        select spaj, rtrim (xmlagg (xmlelement (e, pre_masuk || ',')).extract ('//text()'), ',') as pre_masuk, jm_sa, nvl(rtrim (xmlagg (xmlelement (e, jm || ',')).extract ('//text()'), ','), '-') as jm,  pre_keluar, jm_keluar,
+	                nama_pp, nama_rek, nama_bank, cabang_bank, no_rek, premi_refund, cancel_when
+	        from (
+                select distinct a.reg_spaj as spaj, nvl(d.mspa_no_pre, e.msdp_no_pre) as pre_masuk,
+                    nvl((select rtrim (xmlagg (xmlelement (e, y.no_jm || ',')).extract ('//text()'), ',') from eka.mst_ptc_tm x, eka.mst_ptc_jm y where x.no_jm = y.no_jm
+                            and x.mtm_position != 0 and y.key_jurnal = a.reg_spaj and y.no_jurnal = 2 and y.mjm_cd = 'C' and y.keterangan like 'TITIPAN PREMI NO%'), '-') as jm_sa,
+                    nvl(d.mspa_no_jm, '-') as jm, nvl(b.no_pre, (select y.no_pre from eka.mst_tbank x, eka.mst_dbank y where x.no_pre = y.no_pre
+                                                                                        and x.position != 5 and y.key_jurnal = a.reg_spaj and y.keterangan like 'REFUND PREMI%')) as pre_keluar,
+                    nvl(b.no_jm, nvl((select y.no_jm from eka.mst_ptc_tm x, eka.mst_ptc_jm y where x.no_jm = y.no_jm and x.mtm_position != 0
+                                                and y.key_jurnal = a.reg_spaj and y.mjm_cd = 'C' and y.no_jurnal = 1 and y.keterangan like 'JB TP%'), '-')) as jm_keluar,
+                    c.mcl_first as nama_pp, b.kli_nama as nama_rek, b.kli_nama_bank as nama_bank, b.kli_cabang_bank as cabang_bank,
+                    b.kli_norek as no_rek, b.premi_refund, b.cancel_when
+                from eka.mst_policy a, eka.mst_refund b, eka.mst_client_new c, eka.mst_payment d, eka.mst_deposit_premium e
+                where a.reg_spaj = b.reg_spaj
+                    and a.reg_spaj = d.reg_spaj (+)
+                    and a.reg_spaj = e.reg_spaj (+)
+                    and a.mspo_policy_holder = c.mcl_id
+                    and a.lku_id = #value#
+                    and b.tindakan_cd = 2
+                    and b.premi_refund != 0
+                    and b.cancel_when BETWEEN to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (00:00:00)', 'dd/mm/yyyy (hh24:mi:ss)') and to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (23:59:59)', 'dd/mm/yyyy (hh24:mi:ss)')
+                order by b.cancel_when
+	        )
+	        group by spaj, jm_sa, pre_keluar, jm_keluar, nama_pp, nama_rek, nama_bank, cabang_bank, no_rek, premi_refund, cancel_when
+        )
+        group by nama_bank
+        order by nama_bank
+    </select>
+    
+	<select id="elions.refund.selectDetRefAksep" parameterClass="java.lang.String" resultClass="java.util.HashMap" >
+        select spaj, rtrim (xmlagg (xmlelement (e, pre_masuk || ',')).extract ('//text()'), ',') as pre_masuk, jm_sa, nvl(rtrim (xmlagg (xmlelement (e, jm || ',')).extract ('//text()'), ','), '-') as jm,  pre_keluar, jm_keluar,
+                nama_pp, nama_rek, nama_bank, cabang_bank, no_rek, premi_refund, cancel_when
+        from (
+            select distinct a.reg_spaj as spaj, nvl(d.mspa_no_pre, e.msdp_no_pre) as pre_masuk,
+                nvl((select rtrim (xmlagg (xmlelement (e, y.no_jm || ',')).extract ('//text()'), ',') from eka.mst_ptc_tm x, eka.mst_ptc_jm y where x.no_jm = y.no_jm
+                        and x.mtm_position != 0 and y.key_jurnal = a.reg_spaj and y.no_jurnal = 2 and y.mjm_cd = 'C' and y.keterangan like 'TITIPAN PREMI NO%'), '-') as jm_sa,
+                nvl(d.mspa_no_jm, '-') as jm, nvl(b.no_pre, (select y.no_pre from eka.mst_tbank x, eka.mst_dbank y where x.no_pre = y.no_pre
+                                                                                    and x.position != 5 and y.key_jurnal = a.reg_spaj and y.keterangan like 'REFUND PREMI%')) as pre_keluar,
+                nvl(b.no_jm, nvl((select y.no_jm from eka.mst_ptc_tm x, eka.mst_ptc_jm y where x.no_jm = y.no_jm and x.mtm_position != 0
+                                            and y.key_jurnal = a.reg_spaj and y.mjm_cd = 'C' and y.no_jurnal = 1 and y.keterangan like 'JB TP%'), '-')) as jm_keluar,
+                c.mcl_first as nama_pp, b.kli_nama as nama_rek, b.kli_nama_bank as nama_bank, b.kli_cabang_bank as cabang_bank,
+                b.kli_norek as no_rek, b.premi_refund, b.cancel_when
+            from eka.mst_policy a, eka.mst_refund b, eka.mst_client_new c, eka.mst_payment d, eka.mst_deposit_premium e
+            where a.reg_spaj = b.reg_spaj
+                and a.reg_spaj = d.reg_spaj (+)
+                and a.reg_spaj = e.reg_spaj (+)
+                and a.mspo_policy_holder = c.mcl_id
+                and a.lku_id = #value#
+                and b.tindakan_cd = 2
+                and b.premi_refund != 0
+                and b.cancel_when BETWEEN to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (00:00:00)', 'dd/mm/yyyy (hh24:mi:ss)') and to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (23:59:59)', 'dd/mm/yyyy (hh24:mi:ss)')
+        )
+        group by spaj, jm_sa, pre_keluar, jm_keluar, nama_pp, nama_rek, nama_bank, cabang_bank, no_rek, premi_refund, cancel_when
+        order by nama_bank, nama_pp, cancel_when
+    </select>
+    
+	
+	<select id="elions.refund.selectDetRefPegaAksep" parameterClass="java.lang.String" resultClass="java.util.HashMap" >
+        select spaj, rtrim (xmlagg (xmlelement (e, pre_masuk || ',')).extract ('//text()'), ',') as pre_masuk, jm_sa, nvl(rtrim (xmlagg (xmlelement (e, jm || ',')).extract ('//text()'), ','), '-') as jm,  pre_keluar, jm_keluar,
+                nama_pp, nama_rek, nama_bank, cabang_bank, no_rek, premi_refund, cancel_when
+        from (
+            select distinct a.reg_spaj as spaj, nvl(d.mspa_no_pre, e.msdp_no_pre) as pre_masuk,
+                nvl((select rtrim (xmlagg (xmlelement (e, y.no_jm || ',')).extract ('//text()'), ',') from eka.mst_ptc_tm x, eka.mst_ptc_jm y where x.no_jm = y.no_jm
+                        and x.mtm_position != 0 and y.key_jurnal = a.reg_spaj and y.no_jurnal = 2 and y.mjm_cd = 'C' and y.keterangan like '%IDENTIFIED%'), '-') as jm_sa,
+                nvl(d.mspa_no_jm, '-') as jm, nvl(b.no_pre, (select y.no_pre from eka.mst_tbank x, eka.mst_dbank y where x.no_pre = y.no_pre
+                                                                                    and x.position != 5 and y.key_jurnal = a.reg_spaj and y.keterangan like 'REFUND PREMI%')) as pre_keluar,
+                nvl(b.no_jm, nvl((select y.no_jm from eka.mst_ptc_tm x, eka.mst_ptc_jm y where x.no_jm = y.no_jm and x.mtm_position != 0
+                                            and y.key_jurnal = a.reg_spaj and y.mjm_cd = 'C' and y.no_jurnal = 1 and y.keterangan like 'JB %'), '-')) as jm_keluar,
+                c.mcl_first as nama_pp, b.kli_nama as nama_rek, b.kli_nama_bank as nama_bank, b.kli_cabang_bank as cabang_bank,
+                b.kli_norek as no_rek, b.premi_refund, b.cancel_when
+            from eka.mst_policy a, eka.mst_refund b, eka.mst_client_new c, eka.mst_payment d, eka.mst_deposit_premium e
+            where a.reg_spaj = b.reg_spaj
+                and a.reg_spaj = d.reg_spaj (+)
+                AND A.PEGA_CASE_ID IS NOT NULL
+                and a.reg_spaj = e.reg_spaj (+)
+                and a.mspo_policy_holder = c.mcl_id
+                and a.lku_id = #value#
+                and b.tindakan_cd = 2
+                and b.premi_refund != 0
+                and b.cancel_when BETWEEN to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (00:00:00)', 'dd/mm/yyyy (hh24:mi:ss)') and to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (23:59:59)', 'dd/mm/yyyy (hh24:mi:ss)')
+        )
+        group by spaj, jm_sa, pre_keluar, jm_keluar, nama_pp, nama_rek, nama_bank, cabang_bank, no_rek, premi_refund, cancel_when
+        order by nama_bank, nama_pp, cancel_when
+    </select>
+	
+	
+	<select id="elions.refund.selectUploadRefund" parameterClass="java.util.HashMap" resultClass="java.util.HashMap" >
+        select kli_nama as Name, lsbp_pusat as BankName, kli_norek as AccNo, (case when lku_id like '01' then 'IDR' else 'USD' end) as Curr, sum(premi_refund) as Amount, 'REFUND PREMI' as Description
+        from
+        (
+        	select * from (
+            	select distinct a.reg_spaj, a.kli_nama, nvl(f.lsbp_pusat,f.lsbp_nama) as lsbp_pusat, a.kli_norek, c.lku_id, a.premi_refund
+            	from eka.mst_refund a, eka.mst_policy c, eka.mst_client_new d, eka.mst_rek_client e, eka.lst_bank_pusat f, eka.mst_refund g
+                where a.reg_spaj = c.reg_spaj
+                    and a.reg_spaj = e.reg_spaj
+                    and a.reg_spaj = g.reg_spaj
+                    and c.mspo_policy_holder = d.mcl_id
+                    and c.lku_id = #lku_id#
+                    and f.lsbp_id = e.lsbp_id
+                    and f.lsbp_nama = upper(g.kli_nama_bank)
+            	    and a.tindakan_cd = 2
+            	    and a.premi_refund != 0
+                	and a.cancel_when BETWEEN to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (00:00:00)', 'dd/mm/yyyy (hh24:mi:ss)') and to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (23:59:59)', 'dd/mm/yyyy (hh24:mi:ss)')
+            		<isEqual property="flag_bank" compareValue="0">	
+						and (f.lsbp_id not in ('156', '28', '226', '45', '186') or (f.lsbp_id in ('28', '226') and length(a.kli_norek) != 10))
+					</isEqual>
+					<isEqual property="flag_bank" compareValue="1">	
+						and f.lsbp_id in ('156')
+					</isEqual>
+					<isEqual property="flag_bank" compareValue="2">	
+						and f.lsbp_id in ('28', '226')
+						and length(a.kli_norek) = 10
+					</isEqual>
+					<isEqual property="flag_bank" compareValue="3">	
+						and f.lsbp_id in ('45', '186')
+					</isEqual>
+            	union
+            	select distinct a.reg_spaj, a.kli_nama, nvl(f.lsbp_pusat,f.lsbp_nama) as lsbp_pusat, a.kli_norek, c.lku_id, a.premi_refund
+            	from eka.mst_refund a, eka.mst_policy c, eka.mst_client_new d, eka.mst_account_recur e, eka.lst_bank_pusat f, eka.lst_bank g, eka.mst_refund h
+                where a.reg_spaj = c.reg_spaj
+                    and a.reg_spaj = e.reg_spaj
+                    and a.reg_spaj = h.reg_spaj
+                    and c.mspo_policy_holder = d.mcl_id
+                    and c.lku_id = #lku_id#
+                    and e.lbn_id = g.lbn_id
+                    and f.lsbp_id = g.lsbp_id
+                    and f.lsbp_nama = upper(h.kli_nama_bank)
+                	and a.tindakan_cd = 2
+            	    and a.premi_refund != 0
+                	and a.cancel_when BETWEEN to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (00:00:00)', 'dd/mm/yyyy (hh24:mi:ss)') and to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (23:59:59)', 'dd/mm/yyyy (hh24:mi:ss)')
+            		<isEqual property="flag_bank" compareValue="0">	
+						and (f.lsbp_id not in ('156', '28', '226', '45', '186') or (f.lsbp_id in ('28', '226') and length(a.kli_norek) != 10))
+					</isEqual>
+					<isEqual property="flag_bank" compareValue="1">	
+						and f.lsbp_id in ('156')
+					</isEqual>
+					<isEqual property="flag_bank" compareValue="2">	
+						and f.lsbp_id in ('28', '226')
+						and length(a.kli_norek) = 10
+					</isEqual>
+					<isEqual property="flag_bank" compareValue="3">	
+						and f.lsbp_id in ('45', '186')
+					</isEqual>
+        	) order by kli_nama, kli_norek, lku_id
+        )
+        group by kli_nama, lsbp_pusat, kli_norek, lku_id
+        order by kli_nama, lsbp_pusat, kli_norek, lku_id
+    </select>
+    
+    <select id="elions.refund.selectKodeBankPusat" parameterClass="java.lang.String" resultClass="java.lang.Integer">
+		select lsbp_id from eka.lst_bank_pusat where upper(lsbp_nama) like upper(#kli_nama_bank#)
+    </select>
+    
+    <select id="elions.refund.selectPremiRefund" parameterClass="java.lang.String" resultClass="java.lang.Double">
+		select premi_refund from eka.mst_refund where reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ')
+    </select>
+    
+    <select id="elions.refund.selectNoVoucher" parameterClass="java.lang.String" resultClass="java.lang.String" >
+		select no_voucher from eka.mst_tbank where no_pre = #no_pre#
+    </select>
+    
+    <select id="elions.refund.selectCekBayarKomisi" parameterClass="java.lang.String" resultClass="java.lang.Integer">
+		select count(*) from eka.mst_commission where msco_paid = 1 and msco_pay_date is not null and reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ')
+    </select>
+    
+    <select id="elions.refund.selectMstBvoucher" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+		select *
+		from eka.mst_bvoucher
+		where no_pre = #no_pre#
+			and no_jurnal = #no_jurnal#
+    </select>
+    
+    <select id="elions.refund.selectSetoranPremiBySpajTmp" parameterClass="java.lang.String" resultMap="elions.refund.selectSetoranPremiBySpaj.result">
+        select mstp_number as msdp_number, mstp_input_date as msdp_date_book, mstp_payment as msdp_payment, lku_id, mstp_nilai_kurs as kurs, mstp_nopre_masuk as no_pre, mstp_novoc_masuk as no_voucher
+        from eka.mst_temp_premi_refund
+        where reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ')
+    </select>
+    
+    <select id="elions.refund.selectMstTempPremiRefund" parameterClass="java.util.HashMap" resultClass="java.util.HashMap" >
+		select * from eka.mst_temp_premi_refund
+		where reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ')
+			and jenis = #jenis#
+		    <isNotNull property = "premi_ke">
+				and premi_ke = #premi_ke#
+            </isNotNull>
+    </select>
+    
+    <select id="elions.refund.selectNoPreTemp" parameterClass="java.lang.String" resultClass="java.util.HashMap" >
+    	select mstp_nopre_masuk as mspa_no_pre, mstp_payment as mspa_payment
+    	from eka.mst_temp_premi_refund 
+		where reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ')
+    </select>
+    
+	<select id="elions.refund.selectSumRefAksepNonSpaj" parameterClass="java.lang.String" resultClass="java.util.HashMap" >
+        select nama_bank, rtrim (xmlagg (xmlelement (e, pre_masuk || chr(10))).extract ('//text()'), chr(10)) as pre_masuk, rtrim (xmlagg (xmlelement (e, pre_keluar || chr(10))).extract ('//text()'), chr(10)) as pre_keluar, count(distinct no_rek) as jml_rek, sum(premi_refund) as premi_refund
+        from (     
+	        select spaj, rtrim (xmlagg (xmlelement (e, pre_masuk || ',')).extract ('//text()'), ',') as pre_masuk, jm_sa, pre_keluar, nama_pp, nama_rek, nama_bank, cabang_bank, no_rek, premi_refund, cancel_when
+	        from (
+	            select a.reg_spaj as spaj, a.mstp_nopre_masuk as pre_masuk, a.mstp_nojmsa_masuk as jm_sa, a.mstp_nopre_keluar as pre_keluar,
+	                a.mstp_nama as nama_pp, a.mstp_nama as nama_rek, a.mstp_bank as nama_bank, a.mstp_cabang_bank as cabang_bank, a.mstp_norek as no_rek, a.mstp_payment as premi_refund, a.mstp_input_date as cancel_when
+	            from eka.mst_temp_premi_refund a
+	            where a.jenis = 0
+	                and a.status = 1
+	                and a.lku_id = #value#
+	                and a.mstp_input_date BETWEEN to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (00:00:00)', 'dd/mm/yyyy (hh24:mi:ss)') and to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (23:59:59)', 'dd/mm/yyyy (hh24:mi:ss)')
+	            order by a.mstp_input_date
+	        )
+	        group by spaj, jm_sa, pre_keluar, nama_pp, nama_rek, nama_bank, cabang_bank, no_rek, premi_refund, cancel_when
+	        order by nama_bank, nama_pp, cancel_when
+        )
+        group by nama_bank
+        order by nama_bank
+    </select>
+    
+	<select id="elions.refund.selectDetRefAksepNonSpaj" parameterClass="java.lang.String" resultClass="java.util.HashMap" >
+        select spaj, rtrim (xmlagg (xmlelement (e, pre_masuk || ',')).extract ('//text()'), ',') as pre_masuk, jm_sa, '-' as jm, pre_keluar, '-' as jm_keluar, nama_pp, nama_rek, nama_bank, cabang_bank, no_rek, premi_refund, cancel_when
+        from (
+            select a.reg_spaj as spaj, a.mstp_nopre_masuk as pre_masuk, a.mstp_nojmsa_masuk as jm_sa, a.mstp_nopre_keluar as pre_keluar,
+                a.mstp_nama as nama_pp, a.mstp_nama as nama_rek, a.mstp_bank as nama_bank, a.mstp_cabang_bank as cabang_bank, a.mstp_norek as no_rek, a.mstp_payment as premi_refund, a.mstp_input_date as cancel_when
+            from eka.mst_temp_premi_refund a
+            where a.jenis = 0
+                and a.status = 1
+                and a.lku_id = #value#
+                and a.mstp_input_date BETWEEN to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (00:00:00)', 'dd/mm/yyyy (hh24:mi:ss)') and to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (23:59:59)', 'dd/mm/yyyy (hh24:mi:ss)')
+            order by a.mstp_input_date
+        )
+        group by spaj, jm_sa, pre_keluar, nama_pp, nama_rek, nama_bank, cabang_bank, no_rek, premi_refund, cancel_when
+        order by nama_bank, nama_pp, cancel_when
+    </select>
+    
+    <select id="elions.refund.selectUploadRefundNonSpaj" parameterClass="java.util.HashMap" resultClass="java.util.HashMap" >
+        select a.mstp_nama as Name, a.mstp_bank as BankName, (case when a.lku_id like '01' then 'IDR' else 'USD' end) as Curr, a.mstp_norek as AccNo, sum(a.mstp_payment) as Amount, 'REFUND PREMI' as Description
+        from eka.mst_temp_premi_refund a, eka.lst_bank_pusat b
+        where a.mstp_bank = b.lsbp_nama
+            and a.jenis = 0
+            and a.status = 1
+            and a.lku_id = #lku_id#
+            and a.mstp_input_date BETWEEN to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (00:00:00)', 'dd/mm/yyyy (hh24:mi:ss)') and to_date( (to_char(SYSDATE-1,'dd/mm/yyyy')) || ' (23:59:59)', 'dd/mm/yyyy (hh24:mi:ss)')
+            <isEqual property="flag_bank" compareValue="0">	
+				and (b.lsbp_id not in ('156', '28', '226', '45', '186') or (b.lsbp_id in ('28', '226') and length(a.mstp_norek) != 10))
+			</isEqual>
+			<isEqual property="flag_bank" compareValue="1">	
+				and b.lsbp_id in ('156')
+			</isEqual>
+			<isEqual property="flag_bank" compareValue="2">	
+				and b.lsbp_id in ('28', '226')
+				and length(a.mstp_norek) = 10
+			</isEqual>
+			<isEqual property="flag_bank" compareValue="3">	
+				and b.lsbp_id in ('45', '186')
+			</isEqual>
+		group by a.mstp_nama, a.mstp_bank, a.mstp_norek, a.lku_id
+        order by a.mstp_nama, a.mstp_bank, a.mstp_norek, a.lku_id
+	</select>
+	
+	<select id="elions.refund.selectNoJmSa" parameterClass="java.lang.String" resultClass="java.util.HashMap" >
+		select mspa_payment_id, mspa_no_jm_sa, mspa_payment
+		from eka.mst_payment
+		where reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ')
+		    and mspa_no_jm_sa is not null
+    </select>
+    
+    <select id="elions.refund.selectPaymentKe" parameterClass="java.util.HashMap" resultClass="java.util.HashMap" >
+		select a.reg_spaj, c.msbi_tahun_ke tahun_ke, c.msbi_premi_ke premi_ke, b.mspa_no_pre no_pre,
+		    b.mspa_no_voucher no_voc, b.mspa_no_jm_sa no_jm_sa, d.no_trx, d.tgl_trx
+		from eka.mst_policy a, eka.mst_payment b, eka.mst_tag_payment c,
+		    eka.mst_drek_det d
+		where a.reg_spaj = b.reg_spaj
+		    and a.reg_spaj = c.reg_spaj
+		    and a.reg_spaj = d.no_spaj
+		    and a.reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ')
+		    and a.lstb_id = 1
+		    and a.lspd_id not in (95,999)
+		    and b.mspa_payment_id = c.mspa_payment_id
+		    and b.mspa_payment_id = d.payment_id
+		    and c.msbi_premi_ke = #premi_ke#
+    </select>
+    
+	<select id="elions.refund.selectRefundPremiLanjutan" resultClass="java.util.HashMap" >
+		select b.reg_spaj no_spaj, a.mspo_policy_no no_polis, c.mcl_first pp, b.premi_ke, b.lku_id, b.mstp_payment premi, 
+		    b.mstp_norek no_rek, b.mstp_nama nama_rek, b.mstp_bank bank, b.mstp_cabang_bank cabang_bank, b.tgl_rk, b.no_trx,
+		    b.mstp_novoc_masuk no_voc, b.mstp_nojmsa_masuk nojm_sa, b.keterangan,
+		    decode(b.tindakan, 1, 'DOUBLE BAYAR', 2, 'PUTUS KONTRAK', 3, 'LEBIH BAYAR', 4, 'CUTI PREMI', 5, 'LAIN-LAIN') tindakan
+		from eka.mst_policy a, eka.mst_temp_premi_refund b, eka.mst_client_new c
+		where a.reg_spaj = b.reg_spaj
+		    and a.mspo_policy_holder = c.mcl_id
+		    and a.lstb_id = 1
+		    and b.jenis = 2
+		    and trunc(mstp_input_date) = trunc(sysdate-1)
+    </select>
+    
+	<select id="elions.refund.CekDataPremiRefund" parameterClass="java.util.HashMap" resultClass="java.lang.Integer" >
+			select count(*) from eka.mst_temp_premi_refund 
+			where reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ')
+       		and premi_ke = #premi_ke#
+    </select>
+</sqlMap>

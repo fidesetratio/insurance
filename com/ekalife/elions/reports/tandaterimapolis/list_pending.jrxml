@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="list_pending" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="3"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="3"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="tglAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tglAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lca_id" class="java.lang.String">
+		<defaultValueExpression><![CDATA["09"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lca_name" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Cempaka Mas"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select /*+ first_rows */ a.mspo_policy_no_format, c.mcl_first, d.lsdbs_name, e.lku_symbol,
+nvl(g.premi_pokok, b.mspr_premium) premi_pokok, nvl(g.topup_tunggal, 0) topup_tunggal, nvl(g.topup_berkala, 0) topup_berkala,
+i.msag_id, j.mcl_first agen, a.mspo_date_print, f.mste_tgl_kirim_polis, k.lca_nama
+from 
+eka.mst_policy a, 
+eka.mst_product_insured b,
+eka.mst_insured f,
+eka.mst_client c, 
+eka.lst_det_bisnis d,
+eka.lst_kurs e,
+(select a.reg_spaj, 
+	sum(decode(lt_id, 1, mu_jlh_premi, 0)) premi_pokok, 
+	sum(decode(lt_id, 2, mu_jlh_premi, 0)) topup_tunggal,
+	sum(decode(lt_id, 5, mu_jlh_premi, 0)) topup_berkala 
+	from eka.mst_ulink a where mu_tgl_trans = 
+	(select mu_tgl_trans from eka.mst_ulink where reg_spaj = a.reg_spaj and mu_ke=1)
+	group by a.reg_spaj) g,
+eka.mst_agent_prod h,
+eka.mst_agent i,
+eka.mst_client j,
+eka.lst_cabang k		
+where a.mspo_date_print between ($P{tglAwal}-30) and ($P{tglAkhir}-30)
+and a.reg_spaj = b.reg_spaj
+and a.reg_spaj = f.reg_spaj 
+and b.lsbs_id < 300
+and a.mspo_policy_holder = c.mcl_id
+and b.lsbs_id = d.lsbs_id
+and b.lsdbs_number = d.lsdbs_number
+and b.lku_id = e.lku_id
+and a.reg_spaj = g.reg_spaj(+)
+and a.reg_spaj = h.reg_spaj
+and h.lsle_id = 4
+and h.msag_id = i.msag_id
+and i.mcl_id = j.mcl_id
+and i.lca_id = k.lca_id
+and a.lspd_id = 7
+and a.mspo_jenis_terbit=0
+and i.lca_id =$P{lca_id}]]>
+	</queryString>
+	<field name="AGEN" class="java.lang.String"/>
+	<field name="LCA_NAMA" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="MSAG_ID" class="java.lang.String"/>
+	<field name="MSPO_DATE_PRINT" class="java.util.Date"/>
+	<field name="MSPO_POLICY_NO_FORMAT" class="java.lang.String"/>
+	<field name="MSTE_TGL_KIRIM_POLIS" class="java.util.Date"/>
+	<field name="PREMI_POKOK" class="java.math.BigDecimal"/>
+	<field name="TOPUP_BERKALA" class="java.math.BigDecimal"/>
+	<field name="TOPUP_TUNGGAL" class="java.math.BigDecimal"/>
+	<title>
+		<band height="136">
+			<textField>
+				<reportElement positionType="Float" x="2" y="58" width="450" height="12" isPrintWhenDetailOverflows="true"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Printing Date: " + $P{REPORT_SCRIPTLET}.formatDateWithTime(new Date())]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="9" width="215" height="15"/>
+				<textElement>
+					<font isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[List Pending TTP 30 hari sejak Polis dicetak]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="84" y="25" width="481" height="15"/>
+				<textElement>
+					<font isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""+$P{REPORT_SCRIPTLET}.formatDateNumber($P{tglAwal}) +" s.d " +$P{REPORT_SCRIPTLET}.formatDateNumber($P{tglAkhir}) +" ( diproses setiap hari )"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="42" width="73" height="15"/>
+				<textElement>
+					<font isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Cabang  "]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="96" width="24" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[No.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="24" y="96" width="70" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[No. Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="94" y="96" width="80" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Pemegang Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="174" y="96" width="90" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Produk]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="264" y="96" width="35" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Mata Uang]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="299" y="96" width="70" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Premi Pokok]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="369" y="96" width="134" height="20"/>
+				<box padding="0" topBorder="1Point" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Top Up ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="503" y="96" width="55" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Kode Agen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="558" y="96" width="80" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Nama Agen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="638" y="96" width="86" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Tgl.Cetak Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="724" y="96" width="80" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="1Point" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Tgl.Kirim Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="369" y="116" width="67" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Tunggal]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="436" y="116" width="67" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Berkala]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="84" y="42" width="285" height="15"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[""+$F{LCA_NAMA}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="75" y="42" width="9" height="16"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="0" y="25" width="73" height="15"/>
+				<textElement>
+					<font isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tgl.proses "]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="75" y="25" width="9" height="15"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+		</band>
+	</title>
+	<detail>
+		<band height="20">
+			<textField>
+				<reportElement x="503" y="0" width="55" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""+$F{MSAG_ID}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="638" y="0" width="86" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""+$P{REPORT_SCRIPTLET}.formatDateNumber($F{MSPO_DATE_PRINT})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="24" y="0" width="70" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""+$F{MSPO_POLICY_NO_FORMAT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="724" y="0" width="80" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="1Point" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""+$P{REPORT_SCRIPTLET}.formatDateNumber($F{MSTE_TGL_KIRIM_POLIS})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="369" y="0" width="67" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""+$P{REPORT_SCRIPTLET}.formatCurrency("", $F{TOPUP_TUNGGAL})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="94" y="0" width="80" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""+$F{MCL_FIRST}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="299" y="0" width="70" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""+$P{REPORT_SCRIPTLET}.formatCurrency("", $F{PREMI_POKOK})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="174" y="0" width="90" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""+$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="264" y="0" width="35" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""+$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="558" y="0" width="80" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""+$F{AGEN}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="0" width="24" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""+$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="436" y="0" width="67" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="1Point" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""+$P{REPORT_SCRIPTLET}.formatCurrency("", $F{TOPUP_BERKALA})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

@@ -1,0 +1,642 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="kartu_premi" pageWidth="595" pageHeight="400" columnWidth="550" leftMargin="23" rightMargin="22" topMargin="15" bottomMargin="15" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.VGuides.Detail" value="31,104,184,288"/>
+	<property name="com.jasperassistant.designer.HGuides" value="10,275,280,442"/>
+	<import value="net.sf.jasperreports.engine.xml.JRXmlLoader"/>
+	<import value="com.ibatis.common.resources.Resources"/>
+	<import value="net.sf.jasperreports.engine.design.JRJdtCompiler"/>
+	<reportFont name="Arial" isDefault="false" fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+	<reportFont name="Roman" isDefault="false" fontName="Times New Roman" size="24" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["01201100008"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<queryString>
+		<![CDATA[SELECT distinct k.lwk_nama cabang, jenis_asuransi, decode(b.mspo_follow_up,1,'Kantor Pusat',2,'TM AJ Sinarmas',3,'CS BII','') follow_up, i.lscb_print cara_bayar, b.polis, b.reg_spaj, a.medis,    
+c.nama nama_pp, c.lahir lahir_pp, c.alamat alamat_pp, c.kota kota_pp, d.nama nama_tt, c.lahir lahir_tt, d.alamat alamat_tt, d.kota kota_tt, 
+('Tgl ' || to_char(a.mste_beg_date,'dd-mm-yyyy') || ' s/d ' || to_char(a.mste_end_date,'dd-mm-yyyy')) masa_asuransi,
+('Tgl ' || to_char(a.mste_beg_date,'dd-mm-yyyy') || ' s/d ' || to_char(add_months(a.mste_beg_date, 12 * b.mspo_pay_period),'dd-mm-yyyy')) masa_premi,
+nvl( l.msco_comm,0) komisi, m.mcl_first nama_penutup, (m.msag_id||' / '||n.msag_id||' / '||o.msag_id||' / '||p.msag_id) kode_penutup, 
+q.premi_std, q.premi_tmbh, q.premi_total, e.mspr_tsi tsi, h.lku_symbol, r.msap_address  FROM 
+  	   (SELECT mste_end_date, reg_spaj, mste_insured, mste_insured_no, mste_age, decode(mste_medical,0,'NON MEDICAL','MEDICAL') medis, mste_beg_date FROM eka.mst_insured WHERE mste_insured_no = 1) a,
+       (select reg_spaj, mspo_policy_holder, mspo_age, trim(nvl(mspo_no_blanko,'--')) no_blankon, mspo_spaj_date, mspo_ins_period, lscb_id, mspo_pay_period, lku_id, mspo_policy_no polis, lca_id, lwk_id, mspo_follow_up from eka.mst_policy) b,
+       (select a.mcl_id, a.mcl_first || decode(a.mcl_gelar,null,'',', '||a.mcl_gelar) nama, b.alamat_rumah alamat, trim(nvl(b.kota_rumah,'')||' '||nvl(b.kd_pos_rumah,'')) kota, mspe_date_birth lahir from eka.mst_client_new a, eka.mst_address_new b where a.mcl_id = b.mcl_id) c,
+       (select a.mcl_id, a.mcl_first || decode(a.mcl_gelar,null,'',', '||a.mcl_gelar) nama, b.alamat_rumah alamat, trim(nvl(b.kota_rumah,'')||' '||nvl(b.kd_pos_rumah,'')) kota, mspe_date_birth lahir from eka.mst_client_new a, eka.mst_address_new b where a.mcl_id = b.mcl_id) d,
+       (SELECT * FROM eka.mst_product_insured WHERE mspr_active = 1 AND lsbs_id < 800) e,
+	   (SELECT b.reg_spaj, c.lsdbs_name jenis_asuransi 
+		FROM EKA.LST_BISNIS a, EKA.MST_PRODUCT_INSURED b, EKA.LST_DET_BISNIS c  
+		WHERE b.reg_spaj = rpad($P{spaj},11,' ') and a.LSBS_ID = b.LSBS_ID AND a.LSBS_ID < 800 and b.lsbs_id = c.lsbs_id and b.lsdbs_number = c.lsdbs_number) f,		    
+		eka.lst_kurs h, eka.lst_pay_mode i,
+		(SELECT reg_spaj, mscan_spaj_baru, mscan_tgl_batal
+		  FROM eka.mst_cancel
+		 WHERE mscan_spaj_baru = 
+		 rpad($P{spaj},11,' ')) j,
+		 eka.lst_wakil k,
+		(SELECT a.reg_spaj, sum(a.msco_comm) msco_comm
+		  FROM eka.mst_commission a, eka.mst_agent_prod b
+		 WHERE a.reg_spaj = b.reg_spaj AND a.reg_spaj = rpad($P{spaj},11,' ')
+		   AND a.lev_comm=4 AND b.lsle_id=4 AND a.msbi_tahun_ke = 1 GROUP BY a.reg_spaj) l,
+		(select m.reg_spaj, '004062' msag_id, 'ANTON WIJAYA' mcl_first from eka.mst_agent_prod m, eka.mst_client_new c, eka.mst_agent a where m.reg_spaj = rpad($P{spaj},11,' ') and a.msag_id = m.msag_id and m.lsle_id = 4 and a.mcl_id = c.mcl_id(+)) m,
+		(select * from eka.mst_agent_prod where lsle_id = 3) n,
+		(select * from eka.mst_agent_prod where lsle_id = 2) o,
+		(select * from eka.mst_agent_prod where lsle_id = 1) p,
+		(SELECT a.premi_std, (a.premi_rider+a.premi_extra) premi_tmbh, a.kurs, a.reg_spaj, (a.premi_std+a.premi_rider+a.premi_extra) premi_total
+		  FROM eka.v_premi a
+		 WHERE a.reg_spaj = rpad($P{spaj},11,' ')) q,
+		 eka.mst_address_billing r
+ WHERE b.reg_spaj = a.reg_spaj
+   AND b.reg_spaj = m.reg_spaj(+)
+   AND b.reg_spaj = n.reg_spaj(+)
+   AND b.reg_spaj = o.reg_spaj(+)
+   AND b.reg_spaj = p.reg_spaj(+)
+   AND b.reg_spaj = f.reg_spaj(+)
+   AND b.reg_spaj = j.mscan_spaj_baru(+)
+   AND b.lku_id = h.lku_id
+   AND b.lscb_id = i.lscb_id
+   AND c.mcl_id = b.mspo_policy_holder
+   AND d.mcl_id = a.mste_insured
+   AND e.reg_spaj = a.reg_spaj
+   AND e.reg_spaj = l.reg_spaj(+)
+   AND e.mste_insured_no = a.mste_insured_no
+   AND b.lca_id = k.lca_id AND b.lwk_id = k.lwk_id
+   AND a.reg_spaj = rpad($P{spaj},11,' ')       
+   AND a.reg_spaj = q.reg_spaj
+   AND a.reg_spaj = r.reg_spaj]]>
+	</queryString>
+	<field name="ALAMAT_PP" class="java.lang.String"/>
+	<field name="ALAMAT_TT" class="java.lang.String"/>
+	<field name="CABANG" class="java.lang.String"/>
+	<field name="CARA_BAYAR" class="java.lang.String"/>
+	<field name="FOLLOW_UP" class="java.lang.String"/>
+	<field name="JENIS_ASURANSI" class="java.lang.String"/>
+	<field name="KODE_PENUTUP" class="java.lang.String"/>
+	<field name="KOMISI" class="java.math.BigDecimal"/>
+	<field name="KOTA_PP" class="java.lang.String"/>
+	<field name="KOTA_TT" class="java.lang.String"/>
+	<field name="LAHIR_PP" class="java.util.Date"/>
+	<field name="LAHIR_TT" class="java.util.Date"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="MASA_ASURANSI" class="java.lang.String"/>
+	<field name="MASA_PREMI" class="java.lang.String"/>
+	<field name="MEDIS" class="java.lang.String"/>
+	<field name="MSAP_ADDRESS" class="java.lang.String"/>
+	<field name="NAMA_PENUTUP" class="java.lang.String"/>
+	<field name="NAMA_PP" class="java.lang.String"/>
+	<field name="NAMA_TT" class="java.lang.String"/>
+	<field name="POLIS" class="java.lang.String"/>
+	<field name="PREMI_STD" class="java.math.BigDecimal"/>
+	<field name="PREMI_TMBH" class="java.math.BigDecimal"/>
+	<field name="PREMI_TOTAL" class="java.math.BigDecimal"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="TSI" class="java.math.BigDecimal"/>
+	<detail>
+		<band height="363">
+			<staticText>
+				<reportElement positionType="Float" x="0" y="0" width="551" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Roman"/>
+				</textElement>
+				<text><![CDATA[KARTU PREMI]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="46" width="70" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[Cabang]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="61" width="70" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[Jenis Asuransi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="70" y="46" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="70" y="61" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="80" y="46" width="190" height="15"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CABANG}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="80" y="61" width="190" height="15"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{JENIS_ASURANSI}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="31" width="190" height="15"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{FOLLOW_UP}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="375" y="31" width="174" height="15"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CARA_BAYAR}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="375" y="46" width="174" height="15"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatPolis($F{POLIS})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="275" y="46" width="89" height="15"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Arial" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">Nomor Polis</style>]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="365" y="31" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="365" y="46" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="275" y="31" width="89" height="15"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Arial" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">Cara Pembayaran</style>]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="275" y="61" width="89" height="15"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Arial" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">SPAJ</style>]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="365" y="61" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="375" y="61" width="174" height="15"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatSPAJ($F{REG_SPAJ})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="10" y="98" width="70" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Pemegang Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="10" y="113" width="70" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Tanggal Lahir]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="10" y="128" width="70" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Alamat]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="80" y="98" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="80" y="113" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="80" y="128" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="89" y="98" width="181" height="14"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PP}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="90" y="113" width="181" height="14"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{LAHIR_PP})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="90" y="128" width="181" height="30"/>
+				<textElement>
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ALAMAT_PP}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="90" y="158" width="181" height="14"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KOTA_PP}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="90" y="207" width="181" height="30"/>
+				<textElement>
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ALAMAT_TT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="90" y="237" width="181" height="14"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KOTA_TT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="10" y="192" width="70" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Tanggal Lahir]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="90" y="192" width="181" height="14"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{LAHIR_TT})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="80" y="192" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="89" y="177" width="181" height="14"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_TT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="80" y="207" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="80" y="177" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="10" y="207" width="70" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Alamat]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="10" y="177" width="70" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Tertanggung]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="375" y="77" width="174" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MEDIS}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="10" y="269" width="93" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Masa Pembayaran Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="10" y="254" width="93" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Masa Asuransi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="104" y="254" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="113" y="254" width="157" height="14"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MASA_ASURANSI}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="104" y="269" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="114" y="269" width="157" height="14"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MASA_PREMI}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="10" y="288" width="179" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Komisi untuk 1 (satu) tahun pertama sebesar :]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="20" y="303" width="240" height="14"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["<style isBold=\"true\">Rp. 125.000,-</style>"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="10" y="322" width="179" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Polis-polis lain di Perusahaan :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="280" y="98" width="70" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Alamat Penagihan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="360" y="98" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="280" y="128" width="70" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Nama Penutup]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="360" y="128" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="280" y="143" width="70" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Kode Penutup]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="360" y="143" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="369" y="98" width="172" height="30"/>
+				<textElement>
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSAP_ADDRESS}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="369" y="128" width="172" height="14"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PENUTUP}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="369" y="143" width="172" height="14"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KODE_PENUTUP}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="280" y="197" width="74" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Premi Tambahan]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="369" y="177" width="19" height="14"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="369" y="227" width="19" height="14"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="359" y="227" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="280" y="177" width="74" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Premi Standard]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="359" y="197" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="359" y="177" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="369" y="197" width="19" height="14"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="280" y="227" width="74" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Jumlah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="280" y="254" width="79" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Uang Pertanggungan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="360" y="254" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="369" y="254" width="19" height="14"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement key="ditunjuk" positionType="Float" x="280" y="288" width="266" height="71"/>
+				<subreportParameter name="spaj">
+					<subreportParameterExpression><![CDATA[$P{spaj}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("subreport.kartu_premi.ditunjuk")+".jasper"]]></subreportExpression>
+			</subreport>
+			<line>
+				<reportElement x="0" y="362" width="550" height="1"/>
+			</line>
+			<line>
+				<reportElement x="0" y="94" width="1" height="267"/>
+			</line>
+			<line>
+				<reportElement x="0" y="93" width="550" height="1"/>
+			</line>
+			<line>
+				<reportElement x="275" y="94" width="1" height="267"/>
+			</line>
+			<line>
+				<reportElement x="1" y="320" width="274" height="1"/>
+			</line>
+			<line>
+				<reportElement x="276" y="173" width="274" height="1"/>
+			</line>
+			<line>
+				<reportElement x="276" y="253" width="274" height="1"/>
+			</line>
+			<line>
+				<reportElement x="1" y="173" width="274" height="1"/>
+			</line>
+			<line>
+				<reportElement x="1" y="253" width="274" height="1"/>
+			</line>
+			<line>
+				<reportElement x="1" y="284" width="274" height="1"/>
+			</line>
+			<line>
+				<reportElement x="276" y="284" width="274" height="1"/>
+			</line>
+			<line>
+				<reportElement x="550" y="94" width="1" height="267"/>
+			</line>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="388" y="227" width="90" height="14"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null, $F{PREMI_TOTAL})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="388" y="197" width="90" height="14"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null, $F{PREMI_TMBH})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="388" y="177" width="90" height="14"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null, $F{PREMI_STD})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="388" y="254" width="90" height="14"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null, $F{TSI})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

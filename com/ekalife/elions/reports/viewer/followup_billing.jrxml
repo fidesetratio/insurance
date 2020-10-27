@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="followup_billing" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="admin" class="java.lang.String"/>
+	<parameter name="tgl1" class="java.lang.String"/>
+	<parameter name="tgl2" class="java.lang.String"/>
+	<parameter name="tanggal1" class="java.lang.String"/>
+	<parameter name="tanggal2" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[/* Formatted on 2008/07/17 15:22 (Formatter Plus v4.8.5) */
+SELECT   b.mspo_policy_no,
+         DECODE (b.mspo_policy_no,
+                 NULL, '',
+                    SUBSTR (b.mspo_policy_no, 1, 2)
+                 || '.'
+                 || SUBSTR (b.mspo_policy_no, 3, 3)
+                 || '.'
+                 || SUBSTR (b.mspo_policy_no, 6, 4)
+                 || '.'
+                 || SUBSTR (b.mspo_policy_no, 10, 5)
+                ) policy_formatted,
+         a.msbi_tahun_ke, a.msbi_premi_ke, a.msbi_bill_no, a.lspd_id,
+         a.msbi_print_date, a.lca_id, a.lwk_id, a.lsrg_id,
+         NVL (a.msbi_remain, 0) msbi_remain, a.msbi_beg_date, a.msbi_end_date,
+         a.msbi_due_date, a.lku_id, NVL (a.msbi_stamp, 0) msbi_stamp,
+         NVL (e.mshc_premi_sub, 0) mshc_premi_sub,
+         NVL (e.mshc_premi, 0) mshc_premi, f.msap_address, f.msap_zip_code,
+         f.msap_phone1, f.msap_phone2, f.msap_phone3, g.lska_note,
+         d.msbih_remain, h.lsrg_nama, i.lwk_nama, f.lca_id, f.lwk_id,
+         f.lsrg_id, j.lar_admin, '' AS agen, c.mcl_first AS nm_pp,
+         (NVL (a.msbi_stamp, 0) + NVL (e.mshc_premi_sub, 0)) premi_hcr
+    FROM eka.mst_billing a,
+         eka.mst_policy b,
+         eka.mst_client_new c,
+         eka.mst_billing_hcr d,
+         eka.mst_hcr e,
+         eka.mst_address_billing f,
+         eka.lst_kabupaten g,
+         eka.lst_region h,
+         eka.lst_wakil i,
+         eka.lst_addr_region j,
+		 eka.lst_policy_status k
+   WHERE a.reg_spaj = d.reg_spaj(+)
+     AND a.msbi_tahun_ke = d.msbih_tahun_ke(+)
+     AND a.msbi_premi_ke = d.msbih_premi_ke(+)
+     AND d.reg_spaj = e.reg_spaj(+)
+     AND a.reg_spaj = b.reg_spaj
+     AND b.mspo_policy_holder = c.mcl_id
+     AND a.reg_spaj = f.reg_spaj
+     AND f.lska_id = g.lska_id(+)
+     AND f.lca_id = h.lca_id
+     AND f.lwk_id = h.lwk_id
+     AND f.lsrg_id = h.lsrg_id
+     AND h.lca_id = i.lca_id
+     AND h.lwk_id = i.lwk_id
+     AND h.lar_id = j.lar_id
+     AND a.msbi_beg_date BETWEEN to_date($P{tgl1}, 'yyyymmdd') and to_date($P{tgl2},'yyyymmdd')
+     AND j.lar_id IN ($P{admin})
+     AND a.lspd_id IN (21, 12)
+	 AND b.lssp_id = k.lssp_id
+	 AND k.lssp_active = 1
+ORDER BY a.msbi_bill_no ASC, j.lar_admin, c.mcl_first]]>
+	</queryString>
+	<field name="AGEN" class="java.lang.String"/>
+	<field name="LAR_ADMIN" class="java.lang.String"/>
+	<field name="LCA_ID" class="java.lang.String"/>
+	<field name="LKU_ID" class="java.lang.String"/>
+	<field name="LSKA_NOTE" class="java.lang.String"/>
+	<field name="LSPD_ID" class="java.math.BigDecimal"/>
+	<field name="LSRG_ID" class="java.lang.String"/>
+	<field name="LSRG_NAMA" class="java.lang.String"/>
+	<field name="LWK_ID" class="java.lang.String"/>
+	<field name="LWK_NAMA" class="java.lang.String"/>
+	<field name="MSAP_ADDRESS" class="java.lang.String"/>
+	<field name="MSAP_PHONE1" class="java.lang.String"/>
+	<field name="MSAP_PHONE2" class="java.lang.String"/>
+	<field name="MSAP_PHONE3" class="java.lang.String"/>
+	<field name="MSAP_ZIP_CODE" class="java.lang.String"/>
+	<field name="MSBIH_REMAIN" class="java.math.BigDecimal"/>
+	<field name="MSBI_BEG_DATE" class="java.util.Date"/>
+	<field name="MSBI_BILL_NO" class="java.lang.String"/>
+	<field name="MSBI_DUE_DATE" class="java.util.Date"/>
+	<field name="MSBI_END_DATE" class="java.util.Date"/>
+	<field name="MSBI_PREMI_KE" class="java.math.BigDecimal"/>
+	<field name="MSBI_PRINT_DATE" class="java.util.Date"/>
+	<field name="MSBI_REMAIN" class="java.math.BigDecimal"/>
+	<field name="MSBI_STAMP" class="java.math.BigDecimal"/>
+	<field name="MSBI_TAHUN_KE" class="java.math.BigDecimal"/>
+	<field name="MSHC_PREMI" class="java.math.BigDecimal"/>
+	<field name="MSHC_PREMI_SUB" class="java.math.BigDecimal"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="NM_PP" class="java.lang.String"/>
+	<field name="POLICY_FORMATTED" class="java.lang.String"/>
+	<field name="PREMI_HCR" class="java.math.BigDecimal"/>
+	<variable name="no" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[new Integer(1)]]></variableExpression>
+	</variable>
+	<variable name="total_premi_hcr_rp" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01") ? $F{PREMI_HCR} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="total_premi_hcr_us" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02") ? $F{PREMI_HCR} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="total_premi_rp" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("01") ? $F{MSBI_REMAIN} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="total_premi_us" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{LKU_ID}.equals("02") ? $F{MSBI_REMAIN} : new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<title>
+		<band height="21">
+			<staticText>
+				<reportElement x="243" y="3" width="288" height="17"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[REPORT FOLLOW UP BILLING ADMIN]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="24">
+			<staticText>
+				<reportElement x="3" y="4" width="76" height="15"/>
+				<textElement>
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PERIODE :]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="84" y="4" width="163" height="15"/>
+				<textElement>
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggal1} + " s/d "+ $P{tanggal2}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="42">
+			<staticText>
+				<reportElement x="3" y="2" width="31" height="36"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="36" y="2" width="89" height="36"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO POLIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="128" y="2" width="136" height="36" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PEMEGANG POLIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="267" y="2" width="41" height="36"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[THN KE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="312" y="2" width="105" height="36"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TGL JATUH TEMPO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="421" y="2" width="85" height="36"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[GRACE PERIOD]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="511" y="2" width="29" height="36"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[KURS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="545" y="2" width="100" height="36"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TOTAL PREMI]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="649" y="2" width="65" height="36"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PREMI HCR]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="718" y="2" width="80" height="36"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO TELP]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="18">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="3" y="-1" width="31" height="12" isRemoveLineWhenBlank="true"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{no}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="36" y="0" width="89" height="12" isRemoveLineWhenBlank="true"/>
+				<textElement>
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{POLICY_FORMATTED}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="128" y="0" width="136" height="12" isRemoveLineWhenBlank="true"/>
+				<textElement>
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NM_PP}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="267" y="0" width="41" height="12" isRemoveLineWhenBlank="true"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSBI_TAHUN_KE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="312" y="1" width="105" height="12" isRemoveLineWhenBlank="true"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSBI_BEG_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="545" y="2" width="100" height="12" isRemoveLineWhenBlank="true"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(" ",$F{MSBI_REMAIN})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="511" y="2" width="29" height="12" isRemoveLineWhenBlank="true"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_ID}.equals("01") ? "Rp" : "U$"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="421" y="2" width="85" height="12" isRemoveLineWhenBlank="true"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSBI_DUE_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="649" y="2" width="65" height="12" isRemoveLineWhenBlank="true"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(" ",$F{PREMI_HCR})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="718" y="2" width="80" height="12" isRemoveLineWhenBlank="true"/>
+				<textElement>
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSAP_PHONE1}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="42">
+			<staticText>
+				<reportElement x="399" y="8" width="136" height="15"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[TOTAL RUPIAH]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="399" y="25" width="136" height="15"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[TOTAL DOLLAR]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="539" y="8" width="29" height="15"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Rp]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="539" y="25" width="29" height="15"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[U$]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="700" y="8" width="99" height="15"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(" ",$V{total_premi_hcr_rp})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="700" y="25" width="99" height="15"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(" ",$V{total_premi_hcr_us})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="576" y="8" width="113" height="15"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(" ",$V{total_premi_rp})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="576" y="25" width="113" height="15"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(" ",$V{total_premi_us})]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="2" y="3" width="798" height="1"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</summary>
+</jasperReport>

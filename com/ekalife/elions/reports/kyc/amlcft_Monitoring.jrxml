@@ -1,0 +1,745 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="amlcft_Monitoring" pageWidth="2420" pageHeight="900" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="2385" leftMargin="15" rightMargin="20" topMargin="30" bottomMargin="25" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="dataprod"/>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="tanggalAwal" class="java.util.Date"/>
+	<parameter name="tanggalAkhir" class="java.util.Date"/>
+	<queryString>
+		<![CDATA[select * 
+from (select mp.mspo_input_date , mp.reg_spaj , EKA.UTILS.GRUP_BISNIS(mp.lstb_id) Jenis_nasabah,
+       EKA.UTILS.PEMEGANG(mp.reg_spaj) pemegang ,MP.MSPO_POLICY_HOLDER, EKA.UTILS.TERTANGGUNG(mp.reg_spaj) tertanggung ,
+       EKA.UTILS.det_PRODUK(MPI.LSBS_ID,MPI.LSDBS_NUMBER) produk,
+       MI.MSTE_BEG_DATE, MI.MSTE_END_DATE , EKA.UTILS.KURS_SIMBOL(mp.lku_id) kurs,
+       MPI.MSPR_PREMIUM , nvl(MU1.MU_JLH_PREMI,0) Premi_pokok ,
+       nvl(MU2.MU_JLH_PREMI,0) topup_tunggal ,nvl(MU5.MU_JLH_PREMI,0) topup_berkala,
+       MAN.KOTA_RUMAH  , MCN.MKL_KERJA , MCN.LJB_ID , LJ.LJB_NOTE jabatan,MCN.MPN_JOB_DESC, MCN.MKL_INDUSTRI bidang_usaha,
+       MCN.MKL_PENGHASILAN , MCN.MKL_PENDANAAN , MCN.MKL_TUJUAN,
+       lne.LSNE_ID, LNE.LSNE_NOTE negara,
+       MCN.MCL_COMPANY_NAME , MCN.MCL_COMPANY_PAYER,
+       EKA.UTILS.STATUS_POLIS(mp.lssp_id) status_policy , EKA.UTILS.POSISI_POLIS(MP.LSPD_ID) posisi_polis,
+       (select nvl(count(b.reg_spaj),0)
+        from eka.mst_client_new a
+            , eka.mst_policy b
+            , eka.mst_insured c
+        where b.reg_spaj = mp.reg_spaj
+            and b.reg_spaj = c.reg_spaj
+            and 
+                (a.mcl_id=b.mspo_policy_holder 
+                    or a.mcl_id=c.mste_insured )
+            and exists
+            (
+                select lbl_nama from eka.lst_black_list where (trim(lbl_nama)=trim(a.mcl_first) or upper(trim(lbl_nama_alias_1)) = upper(trim(a.mcl_first)) 
+                    or upper(trim(lbl_nama_alias_2)) = upper(trim(a.mcl_first)) or upper(trim(lbl_nama_alias_3)) = upper(trim(a.mcl_first))
+                    or upper(trim(lbl_nama_alias_4)) = upper(trim(a.mcl_first)) or upper(trim(lbl_nama_alias_5)) = upper(trim(a.mcl_first))) and lbl_tgl_lahir = a.MSPE_DATE_BIRTH 
+                    and lbl_flag_alasan = 6 and rownum = 1
+            ) and rownum = 1) black_list_terorist,
+            (case when MCN.MKL_KERJA in ('BURUH','IBU RUMAH TANGGA','JASA','KARYAWAN SWASTA','PELAJAR','PEMASARAN','PEMILIK/PENGUSAHA','PROFESIONAL') then 999999 
+                   when MCN.MKL_KERJA in ('AKUNTAN/KONSULTASI KEUANGAN','HAKIM','PNS','PEJABAT NEGARA','PENGACARA/ADVOKAT','POLRI','TNI')  then 666666 
+                   else LP.LSP_ID end ) LSP_ID,
+            (case when LP.LSP_ID in (9,10,28,31,55,56,65,70,76,79,96,97,106,128,129,130,137,138,145,146,148,152,169,170,172,173,174,175,176,185,186,187,188,192,193,205,228,230,231,232,235,236,237,247,265,283,306,308,309,316,325,326,327,328,329,332) then 1 
+                   when MCN.MKL_KERJA in ('AKUNTAN/KONSULTASI KEUANGAN','HAKIM','PNS','PEJABAT NEGARA','PENGACARA/ADVOKAT','POLRI','TNI') then 1 else 0 end ) pekerjaan_hr,
+            (case when mcn.ljb_id in ('002','003','004','005','008','010','014','015','016','020','021','022') then 1 else 0 end) LJB_jabatan_hr,
+            (case when MCN.MPN_JOB_DESC like 'SUPERVISOR%' or MCN.MPN_JOB_DESC like 'MANAGER%' 
+                        or MCN.MPN_JOB_DESC like 'GENERAL MANAGER%' or MCN.MPN_JOB_DESC like 'DIREKTUR%'
+                        or MCN.MPN_JOB_DESC like 'DOSEN%' or MCN.MPN_JOB_DESC like 'ABRI%'
+                        or MCN.MPN_JOB_DESC like 'PENGACARA%' or MCN.MPN_JOB_DESC like 'KOMISARIS%'
+                        or MCN.MPN_JOB_DESC like 'UNIT MANAGER%' or MCN.MPN_JOB_DESC like 'MKT. MANAGER%'
+                        or MCN.MPN_JOB_DESC like 'KONSULTAN%' 
+                  then 1 
+                  else 0 end) jabatan_hr,
+            (case when upper(MCN.MKL_PENDANAAN) like '%WARISAN%' then 1 else 0 end) pendanaan_hr,
+            (case when upper(lne.LSNE_ID) in (7,12,19,23,24,30,31,33,34,36,38,39,40) then 1 else 0 end) negara_hr,
+            (case when upper(MCN.MKL_INDUSTRI) in ('JASA KEUANGAN','KONSTRUKSI','PEMERINTAHAN','PERTAMBANGAN') then 1 else 0 end) bidang_usaha_hr            
+from eka.mst_policy mp ,
+     eka.mst_insured mi,
+     eka.mst_product_insured mpi,
+     eka.mst_ulink mu1,
+     eka.mst_ulink mu2,
+     eka.mst_ulink mu5,
+     EKA.MST_ADDRESS_NEW man,
+     eka.mst_client_new mcn,
+     EKA.LST_JABATAN lj,
+     EKA.LST_NEGARA lne,
+     EKA.LST_PEKERJAAN lp
+where mp.lstb_id = 1
+    and MP.REG_SPAJ = MI.REG_SPAJ
+    and MP.REG_SPAJ = MPI.REG_SPAJ
+    and MPI.LSBS_ID <= 300
+    and MP.REG_SPAJ = MU1.REG_SPAJ (+)
+    and MU1.lt_id(+) = 1
+    and MP.REG_SPAJ = MU2.REG_SPAJ (+)
+    and MU2.lt_id(+) = 2
+    and MP.REG_SPAJ = MU5.REG_SPAJ (+)
+    and MU5.lt_id(+) = 5
+    and MP.MSPO_POLICY_HOLDER = MAN.MCL_ID
+    and MP.MSPO_POLICY_HOLDER = MCN.MCL_ID
+    and MCN.LJB_ID = LJ.LJB_ID (+)
+    and MCN.LSNE_ID = lne.LSNE_ID(+)
+    and upper(MCN.MKL_KERJA) = upper(LP.LSP_NAME(+)) 
+	and mp.mspo_input_date between sysdate-3 and sysdate) datahighrisk
+where (datahighrisk.black_list_terorist > 0 
+        or pekerjaan_hr > 0 
+        or jabatan_hr > 0 
+        or pendanaan_hr > 0 
+        or negara_hr > 0 
+        or Bidang_usaha_hr > 0 )
+order by datahighrisk.mspo_input_date]]>
+	</queryString>
+	<field name="BIDANG_USAHA" class="java.lang.String"/>
+	<field name="BIDANG_USAHA_HR" class="java.math.BigDecimal"/>
+	<field name="BLACK_LIST_TERORIST" class="java.math.BigDecimal"/>
+	<field name="JABATAN" class="java.lang.String"/>
+	<field name="JABATAN_HR" class="java.math.BigDecimal"/>
+	<field name="JENIS_NASABAH" class="java.lang.String"/>
+	<field name="KOTA_RUMAH" class="java.lang.String"/>
+	<field name="KURS" class="java.lang.String"/>
+	<field name="LJB_ID" class="java.lang.String"/>
+	<field name="LJB_JABATAN_HR" class="java.math.BigDecimal"/>
+	<field name="LSNE_ID" class="java.math.BigDecimal"/>
+	<field name="LSP_ID" class="java.math.BigDecimal"/>
+	<field name="MCL_COMPANY_NAME" class="java.lang.String"/>
+	<field name="MCL_COMPANY_PAYER" class="java.lang.String"/>
+	<field name="MKL_KERJA" class="java.lang.String"/>
+	<field name="MKL_PENDANAAN" class="java.lang.String"/>
+	<field name="MKL_PENGHASILAN" class="java.lang.String"/>
+	<field name="MKL_TUJUAN" class="java.lang.String"/>
+	<field name="MPN_JOB_DESC" class="java.lang.String"/>
+	<field name="MSPO_INPUT_DATE" class="java.sql.Timestamp"/>
+	<field name="MSPO_POLICY_HOLDER" class="java.lang.String"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="MSTE_BEG_DATE" class="java.sql.Timestamp"/>
+	<field name="MSTE_END_DATE" class="java.sql.Timestamp"/>
+	<field name="NEGARA" class="java.lang.String"/>
+	<field name="NEGARA_HR" class="java.math.BigDecimal"/>
+	<field name="PEKERJAAN_HR" class="java.math.BigDecimal"/>
+	<field name="PEMEGANG" class="java.lang.String"/>
+	<field name="PENDANAAN_HR" class="java.math.BigDecimal"/>
+	<field name="POSISI_POLIS" class="java.lang.String"/>
+	<field name="PREMI_POKOK" class="java.math.BigDecimal"/>
+	<field name="PRODUK" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="STATUS_POLICY" class="java.lang.String"/>
+	<field name="TERTANGGUNG" class="java.lang.String"/>
+	<field name="TOPUP_BERKALA" class="java.math.BigDecimal"/>
+	<field name="TOPUP_TUNGGAL" class="java.math.BigDecimal"/>
+	<title>
+		<band height="80">
+			<image hyperlinkType="None">
+				<reportElement x="0" y="0" width="120" height="30"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.ekalife")]]></imageExpression>
+			</image>
+			<textField hyperlinkType="None">
+				<reportElement x="205" y="50" width="35" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["s/d"]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" hyperlinkType="None">
+				<reportElement x="240" y="50" width="80" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$P{tanggalAkhir}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" hyperlinkType="None">
+				<reportElement x="125" y="50" width="80" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$P{tanggalAwal}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="125" y="35" width="420" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["AMLCFT MONITORING"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="120" y="50" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="35" width="120" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Laporan"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="50" width="120" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tanggal Input SPAJ"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="120" y="35" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="30">
+			<staticText>
+				<reportElement x="0" y="0" width="30" height="30"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[No.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="30" y="0" width="70" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[No.Register]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="185" y="0" width="110" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Pemegang Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="295" y="0" width="110" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tertanggung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="540" y="0" width="55" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tanggal Efektif]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="405" y="0" width="135" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Produk]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="686" y="0" width="93" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jumlah Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="779" y="0" width="93" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Top-Up Tunggal]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="650" y="0" width="36" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Kurs]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1095" y="0" width="130" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Pekerjaan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1225" y="0" width="110" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jabatan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1335" y="0" width="120" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Bidang Usaha]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1455" y="0" width="160" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Penghasilan
+/thn]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1615" y="0" width="120" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Sumber Dana]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1735" y="0" width="168" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tujuan Beli Asuransi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="100" y="0" width="85" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jenis Nasabah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="595" y="0" width="55" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tanggal Akhir]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="872" y="0" width="93" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jumlah Top-Up]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="965" y="0" width="130" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Domisili]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1903" y="0" width="110" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Asal Negara]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2013" y="0" width="110" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Perusahaan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2123" y="0" width="110" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Status Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2233" y="0" width="97" height="30"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Status Monitoring]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15">
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="0" y="0" width="30" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="30" y="0" width="70" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REG_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="295" y="0" width="110" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TERTANGGUNG}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="540" y="0" width="55" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSTE_BEG_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="405" y="0" width="135" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PRODUK}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="872" y="0" width="93" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null,$F{TOPUP_BERKALA}.add($F{TOPUP_TUNGGAL}))]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="650" y="0" width="36" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KURS}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="1095" y="0" width="130" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MKL_KERJA}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="1335" y="0" width="120" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{BIDANG_USAHA}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="1455" y="0" width="160" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MKL_PENGHASILAN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="1615" y="0" width="120" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MKL_PENDANAAN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="1735" y="0" width="168" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MKL_TUJUAN}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;(¤#,##0.00)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="779" y="0" width="93" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{TOPUP_TUNGGAL}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;(¤#,##0.00)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="686" y="0" width="93" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null,$F{MSPR_PREMIUM}.add($F{TOPUP_BERKALA}.add($F{TOPUP_TUNGGAL})))]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="185" y="0" width="110" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PEMEGANG}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="1225" y="0" width="110" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{JABATAN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="100" y="0" width="85" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{JENIS_NASABAH}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="595" y="0" width="55" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSTE_END_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="965" y="0" width="130" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KOTA_RUMAH}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="1903" y="0" width="110" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NEGARA}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="2013" y="0" width="110" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MCL_COMPANY_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="2123" y="0" width="110" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{STATUS_POLICY}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="2233" y="0" width="97" height="15"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Level "+ (new DecimalFormat("#,##0").format($F{BLACK_LIST_TERORIST}.add($F{PEKERJAAN_HR}.add($F{JABATAN_HR}.add($F{PENDANAAN_HR}.add($F{NEGARA_HR}.add($F{BIDANG_USAHA_HR})))))))]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band/>
+	</pageFooter>
+</jasperReport>

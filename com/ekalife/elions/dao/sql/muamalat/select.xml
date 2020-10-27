@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="elions.muamalat">
+
+	<typeAlias alias="hashMap" type="java.util.HashMap"/>
+	<typeAlias alias="bmi" type="com.ekalife.elions.model.Bmi"/>
+
+	<select id="selectDataUntukReportBmi" parameterClass="hashMap" resultClass="hashMap">
+		select no_seri, reg_spaj, kode_agen, lca_nama, nama_plan, no_kartu, nama, beg_date , premi, grup_status, lssa_id, status_accept, cara_bayar, no_kartu, biaya_kartu, harga_paket, saldo_share, perihal, keterangan, total_share from(
+			select a.no_seri, g.msag_id kode_agen,a.reg_spaj, h.lca_nama,
+				decode (a.no_seri, 15, 'AJS-IKHLAS', 16, 'AJS-SAKINAH',17, 'AJS-MABRUR')    as nama_plan, 
+				b.mspo_nasabah_acc no_kartu, a.nama, 
+			  	c.mste_beg_date beg_date, a.premi, f.lscb_pay_mode cara_bayar,c.lssa_id,
+				25000 as biaya_kartu, 
+			  	decode (a.no_seri, 15, 350000, 16, 400000, 17, 600000) as harga_paket,
+			  	decode (a.no_seri, 15, 125000, 16, 175000, 17, 150000) as saldo_share,
+				(select sum(decode (bmi.no_seri, 15, 125000, 16, 175000, 17, 150000))
+					 from eka.mst_data_bmi bmi, eka.mst_insured ins 
+					 where bmi.reg_spaj = ins.reg_spaj and ins.lssa_id = 5 
+					   and bmi.mdb_id in 
+						<iterate property="daftar" prepend="" open="(" close=")" conjunction=",">
+							#daftar[]#
+						</iterate>
+				) as total_share,
+				decode (c.lssa_id, 5, 'SPAJ YANG DIAKSEP', 10, 'SPAJ YANG DIAKSEP', 2, 'SPAJ YANG DITOLAK', '') as grup_status,
+				decode (c.lssa_id, 5, 'AKSEP', 10, 'AKSEP KHUSUS', 2, 'TOLAK', '') as status_accept,
+				decode (c.lssa_id, 5, 'Instruksi Pendebetan Rekening ( untuk Polis Baru )', 5, 'Instruksi Pendebetan Rekening ( untuk Polis Baru )', 2, 'Instruksi Pendebetan Rekening ( karena SPAJ ditolak )', '') as perihal,
+				decode (c.lssa_id, 
+					5, 'Mohon dilakukan pendebetan total saldo awal tabungan share atas nama terlampir dari Rekening  kami sbb : ', 
+					10, 'Mohon dilakukan pendebetan total saldo awal tabungan share atas nama terlampir dari Rekening  kami sbb : ', 
+					2, 'Mohon dilakukan pendebetan total selisih harga paket dikurangi biaya kartu atas nama terlampir dari Rekening kami sbb:', '') as keterangan
+			   from eka.mst_data_bmi a,
+				eka.mst_policy b,
+				eka.mst_insured c,
+				eka.lst_status_accept d,
+				eka.lst_det_bisnis e,
+				eka.lst_pay_mode f,
+				eka.mst_agent_prod g,
+				eka.lst_cabang h
+			   where a.mdb_id in 
+				<iterate property="daftar" prepend="" open="(" close=")" conjunction=",">
+					#daftar[]#
+				</iterate>
+			   and a.reg_spaj = b.reg_spaj
+			   and b.reg_spaj = g.reg_spaj
+			   and a.reg_spaj = c.reg_spaj
+			   and c.lssa_id = d.lssa_id
+			   and a.no_seri = e.kodex
+			   and b.lscb_id = f.lscb_id
+			   and b.lca_id = h.lca_id
+				<isEqual property="lssa_id" compareValue="5">
+			   		and c.lssa_id in (5,10)
+				</isEqual>
+				<isEqual property="lssa_id" compareValue="2">
+			   		and c.lssa_id = 2
+				</isEqual>
+			   and g.lsle_id = 4
+			   order by   grup_status, a.no_seri
+		)
+	</select>
+
+	<select id="selectDataUntukInsertBmi" parameterClass="hashMap" resultClass="bmi">
+		SELECT NULL mdb_id, 1 jenis, bank.lsbp_id, pol.mspo_nasabah_acc norek,
+		       ldb.kodex no_seri,
+		       mar_holder nama, client.mspe_date_birth tgl_lahir, NULL tgl_debet,
+		       detbill.msdb_premium premi, NULL flag_debet, pol.reg_spaj,
+		       bill.msbi_tahun_ke tahun_ke, bill.msbi_premi_ke premi_ke, 1 posisi,
+		       SYSDATE tgl_input, #user_input# user_input, NULL tgl_proses, NULL user_proses
+		  FROM eka.mst_policy pol,
+		       eka.mst_insured ins,
+		       eka.mst_product_insured produk,
+		       eka.mst_billing bill,
+		       eka.mst_det_billing detbill,
+		       eka.mst_account_recur recur,
+		       eka.lst_bank bank,
+		       eka.mst_client_new client,
+		       eka.lst_det_bisnis ldb
+		 WHERE pol.reg_spaj = RPAD (#reg_spaj#, 11, ' ')
+		   AND pol.reg_spaj = ins.reg_spaj
+		   AND ins.mste_insured_no = produk.mste_insured_no
+		   AND ins.reg_spaj = produk.reg_spaj
+		   AND produk.lsbs_id <![CDATA[<]]> 300
+		   AND pol.reg_spaj = bill.reg_spaj
+		   AND bill.msbi_tahun_ke = 1
+		   AND bill.msbi_premi_ke = 1
+		   AND bill.reg_spaj = detbill.reg_spaj
+		   AND bill.msbi_tahun_ke = detbill.msbi_tahun_ke
+		   AND bill.msbi_premi_ke = detbill.msbi_premi_ke
+		   AND pol.reg_spaj = recur.reg_spaj
+		   AND recur.lbn_id = bank.lbn_id
+		   AND pol.mspo_policy_holder = client.mcl_id
+		   AND produk.lsbs_id = ldb.lsbs_id
+		   AND produk.lsdbs_number = ldb.lsdbs_number
+	</select>
+	<!--
+	 		   AND bill.msbi_beg_date =
+		          (SELECT msbi_beg_date
+		             FROM eka.mst_billing
+		            WHERE reg_spaj = pol.reg_spaj
+		              AND msbi_tahun_ke = 1
+		              AND msbi_premi_ke = 1)
+	-->
+	
+	<select id="selectDataUntukGenerateTextFileBmi" resultClass="bmi">
+		SELECT /*+ first_rows */
+		       mdb.reg_spaj, mdb.mdb_id, trim(mdb.no_seri) no_seri, f.kd_bank, a.mspo_nasabah_acc no_kartu, mdb.nama, DECODE (d.mspe_sex, 1, 'L', 'P') sex,
+		       d.mspe_place_birth, TO_CHAR (d.mspe_date_birth, 'MM/DD/YY') tglahir,
+		       (CASE WHEN lsag_id IN (1, 2, 3, 4, 5) THEN lsag_id ELSE 6 END) agama,
+		       (RTRIM (h.alamat_rumah || ' ' || kota_rumah || ' ' || kd_pos_rumah)) alamat,
+		       (RTRIM (i.msap_address || ' ' || kota || ' ' || i.msap_zip_code)) atagih,
+		       (h.area_code_rumah || '-' || telpon_rumah) telp_rmh,
+		       (h.area_code_kantor || '-' || telpon_kantor) telp_ktr, nvl(h.no_hp,'-') no_hp,
+		       DECODE (d.lside_id, 1, 'K', 2, 'S', 3, 'P', '') ktp,
+		       d.mspe_no_identity, mspe_mother, 4 sumber, 6 ptambah,
+		       DECODE (d.lgj_id, '01', 1, '07', 2, '02', 3, '03', 4, '05', 5, 6) kerja, 1 ptetap, 1 ptdk, 'NONAME' agen, '000' rekagen,
+		       TO_CHAR (b.mste_beg_date, 'mm/dd/yyyy') bdate,
+		       TO_CHAR (b.mste_end_date, 'mm/dd/yyyy') edate,
+		       TO_CHAR (ADD_MONTHS (b.mste_beg_date, 12 * a.mspo_pay_period), 'mm/dd/yyyy') akhir,
+		       c.mspr_premium premi
+		  FROM eka.mst_data_bmi mdb,
+		  	   eka.mst_policy a,
+		       eka.mst_insured b,
+		       eka.mst_product_insured c,
+		       eka.mst_client_new d,
+		       eka.mst_account_recur e,
+		       eka.lst_bank f,
+		       eka.mst_address_new h,
+		       eka.mst_address_billing i
+		 WHERE mdb.reg_spaj = a.reg_spaj
+		   AND a.reg_spaj = b.reg_spaj
+		   AND a.reg_spaj = e.reg_spaj
+		   AND a.reg_spaj = i.reg_spaj
+		   AND b.reg_spaj = c.reg_spaj
+		   AND b.mste_insured_no = c.mste_insured_no
+		   AND a.mspo_policy_holder = d.mcl_id
+		   AND e.lbn_id = f.lbn_id
+		   AND d.mcl_id = h.mcl_id
+		   AND a.lstb_id = 1
+		   AND b.mste_flag_cc = 5	
+		   AND mdb.tgl_proses is NULL
+	</select>
+	
+</sqlMap>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="tertanggung_artha" pageWidth="475" pageHeight="842" columnWidth="475" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<reportFont name="Tahoma" isDefault="false" fontName="Tahoma" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Tahoma" pdfEncoding="Cp1252" isPdfEmbedded="true"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["46200900123"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT DECODE (a.no_urut, 1, 'Tertanggung Utama', concat('Tertanggung Tambahan-',a.no_urut-1)) jenis, a.nama, b.mspr_tsi,
+       b.mspr_beg_date, b.mspr_end_date, b.mspr_end_pay, c.lku_symbol, d.lsdbs_name, e.lsbs_name,
+	SUBSTR(lsdbs_name,10,7)plana, SUBSTR(LSBS_NAME,0,9)DEPAN, SUBSTR(lsbs_name, 11, 14) belakang,
+	   CONCAT('DATA TERTANGGUNG ', CONCAT(CONCAT(SUBSTR(LSBS_NAME,0,9), SUBSTR(lsdbs_name,10,8)), SUBSTR(lsbs_name, 11, 14)))singkatan,
+       b.mspr_beg_date, b.mspr_end_date, b.mspr_end_pay, c.lku_symbol, d.lsdbs_name, e.lsbs_name,B.LSBS_ID
+  FROM eka.mst_peserta a, eka.mst_product_insured b, eka.lst_kurs c, eka.lst_bisnis e, eka.lst_det_bisnis d
+ WHERE a.reg_spaj = rpad($P{spaj},11,' ')
+   AND a.reg_spaj = b.reg_spaj
+   AND a.lsbs_id = b.lsbs_id
+   AND a.lsdbs_number = b.lsdbs_number
+   AND b.lku_id = c.lku_id	
+   AND b.lsbs_id = e.lsbs_id
+   AND b.lsbs_id = d.lsbs_id
+   AND a.aktif = 1
+   AND b.lsdbs_number = d.lsdbs_number
+   ORDER BY a.no_urut]]>
+	</queryString>
+	<field name="BELAKANG" class="java.lang.String"/>
+	<field name="DEPAN" class="java.lang.String"/>
+	<field name="JENIS" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSBS_NAME" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="MSPR_BEG_DATE" class="java.util.Date"/>
+	<field name="MSPR_END_DATE" class="java.util.Date"/>
+	<field name="MSPR_END_PAY" class="java.util.Date"/>
+	<field name="MSPR_TSI" class="java.math.BigDecimal"/>
+	<field name="NAMA" class="java.lang.String"/>
+	<field name="PLANA" class="java.lang.String"/>
+	<field name="SINGKATAN" class="java.lang.String"/>
+	<group name="jenis_tertanggung">
+		<groupExpression><![CDATA[$F{JENIS}]]></groupExpression>
+		<groupHeader>
+			<band height="10">
+				<textField hyperlinkType="None">
+					<reportElement positionType="Float" x="5" y="0" width="170" height="10"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font reportFont="Tahoma" isBold="true" isItalic="true" pdfFontName="Tahoma-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{JENIS}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<title>
+		<band height="10">
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="0" width="245" height="10"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma" size="7" isBold="false" pdfFontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{LSBS_ID}.intValue() == 820)?$F{SINGKATAN} : "- " + $F{LSBS_NAME}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="10">
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="175" y="0" width="45" height="10"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font reportFont="Tahoma" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrencyNoDigit(null, $F{MSPR_TSI})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="220" y="0" width="85" height="10"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Tahoma" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSPR_BEG_DATE})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="305" y="0" width="85" height="10"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Tahoma" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSPR_END_DATE})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="390" y="0" width="85" height="10"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Tahoma" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSPR_END_PAY})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="160" y="0" width="15" height="10"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font reportFont="Tahoma" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="20" y="0" width="140" height="10"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font reportFont="Tahoma" isBold="false" pdfFontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="5" y="0" width="12" height="10"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font reportFont="Tahoma" isBold="false" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{REPORT_COUNT} + "."]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

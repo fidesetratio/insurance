@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="tanda_terima_polis_mall" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<import value="net.sf.jasperreports.engine.xml.JRXmlLoader"/>
+	<import value="com.ibatis.common.resources.Resources"/>
+	<import value="net.sf.jasperreports.engine.design.JRJdtCompiler"/>
+	<parameter name="reg_spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["58201100219"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="seq" class="java.lang.String"/>
+	<parameter name="props" class="java.util.Properties"/>
+	<queryString>
+		<![CDATA[select a.reg_spaj no_spaj, a.mspo_policy_no_format no_polis_format, a.mspo_policy_no no_polis, e.mspr_premium premi,
+ (select count(*) from eka.mst_visa_camp where reg_spaj = $P{reg_spaj})fiesta_visa,
+ a.lscb_id kode_cara_bayar, f.lscb_pay_mode pay_mode,to_char(e.mspr_beg_date,'dd/mm/yyyy') mspr_beg_date,to_char(e.mspr_end_date,'dd/mm/yyyy') mspr_end_date, h.flag_packet,
+(decode(a.lscb_id,6,to_char(add_months(e.mspr_beg_date,1)-1,'dd/mm/yyyy'),3,to_char(add_months(e.mspr_beg_date,12)-1,'dd/mm/yyyy'),2,to_char(add_months(e.mspr_beg_date,6)-1,'dd/mm/yyyy'),1,to_char(add_months(e.mspr_beg_date,3)-1,'dd/mm/yyyy'),to_char(e.mspr_end_date,'dd/mm/yyyy') ) )tgl_akhir_bayar,
+    (case when b.mste_beg_date < to_date('01/12/2012','dd/MM/yyyy') then
+    (CASE
+        WHEN (g.lsbs_id = 164 and g.lsdbs_number = 9) THEN 'STABLE LINK'
+        WHEN (g.lsbs_id = 173) THEN 'SMiLe SARJANA'        
+    ELSE g.lsdbs_name0
+    END)    
+    WHEN (g.lsbs_id = 129 and e.lsdbs_number in(11,12) ) THEN 
+            (case when  h.flag_packet=15 THEN 'CERDAS (SMiLe Pension Paket A)'
+                     when h.flag_packet= 16 Then   'CERDAS (SMiLe Pension Paket B)'
+                     when h.flag_packet =17 THEN  'CERDAS (SMiLe Pension Paket C)' 
+          else  g.lsdbs_name end ) 
+	WHEN (g.lsbs_id = 120and e.lsdbs_number in(1,2,16,17,18) ) THEN 
+            (case when  h.flag_packet=1 THEN 'CERDAS (SMiLe Ladies Diamond)'
+                      when h.flag_packet= 2 Then   'CERDAS (SMiLe Ladies Ruby)'
+                      when h.flag_packet =3 THEN  'CERDAS (SMiLe Ladies Pearl)' 
+					  when h.flag_packet =4 THEN  'CERDAS (SMiLe Ladies Fantastic)' 
+					  when h.flag_packet =5 THEN  'CERDAS (SMiLe Ladies Excellent)' 
+          else  'CERDAS'end ) 
+WHEN (g.lsbs_id = 120and e.lsdbs_number in(7,8,9) ) THEN 
+            (case when  h.flag_packet=1 THEN 'EXCELLLENT LINK (SMiLe Ladies Diamond)'
+                     when h.flag_packet= 2 Then   'EXCELLLENT LINK  (SMiLe Ladies  Ruby)'
+                     when h.flag_packet =3 THEN  'EXCELLLENT LINK  (SMiLe Ladies Pearl)' 
+					when h.flag_packet =4 THEN  'EXCELLLENT LINK  (SMiLe Ladies  Fantastic)' 
+					when h.flag_packet =5 THEN  'EXCELLLENT LINK  (SMiLe Ladies Excellent)' 
+          else  'CERDAS'end )
+when (g.lsbs_id=184 and e.lsdbs_number=6)then 'STABLE SAVE(BUKAN MANFAAT BULANAN) '
+when (g.lsbs_id=183 and e.lsdbs_number>30)then substr(lsdbs_name,0,24)
+ else  g.lsdbs_name
+ end) lsdbs_name,
+decode(b.mste_flag_cc,0,'TUNAI',1,'DEBET KARTU KREDIT', 2, 'TABUNGAN',3,'PAYROLL') cara_bayar,
+c.mcl_first nama_pp,to_char(sysdate,'dd/mm/yyyy') tgl_hari_ini,
+(CASE
+  WHEN (g.lsbs_id = 164)
+  THEN (SELECT msl_premi top_upx FROM eka.mst_slink WHERE reg_spaj = $P{reg_spaj}  AND msl_kode = 5 AND msl_new = 1 AND msl_tu_ke != 0)
+  ELSE (SELECT nvl(sum(mu_jlh_premi),0) FROM eka.mst_ulink where lt_id in (2,5) AND reg_spaj = $P{reg_spaj} )
+END)premi_topup,
+(select nvl(sum(mspr_premium),0) from eka.mst_product_insured where lsbs_id >800 and reg_spaj = $P{reg_spaj}  ) premi_rider
+from eka.mst_policy a,
+eka.mst_insured b,
+eka.mst_client_new c,
+eka.mst_client_new d,
+eka.mst_product_insured e,
+eka.lst_pay_mode f,
+eka.lst_det_bisnis g,
+eka.lst_packet h
+where a.reg_spaj = b.reg_spaj
+and a.reg_spaj = e.reg_spaj
+and a.mspo_policy_holder = c.mcl_id
+and b.mste_insured = d.mcl_id
+and a.lscb_id = f.lscb_id
+and e.lsbs_id= g.lsbs_id
+and e.lsdbs_number = g.lsdbs_number
+and e.lsbs_id <300
+and a.reg_spaj = $P{reg_spaj}
+and b.flag_packet=H.FLAG_PACKET(+)]]>
+	</queryString>
+	<field name="CARA_BAYAR" class="java.lang.String"/>
+	<field name="FIESTA_VISA" class="java.math.BigDecimal"/>
+	<field name="FLAG_PACKET" class="java.math.BigDecimal"/>
+	<field name="KODE_CARA_BAYAR" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="MSPR_BEG_DATE" class="java.lang.String"/>
+	<field name="MSPR_END_DATE" class="java.lang.String"/>
+	<field name="NAMA_PP" class="java.lang.String"/>
+	<field name="NO_POLIS" class="java.lang.String"/>
+	<field name="NO_POLIS_FORMAT" class="java.lang.String"/>
+	<field name="NO_SPAJ" class="java.lang.String"/>
+	<field name="PAY_MODE" class="java.lang.String"/>
+	<field name="PREMI" class="java.math.BigDecimal"/>
+	<field name="PREMI_RIDER" class="java.math.BigDecimal"/>
+	<field name="PREMI_TOPUP" class="java.math.BigDecimal"/>
+	<field name="TGL_AKHIR_BAYAR" class="java.lang.String"/>
+	<field name="TGL_HARI_INI" class="java.lang.String"/>
+	<variable name="total" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal($F{PREMI}.doubleValue()+$F{PREMI_TOPUP}.doubleValue()+$F{PREMI_RIDER}.doubleValue() )]]></variableExpression>
+	</variable>
+	<detail>
+		<band height="447">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="159" y="72" width="253" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="14" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["TANDA TERIMA PREMI PERTAMA"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="6" y="101" width="124" height="18"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["SUDAH TERIMA DARI "]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="6" y="122" width="124" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["UANG SEJUMLAH "]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="6" y="175" width="124" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["UNTUK PEMBAYARAN"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="6" y="296" width="124" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["PERIODE"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="6" y="318" width="124" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["PRODUK"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="351" y="373" width="63" height="20"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["JAKARTA, "]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="315" y="396" width="235" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["PT ASURANSI JIWA SINARMAS MSIG Tbk."]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="427" width="404" height="19"/>
+				<box topPadding="5" leftPadding="0" bottomPadding="0" rightPadding="0"/>
+				<textElement>
+					<font fontName="Arial" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tanda Terima ini dicetak dari komputer, dan  tidak memerlukan materai dan tanda tangan."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="432" y="73" width="22" height="16"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["No ."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="140" y="101" width="367" height="18"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PP}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="415" y="373" width="110" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_HARI_INI}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="130" y="101" width="10" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="130" y="318" width="10" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="130" y="296" width="10" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="130" y="175" width="10" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="130" y="122" width="10" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="140" y="318" width="313" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="163" y="122" width="387" height="20"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null, $V{total}) +""+ ($F{PREMI_TOPUP}.doubleValue()!=0 || $F{PREMI_TOPUP}.doubleValue()!=0 ?"(Termasuk premi Top Up)":"")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="141" y="122" width="19" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Rp."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="454" y="73" width="97" height="16"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{seq}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="140" y="175" width="290" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["PREMI PERTAMA " + $F{PAY_MODE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="140" y="195" width="318" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["NO REGISTRASI : " +  $P{REPORT_SCRIPTLET}.formatSPAJ($F{NO_SPAJ}) +" / "+$F{NO_POLIS_FORMAT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="140" y="296" width="250" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPR_BEG_DATE} +" s/d " +$F{TGL_AKHIR_BAYAR}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="140" y="144" width="408" height="29"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["( "+ $P{REPORT_SCRIPTLET}.formatUpperCase($P{REPORT_SCRIPTLET}.formatTerbilang($V{total},"01")) +  " )"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="140" y="215" width="164" height="20"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["PREMI "+$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="312" y="215" width="196" height="20"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Rp." + $P{REPORT_SCRIPTLET}.formatCurrency(null, $F{PREMI})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="140" y="255" width="170" height="20" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean($F{PREMI_RIDER}.doubleValue() !=0)]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="none">
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["PREMI RIDER"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="312" y="255" width="196" height="20" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean($F{PREMI_RIDER}.doubleValue() !=0)]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="none">
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Rp." + $P{REPORT_SCRIPTLET}.formatCurrency(null, $F{PREMI_RIDER})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="140" y="275" width="170" height="20"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["TOTAL PREMI"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="312" y="275" width="196" height="20"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Rp." + $P{REPORT_SCRIPTLET}.formatCurrency(null, $V{total})]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement key="sub_ttp_mall" positionType="Float" x="141" y="339" width="355" height="20" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean($F{PREMI_RIDER}.doubleValue() !=0)]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="reg_spaj">
+					<subreportParameterExpression><![CDATA[$P{reg_spaj}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("subreport.tandaterimapolismall")+".jasper"]]></subreportExpression>
+			</subreport>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="6" y="339" width="124" height="20">
+					<printWhenExpression><![CDATA[new Boolean($F{PREMI_RIDER}.doubleValue() !=0)]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["RIDER"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="130" y="339" width="10" height="20">
+					<printWhenExpression><![CDATA[new Boolean($F{PREMI_RIDER}.doubleValue() !=0)]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="140" y="235" width="170" height="20" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean($F{PREMI_TOPUP}.doubleValue() !=0)]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="none">
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["TOP UP "]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="312" y="235" width="196" height="20" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean($F{PREMI_TOPUP}.doubleValue() !=0)]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="none">
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Rp." + $P{REPORT_SCRIPTLET}.formatCurrency(null, ($F{PREMI_TOPUP}))]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="187" y="14" width="361" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

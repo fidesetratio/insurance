@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="sub_pengiriman_polis" pageWidth="615" pageHeight="842" columnWidth="615" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="startDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["06/07/2007"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="endDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["07/07/2007"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="userName" class="java.lang.String">
+		<defaultValueExpression><![CDATA["XXXXXX"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="sysDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<queryString>
+		<![CDATA[SELECT   a.reg_spaj, c.lsbs_id, c.lsdbs_number, g.lsdbs_name, a.mspo_policy_no_format,
+		         e.mcl_first, b.mste_beg_date, b.mste_tgl_kirim_polis,
+		         a.mspo_date_ttp, b.mste_tgl_komisi,
+		         DECODE (a.mspo_jenis_terbit, 1, 'S', 'H') softcopy,
+		         to_char(b.mste_tgl_kirim_lb, 'hh24') kirim_hh, to_char(b.mste_tgl_kirim_lb, 'mi') kirim_mm,
+		         to_char(b.mste_tgl_terima_lb, 'hh24') terima_hh, to_char(b.mste_tgl_terima_lb, 'mi') terima_mm,
+		         b.mste_tgl_kirim_lb, b.mste_tgl_terima_lb
+		    FROM eka.mst_policy a,
+		         eka.mst_insured b,
+		         eka.mst_product_insured c,
+		         eka.lst_cabang d,
+		         eka.mst_client_new e,
+		         eka.lst_user f,
+		         eka.lst_det_bisnis g,
+		         eka.lst_policy_status h
+		   WHERE a.reg_spaj = b.reg_spaj
+		     AND b.reg_spaj = c.reg_spaj
+		     AND b.mste_insured_no = c.mste_insured_no
+		     AND a.lca_id = d.lca_id
+		     AND a.mspo_policy_holder = e.mcl_id
+		     AND a.lus_id = f.lus_id
+		     AND c.lsbs_id = g.lsbs_id
+		     AND c.lsdbs_number = g.lsdbs_number
+		     AND c.lsbs_id < 300
+		     AND a.lssp_id = h.lssp_id
+		     AND h.lssp_active = 1
+		     AND (CASE
+		             WHEN (   (c.lsbs_id = 142 AND c.lsdbs_number = 2)
+		                   OR (c.lsbs_id = 158 AND c.lsdbs_number = 6)
+		                  )
+		                THEN a.mspo_date_ttp
+		             WHEN a.lca_id = '09'
+		                THEN b.mste_tgl_kirim_polis
+		             ELSE b.mste_tgl_komisi
+		          END
+		         ) IS NOT NULL
+				 and b.mste_tgl_aksep between to_date($P{startDate},'dd/mm/yyyy') and to_date($P{endDate},'dd/mm/yyyy')+1
+		ORDER BY c.lsbs_id, c.lsdbs_number, a.mspo_policy_no]]>
+	</queryString>
+	<field name="kirim_hh" class="java.lang.String"/>
+	<field name="kirim_mm" class="java.lang.String"/>
+	<field name="lsbs_id" class="java.math.BigDecimal"/>
+	<field name="lsdbs_name" class="java.lang.String"/>
+	<field name="lsdbs_number" class="java.math.BigDecimal"/>
+	<field name="mcl_first" class="java.lang.String"/>
+	<field name="mspo_date_ttp" class="java.util.Date"/>
+	<field name="mspo_policy_no_format" class="java.lang.String"/>
+	<field name="mste_beg_date" class="java.util.Date"/>
+	<field name="mste_tgl_kirim_lb" class="java.util.Date"/>
+	<field name="mste_tgl_kirim_polis" class="java.util.Date"/>
+	<field name="mste_tgl_komisi" class="java.util.Date"/>
+	<field name="mste_tgl_terima_lb" class="java.util.Date"/>
+	<field name="reg_spaj" class="java.lang.String"/>
+	<field name="softcopy" class="java.lang.String"/>
+	<field name="terima_hh" class="java.lang.String"/>
+	<field name="terima_mm" class="java.lang.String"/>
+	<variable name="nomer" class="java.lang.Integer" resetType="Group" resetGroup="LSDBS_NAME" calculation="Count">
+		<variableExpression><![CDATA[$F{reg_spaj}]]></variableExpression>
+	</variable>
+	<variable name="jumlah" class="java.lang.Integer" resetType="Group" resetGroup="LSDBS_NAME" calculation="Count">
+		<variableExpression><![CDATA[$F{lsdbs_name}]]></variableExpression>
+	</variable>
+	<group name="LSDBS_NAME">
+		<groupExpression><![CDATA[$F{lsdbs_name}]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band height="15">
+				<textField>
+					<reportElement isPrintRepeatedValues="false" x="1" y="2" width="257" height="12"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{lsdbs_name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="259" y="2" width="46" height="12"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Integer"><![CDATA[$V{jumlah}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<pageHeader>
+		<band height="27">
+			<staticText>
+				<reportElement x="246" y="0" width="119" height="13"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[JUMLAH POLIS YANG DIKIRIM]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="0" width="64" height="13"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[SUMMARY]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+</jasperReport>

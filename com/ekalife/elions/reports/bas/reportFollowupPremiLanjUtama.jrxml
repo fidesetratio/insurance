@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="reportFollowupPremiLanjUtama" pageWidth="1400" pageHeight="842" whenNoDataType="NoDataSection" columnWidth="1360" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="dataajsmuat"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<parameter name="bdate" class="java.lang.String"/>
+	<parameter name="edate" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT DISTINCT
+         TO_CHAR (msbi_beg_date, 'dd/mm/yyyy') msbi_beg_date,
+         TO_CHAR (msbi_end_date, 'dd/mm/yyyy') msbi_end_date,
+         TO_CHAR (msbi_due_date, 'dd/mm/yyyy') msbi_due_date,
+         eka.utils.pemegang (tabel.reg_spaj) pemegang,         
+         EKA.UTILS.TERTANGGUNG (tabel.reg_spaj) tertanggung,
+         EKA.UTILS.PAY_MODE(tabel.lscb_id) carabayar,        
+         mspo_policy_no_format,
+         reg_spaj,
+         lsdbs_name,
+         msbi_tahun_ke,
+         msbi_premi_ke,
+         sum(mspr_premium) mspr_premium,
+         EKA.UTILS.status_polis(tabel.lssp_id) status_polis,
+         ket,
+         (SELECT COUNT (*)
+            FROM eka.mst_followup
+           WHERE     lsfu_id = 99
+                 AND reg_spaj = tabel.reg_spaj
+                 AND msbi_tahun_ke = tabel.msbi_tahun_ke
+                 AND msbi_premi_ke = tabel.msbi_premi_ke)
+            jml_fu,
+         (SELECT lsfu_id
+            FROM eka.mst_followup fol
+           WHERE     reg_spaj = tabel.reg_spaj
+                 AND msbi_tahun_ke = tabel.msbi_tahun_ke
+                 AND msbi_premi_ke = tabel.msbi_premi_ke
+                 AND msfu_urut =
+                        (SELECT MAX (msfu_urut)
+                           FROM eka.mst_followup
+                          WHERE     reg_spaj = fol.reg_spaj
+                                AND msbi_tahun_ke = fol.msbi_tahun_ke
+                                AND msbi_premi_ke = fol.msbi_premi_ke))
+            lsfu_id,
+         msbi_flag_topup,
+         eka.utils.cabang(cabang) cabang,
+         eka.utils.region(cabang, lwk_id, lsrg_id) region,
+         (case when tabel.MSBI_PAID = 0 then 'UNPAID' 
+                         when tabel.MSBI_PAID = 1 then 'PAID' else '' end) status_bayar
+    FROM (SELECT mb.msbi_beg_date,
+                 mb.msbi_end_date,
+                 mb.msbi_due_date,
+                 mp.mspo_policy_no_format,
+                 mp.reg_spaj,
+                 ldb.lsdbs_name,
+                 mb.msbi_tahun_ke,
+                 mb.msbi_premi_ke,                 
+                 mpi.mspr_premium,
+                 MPI.LSBS_ID,
+                 MPI.LSDBS_NUMBER,
+                 'JATUH TEMPO' ket,
+                 lu.lca_id,
+                 lu.lus_id,
+                 mb.msbi_flag_topup,
+                 mb.lca_id cabang,
+                 MB.LWK_ID,
+                 MB.LSRG_ID,
+                 MP.LSCB_ID,
+                 mp.lssp_id,
+                 MB.MSBI_PAID
+            FROM eka.mst_billing mb,
+                 eka.mst_det_billing mdb,
+                 eka.mst_policy mp,
+                 eka.mst_billing_hcr mbh,
+                 eka.mst_insured mi,
+                 eka.mst_product_insured mpi,
+                 eka.lst_region lr,
+                 eka.lst_user_admin lua,
+                 eka.lst_user lu,
+                 eka.lst_det_bisnis ldb
+           WHERE     mb.reg_spaj = mbh.reg_spaj(+)
+                 AND mb.msbi_tahun_ke = mbh.msbih_tahun_ke(+)
+                 AND mb.msbi_premi_ke = mbh.msbih_premi_ke(+)
+                 AND mdb.reg_spaj = mb.reg_spaj
+                 AND mdb.msbi_tahun_ke = mb.msbi_tahun_ke
+                 AND mdb.msbi_premi_ke = mb.msbi_premi_ke
+                 AND mp.reg_spaj = mb.reg_spaj
+                 AND mp.reg_spaj = mi.reg_spaj
+                 and mi.reg_spaj = mpi.reg_spaj
+                 and mpi.lsbs_id =LDB.LSBS_ID 
+                 and MPI.LSDBS_NUMBER = ldb.LSDBS_NUMBER 
+                 and MPI.LSBS_ID <=300
+                 AND mp.lscb_id NOT IN (0)
+                 AND mb.lspd_id IN (11, 12, 58)
+                 AND mp.lssp_id IN (1, 14)
+                 AND mb.msbi_premi_ke > 1
+                 AND mb.lca_id = lr.lca_id
+                 AND mb.lwk_id = lr.lwk_id
+                 AND mb.lsrg_id = lr.lsrg_id
+                 AND lr.lar_id = lua.lar_id
+                 AND lua.lus_id = lu.lus_id
+          UNION
+          SELECT mb.msbi_beg_date,
+                 mb.msbi_end_date,
+                 mb.msbi_due_date,
+                 mp.mspo_policy_no_format,
+                 mp.reg_spaj,
+                 ldb.lsdbs_name,
+                 mb.msbi_tahun_ke,
+                 mb.msbi_premi_ke,
+                 mpi.mspr_premium,                 
+                 MPI.LSBS_ID,
+                 MPI.LSDBS_NUMBER,
+                 ljhr.ljhr_keterangan ket,
+                 lu.lca_id,
+                 lu.lus_id,
+                 mb.msbi_flag_topup,
+                 mb.lca_id cabang, 
+                 MB.LWK_ID,     
+                 MB.LSRG_ID,           
+                 MP.LSCB_ID,
+                 mp.lssp_id,
+                 MB.MSBI_PAID
+            FROM eka.mst_billing mb,
+                 eka.mst_policy mp,
+                 eka.mst_insured mi,                 
+                 eka.mst_product_insured mpi,
+                 eka.mst_account_recur mar,
+                 eka.lst_jn_hasil_recur ljhr,
+                 (SELECT subs_number spaj,
+                         ket3 gagal_ke,
+                         ket2 th_ke,
+                         ket1 premi_ke,
+                         tgl_tagihan,
+                         ljhr_id,
+                         no_rekening,
+                         total_invoice,
+                         kode_plan,
+                         tgl_terima
+                    FROM eka.mst_eka_recur
+                   WHERE     tgl_terima = (SELECT MAX (tgl_terima)
+                                             FROM eka.mst_eka_recur
+                                            WHERE vat = 0)
+                         AND vat = 0) gagal,
+                 eka.lst_region lr,
+                 eka.lst_user_admin lua,
+                 eka.lst_user lu,
+                 eka.lst_det_bisnis ldb
+           WHERE     mp.reg_spaj = mb.reg_spaj
+                 AND mp.reg_spaj = mi.reg_spaj
+                 AND mp.reg_spaj = mar.reg_spaj                 
+                 and mi.reg_spaj = mpi.reg_spaj                 
+                 and mpi.lsbs_id =LDB.LSBS_ID 
+                 and MPI.LSDBS_NUMBER = ldb.LSDBS_NUMBER 
+                 and MPI.LSBS_ID <=300                
+                 AND mb.msbi_premi_ke > 1
+                 AND gagal.spaj = mb.reg_spaj
+                 AND gagal.premi_ke = mb.msbi_premi_ke
+                 AND gagal.th_ke = mb.msbi_tahun_ke
+                 AND gagal.ljhr_id = ljhr.ljhr_id
+                 AND mb.lca_id = lr.lca_id
+                 AND mb.lwk_id = lr.lwk_id
+                 AND mb.lsrg_id = lr.lsrg_id
+                 AND lr.lar_id = lua.lar_id
+                 AND lua.lus_id = lu.lus_id) tabel
+   WHERE     (msbi_beg_date BETWEEN TO_DATE ('16/02/2017', 'dd/mm/yyyy')
+                                AND TO_DATE ('18/03/2017', 'dd/mm/yyyy'))
+         AND lus_id = 2475
+         AND msbi_flag_topup IS NULL
+         AND cabang NOT IN ('09',
+                            '58',
+                            '42',
+                            '67',
+                            '40',
+                            '66')                
+GROUP BY msbi_beg_date,
+         msbi_end_date,
+         msbi_due_date,
+         mspo_policy_no_format,
+         reg_spaj,
+         lsdbs_name,
+         msbi_tahun_ke,
+         msbi_premi_ke,
+         ket,
+         msbi_flag_topup,
+         lscb_id,
+         lssp_id,
+         cabang,
+         LWK_ID,
+         LSRG_ID,
+         MSBI_PAID
+ORDER BY msbi_beg_date, mspo_policy_no_format]]>
+	</queryString>
+	<field name="CABANG" class="java.lang.String"/>
+	<field name="CARABAYAR" class="java.lang.String"/>
+	<field name="JML_FU" class="java.math.BigDecimal"/>
+	<field name="KET" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSFU_ID" class="java.math.BigDecimal"/>
+	<field name="MSBI_BEG_DATE" class="java.lang.String"/>
+	<field name="MSBI_DUE_DATE" class="java.lang.String"/>
+	<field name="MSBI_END_DATE" class="java.lang.String"/>
+	<field name="MSBI_FLAG_TOPUP" class="java.math.BigDecimal"/>
+	<field name="MSBI_PREMI_KE" class="java.math.BigDecimal"/>
+	<field name="MSBI_TAHUN_KE" class="java.math.BigDecimal"/>
+	<field name="MSPO_POLICY_NO_FORMAT" class="java.lang.String"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="PEMEGANG" class="java.lang.String"/>
+	<field name="REGION" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="STATUS_BAYAR" class="java.lang.String"/>
+	<field name="STATUS_POLIS" class="java.lang.String"/>
+	<field name="TERTANGGUNG" class="java.lang.String"/>
+	<group name="user">
+		<groupHeader>
+			<band height="20">
+				<staticText>
+					<reportElement x="306" y="0" width="137" height="20" forecolor="#000000" backcolor="#808080"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[Pemegang]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="206" y="0" width="100" height="20" forecolor="#000000" backcolor="#808080"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[Tgl. Jatuh Tempo]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="110" y="0" width="96" height="20" forecolor="#000000" backcolor="#808080"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[No. Polis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="30" y="0" width="80" height="20" forecolor="#000000" backcolor="#808080"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[No. SPAJ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="0" width="30" height="20" forecolor="#000000" backcolor="#808080"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[No.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="443" y="0" width="120" height="20" forecolor="#000000" backcolor="#808080"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[Tertanggung]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="563" y="0" width="123" height="20" forecolor="#000000" backcolor="#808080"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Premium]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1056" y="0" width="92" height="20" forecolor="#000000" backcolor="#808080"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[Cabang]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="809" y="0" width="151" height="20" forecolor="#000000" backcolor="#808080"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[Produk]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="960" y="0" width="96" height="20" forecolor="#000000" backcolor="#808080"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[Status Polis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="686" y="0" width="123" height="20" forecolor="#000000" backcolor="#808080"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Cara Bayar]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1148" y="0" width="107" height="20" forecolor="#000000" backcolor="#808080"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[Region]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1255" y="0" width="95" height="20" forecolor="#000000" backcolor="#808080"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[Status Bayar]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+	</group>
+	<detail>
+		<band height="20">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="30" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Number"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="30" y="0" width="80" height="20"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REG_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="110" y="0" width="96" height="20"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_POLICY_NO_FORMAT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="206" y="0" width="100" height="20"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSBI_DUE_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="306" y="0" width="137" height="20"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PEMEGANG}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="443" y="0" width="120" height="20"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TERTANGGUNG}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="563" y="0" width="123" height="20"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$F{MSPR_PREMIUM})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="809" y="0" width="151" height="20"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="960" y="0" width="96" height="20"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{STATUS_POLIS}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1056" y="0" width="92" height="20"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CABANG}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="686" y="0" width="123" height="20"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CARABAYAR}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1148" y="0" width="107" height="20"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REGION}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1255" y="0" width="95" height="20"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{STATUS_BAYAR}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

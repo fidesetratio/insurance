@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="suratpolis_dmtm" pageWidth="595" pageHeight="842" columnWidth="525" leftMargin="35" rightMargin="35" topMargin="45" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.GridHeight" value="3"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="3"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="EKATEST"/>
+	<reportFont name="Roman" isDefault="false" fontName="Times New Roman" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["09200800348"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ttd" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.gideon")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tagline1" class="java.lang.String">
+		<defaultValueExpression><![CDATA["mengambil keputusan terbaik dalam berinvestasi."]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tagline2" class="java.lang.String">
+		<defaultValueExpression><![CDATA["masa depan Anda yang lebih baik melalui sarana investasi yang tepat."]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tagline3" class="java.lang.String">
+		<defaultValueExpression><![CDATA["menikmati hidup yang lebih berkualitas."]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tagline4" class="java.lang.String">
+		<defaultValueExpression><![CDATA["pilihan cerdas Investasi Anda."]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT 
+i.lku_rp, j.lku_dol, i.jum_rp, j.jum_dol, m.mcl_first tertanggung,
+(case when jumlah_premi<2 then 'Premi Pokok' else 'Premi Pokok + Top-Up'end) premprem,
+a.mste_beg_date, b.mspo_policy_holder, b.mspo_policy_no, 
+       c.lsbs_id, d.premi, ((select upper(lti_note || ' ') from eka.lst_title where lti_id = e.lti_id) || e.mcl_first) mcl_first,
+       DECODE (e.mspe_sex, 1, 'Bpk. ', 'Ibu ') gelar, e.mcl_jenis,
+g.msap_address, g.kota, g.msap_zip_code, b.mspo_date_print, 
+b.lca_id, l.lsbs_judul1 produk, k.tm_code
+  FROM eka.mst_insured a,
+       eka.mst_policy b,
+       eka.mst_product_insured c,
+       (SELECT   reg_spaj, SUM (mspr_premium) premi
+            FROM eka.mst_product_insured
+           WHERE reg_spaj = $P{spaj} AND mspr_active = 1
+        GROUP BY reg_spaj) d,
+       eka.mst_client_new e,
+	   eka.mst_address_billing g,
+	   (select count(*) jumlah_premi from eka.mst_ulink u 
+		where reg_spaj = $P{spaj}
+		and mu_tgl_trans = (select mu_tgl_trans from eka.mst_ulink where reg_spaj = u.reg_spaj and mu_ke=1)) h,	   
+	   (select b.reg_spaj, k.lku_symbol lku_rp, sum(p.mspa_payment) jum_rp
+		from eka.mst_billing b, eka.mst_tag_payment t, eka.mst_payment p, eka.lst_kurs k
+		where b.msbi_beg_date = (select msbi_beg_date from eka.mst_billing where reg_spaj = b.reg_spaj and msbi_tahun_ke=1 and msbi_premi_ke=1)
+		and b.reg_spaj = $P{spaj}
+		and b.reg_spaj = t.reg_spaj and b.msbi_tahun_ke = t.msbi_tahun_ke and b.msbi_premi_ke = t.msbi_premi_ke
+		and t.mspa_payment_id = p.mspa_payment_id
+		and p.lku_id='01'
+		and p.lku_id=k.lku_id
+		group by k.lku_symbol, b.reg_spaj) i,
+	   (select b.reg_spaj, k.lku_symbol lku_dol, sum(p.mspa_payment) jum_dol
+		from eka.mst_billing b, eka.mst_tag_payment t, eka.mst_payment p, eka.lst_kurs k
+		where b.msbi_beg_date = (select msbi_beg_date from eka.mst_billing where reg_spaj = b.reg_spaj and msbi_tahun_ke=1 and msbi_premi_ke=1)
+		and b.reg_spaj = $P{spaj}
+		and b.reg_spaj = t.reg_spaj and b.msbi_tahun_ke = t.msbi_tahun_ke and b.msbi_premi_ke = t.msbi_premi_ke
+		and t.mspa_payment_id = p.mspa_payment_id
+		and p.lku_id='02'
+		and p.lku_id=k.lku_id
+		group by k.lku_symbol, b.reg_spaj) j,
+		eka.lst_sales_tm@eb k,
+		eka.lst_bisnis l, eka.mst_client_new m
+ WHERE b.reg_spaj = a.reg_spaj
+   AND a.reg_spaj = c.reg_spaj
+   AND b.reg_spaj = d.reg_spaj
+   AND c.lsbs_id < 300
+   AND b.reg_spaj = $P{spaj}
+   AND b.mspo_policy_holder = e.mcl_id
+   AND b.reg_spaj = g.reg_spaj
+	AND b.reg_spaj = i.reg_spaj(+)
+	AND b.reg_spaj = j.reg_spaj(+)
+	AND trim(b.mspo_no_kerjasama) = trim(k.tm_id)
+	AND c.lsbs_id = l.lsbs_id
+    AND a.mste_insured = m.mcl_id]]>
+	</queryString>
+	<field name="GELAR" class="java.lang.String"/>
+	<field name="JUM_DOL" class="java.math.BigDecimal"/>
+	<field name="JUM_RP" class="java.math.BigDecimal"/>
+	<field name="KOTA" class="java.lang.String"/>
+	<field name="LCA_ID" class="java.lang.String"/>
+	<field name="LKU_DOL" class="java.lang.String"/>
+	<field name="LKU_RP" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="MCL_JENIS" class="java.math.BigDecimal"/>
+	<field name="MSAP_ADDRESS" class="java.lang.String"/>
+	<field name="MSAP_ZIP_CODE" class="java.lang.String"/>
+	<field name="MSPO_DATE_PRINT" class="java.util.Date"/>
+	<field name="MSPO_POLICY_HOLDER" class="java.lang.String"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSTE_BEG_DATE" class="java.util.Date"/>
+	<field name="PREMI" class="java.math.BigDecimal"/>
+	<field name="PREMPREM" class="java.lang.String"/>
+	<field name="PRODUK" class="java.lang.String"/>
+	<field name="TERTANGGUNG" class="java.lang.String"/>
+	<field name="TM_CODE" class="java.lang.String"/>
+	<columnHeader>
+		<band height="36"/>
+	</columnHeader>
+	<detail>
+		<band height="679">
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="6" y="6" width="513" height="15"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Jakarta, " + $P{REPORT_SCRIPTLET}.formatDateIndonesian(($F{MSPO_DATE_PRINT}!=null?$F{MSPO_DATE_PRINT}:new Date()))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="6" y="24" width="513" height="72"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Kepada :\n"+
+($F{MCL_JENIS}.intValue()==1?"":$F{GELAR}+" ") +$F{MCL_FIRST}+"\n"+
+$F{MSAP_ADDRESS}+"\n"+
+($F{KOTA}!=null?($F{KOTA}+" "):"")+
+($F{MSAP_ZIP_CODE}!=null?" "+$F{MSAP_ZIP_CODE}:"")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="6" y="105" width="513" height="15"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Nasabah yang terhormat,"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="6" y="126" width="513" height="15"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Saat Anda menerima surat ini, Anda telah " + $P{tagline1}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="6" y="147" width="513" height="30"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Dengan program " + $F{PRODUK} + ", Anda telah mempersiapkan " 
++ $P{tagline2}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="6" y="183" width="513" height="15"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Menindaklanjuti permohonan aplikasi melalui divisi Tele Marketing kami:"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="6" y="219" width="84" height="15"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tele Marketer"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="6" y="204" width="84" height="15"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tanggal"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="90" y="204" width="6" height="15"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="90" y="234" width="6" height="15"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="90" y="219" width="6" height="15"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="6" y="234" width="84" height="15"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Program"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="99" y="204" width="420" height="15"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSTE_BEG_DATE})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="99" y="234" width="420" height="15"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PRODUK}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="99" y="219" width="420" height="15"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TM_CODE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="6" y="255" width="513" height="41"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Bersama ini kami kirimkan bukti kepesertaan program berupa Polis " + $F{PRODUK} + " No. " + $P{REPORT_SCRIPTLET}.formatPolis($F{MSPO_POLICY_NO}) + " atas nama: " +
+$F{TERTANGGUNG} + ". Polis ini merupakan dokumen yang penting dan berharga. Untuk itu harap dipelajari dan dimengerti seluruh isi Polis " + $F{PRODUK} + " dan disimpan dengan baik. "]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="6" y="318" width="513" height="15"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Apabila ada hal- hal yang kurang jelas, silakan hubungi Tele Center kami di nomor 0807 - 1 - 257627."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="6" y="339" width="513" height="30"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Sehubungan dengan penerbitan Polis " + $F{PRODUK} + " ini, kami mengucapkan terimakasih atas pembayaran premi sejumlah " +
+(
+  ($F{JUM_DOL} != null && $F{JUM_RP} != null) ?
+    ($P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_RP}, $F{JUM_RP})+" ("+$P{REPORT_SCRIPTLET}.formatTerbilang($F{JUM_RP}, $F{LKU_RP})+") dan " + $P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_DOL}, $F{JUM_DOL})+" ("+$P{REPORT_SCRIPTLET}.formatTerbilang($F{JUM_DOL}, $F{LKU_DOL})+")") : 
+  ($F{JUM_RP} != null) ? 
+    ($P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_RP}, $F{JUM_RP})+" ("+$P{REPORT_SCRIPTLET}.formatTerbilang($F{JUM_RP}, $F{LKU_RP})+")") : 
+  ($F{JUM_DOL} != null) ? 
+    ($P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_DOL}, $F{JUM_DOL})+" ("+$P{REPORT_SCRIPTLET}.formatTerbilang($F{JUM_DOL}, $F{LKU_DOL})+")") : 
+  ""    
+)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="6" y="375" width="513" height="30"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Terima kasih atas kepercayaan Anda kepada kami, dan kami berharap bersama " + $F{PRODUK} + ", Anda dapat " + $P{tagline3}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="6" y="417" width="513" height="30"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="12" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PRODUK} + ", " + 
+"<style size=\"9\" isBold=\"true\">" + $P{tagline4} + "</style>"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="6" y="470" width="516" height="17"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Salam,"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="6" y="554" width="516" height="44"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="11" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["<style isBold=\"true\" isUnderline=\"true\">"+"Gideon"+"</style>\n"+
+"Direct Marketing - Tele Marketing\n"+
+"PT Asuransi Jiwa Sinarmas MSIG Tbk."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="6" y="598" width="516" height="10"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="6" isItalic="true" pdfFontName="Helvetica-Oblique"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Informasi lengkap mengenai besarnya manfaat dan tata cara klaim dapat dilihat pada Polis terlampir."]]></textFieldExpression>
+			</textField>
+			<image>
+				<reportElement positionType="Float" x="6" y="490" width="150" height="63"/>
+				<graphicElement/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{ttd}]]></imageExpression>
+			</image>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="6" y="607" width="516" height="11"/>
+				<textElement textAlignment="Justified" isStyledText="true">
+					<font reportFont="Roman" fontName="Arial" size="6" isItalic="false" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["www.sinarmasmsiglife.co.id"]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

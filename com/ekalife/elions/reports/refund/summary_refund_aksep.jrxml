@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="summary_refund_aksep" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="tgl_report" class="java.lang.String">
+		<defaultValueExpression><![CDATA["01/12/2017"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="user" class="java.lang.String">
+		<defaultValueExpression><![CDATA["TIMMY"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="jenis_report" class="java.lang.String">
+		<defaultValueExpression><![CDATA["1"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select nama_bank, rtrim (xmlagg (xmlelement (e, pre_masuk || chr(10))).extract ('//text()'), chr(10)) as pre_masuk, rtrim (xmlagg (xmlelement (e, pre_keluar || chr(10))).extract ('//text()'), chr(10)) as pre_keluar, count(distinct no_rek) as jml_rek, sum(premi_refund) as premi_refund
+        from (     
+	        select spaj, rtrim (xmlagg (xmlelement (e, pre_masuk || ',')).extract ('//text()'), ',') as pre_masuk, jm_sa, nvl(rtrim (xmlagg (xmlelement (e, jm || ',')).extract ('//text()'), ','), '-') as jm,  pre_keluar, jm_keluar,
+	                nama_pp, nama_rek, nama_bank, cabang_bank, no_rek, premi_refund, cancel_when
+	        from (
+                select distinct a.reg_spaj as spaj, nvl(d.mspa_no_pre, e.msdp_no_pre) as pre_masuk,
+                    nvl((select rtrim (xmlagg (xmlelement (e, y.no_jm || ',')).extract ('//text()'), ',') from eka.mst_ptc_tm x, eka.mst_ptc_jm y where x.no_jm = y.no_jm
+                            and x.mtm_position != 0 and y.key_jurnal = a.reg_spaj and y.no_jurnal = 2 and y.mjm_cd = 'C' and y.keterangan like 'TITIPAN PREMI NO%'), '-') as jm_sa,
+                    nvl(d.mspa_no_jm, '-') as jm, nvl(b.no_pre, (select y.no_pre from eka.mst_tbank x, eka.mst_dbank y where x.no_pre = y.no_pre
+                                                                                        and x.position != 5 and y.key_jurnal = a.reg_spaj and y.keterangan like 'REFUND PREMI%')) as pre_keluar,
+                    nvl(b.no_jm, nvl((select y.no_jm from eka.mst_ptc_tm x, eka.mst_ptc_jm y where x.no_jm = y.no_jm and x.mtm_position != 0
+                                                and y.key_jurnal = a.reg_spaj and y.mjm_cd = 'C' and y.no_jurnal = 1 and y.keterangan like 'JB TP%'), '-')) as jm_keluar,
+                    c.mcl_first as nama_pp, b.kli_nama as nama_rek, b.kli_nama_bank as nama_bank, b.kli_cabang_bank as cabang_bank,
+                    b.kli_norek as no_rek, b.premi_refund, b.cancel_when
+                from eka.mst_policy a, eka.mst_refund b, eka.mst_client_new c, eka.mst_payment d, eka.mst_deposit_premium e
+                where a.reg_spaj = b.reg_spaj
+                    and a.reg_spaj = d.reg_spaj (+)
+                    and a.reg_spaj = e.reg_spaj (+)
+                    and a.mspo_policy_holder = c.mcl_id
+                    and a.lku_id = '01'
+                    and b.tindakan_cd = 2
+                    and b.premi_refund != 0
+                    and b.cancel_when BETWEEN to_date( (to_char(SYSDATE-4,'dd/mm/yyyy')) || ' (00:00:00)', 'dd/mm/yyyy (hh24:mi:ss)') and to_date( (to_char(SYSDATE-4,'dd/mm/yyyy')) || ' (23:59:59)', 'dd/mm/yyyy (hh24:mi:ss)')
+                order by b.cancel_when
+	        )
+	        group by spaj, jm_sa, pre_keluar, jm_keluar, nama_pp, nama_rek, nama_bank, cabang_bank, no_rek, premi_refund, cancel_when
+        )
+        group by nama_bank
+        order by nama_bank]]>
+	</queryString>
+	<field name="JML_REK" class="java.math.BigDecimal"/>
+	<field name="NAMA_BANK" class="java.lang.String"/>
+	<field name="PREMI_REFUND" class="java.math.BigDecimal"/>
+	<field name="PRE_KELUAR" class="java.lang.String"/>
+	<field name="PRE_MASUK" class="java.lang.String"/>
+	<variable name="TOT_REK" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{JML_REK}]]></variableExpression>
+	</variable>
+	<variable name="TOT_PREMI_REFUND" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_REFUND}]]></variableExpression>
+	</variable>
+	<group name="SUMMARY">
+		<groupFooter>
+			<band height="24">
+				<staticText>
+					<reportElement mode="Opaque" x="0" y="0" width="350" height="24" backcolor="#C0C0C0"/>
+					<box padding="1">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Total]]></text>
+				</staticText>
+				<textField hyperlinkType="None">
+					<reportElement x="350" y="0" width="90" height="24"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatNumber($V{TOT_REK})]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="440" y="0" width="100" height="24"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null,$V{TOT_PREMI_REFUND})]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<pageHeader>
+		<band height="115">
+			<image hyperlinkType="None">
+				<reportElement x="0" y="0" width="180" height="60"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.ekalife.large")]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="129" y="50" width="300" height="24"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[SUMMARY PENGEMBALIAN PREMI]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="129" y="72" width="300" height="24"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["PERIODE AKSEP TANGGAL " + $P{tgl_report}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="24">
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="25" height="24" backcolor="#C0C0C0"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="25" y="0" width="165" height="24" backcolor="#C0C0C0"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Nama Bank]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="350" y="0" width="90" height="24" backcolor="#C0C0C0"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Jumlah Rekening]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="440" y="0" width="100" height="24" backcolor="#C0C0C0"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Jumlah Bayar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="190" y="0" width="80" height="24" backcolor="#C0C0C0"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[No Pre Masuk]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="270" y="0" width="80" height="24" backcolor="#C0C0C0"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[No Pre Keluar]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="24">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="25" height="24"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Number"><![CDATA[$V{COLUMN_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="25" y="0" width="165" height="24"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_BANK}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="350" y="0" width="90" height="24"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatNumber($F{JML_REK})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="440" y="0" width="100" height="24"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null,$F{PREMI_REFUND})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="190" y="0" width="80" height="24"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PRE_MASUK}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="270" y="0" width="80" height="24"/>
+				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PRE_KELUAR}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<lastPageFooter>
+		<band height="100">
+			<staticText>
+				<reportElement x="223" y="1" width="120" height="24"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11"/>
+				</textElement>
+				<text><![CDATA[Diperiksa oleh:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="223" y="74" width="120" height="24"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{jenis_report}=="0"?"( Sari Sutini )":"( Alif Bam )"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="411" y="1" width="120" height="24"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11"/>
+				</textElement>
+				<text><![CDATA[Disetujui oleh:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="386" y="74" width="170" height="24"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{jenis_report}=="0"?"("+$P{REPORT_SCRIPTLET}.getProperty("printing.namaRefundPremi")+")":"( Fenny Harsono )"]]></textFieldExpression>
+			</textField>
+			<image hAlign="Center" hyperlinkType="None">
+				<reportElement x="391" y="30" width="160" height="40"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{jenis_report}=="0"?$P{REPORT_SCRIPTLET}.getProperty("images.ttd.nbuw"):"com/ekalife/elions/reports/refund/images/fenny.gif"]]></imageExpression>
+			</image>
+			<image hAlign="Center" hyperlinkType="None">
+				<reportElement x="203" y="30" width="160" height="40"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{jenis_report}=="0"?"com/ekalife/elions/reports/refund/images/sari.gif":"com/ekalife/elions/reports/refund/images/alif.gif"]]></imageExpression>
+			</image>
+		</band>
+	</lastPageFooter>
+</jasperReport>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="sub_terbit_worksheet" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="6"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="6"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="E-Lions"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["09150065107"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="user" class="java.lang.String"/>
+	<parameter name="keter" class="java.lang.String">
+		<defaultValueExpression><![CDATA["andhika"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT decode (T2.jumlah , 1,'Jumlah Titipan Premi','Titipan Premi Ke- ' || "EKA"."MST_DEPOSIT_PREMIUM"."MSDP_NUMBER" || ' ' ||
+			   (case when ((select count(*) from eka.mst_ulink where reg_spaj = $P{spaj})>0) 
+			   		 then ( SELECT b.lt_transksi
+  					 	    FROM eka.mst_ulink a, eka.lst_transaksi b
+ 							WHERE a.reg_spaj = $P{spaj} AND  a.lt_id = b.lt_id AND a.mu_tahun_ke = EKA.MST_DREK_DET.TAHUN_KE AND a.mu_premi_ke = EKA.MST_DREK_DET.PREMI_KE  )
+					 when ((select count(*) from eka.mst_slink where reg_spaj = $P{spaj})>0) 
+					 then ( SELECT c.msl_desc
+					 	    FROM eka.mst_slink c
+							WHERE c.reg_spaj = $P{spaj} AND c.msl_tahun_ke = EKA.MST_DREK_DET.TAHUN_KE AND c.msl_premi_ke = EKA.MST_DREK_DET.PREMI_KE)
+					 end)) "KETERANGAN",
+"EKA"."MST_DEPOSIT_PREMIUM"."MSDP_PAYMENT", "EKA"."MST_DEPOSIT_PREMIUM"."MSDP_NUMBER",
+ eka.lst_kurs.lku_symbol,
+ (select sum(a.mspr_premium) from eka.mst_product_insured a where a.reg_spaj= EKA.MST_DEPOSIT_PREMIUM.REG_SPAJ ) total_premi,
+ NVL(EKA.MST_INSURED.MSTE_FLAG_GUTHRIE,0) MSTE_FLAG_GUTHRIE,
+ x.lsbs_id
+FROM EKA.MST_DEPOSIT_PREMIUM, EKA.MST_DREK_DET,
+(select count ( eka.MST_DEPOSIT_PREMIUM.MSDP_NUMBER) jumlah from eka.MST_DEPOSIT_PREMIUM where 
+		eka.MST_DEPOSIT_PREMIUM.reg_spaj =$P{spaj}) T2,
+(select lsbs_id from eka.mst_product_insured  where reg_spaj =$P{spaj} and lsbs_id <300) x,
+		eka.lst_kurs,EKA.MST_INSURED
+WHERE EKA.MST_DEPOSIT_PREMIUM.REG_SPAJ =$P{spaj}
+and eka.lst_kurs.lku_id = EKA.MST_DEPOSIT_PREMIUM.lku_id AND
+EKA.MST_INSURED.REG_SPAJ = EKA.MST_DEPOSIT_PREMIUM.REG_SPAJ
+and EKA.MST_DREK_DET.NO_SPAJ(+) = EKA.MST_DEPOSIT_PREMIUM.REG_SPAJ
+and EKA.MST_DREK_DET.NO_KE(+) = EKA.MST_DEPOSIT_PREMIUM.MSDP_NUMBER
+order by "EKA"."MST_DEPOSIT_PREMIUM"."MSDP_NUMBER"]]>
+	</queryString>
+	<field name="KETERANGAN" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="MSDP_NUMBER" class="java.math.BigDecimal"/>
+	<field name="MSDP_PAYMENT" class="java.math.BigDecimal"/>
+	<field name="MSTE_FLAG_GUTHRIE" class="java.math.BigDecimal"/>
+	<field name="TOTAL_PREMI" class="java.math.BigDecimal"/>
+	<detail>
+		<band height="14">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="8" y="0" width="136" height="13"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KETERANGAN}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="180" y="0" width="85" height="13"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSTE_FLAG_GUTHRIE}.intValue() == 1 ? $P{REPORT_SCRIPTLET}.format2Digit($F{TOTAL_PREMI}) :
+$P{REPORT_SCRIPTLET}.format2Digit($F{MSDP_PAYMENT})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="156" y="0" width="25" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="144" y="0" width="7" height="13"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement positionType="FixRelativeToBottom" x="0" y="13" width="553" height="1"/>
+			</line>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="323">
+			<staticText>
+				<reportElement x="8" y="6" width="136" height="13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[Underwriting Suggestion]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="144" y="6" width="7" height="13"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="24" y="22" width="535" height="13"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{keter}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="7" y="60" width="325" height="175"/>
+				<textElement/>
+				<text><![CDATA[- ATT.LIST						:
+
+
+- KLAIM KESEHATAN	:
+
+
+
+
+- SIMULTAN					:]]></text>
+			</staticText>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="7"/>
+	</summary>
+</jasperReport>

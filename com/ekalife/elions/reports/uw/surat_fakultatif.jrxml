@@ -1,0 +1,752 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="surat_fakultatif" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="60" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="lampiran" class="java.lang.String">
+		<defaultValueExpression><![CDATA["- Surat Permintaan Asuransi \n- Data Medis \n- Surat Permintaan Asuransi \n- Data Medis"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="nama_ttg" class="java.lang.String"/>
+	<parameter name="bod_ttg" class="java.util.Date"/>
+	<parameter name="nama_product" class="java.lang.String"/>
+	<parameter name="beg_date" class="java.util.Date"/>
+	<parameter name="UP" class="java.lang.String"/>
+	<parameter name="lama_pertanggungan" class="java.lang.Integer"/>
+	<parameter name="retensi" class="java.lang.String"/>
+	<parameter name="rider" class="java.lang.String"/>
+	<parameter name="kon_pertanggungan" class="java.lang.String"/>
+	<parameter name="pekerjaan" class="java.lang.String"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["04200600533"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="usia_tt" class="java.lang.Integer"/>
+	<parameter name="reasurder" class="java.lang.String"/>
+	<parameter name="cp" class="java.lang.String"/>
+	<parameter name="fax" class="java.lang.String"/>
+	<parameter name="no_surat" class="java.lang.String">
+		<defaultValueExpression><![CDATA["001/UND-IND/XX/1999"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tgl_surat" class="java.util.Date"/>
+	<queryString>
+		<![CDATA[SELECT pp.mcl_first A, tt.mcl_first B,
+		         (CASE
+		           WHEN LENGTH (a.mspo_policy_no) = 9
+		              THEN    SUBSTR (a.mspo_policy_no, 1, 2)
+		                   || '.'
+		                   || SUBSTR (a.mspo_policy_no, 3)
+		           WHEN LENGTH (a.mspo_policy_no) = 11
+		              THEN    SUBSTR (a.mspo_policy_no, 1, 2)
+		                   || '.'
+		                   || SUBSTR (a.mspo_policy_no, 3, 4)
+		                   || '.'
+		                   || SUBSTR (a.mspo_policy_no, 7)
+		           ELSE    SUBSTR (a.mspo_policy_no, 1, 2)
+		                || '.'
+		                || SUBSTR (a.mspo_policy_no, 3, 3)
+		                || '.'
+		                || SUBSTR (a.mspo_policy_no, 6, 4)
+		                || '.'
+		                || SUBSTR (a.mspo_policy_no, 10)
+		        END
+		       ) C, d.lku_symbol D, c.mspr_tsi E,
+		         c.mspr_premium G, 
+		         TO_CHAR (b.mste_beg_date, 'dd-mm-yyyy') J,
+		         TO_CHAR (b.mste_end_date, 'dd-mm-yyyy') K, a.lssp_id L,
+		        	a.reg_spaj M,
+		        	decode(e.tahun_ke,0,1,e.tahun_ke) N, c.lsbs_id O, a.lku_id P, a.lscb_id Q, a.mspo_pay_period R, a.mspo_ins_period S, b.mste_age T, c.lsdbs_number U,
+		        	f.lsdbs_name V, b.mste_insured_no, g.MSRPR_RETENSI w
+		    FROM eka.mst_policy a,
+		         eka.mst_insured b,
+		         eka.mst_product_insured c,
+		         eka.mst_client_new tt,
+		         eka.mst_client_new pp,
+		         eka.lst_kurs d,
+		         (select reg_spaj, round((sysdate - mste_beg_date)/364)+1 tahun_ke from eka.mst_insured) e,
+		         eka.lst_det_bisnis f,
+				 eka.mst_reins_product g
+		   WHERE b.reg_spaj = a.reg_spaj
+		     AND b.reg_spaj = c.reg_spaj
+		     AND b.reg_spaj = e.reg_spaj
+		     AND b.mste_insured_no = c.mste_insured_no
+		     AND b.mste_insured = tt.mcl_id
+		     AND a.mspo_policy_holder = pp.mcl_id
+		     AND a.lku_id = d.lku_id(+)
+			 AND a.reg_spaj = rpad(replace($P{spaj},'.'),11,' ')
+			 and c.lsbs_id = f.lsbs_id
+			 and c.lsdbs_number = f.lsdbs_number
+			 and g.REG_SPAJ = a.REG_SPAJ
+			 and g.MSTE_INSURED_NO = b.MSTE_INSURED_NO
+			 and g.LSBS_ID = c.LSBS_ID
+			 and g.LSDBS_NUMBER = c.LSDBS_NUMBER
+		ORDER BY a.reg_spaj ASC]]>
+	</queryString>
+	<field name="A" class="java.lang.String"/>
+	<field name="B" class="java.lang.String"/>
+	<field name="C" class="java.lang.String"/>
+	<field name="D" class="java.lang.String"/>
+	<field name="E" class="java.math.BigDecimal"/>
+	<field name="G" class="java.math.BigDecimal"/>
+	<field name="J" class="java.lang.String"/>
+	<field name="K" class="java.lang.String"/>
+	<field name="L" class="java.math.BigDecimal"/>
+	<field name="M" class="java.lang.String"/>
+	<field name="MSTE_INSURED_NO" class="java.math.BigDecimal"/>
+	<field name="N" class="java.math.BigDecimal"/>
+	<field name="O" class="java.math.BigDecimal"/>
+	<field name="P" class="java.lang.String"/>
+	<field name="Q" class="java.math.BigDecimal"/>
+	<field name="R" class="java.math.BigDecimal"/>
+	<field name="S" class="java.math.BigDecimal"/>
+	<field name="T" class="java.math.BigDecimal"/>
+	<field name="U" class="java.math.BigDecimal"/>
+	<field name="V" class="java.lang.String"/>
+	<field name="W" class="java.math.BigDecimal"/>
+	<title>
+		<band height="383">
+			<staticText>
+				<reportElement stretchType="RelativeToBandHeight" x="6" y="61" width="47" height="16"/>
+				<box padding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[ Hal]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="6" y="6" width="47" height="39"/>
+				<box padding="0">
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[ Kepada]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="6" y="45" width="47" height="16"/>
+				<box padding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[ No. Fax]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="53" y="6" width="7" height="39"/>
+				<box padding="0">
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="53" y="45" width="7" height="16"/>
+				<box padding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement stretchType="RelativeToBandHeight" x="53" y="61" width="7" height="16"/>
+				<box padding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="60" y="6" width="244" height="39"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{reasurder}+"\n UP. "+$P{cp}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="60" y="45" width="244" height="16"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{fax}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="60" y="61" width="244" height="16"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["PENAWARAN FAKULTATIF a/n "+$P{nama_ttg}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="304" y="6" width="47" height="39"/>
+				<box padding="0">
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[ Dari]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="351" y="6" width="7" height="39"/>
+				<box padding="0">
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="351" y="45" width="7" height="16"/>
+				<box padding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="304" y="45" width="47" height="16"/>
+				<box padding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[ No. Surat]]></text>
+			</staticText>
+			<staticText>
+				<reportElement stretchType="RelativeToBandHeight" x="304" y="61" width="47" height="16"/>
+				<box padding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[ Tanggal]]></text>
+			</staticText>
+			<staticText>
+				<reportElement stretchType="RelativeToBandHeight" x="351" y="61" width="7" height="16"/>
+				<box padding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="358" y="6" width="192" height="39"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["PT ASURANSI JIWA SINARMAS MSIG Tbk. \ndr. Rachel / dr. Ingrid"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="358" y="45" width="192" height="16"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{no_surat}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="358" y="61" width="192" height="16"/>
+				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($P{tgl_surat})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="6" y="96" width="543" height="65"/>
+				<textElement/>
+				<text><![CDATA[Dengan hormat,
+
+Sehubungan dengan permohonan asuransi dari salah satu calon Tertanggung, maka kami mengajak pihak Reasuradur untuk mendukung dan berpartisipasi dari pertanggungan tersebut. Adapun data selengkapnya mengenai pertanggungan tersebut sebagai berikut :
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="22" y="166" width="169" height="14"/>
+				<textElement>
+					<font isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[DATA CALON TERTANGGUNG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="7" y="166" width="14" height="14"/>
+				<textElement>
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[A.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="23" y="181" width="20" height="14"/>
+				<textElement/>
+				<text><![CDATA[1.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="45" y="181" width="146" height="14"/>
+				<textElement/>
+				<text><![CDATA[Nama]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="192" y="181" width="7" height="14"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="201" y="181" width="347" height="14"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{nama_ttg}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="23" y="197" width="20" height="14"/>
+				<textElement/>
+				<text><![CDATA[2.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="45" y="197" width="146" height="14"/>
+				<textElement/>
+				<text><![CDATA[Tanggal lahir]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="192" y="197" width="7" height="14"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="201" y="197" width="347" height="14"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($P{bod_ttg}) + " ("+$P{usia_tt}+")"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="192" y="231" width="7" height="14"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="192" y="247" width="7" height="14"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="45" y="247" width="146" height="14"/>
+				<textElement/>
+				<text><![CDATA[Mulai Pertanggungan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="23" y="231" width="20" height="14"/>
+				<textElement/>
+				<text><![CDATA[1.]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="201" y="247" width="347" height="14"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($P{beg_date})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="22" y="216" width="169" height="14"/>
+				<textElement>
+					<font isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[DATA  ASURANSI]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="7" y="216" width="14" height="14"/>
+				<textElement>
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[B.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="45" y="231" width="146" height="14"/>
+				<textElement/>
+				<text><![CDATA[Nama Produk Asuransi]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="201" y="231" width="347" height="14"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{nama_product}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="23" y="247" width="20" height="14"/>
+				<textElement/>
+				<text><![CDATA[2.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="23" y="262" width="20" height="14"/>
+				<textElement/>
+				<text><![CDATA[3.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="45" y="262" width="146" height="14"/>
+				<textElement/>
+				<text><![CDATA[Masa Pertanggungan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="192" y="262" width="7" height="14"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="201" y="262" width="347" height="14"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[""+$P{lama_pertanggungan} + " th"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="45" y="294" width="146" height="14"/>
+				<textElement/>
+				<text><![CDATA[Retensi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="192" y="309" width="7" height="14"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="201" y="294" width="347" height="14"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Rp. " + $P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($P{retensi}))]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="192" y="278" width="7" height="14"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="23" y="294" width="20" height="14"/>
+				<textElement/>
+				<text><![CDATA[5.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="192" y="294" width="7" height="14"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="23" y="309" width="20" height="14"/>
+				<textElement/>
+				<text><![CDATA[6.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="23" y="278" width="20" height="14"/>
+				<textElement/>
+				<text><![CDATA[4.]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="201" y="278" width="347" height="14"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{UP}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="45" y="278" width="146" height="14"/>
+				<textElement/>
+				<text><![CDATA[Jumlah Uang Pertanggungan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="45" y="309" width="146" height="14"/>
+				<textElement/>
+				<text><![CDATA[Rider]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="201" y="309" width="347" height="14"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{rider}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="45" y="340" width="146" height="14"/>
+				<textElement/>
+				<text><![CDATA[Pekerjaan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="192" y="355" width="7" height="14"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="211" y="344" width="347" height="14"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{pekerjaan}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="192" y="324" width="7" height="14"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="23" y="340" width="20" height="14"/>
+				<textElement/>
+				<text><![CDATA[8.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="192" y="340" width="7" height="14"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="23" y="355" width="20" height="14"/>
+				<textElement/>
+				<text><![CDATA[9.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="23" y="324" width="20" height="14"/>
+				<textElement/>
+				<text><![CDATA[7.]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="201" y="324" width="347" height="14"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{kon_pertanggungan}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="45" y="324" width="146" height="14"/>
+				<textElement/>
+				<text><![CDATA[Kondisi Pertanggungan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="45" y="355" width="146" height="14"/>
+				<textElement/>
+				<text><![CDATA[Data Asuransi sebelumnya ]]></text>
+			</staticText>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="15">
+			<staticText>
+				<reportElement x="23" y="0" width="100" height="15"/>
+				<box padding="0">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[No. Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="405" y="0" width="142" height="15"/>
+				<box padding="0">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[RETENSI]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="267" y="0" width="138" height="15"/>
+				<box padding="0">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[UP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="123" y="0" width="144" height="15"/>
+				<box padding="0">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Produk]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15">
+			<textField hyperlinkType="None">
+				<reportElement x="294" y="0" width="100" height="15"/>
+				<box padding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""+$P{REPORT_SCRIPTLET}.formatCurrency("",$F{E})+" "]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="23" y="0" width="100" height="15"/>
+				<box padding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{C}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="432" y="0" width="100" height="15"/>
+				<box padding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""+$P{REPORT_SCRIPTLET}.formatCurrency("",$F{W})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="267" y="0" width="27" height="15"/>
+				<box padding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{D}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="394" y="0" width="11" height="15"/>
+				<box padding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="405" y="0" width="27" height="15"/>
+				<box padding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{D}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="532" y="0" width="15" height="15"/>
+				<box padding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="123" y="0" width="144" height="15"/>
+				<box padding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{V}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="280">
+			<staticText>
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="5" y="60" width="394" height="130"/>
+				<textElement markup="styled"/>
+				<text><![CDATA[Demikianlah kami sampaikan, kami tunggu konfirmasinya secepatnya.
+Atas perhatian dan kerjasamanya kami ucapkan terima kasih.
+
+
+Hormat kami,
+PT Asuransi Jiwa Sinarmas MSIG Tbk.
+
+
+<u>dr. Asri Wulan, AAAIJ, CPLHI</u>
+Medical Underwriter]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="5" y="18" width="59" height="13"/>
+				<textElement/>
+				<text><![CDATA[Terlampir :]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement x="42" y="31" width="466" height="15"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{lampiran}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

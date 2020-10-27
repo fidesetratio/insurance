@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<typeAlias alias="dropDown" type="id.co.sinarmaslife.std.model.vo.DropDown"/>
+	<typeAlias alias="hashMap" type="java.util.HashMap"/>
+	<typeAlias alias="endors" type="com.ekalife.elions.model.Endors"/>
+	<typeAlias alias="detEndors" type="com.ekalife.elions.model.DetEndors"/>
+	
+	<cacheModel id="elions.bac.cache.references" type="LRU" readOnly="true"
+		serialize="false">
+		<flushInterval hours="8" />
+		<property name="cache-size" value="100" />
+		<flushOnExecute statement="elions.common.resetIbatisCache"/>
+		<!-- <flushOnExecute statement="insert.history"/> -->
+	</cacheModel>
+	
+	<select id="elions.endors.selectListJnEndors" resultClass="dropDown" cacheModel="elions.bac.cache.references">
+		SELECT   lsje_id key ,lsje_jenis value
+		    FROM eka.lst_jn_endors
+		   WHERE lsje_material = 0
+		     AND lstb_id = 1
+		     AND lsje_active = 1
+		     AND lsje_id IN
+	            (1, 2, 3, 4, 5, 6, 7, 10, 11, 19, 20, 33, 34, 35, 39, 40, 46, 47, 48, 51, 52)
+		ORDER BY lsje_id
+	</select>
+	
+	<select id="elions.endors.selectListNoEndors" resultClass="hashMap" parameterClass="hashMap">
+		SELECT  EKA.MST_ENDORS.MSEN_ENDORS_NO ,
+           EKA.MST_ENDORS.REG_SPAJ , 
+           EKA.MST_ENDORS.MSEN_INTERNAL ,
+           EKA.MST_ENDORS.MSEN_ALASAN ,
+           EKA.MST_ENDORS.MSEN_INPUT_DATE ,
+           EKA.MST_ENDORS.MSEN_ENDORS_COST ,
+           EKA.MST_ENDORS.MSEN_ACTIVE_DATE ,
+           EKA.MST_ENDORS.MSEN_SURAT ,
+           EKA.MST_ENDORS.LSPD_ID ,
+           EKA.MST_ENDORS.MSEN_PRINT ,
+           EKA.MST_POLICY.MSPO_POLICY_NO ,
+           EKA.MST_POLICY.LSTB_ID ,
+           EKA.MST_ENDORS.MSEN_TAHUN_KE ,
+           EKA.MST_ENDORS.MSEN_PREMI_KE ,
+           EKA.MST_ENDORS.MSEN_TGL_TRANS ,
+           EKA.MST_CLIENT.MCL_FIRST as nm_pp,
+           EKA.MST_ENDORS.LUS_ID ,
+           EKA.MST_ENDORS.MSEN_AUTO_RIDER ,
+           EKA.MST_ENDORS.FLAG_PS     
+        FROM EKA.MST_ENDORS ,
+           EKA.MST_POLICY ,
+           EKA.MST_CLIENT     
+        WHERE ( EKA.MST_ENDORS.REG_SPAJ = EKA.MST_POLICY.REG_SPAJ ) and          
+					( EKA.MST_POLICY.MSPO_POLICY_HOLDER = EKA.MST_CLIENT.MCL_ID ) and          
+					( ( EKA.MST_POLICY.LSTB_ID = #lstb_id# ) and          
+					( EKA.MST_POLICY.LSPD_ID = #lspd_id# ) and          
+					( EKA.MST_ENDORS.LSPD_ID = 13 ) and          
+					( EKA.MST_ENDORS.MSEN_AUTO_RIDER = 0 ) and
+					( EKA.MST_ENDORS.MSEN_FLAG_UW=1 )AND
+					(eka.mst_endors.REG_SPAJ = #reg_spaj#))
+	</select>
+	
+	<select id="elions.endors.selectMstEndors" parameterClass="string" resultClass="endors">
+		select * from eka.mst_endors where msen_endors_no=#value#
+	</select>
+	
+	<select id="elions.endors.selectMstDetEndors" parameterClass="string" resultClass="detEndors">
+		SELECT eka.lst_jn_endors.lsje_jenis,
+		       eka.mst_det_endors.*
+		  FROM eka.mst_det_endors, eka.lst_jn_endors
+		 WHERE (eka.mst_det_endors.lsje_id = eka.lst_jn_endors.lsje_id)
+		   AND ((eka.mst_det_endors.msen_endors_no = #value#))  
+	</select>
+
+</sqlMap>

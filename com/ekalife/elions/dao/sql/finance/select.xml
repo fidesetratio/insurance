@@ -1,0 +1,880 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- 
+		SELECT (tabarru/100) tabarru, (ujrah/100) ujrah FROM eka.lst_persen_syariah WHERE lsbs_id = #lsbs# and lsdbs_number = #lsdbs#
+	 -->
+	<select id="elions.finance.selectLstPersenSyariah" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+		SELECT 
+			eka.pkg_syariah.get_persen_syariah(#lsbs#, #lsdbs#, 1) tabarru, 
+			eka.pkg_syariah.get_persen_syariah(#lsbs#, #lsdbs#, 2) ujrah 
+		FROM dual
+	</select>
+
+	<select id="elions.finance.selectDiscountRate" parameterClass="java.util.HashMap" resultClass="double">
+		select rate from eka.lst_disc_rate
+		where xbayar = #xbayar# and bulan = #bulan# and lku_id = #lku_id#	
+	</select>
+
+	<select id="elions.finance.selectIsAgenKaryawan" parameterClass="string" resultClass="int">
+		SELECT NVL (msag_kry, 0)
+		  FROM eka.mst_agent
+		 WHERE msag_id = #value#
+	</select>
+	
+	<select id="elions.finance.selectIsAgenCorporate" parameterClass="string" resultClass="int">
+		SELECT NVL (msag_coa, 0)
+		  FROM eka.mst_agent
+		 WHERE msag_id = #value#
+	</select>
+
+	<select id="elions.finance.selectTglJurnalFromPre" parameterClass="string" resultClass="string">
+		SELECT TO_CHAR (tgl_jurnal, 'yyyymm') yyyymm
+		  FROM eka.mst_tbank
+		 WHERE no_pre = #value#	
+	</select>
+
+	<select id="elions.finance.selectFlagBulananStableLinkStableSave" parameterClass="string" resultClass="int">
+		select flag_bulanan from eka.mst_slink where reg_spaj = rpad(replace(#value#,'.'),11,' ') and msl_new = 1
+		union
+		select flag_bulanan from eka.mst_ssave where reg_spaj = rpad(replace(#value#,'.'),11,' ')
+	</select>
+	
+	<select id="elions.finance.selectFlagBulanan" parameterClass="string" resultClass="int">
+		select flag_bulanan from eka.mst_slink where reg_spaj = rpad(replace(#value#,'.'),11,' ') and msl_new = 1
+		union
+		select flag_bulanan from eka.mst_ssave where reg_spaj = rpad(replace(#value#,'.'),11,' ')
+		union
+		select 
+	</select>
+
+	<select id="elions.finance.selectVirtualAccountSpaj" parameterClass="string" resultClass="string">
+		select mste_no_vacc from eka.mst_insured where reg_spaj = rpad(replace(#value#,'.'),11,' ')
+	</select>
+
+	<select id="elions.finance.selectDataAverageCostReksadana" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+		SELECT NVL (SUM (DECODE (irt_rtrans_jn, 0, irt_subscribe_unit, 0)), 0) subs,
+		       NVL (SUM (DECODE (irt_rtrans_jn, 0, irt_total_cost, 0)), 0) cost,
+		       NVL (SUM (DECODE (irt_rtrans_jn, 1, irt_subscribe_unit, 0)), 0) tsubs,
+		       NVL (SUM (DECODE (irt_rtrans_jn, 1, irt_total_cost, 0)), 0) tcost
+		  FROM eka.inv_reksa_transaksi
+		 WHERE ire_reksa_no = #ire_reksa_no# AND irt_trans_date <![CDATA[<]]> #irt_trans_date#
+	</select>
+	
+	<select id="elions.finance.selectDataSubscribeUnitReksadana" parameterClass="java.util.HashMap" resultClass="double">
+		select nvl(sum(IRT_SUBSCRIBE_UNIT), 0) from eka.inv_reksa_transaksi
+   			where ire_reksa_no = #ire_reksa_no# AND irt_rtrans_jn = #irt_rtrans_jn# AND irt_trans_date <![CDATA[<=]]> #irt_trans_date#
+	</select>
+
+	<select id="elions.finance.selectDataAverageCostBuyingReksadana" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+		SELECT irt.irt_rtrans_jn, nvl(irt.irt_average_cost, 0) irt_average_cost
+		  FROM eka.inv_reksa_transaksi irt
+		 WHERE irt.ire_reksa_no = #ire_reksa_no#
+		   AND (irt.irt_trans_date, irt.irt_rtrans_id) =
+		          (SELECT MAX (irt_effective_date), max(irt_rtrans_id)
+		             FROM eka.inv_reksa_transaksi
+		            WHERE ire_reksa_no = irt.ire_reksa_no
+		                  AND irt_trans_date <![CDATA[<]]> #irt_trans_date#)	
+	</select>
+
+	<select id="elions.finance.selectCekSahamPerTanggal" parameterClass="java.util.HashMap" resultClass="int">
+		SELECT COUNT(*)
+		  FROM eka.inv_stock_price sp, eka.inv_stock_master sm
+		 WHERE sp.ims_stock_id = sm.ims_stock_id
+		   AND sm.ks_stock = #symbol#
+		   AND isp_trans_date = #tanggal#
+	</select>
+
+	<select id="elions.finance.selectCekReksadanaPerTanggal" parameterClass="java.util.HashMap" resultClass="int">
+		SELECT count(*)
+		  FROM eka.inv_reksa_det rd, eka.inv_reksadana rn
+		 WHERE rn.ire_reksa_no = rd.ire_reksa_no
+		   AND rn.ire_reksa_no = #ire_reksa_no#
+		   AND rd.ird_trans_date = #tanggal#
+	</select>
+
+	<select id="elions.finance.selectCekBondsPerTanggal" parameterClass="java.util.HashMap" resultClass="int">
+		SELECT COUNT (*)
+		  FROM eka.inv_bond b, eka.inv_bond_price bp
+		 WHERE b.invcode = bp.invcode
+		   AND b.kode_bond = bp.kode_bond
+		   AND b.invcode = #invcode#
+		   AND b.kode_bond = RPAD (#kode_bond#, 10, ' ')
+		   AND ibp_month = #ibp_month#
+	</select>
+
+	<select id="elions.finance.selectKursReksadana" parameterClass="string" resultClass="string">
+		SELECT lku_id
+		  FROM eka.inv_reksadana
+		 WHERE ire_reksa_no = #ire_reksa_no#
+	</select>
+	
+	<select id="elions.finance.selectUnitTerakhir" parameterClass="java.util.HashMap" resultClass="double">
+		SELECT SUM (DECODE (irt_rtrans_jn, 1, 1, 0, -1, 0) * irt_subscribe_unit)
+		   FROM eka.inv_reksa_transaksi
+		  WHERE ire_reksa_no = #ire_reksa_no# AND irt_trans_date <![CDATA[<=]]> #irt_trans_date#
+	</select>
+	
+	<select id="elions.finance.selectNavReksadana" parameterClass="java.util.HashMap" resultClass="double">
+		SELECT ird_nav
+		  FROM eka.inv_reksa_det
+		 WHERE ird_trans_date = #ird_trans_date#
+		 AND ire_reksa_no = #ire_reksa_no#
+	</select>
+	
+	<select id="elions.finance.selectReksadanaByName" parameterClass="string" resultClass="id.co.sinarmaslife.std.model.vo.DropDown">
+		SELECT ire_reksa_no value,
+		       (case 
+		            when ire_reksa_type = 1 then 'EKALIFE'
+		            when ire_reksa_type = 2 then 'EXCELLINK'
+		            when ire_reksa_type = 3 then 'SYARIAH'
+		            when ire_reksa_type = 4 then 'STABLE LINK'
+		            else 'UNDIFINED'
+		       end) key
+		  FROM eka.inv_reksadana
+		 WHERE ire_reksa_name LIKE '%' || UPPER(TRIM(#value#)) || '%'
+		 	and ire_reksa_no not in ('11R000003','11R000004')<!-- non aktif unit sudah habis -->
+	</select>
+	
+	<select id="elions.finance.selectReksadanaTypeByNo" parameterClass="string" resultClass="string">
+		SELECT
+		       (case 
+		            when ire_reksa_type = 1 then 'EKALIFE'
+		            when ire_reksa_type = 2 then 'EXCELLINK'
+		            when ire_reksa_type = 3 then 'SYARIAH'
+		            when ire_reksa_type = 4 then 'STABLE LINK'
+		            else 'UNDIFINED'
+		       end) key
+		  FROM eka.inv_reksadana
+		 WHERE ire_reksa_no = #ire_reksa_no#
+	</select>
+	
+	<select id="elions.finance.selectInvReksadanaName" parameterClass="string" resultClass="java.util.HashMap">
+		SELECT EKA.INV_REKSADANA.ire_reksa_name, EKA.INV_REKSADANA.ire_reksa_no
+			FROM EKA.INV_REKSADANA 
+			WHERE 
+			    ( SELECT EKA.INV_REKSA_DET.IRD_VALUE
+			     FROM EKA.INV_REKSA_DET 
+			    WHERE EKA.INV_REKSA_DET.IRE_REKSA_NO = EKA.INV_REKSADANA.IRE_REKSA_NO
+			      AND EKA.INV_REKSA_DET.IRD_TRANS_DATE = (SELECT MAX(EKA.INV_REKSA_DET.IRD_TRANS_DATE)
+			                                                                      FROM EKA.INV_REKSA_DET 
+			                                                                     WHERE EKA.INV_REKSA_DET.IRE_REKSA_NO = EKA.INV_REKSADANA.IRE_REKSA_NO)) > 0
+			AND (NOT( ( SELECT EKA.INV_REKSA_DET.IRD_NAV
+			     FROM EKA.INV_REKSA_DET 
+			    WHERE EKA.INV_REKSA_DET.IRE_REKSA_NO = EKA.INV_REKSADANA.IRE_REKSA_NO
+			      AND EKA.INV_REKSA_DET.IRD_TRANS_DATE = (SELECT MAX(EKA.INV_REKSA_DET.IRD_TRANS_DATE)
+			                                                                      FROM EKA.INV_REKSA_DET 
+			                                                                     WHERE EKA.INV_REKSA_DET.IRE_REKSA_NO = EKA.INV_REKSADANA.IRE_REKSA_NO)) = 0 
+			        AND EKA.INV_REKSADANA.LJR_JENIS NOT IN ( 4, 8, 12))
+			        )	
+	</select>
+	
+	<select id="elions.finance.selectCekExistDetailReksadana" parameterClass="java.util.HashMap" resultClass="int">
+		select count(*) from eka.inv_reksa_det where ird_last_3yr is not null
+			and ire_reksa_no = #ire_reksa_no#
+			and to_char(ird_trans_date, 'dd/mm/yyyy') = to_char(#ird_trans_date#, 'dd/mm/yyyy')
+	</select>
+
+	<select id="elions.finance.selectListBayarKomisi" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+		SELECT aa.reg_spaj, aa.mspo_date_ttp tgl_ttp, aa.mspo_date_print tgl_cetak,
+		       (aa.mspo_policy_no || ' ') no_polis, aa.mste_tgl_komisi tgl_komisi,
+		       bb.mcl_first pemegang, eka.f_lsdbs(cc.reg_spaj, cc.lsbs_id, cc.lsdbs_number) produk,
+		       ee.lscb_pay_mode cara_bayar, ff.lku_symbol kurs, cc.mspr_premium premi,
+		       gg.msco_comm komisi, gg.msco_tax tax,
+		       (NVL (hh.pot_biaya, 0) + NVL (hh.pot_extra, 0) + NVL (hh.pot_upp, 0)
+		       ) potongan,
+		       kk.mcl_first nama_agen, jj.msag_id kode_agen, ll.lca_nama cabang
+		  FROM (SELECT a.reg_spaj, b.mspo_date_ttp, b.lscb_id, b.mspo_date_print,
+		               b.mspo_policy_no, b.mspo_policy_holder, a.mste_tgl_komisi, b.lssp_id
+		          FROM eka.mst_insured a, eka.mst_policy b
+		         WHERE a.reg_spaj = b.reg_spaj
+		           AND a.mste_tgl_komisi <![CDATA[>=]]> TO_DATE ('01/01/2009', 'dd/mm/yyyy')
+		           AND a.mste_tgl_komisi <![CDATA[<=]]> TO_DATE (#endDate#, 'dd/mm/yyyy hh24:mi')) aa,
+		       eka.mst_client_new bb,
+		       eka.mst_product_insured cc,
+		       eka.lst_det_bisnis dd,
+		       eka.lst_pay_mode ee,
+		       eka.lst_kurs ff,
+		       eka.mst_commission gg,
+		       eka.mst_deduct hh,
+		       eka.mst_agent_prod ii,
+		       eka.mst_agent jj,
+		       eka.mst_client_new kk,
+		       eka.lst_cabang ll,
+			   eka.mst_billing mm
+		 WHERE bb.mcl_id = aa.mspo_policy_holder
+		   AND aa.reg_spaj = cc.reg_spaj
+		   AND cc.lsbs_id <![CDATA[<]]> 300
+		   AND cc.lsbs_id = dd.lsbs_id
+		   AND cc.lsdbs_number = dd.lsdbs_number
+		   AND aa.lscb_id = ee.lscb_id
+		   AND cc.lku_id = ff.lku_id
+		   AND aa.reg_spaj = gg.reg_spaj
+		   AND (gg.msbi_tahun_ke, gg.msbi_premi_ke) IN
+		   (
+				SELECT a.msbi_tahun_ke tahun, a.msbi_premi_ke premi
+				  FROM eka.mst_billing a
+				 WHERE a.reg_spaj = aa.reg_spaj
+				   AND a.msbi_tahun_ke = 1
+				   AND a.msbi_premi_ke = 1
+				UNION 
+				SELECT a.msbi_tahun_ke tahun, a.msbi_premi_ke premi
+				  FROM eka.mst_billing a, eka.mst_ulink b
+				 WHERE a.reg_spaj = aa.reg_spaj
+				   AND a.reg_spaj = b.reg_spaj
+				   AND a.msbi_tahun_ke = b.mu_tahun_ke
+				   AND a.msbi_premi_ke = b.mu_premi_ke
+				   AND a.msbi_beg_date =
+				          (SELECT msbi_beg_date
+				             FROM eka.mst_billing
+				            WHERE reg_spaj = a.reg_spaj
+				              AND msbi_tahun_ke = 1
+				              AND msbi_premi_ke = 1)
+				UNION 
+				SELECT msl_tahun_ke tahun, msl_premi_ke premi
+				  FROM eka.mst_slink
+				 WHERE reg_spaj = aa.reg_spaj AND msl_new = 1
+		   )
+		   AND gg.lev_comm = 4
+		   AND gg.msco_id = hh.msco_id(+)
+		   AND hh.msdd_number(+) = 1
+		   AND aa.reg_spaj = ii.reg_spaj
+		   AND ii.lstb_id = 1
+		   AND ii.lsle_id = 4
+		   AND ii.msag_id = jj.msag_id
+		   AND jj.mcl_id = kk.mcl_id
+		   AND jj.lca_id = ll.lca_id
+		   AND gg.msco_pay_date IS NULL
+		   AND gg.msco_paid = 0
+		   AND gg.reg_spaj = mm.reg_spaj
+		   AND gg.msbi_premi_ke = mm.msbi_premi_ke
+		   AND gg.msbi_tahun_ke = mm.msbi_tahun_ke
+		   AND mm.lspd_id = 8 
+		   AND aa.lssp_id = 1
+		 ORDER BY aa.mspo_date_ttp
+	</select>
+	
+	<select id="elions.finance.warning_ttp" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+		select distinct a.lca_id,b.mste_tgl_kirim_polis,TO_CHAR((b.mste_tgl_kirim_polis+31),'dd/mm/yyyy') tgl_terima,a.reg_spaj,a.mspo_policy_no ,  a.mspo_ao,
+	   			TO_CHAR(b.mste_tgl_kirim_polis,'dd/mm/yyyy') tgl_kirim,sysdate,d.mcl_first pemegang,c1.mcl_first Agen, eka.f_lsdbs(c.reg_spaj, c.lsbs_id, c.lsdbs_number) lsdbs_name,e.lsbs_id
+		from eka.mst_policy a, eka.mst_insured b,
+		     eka.mst_product_insured c,eka.mst_client_new d,
+	 		 eka.lst_det_bisnis e,eka.mst_agent_prod f,
+	 		 eka.mst_agent g, eka.mst_client_new c1
+		where  a.reg_spaj=b.reg_spaj
+	   			and a.reg_spaj=c.reg_spaj
+	   			and a.reg_spaj=f.reg_spaj and  c.lsbs_id=e.lsbs_id
+				and c.lsdbs_number=e.lsdbs_number
+	   			and a.reg_spaj=f.reg_spaj
+	   			and b.mste_tgl_kirim_polis is not null
+	   			and a.mspo_policy_holder = d.mcl_id
+	   			and a.MSPO_DATE_TTP is null 
+	   			and f.msag_id=g.msag_id
+	   			and g.mcl_id=c1.mcl_id
+	   			and a.lssp_id=1
+	   			and (a.lca_id <![CDATA[<>]]>'09' and e.lsbs_id not in ('164','142', '143', '144', '155', '158', '174', '175', '176', '177','171','185'))
+	   			and (e.lsbs_id not in ('153') and e.lsdbs_number not in('5'))
+				and (e.lsbs_id not in ('170') and e.lsdbs_number not in('1'))
+	   			and f.lsle_id=4
+	   			and c.lsbs_id <![CDATA[<]]> 300
+	   			and ((nvl(trunc(sysdate) - trunc(b.mste_tgl_kirim_polis), 0)=7) or (nvl(trunc(sysdate) - trunc(b.mste_tgl_kirim_polis), 0) =14) 
+						or (nvl(trunc(sysdate) - trunc(b.mste_tgl_kirim_polis), 0) =21) or (nvl(trunc(sysdate) - trunc(b.mste_tgl_kirim_polis), 0) =28))
+	   			and nvl(trunc(sysdate) - trunc(b.mste_tgl_kirim_polis), 0)<![CDATA[<]]>32
+		order by a.reg_spaj asc
+	</select>
+	
+	<select id="elions.finance.warning_ttp_komisigaDiproses" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+		SELECT DISTINCT a.lca_id, b.mste_tgl_kirim_polis, a.mspo_policy_no_format,a.mspo_beg_date,b.mste_beg_date,p.msps_desc,
+                TO_CHAR ((b.mste_tgl_kirim_polis + 31),
+                         'dd/mm/yyyy'
+                        ) tgl_terima,
+                a.reg_spaj, a.mspo_policy_no, a.mspo_ao,ps.lssp_status,
+                TO_CHAR (b.mste_tgl_kirim_polis, 'dd/mm/yyyy') tgl_kirim,c.mspr_tsi,cab.lca_nama,
+                SYSDATE, d.mcl_first pemegang, c1.mcl_first agen,
+                eka.f_lsdbs(c.reg_spaj, c.lsbs_id, c.lsdbs_number) lsdbs_name, e.lsbs_id, kom.msco_comm
+           FROM eka.mst_policy a,
+                eka.mst_insured b,
+                eka.mst_product_insured c,
+                eka.mst_client_new d,
+                eka.lst_det_bisnis e,
+                eka.mst_agent_prod f,
+                eka.mst_agent g,eka.lst_policy_status ps, 
+                eka.mst_client_new c1,eka.lst_cabang cab,
+                eka.mst_commission kom,
+                (select reg_spaj,msps_desc from eka.mst_position_spaj
+                    where upper(msps_desc) like upper('FILING DOC%'))p
+          WHERE a.reg_spaj = b.reg_spaj
+            AND a.reg_spaj = c.reg_spaj
+            AND a.reg_spaj = f.reg_spaj
+            AND f.reg_spaj = kom.reg_spaj
+            AND a.reg_spaj = p.reg_spaj
+            AND c.lsbs_id = e.lsbs_id
+            and a.lca_id=cab.lca_id
+            AND c.lsdbs_number = e.lsdbs_number
+            AND a.reg_spaj = f.reg_spaj
+            AND b.mste_tgl_kirim_polis IS NOT NULL
+            AND a.mspo_policy_holder = d.mcl_id
+            AND a.mspo_date_ttp IS NULL
+            AND f.msag_id = g.msag_id
+            AND f.msag_id = kom.msag_id
+            AND a.lssp_id= ps.lssp_id
+            AND f.lev_comm = kom.lev_comm
+            AND g.mcl_id = c1.mcl_id
+            AND kom.msbi_tahun_ke = 1
+            AND kom.msbi_premi_ke = 1
+            AND a.lssp_id = 1
+            AND (    a.lca_id <![CDATA[<>]]> '09'
+                 AND e.lsbs_id NOT IN
+                        ('164',
+                         '142',
+                         '143',
+                         '144',
+                         '155',
+                         '158',
+                         '174',
+                         '175',
+                         '176',
+                         '177',
+                         '171'
+                        )
+                )
+            AND (e.lsbs_id NOT IN ('153') AND e.lsdbs_number NOT IN ('5'))
+            AND (e.lsbs_id NOT IN ('170') AND e.lsdbs_number NOT IN ('1'))
+            AND f.lsle_id = 4
+            AND c.lsbs_id <![CDATA[<]]> 300
+            AND NVL (TRUNC (SYSDATE) - TRUNC (b.mste_tgl_kirim_polis), 0) <![CDATA[>]]> 40
+        order BY b.mste_tgl_kirim_polis DESC
+	</select>
+	
+	<select id="elions.finance.count_ttp_komisigaDiproses" parameterClass="java.util.HashMap" resultClass="int">
+		select count(*) 
+		from eka.mst_position_spaj 
+		where upper(msps_desc) like upper('KOMISI NB TIDAK DIBAYAR KARENA TTP LEWAT%') 
+				and reg_spaj=#spaj#
+	</select>
+	
+	<select id="elions.finance.count_sdhlewatKom" parameterClass="java.util.HashMap" resultClass="int">
+		select count (*) 
+		from eka.mst_position_spaj
+        where upper(msps_desc) like upper('POLIS SUDAH DITRANSFER KE KOMISI%') 
+         	  and reg_spaj=#spaj#
+	</select>
+	<!--
+		SELECT aa.reg_spaj, aa.mspo_date_ttp tgl_ttp, aa.mspo_date_print tgl_cetak, (aa.mspo_policy_no || ' ') no_polis, aa.mste_tgl_komisi tgl_komisi, bb.mcl_first pemegang, 
+		dd.lsdbs_name produk, ee.lscb_pay_mode cara_bayar, ff.lku_symbol kurs,
+		       cc.mspr_premium premi, gg.msco_comm komisi, gg.msco_tax tax, 
+		       (NVL (hh.pot_biaya, 0) + NVL (hh.pot_extra, 0) + NVL (hh.pot_upp, 0)
+		       ) potongan,
+		       kk.mcl_first nama_agen, jj.msag_id kode_agen, ll.lca_nama cabang
+		  FROM (SELECT a.reg_spaj, b.mspo_date_ttp, b.lscb_id, b.mspo_date_print,
+		               b.mspo_policy_no, b.mspo_policy_holder, a.mste_tgl_komisi
+		          FROM eka.mst_insured a, eka.mst_policy b
+		         WHERE a.reg_spaj = b.reg_spaj
+		           AND a.mste_tgl_komisi <![CDATA[>=]]> to_date(#startDate#,'dd/mm/yyyy hh24:mi')
+		           AND a.mste_tgl_komisi <![CDATA[<=]]> to_date(#endDate#,'dd/mm/yyyy hh24:mi')) aa,
+		       eka.mst_client_new bb,
+		       eka.mst_product_insured cc,
+		       eka.lst_det_bisnis dd,
+		       eka.lst_pay_mode ee,
+		       eka.lst_kurs ff,
+		       eka.mst_commission gg,
+		       eka.mst_deduct hh,
+		       eka.mst_agent_prod ii,
+		       eka.mst_agent jj,
+		       eka.mst_client_new kk,
+		       eka.lst_cabang ll
+		 WHERE bb.mcl_id = aa.mspo_policy_holder
+		   AND aa.reg_spaj = cc.reg_spaj
+		   AND cc.lsbs_id <![CDATA[<]]> 300
+		   AND cc.lsbs_id = dd.lsbs_id
+		   AND cc.lsdbs_number = dd.lsdbs_number
+		   AND aa.lscb_id = ee.lscb_id
+		   AND cc.lku_id = ff.lku_id
+		   AND aa.reg_spaj = gg.reg_spaj
+		   AND gg.msbi_premi_ke = 1
+		   AND gg.msbi_tahun_ke = 1
+		   AND gg.lev_comm = 4
+		   AND gg.msco_id = hh.msco_id(+)
+		   AND hh.msdd_number(+) = 1
+		   AND aa.reg_spaj = ii.reg_spaj
+		   AND ii.lstb_id = 1
+		   AND ii.lsle_id = 4
+		   AND ii.msag_id = jj.msag_id
+		   AND jj.mcl_id = kk.mcl_id
+		   AND jj.lca_id = ll.lca_id
+		   AND gg.msco_pay_date is null	
+	-->
+	
+	<select id="elions.finance.selectDetailReksadanaByDate" parameterClass="com.ekalife.elions.model.Reksadana" resultClass="int">
+		select mrd_trans_id from eka.inv_reksa_det 
+		where 
+			ire_reksa_no = #ire_reksa_no# 
+			and ird_trans_date = #ird_trans_date#
+	</select>
+
+	<select id="elions.finance.selectReksadana" parameterClass="string" resultClass="com.ekalife.elions.model.Reksadana">
+		select a.ire_reksa_no, b.ird_value, b.ird_unit
+		from eka.inv_reksadana A, eka.inv_reksa_det B
+		where UPPER(TRIM(A.ire_reksa_name)) = UPPER(TRIM(#value#))
+		and a.ire_reksa_no = b.ire_reksa_no
+		and b.ird_unit <![CDATA[<>]]> 0
+		and a.ire_reksa_name in
+			('BNI DANA SYARIAH', 'GMT DANA PASTI', 'I - HAJJ SYARIAH FUND', 'MEDALI SYARIAH', 'PNM DANA SEJAHTERA II', 
+			'REKSA DANA PNM AMANAH SYARIAH', 'REKSADANA DANA BERBUNGA TIGA', 'SCHRODER DANA ANDALAN', 'SIMAS DANAMAS MANTAP PLUS', 'STAR FIXED INCOME', 
+			'SULUT FUND STABIL', 'SURYA', 'BNI DANA BERKEMBANG', 'DANAREKSA MAWAR', 'PLATINUM SAHAM', 
+			'SI DANA SAHAM', 'SIMAS DANAMAS SAHAM', 'NUSADANA KOMBINASI MAXIMA', 'SI DANA DINAMIS', 'SIMAS SATU', 
+			'STAR BALANCED', 'TRIM KOMBINASI', 'FORTIS EKUITAS', 'SCHRODER DANA PRESTASI PLUS')
+		and b.mrd_trans_id = 
+			(select max(mrd_trans_id) from eka.inv_reksa_det where ire_reksa_no = b.ire_reksa_no)
+	</select>
+
+	<select id="elions.finance.validationBillingPosition" resultClass="int" parameterClass="java.util.HashMap">
+		SELECT count(*)
+		  FROM eka.mst_billing a, eka.mst_policy b
+		 WHERE a.reg_spaj = b.reg_spaj
+		       AND a.reg_spaj = rpad(replace(#spaj#,'.'),11,' ')
+		       AND a.lspd_id=#posisi#
+	</select>
+	
+	<select id="elions.finance.selectDaftarDeductAgen" resultMap="elions.finance.selectDaftarDeductAgen.result" parameterClass="string">
+		select b.lsjd_id, b.lsjd_jenis, a.msdd_deduct from eka.mst_deduct a, eka.lst_jn_deduct b where a.lsjd_id = b.lsjd_id(+)
+		and msco_id = #value#
+	</select>
+
+	<select id="elions.finance.selectKomisiAgen" resultMap="elions.finance.selectKomisiAgen.result" parameterClass="java.util.HashMap">
+		SELECT   b.lca_id, NVL (b.msag_sbm, 0) msag_sbm, b.lca_id || b.lwk_id reggae,
+		         a.msco_id, a.msbi_tahun_ke, a.msbi_premi_ke, e.msbi_beg_date,
+		         e.msbi_end_date, a.reg_spaj, a.lev_comm,
+		         DECODE (a.lev_comm,
+		                 1, 'Regional Manager',
+		                 2, 'Agency Manager',
+		                 3, 'Unit Manager',
+		                 4, 'Marketing Executive'
+		                ) level_nama,
+		         a.msag_id, e.msbi_flag_topup, c.mcl_gelar, c.mcl_first,
+		         b.msag_tabungan, a.msco_nilai_kurs, a.msco_comm, a.msco_tax,
+		         (NVL (a.msco_comm, 0) - NVL (a.msco_tax, 0)) total, b.lsle_id,
+		         f.lpc_dplk_p
+		    FROM eka.mst_commission a,
+		         eka.mst_agent b,
+		         eka.mst_client_new c,
+		         eka.mst_agent_club d,
+		         eka.mst_billing e,
+		         eka.lst_pclub f
+		   WHERE (a.msag_id = b.msag_id)
+		     AND a.msag_id = d.msag_id(+)
+		     AND d.lpc_id = f.lpc_id(+)
+		     AND (c.mcl_id(+) = b.mcl_id)
+		     AND (a.reg_spaj = e.reg_spaj)
+		     AND (a.msbi_tahun_ke = e.msbi_tahun_ke)
+		     AND (a.msbi_premi_ke = e.msbi_premi_ke)
+		     AND (    (a.reg_spaj = rpad(replace(#spaj#,'.'),11,' '))
+		          AND (a.msbi_tahun_ke = #tahun#)
+		          AND (a.msbi_premi_ke = #premi#)
+		         )
+		ORDER BY a.lev_comm DESC
+	</select>
+
+	<select id="elions.finance.selectDaftarKomisiAgen" resultMap="elions.finance.selectDaftarKomisiAgen.result" parameterClass="java.util.HashMap">
+		select msbi_tahun_ke, msbi_premi_ke from eka.mst_billing where reg_spaj = rpad(replace(#spaj#,'.'),11,' ') and lspd_id=#lspd# group by msbi_tahun_ke, msbi_premi_ke
+	</select>
+
+	<select id="elions.finance.selectDeductKomisiAgen" resultMap="elions.finance.selectDeductKomisiAgen.result" parameterClass="string">
+		SELECT 'X' FLAG, msco_id, msdd_number, lsjd_id, msdd_date, msdd_deduct, msdd_tax,
+		       msdd_desc, lus_id
+		  FROM eka.mst_deduct
+		 WHERE msco_id = rpad(#value#,12,' ')
+		 ORDER BY msdd_number
+	</select>
+
+	<select id="elions.finance.selectMstDeduct" resultClass="com.ekalife.elions.model.Deduct" parameterClass="string">
+		SELECT *
+		  FROM eka.mst_deduct
+		 WHERE msco_id = rpad(#value#,12,' ')
+		 ORDER BY msdd_number
+	</select>
+
+	<select id="elions.finance.selectInfoTransferFilling" parameterClass="java.util.HashMap" resultMap="elions.finance.selectInfoTransferFilling.result">
+		select e.mste_beg_date, c.lca_id, msco_id, (c.lca_id||c.lwk_id) region, d.lsbs_id, a.lspd_id mspo_lspd_id, nvl(f.msbi_flag_topup,0) flag_topup, e.mste_flag_cc from
+		(select * from eka.mst_policy where reg_spaj = rpad(replace(#spaj#,'.'),11,' ')) a,
+		(select * from eka.mst_commission where msbi_tahun_ke=#tahun# and msbi_premi_ke=#premi# and reg_spaj = rpad(replace(#spaj#,'.'),11,' ') 
+				and lev_comm = (select max(lev_comm) from eka.mst_commission where reg_spaj = rpad(replace(#spaj#,'.'),11,' ') and msbi_tahun_ke=#tahun# and msbi_premi_ke=#premi#)) b,
+		eka.mst_agent c,
+		(select * from eka.mst_product_insured where lsbs_id <![CDATA[<=]]> 300) d,
+		eka.mst_insured e,
+		eka.mst_billing f
+		where
+		a.reg_spaj = b.reg_spaj
+		and b.msag_id = c.msag_id
+		and a.reg_spaj = d.reg_spaj
+		and a.reg_spaj = e.reg_spaj
+		and a.reg_spaj = f.reg_spaj
+		and f.msbi_tahun_ke = #tahun# and f.msbi_premi_ke=#premi#
+	</select>
+
+	<select id="elions.finance.validasiRekeningBank" parameterClass="string" resultClass="int">
+		SELECT lsbp_id
+		  FROM eka.mst_agent a, eka.lst_bank b
+		 WHERE a.lbn_id = b.lbn_id
+		   AND a.msag_id = #msag#
+	</select>
+	
+	<select id="elions.finance.selectJumlahReward" parameterClass="java.util.HashMap" resultClass="int">
+		SELECT COUNT (*)
+		  FROM eka.mst_reward
+		 WHERE (reg_spaj = rpad(replace(#spaj#,'.'),11,' '))
+		   AND (msbi_tahun_ke = #tahun#)
+		   AND (msbi_premi_ke = #premi#)
+	</select>
+	
+	<select id="elions.finance.selectBankReward" parameterClass="java.util.HashMap" resultClass="int">
+		SELECT b.lsbp_id
+		  FROM eka.mst_reward a, eka.lst_bank b
+		 WHERE (a.lbn_id = b.lbn_id)
+		   AND (a.reg_spaj = rpad(replace(#spaj#,'.'),11,' '))
+		   AND (a.msbi_tahun_ke = #tahun#)
+		   AND (a.msbi_premi_ke = #premi#)
+	</select>
+	
+	<select id="elions.finance.validationTopUpBilling" parameterClass="java.util.HashMap" resultClass="int">
+		SELECT COUNT (*)
+		  FROM eka.mst_billing
+		 WHERE (reg_spaj = rpad(replace(#spaj#,'.'),11,' ')) AND (lspd_id = #lspd#) AND (msbi_flag_topup = #topup#)
+	</select>
+	
+	<select id="elions.finance.cariNomor" parameterClass="java.util.HashMap" resultClass="com.ekalife.elions.model.tts.Tts">
+		<isEqual property="tipe" compareValue="1">
+			SELECT    SUBSTR (tts.mst_no, 0, 3)	
+		       || '/'
+		       || SUBSTR (tts.mst_no, 4, 6)
+		       || '/'
+		       || SUBSTR (tts.mst_no, 10) AS mst_noFormated,
+		       tts.*,cabang.lca_nama,lst_user.lus_full_name
+		  FROM (SELECT *
+		          FROM eka.mst_tts where mst_no $kata$) tts	,
+		        eka.lst_cabang cabang,
+		        eka.lst_user lst_user
+		  where cabang.lca_id=tts.lst_kd_cab 
+		  		and tts.lus_id=lst_user.lus_id	
+		  		<isNotEqual property="lca_id" compareValue="01"> 
+			  		and tts.lst_kd_cab=#lca_id#   
+		  		</isNotEqual>
+		</isEqual>
+		<isEqual property="tipe" compareValue="2">
+			SELECT    SUBSTR (tts.mst_no, 0, 3)	
+		       || '/'
+		       || SUBSTR (tts.mst_no, 4, 6)
+		       || '/'
+		       || SUBSTR (tts.mst_no, 10) AS mst_noFormated,
+		      tts.*,cabang.lca_nama,lst_user.lus_full_name
+		  FROM (SELECT *
+		          FROM eka.mst_tts where mst_nm_pemegang $kata$) tts,
+		        eka.lst_cabang cabang,
+		        eka.lst_user lst_user
+		  WHERE cabang.lca_id=tts.lst_kd_cab   
+		  		and tts.lus_id=lst_user.lus_id	
+		  		<isNotEqual property="lca_id" compareValue="01"> 
+			  		and tts.lst_kd_cab=#lca_id#   
+		  		</isNotEqual>
+		 </isEqual>
+	</select>
+
+	<select id="elions.finance.selectMstPolicyTts" parameterClass="java.util.HashMap" resultClass="com.ekalife.elions.model.tts.PolicyTts">
+		 SELECT    SUBSTR (policy_tts.mst_no_polis, 0, 2)	
+		       || '.'
+		       || SUBSTR (policy_tts.mst_no_polis, 3, 3)
+		       || '.'
+		       || SUBSTR (policy_tts.mst_no_polis, 6, 4)
+		       || '.'
+		       || SUBSTR (policy_tts.mst_no_polis, 10) AS mst_no_polis_formated,1 as pil,
+		       kurs.lku_symbol,to_char(policy_tts.beg_date,'dd/mm/yyyy') s_beg_date,
+		       to_char(policy_tts.end_date,'dd/mm/yyyy') s_end_date,
+   		       to_char(policy_tts.due_date,'dd/mm/yyyy') s_due_date,
+		       policy_tts.*,policy_tts.mst_jumlah_tahapan mstah_jumlah,kurs2.lku_symbol lku_symbol_tahapan
+		  FROM (SELECT a.*,b.mcl_first
+		          FROM  eka.mst_policy_tts a,
+		          		eka.mst_client_new b,
+		          		eka.mst_policy c
+		         WHERE a.mst_no = #mstNo# 
+		        <isNotNull property="kurs" prepend=" AND ">
+			        a.mst_kurs=#kurs# 
+		        </isNotNull>
+		        and a.mst_no_polis=c.mspo_policy_no
+		        and c.mspo_policy_holder=b.mcl_id
+		        ) policy_tts,
+		         eka.lst_kurs kurs,
+		         eka.lst_kurs kurs2
+		   where kurs.lku_id=policy_tts.mst_kurs and
+		   		 kurs2.lku_id(+)=policy_tts.lku_id_tahapan
+		   order by policy_tts.no_urut asc
+		
+	</select>
+	
+	<select id="elions.finance.selectMstCaraByr" parameterClass="string" resultClass="com.ekalife.elions.model.tts.CaraBayar">
+		select a.lsjb_id,a.no_urut,a.mst_no,to_char(a.tgl_jth_tempo,'dd/mm/yyyy')s_tgl_jth_tempo, a.tgl_jth_tempo,a.mst_no_rekening,a.mst_nama_bank,b.lsjb_type
+		from eka.mst_cara_byr a,
+			 eka.lst_payment_type b
+		where a.mst_no=#value#  and
+			  a.lsjb_id=b.lsjb_id order by no_urut
+	</select>
+
+	<select id="elions.finance.selectMstTts.MstNo" parameterClass="string" resultMap="elions.finance.selectMstTts.MstNo.result">
+		  select max(eka.mst_tts.mst_no) as mst_no,
+		  		 rpad(max(eka.mst_tts.mst_no),3) as no,
+		  		 substr(max(eka.mst_tts.mst_no),5,2) as bulan,
+				 substr(max(eka.mst_tts.mst_no),7,2) as tahun,  
+				 substr(max(eka.mst_tts.mst_no),10,6) as kd_cabang
+			from eka.mst_tts  
+		 	order by eka.mst_tts.mst_no asc
+	 </select>	
+
+	<select id="elions.finance.selectAllLstPaymentType" parameterClass="string" resultMap="elions.finance.selectAllLstPaymentType.result">
+		 select * from eka.lst_payment_type order by lsjb_id asc
+	</select>
+
+	<select id="elions.finance.selectInLstPaymentType" parameterClass="list" resultMap="elions.finance.selectAllLstPaymentType.result">
+		select * from eka.lst_payment_TYpe 
+			<iterate prepend="where lsjb_id in " open="(" close=")" conjunction=",">
+				#value[]#
+			</iterate>
+		order by lsjb_id asc
+	</select>
+
+	<select id="elions.finance.selectPolicyTtsJumBayar" parameterClass="string" resultMap="elions.finance.selectPolicyTtsJumBayar.result">
+  		select sum(mst_jumlah_byr_rp)jum_rp,sum(mst_jumlah_byr_dlr)jum_dlr 
+			from eka.mst_policy_tts 
+		where mst_no=#value#
+	</select>
+	
+	<select id="elions.finance.selectCekCounterTtsMonthAndYear" resultClass="integer" parameterClass="java.util.HashMap">
+		select case
+		   	   when (tglTable.tgl=tglSkr.tgl) then
+			   	   1
+				else
+			   	   0
+			end	flag_ounter
+	   from	(select MSCO_month_year tgl from eka.mst_counter_tts where msco_number=#aplikasi# and lca_id=#cabang#)tglTable,
+	   		(select to_char(sysdate,'mmyyyy') tgl from dual)tglSkr
+	</select>
+	
+	<select id="elions.finance.selectGetCounterTts" resultClass="java.util.HashMap" parameterClass="java.util.HashMap">
+		
+			SELECT     trim(TO_CHAR (  (CASE
+		                             WHEN a.msco_value <![CDATA[>=]]> a.msco_max
+		                                THEN 0
+		                             ELSE a.msco_value
+		                          END
+		                         )
+		                       + 1,
+		                       '000'
+		                      )) format_counter,
+		           msco_month_year,
+		           CASE
+		           		WHEN a.msco_value <![CDATA[>=]]> a.msco_max
+		                	THEN 0
+		                ELSE a.msco_value
+		           END +1 counter
+		      FROM eka.mst_counter_tts a
+		     WHERE a.msco_number = #aplikasi# AND a.lca_id = #cabang#
+			FOR UPDATE
+	</select>
+	
+	<select id="elions.finance.selectAllPolisNotPaid" parameterClass="string" resultClass="com.ekalife.elions.model.tts.BillingDetail">
+		select policy.mspo_policy_no,billing.reg_spaj,billing.msbi_premi_ke,
+			   billing.msbi_beg_date,billing.msbi_end_date,
+			   to_char(billing.msbi_beg_date,'dd/mm/yyyy') s_msbi_beg_date,
+			   to_char(billing.msbi_end_date,'dd/mm/yyyy') s_msbi_end_date,
+			   billing.lku_id,billing.msbi_remain,kurs.lku_symbol
+		from eka.mst_billing billing,
+			 eka.mst_policy policy,
+			 eka.lst_kurs kurs
+		where billing.reg_spaj=policy.reg_spaj and
+			  billing.msbi_paid!=1 and
+			  kurs.lku_id=billing.lku_id and
+			  policy.mspo_policy_no=#value#
+		</select>
+	
+	<select id="elions.finance.selectAllPolisNotPaidNew" parameterClass="string" resultClass="com.ekalife.elions.model.tts.PolicyTts">
+
+		SELECT  0 mstah_jumlah ,d.mspo_policy_no mst_no_polis,b.msbi_premi_ke premi_ke, b.msbi_tahun_ke tahun_ke, b.msbi_beg_date beg_date, b.msbi_end_date end_date,b.msbi_due_date due_date,
+		         b.lku_id mst_kurs, c.lku_symbol, SUM (a.msdb_premium) mst_premium, SUM (nvl(a.msdb_discount,0)) mst_discount,e.mcl_first,b.msbi_stamp
+		    FROM eka.mst_det_billing a, eka.mst_billing b, eka.lst_kurs c, eka.mst_policy d,eka.mst_client_new e
+		   WHERE (b.reg_spaj = a.reg_spaj)
+		     AND (b.msbi_tahun_ke = a.msbi_tahun_ke)
+		     AND (b.msbi_premi_ke = a.msbi_premi_ke)
+		     AND b.lku_id = c.lku_id
+		     AND b.reg_spaj=d.reg_spaj
+			 and d.mspo_policy_holder=e.mcl_id
+		     AND (d.mspo_policy_no = replace(#value#,'.',''))
+		     AND (b.msbi_paid != 1)
+		GROUP BY d.mspo_policy_no,
+				 b.msbi_premi_ke,
+		         b.msbi_tahun_ke,
+		         b.msbi_beg_date,
+		         b.msbi_end_date,
+		         b.msbi_due_date,
+		         b.lku_id,
+		         c.lku_symbol,
+				 e.mcl_first,
+				 b.msbi_stamp
+	</select>
+	
+	<select id="elions.finance.selectMaxLstHistoryPrintTts" resultClass="integer" parameterClass="string">
+		select max(ke)ke 
+			from eka.lst_history_print_tts 
+				where mst_no=#value#
+	</select>
+	
+	<select id="elions.finance.selectLstBungaLsbunBunga" resultClass="double" parameterClass="java.util.HashMap">
+		SELECT eka.lst_bunga.lsbun_bunga
+		  FROM eka.lst_bunga
+		 WHERE (eka.lst_bunga.lsbun_jenis = #lsbun_jenis#)
+		   AND (eka.lst_bunga.lku_id = #lku_id#)
+		   AND (TRUNC (eka.lst_bunga.lsbun_tgl) IN (
+		           SELECT TRUNC (MAX (eka.lst_bunga.lsbun_tgl))
+		             FROM eka.lst_bunga
+		            WHERE (eka.lst_bunga.lsbun_jenis = #lsbun_jenis#)
+		              AND (eka.lst_bunga.lku_id = #lku_id#)
+		              AND (TO_CHAR (eka.lst_bunga.lsbun_tgl, 'MM/YYYY') =
+		                                          TO_CHAR (TRUNC (SYSDATE), 'mm/yyyy')
+		                  )
+		              AND (TRUNC (eka.lst_bunga.lsbun_tgl) <![CDATA[<=]]> TRUNC (SYSDATE)))
+		       )
+    </select>
+
+	<select id="elions.finance.selectMstPolicyLkuIdNLsbsId" resultMap="elions.finance.selectMstPolicyLkuIdNLsbsId.result" parameterClass="string">
+		SELECT a.lku_id,to_char(b.lsbs_id,'000') lsbs_id 
+			FROM EKA.MST_policy a,eka.mst_product_insured b 
+			where b.reg_spaj=a.reg_spaj and
+				  b.lsbs_id <![CDATA[<]]> 300 and
+				  a.mspo_policy_no=replace(#nopolis#,'.','')
+	</select>
+	
+	<select id="elions.finance.selectNamaCabang" resultClass="string" parameterClass="string">
+		select lca_nama from eka.lst_cabang where lca_id=#value#
+	</select>
+	
+	<select id="elions.finance.selectMstPolicy" resultMap="elions.finance.selectMstPolicy.result" parameterClass="string">
+		select   eka.mst_policy.reg_spaj,
+				 eka.mst_policy.lscb_id,   
+				 eka.mst_policy.lku_id,   
+				 eka.mst_policy.mspo_pay_period,
+				 eka.mst_policy.mspo_next_bill, 
+				 eka.mst_insured.mste_beg_date
+		  from eka.mst_policy, eka.mst_insured    
+		 where eka.mst_policy.reg_spaj = eka.mst_insured.reg_spaj 
+		   and eka.mst_policy.mspo_policy_no =replace(#value#,'.','')
+	</select>
+
+	<select id="elions.finance.selectLstPayModeLsCbTtlMonth" resultClass="integer" parameterClass="integer">
+		select eka.lst_pay_mode.lscb_ttl_month  
+			  from eka.lst_pay_mode  
+			 where eka.lst_pay_mode.lscb_id = #value#   
+	</select>
+	
+	<select id="elions.finance.selectMonthsBetween" resultClass="integer" parameterClass="java.util.HashMap">
+		select round(months_between(#awal#, #akhir#)) from dual
+	</select>
+	
+	<select id="elions.finance.selectLstDiscountLsdisPersen" resultClass="double" parameterClass="java.util.HashMap">
+		select eka.lst_discount.lsdis_persen  
+		  from eka.lst_discount  
+		 where ( eka.lst_discount.lsbs_id = #lsbsId# ) and  
+			 	 ( eka.lst_discount.lsdbs_number = #lsdbsNumber# ) and  
+				 ( eka.lst_discount.lstht_tahun_ke = #tahunKe# )   
+	</select>
+	
+	<select id="elions.finance.selectLstHistoryPrintTts" resultClass="java.util.HashMap" parameterClass="string">
+		  select a.ke,a.mst_no,a.kd_cab,a.tgl_print,a.ket_print,b.lus_full_name
+			  from eka.lst_history_print_tts a,
+			  	   eka.lst_user b ,
+				   eka.mst_tts c
+			  where c.lus_id=b.lus_id and
+			  		a.mst_no=c.mst_no and
+			  		a.mst_no=#value#
+	</select>
+	
+	<select id="elions.finance.selectMstHistoryTts" resultMap="elions.finance.selectMstHistoryTts.result" parameterClass="string">
+		select rownum no,mst_TGL,lus_full_name,mst_desc 
+		from eka.lst_user a,
+			 eka.mst_history_tts b
+		where a.lus_id=b.lus_id and
+			  b.MST_NO=#value#
+	 </select>
+	
+	<select id="elions.finance.selectMstTahapan" resultClass="com.ekalife.elions.model.tts.Tahapan" parameterClass="java.util.HashMap">
+		SELECT a.*,c.lku_id,c.lku_symbol
+		  FROM  eka.mst_tahapan a,
+		  		eka.mst_product_insured b,
+		  		eka.lst_kurs c
+		 WHERE  a.reg_spaj=b.reg_spaj and
+		 		b.lku_id=c.lku_id and
+		 		a.reg_spaj IN (SELECT reg_spaj
+		                      FROM eka.mst_policy
+		                     WHERE mspo_policy_no = replace(#nopolis#,'.',''))
+		       and a.lspd_id=#lspd_id#
+	 </select>
+	
+	<select id="elions.finance.selectMstPolicyTtsNopolis" resultClass="string" parameterClass="string">
+		SELECT distinct mst_no_polis
+		  FROM eka.mst_policy_tts
+		 WHERE mst_no = #value#
+	</select> 
+ 
+	<select id="elions.finance.selectViewerTts" resultClass="java.util.HashMap" parameterClass="java.util.HashMap">
+		select * 
+		from eka.mst_tts tts,
+			 eka.lst_user lst_user,
+			 eka.lst_cabang lst_cabang
+		where  tts.lus_id=lst_user.lus_id 
+			   and lst_user.lca_id=lst_cabang.lca_id 
+				<isNotNull property="lcaId">
+					<isNotEqual property="lcaId" compareValue="All">
+						and tts.lst_kd_cab=#lcaId# 
+					</isNotEqual>
+				</isNotNull>
+				<isNotNull property="lusId" >
+					<isNotEqual property="lusId" compareValue="All">
+						and lst_user.lus_id=#lusId# 
+					</isNotEqual>
+				</isNotNull>
+				<isNotEqual property="flagPrint" compareValue="All">
+					and tts.flag_print=#flagPrint#
+				</isNotEqual>
+		order by lst_kd_cab ,lus_full_name,mst_no asc
+	</select> 
+	
+ 	<select id="elions.finance.selectMstTtsTglSetor" resultClass="date" parameterClass="string">
+		select mst_tgl_setor 
+		from eka.mst_tts where mst_no=#value#
+	</select>
+	
+	<select id="elions.finance.selectListNab" parameterClass="string" resultClass="com.ekalife.elions.model.FactSheetNab">
+		SELECT lji.lji_id id, lji.lji_invest jenis
+        FROM  
+        	eka.lst_jenis_invest lji,
+        	(SELECT lji_id, lnu_tgl, lnu_nilai FROM eka.lst_nab_ulink lnu WHERE (lji_id, lnu_tgl) in (SELECT lji_id, MAX (lnu_tgl) lnu_tgl FROM eka.lst_nab_ulink GROUP BY lji_id)) baru,
+        	(SELECT lji_id, lnu_tgl, lnu_nilai FROM eka.lst_nab_ulink lnu WHERE (lji_id, lnu_tgl) in (SELECT lji_id, MAX (lnu_tgl) lnu_tgl FROM eka.lst_nab_ulink lnu WHERE lnu_tgl <![CDATA[<]]> (SELECT MAX(lnu_tgl) FROM eka.lst_nab_ulink WHERE lji_id = lnu.lji_id) GROUP BY lji_id)) lama
+        WHERE 
+        	( lji.lji_grup not in (5, 6, 7) or lji.lji_id in (22,23,34))
+        	AND lji.lji_id = baru.lji_id
+        	AND lji.lji_id = lama.lji_id(+)
+        ORDER BY SUBSTR(lji.lji_invest, 1, INSTR(lji.lji_invest, ' ')-1),lji.lji_grup,lku_id,replace(lji.lji_invest,'$$','')
+	</select>
+	
+	<select id="elions.finance.selectJenisInvestNab" parameterClass="string" resultClass="string">
+		SELECT lji_invest FROM eka.lst_jenis_invest WHERE lji_id = #value#
+	</select>
+ 
+ 	<select id="elions.finance.selectGetPremiSyariah" parameterClass="java.util.HashMap" resultClass="double">
+ 		SELECT EKA.PKG_SYARIAH.GET_PREMI(#reg_spaj#, #tahun_ke#, #premi_ke#, #flag#)
+ 		FROM DUAL
+ 	</select>
+ 
+ 	<select id="elions.finance.selectKomisiAgenErbePackage" resultClass="java.util.HashMap" parameterClass="java.util.HashMap">
+		 select * from eka.mst_invoice where reg_spaj = #reg_spaj# 
+ 			and msbi_tahun_ke = #tahun_ke# and msbi_premi_ke = #premi_ke#
+	</select>
+ 
+</sqlMap>

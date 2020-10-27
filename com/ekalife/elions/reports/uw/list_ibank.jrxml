@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="list_ibank" pageWidth="450" pageHeight="612" orientation="Landscape" columnWidth="410" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<property name="com.jasperassistant.designer.HGuides" value="0,1,1,169,199,221,370"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="no_trx" class="java.lang.String">
+		<defaultValueExpression><![CDATA["FT122222JSVM"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="norek_ajs" class="java.lang.String">
+		<defaultValueExpression><![CDATA["00021 84702"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT det.no_trx,det.premi_ke,det.jumlah,det.no_urut ,det.no_spaj, DREK.NILAI_TRX, drek.lku_id,kurs.lku_symbol
+    FROM eka.mst_drek_det det, eka.mst_drek drek, eka.lst_kurs kurs
+    WHERE 
+    ( det.flag_active = 1 or det.flag_active is null)
+    and DREK.NO_TRX=DET.NO_TRX
+    and drek.lku_id =kurs.lku_id
+    AND det.no_trx ='FT122222JSVM\MKS'
+	and det.no_spaj ='37201209245'
+    AND replace(replace(replace(trim(det.norek_ajs),'.',''),'-',''),' ','') ='0002184702'
+    order by no_urut asc]]>
+	</queryString>
+	<field name="JUMLAH" class="java.math.BigDecimal"/>
+	<field name="LKU_ID" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="NILAI_TRX" class="java.math.BigDecimal"/>
+	<field name="NO_SPAJ" class="java.lang.String"/>
+	<field name="NO_TRX" class="java.lang.String"/>
+	<field name="NO_URUT" class="java.math.BigDecimal"/>
+	<field name="PREMI_KE" class="java.math.BigDecimal"/>
+	<variable name="total_jum" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{JUMLAH}]]></variableExpression>
+	</variable>
+	<variable name="total_sisa" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal($F{NILAI_TRX}.doubleValue()-$V{total_jum}.doubleValue())]]></variableExpression>
+	</variable>
+	<title>
+		<band height="20">
+			<staticText>
+				<reportElement x="0" y="0" width="168" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Times-Bold" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[PAYMENT PREMI]]></text>
+			</staticText>
+		</band>
+	</title>
+	<detail>
+		<band height="15">
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="0" width="200" height="15" backcolor="#E4E4E4"/>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="9" isBold="true" isItalic="false" pdfFontName="Times-Bold" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Premi utk SPAJ "+$F{NO_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="220" y="0" width="150" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{JUMLAH}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="200" y="0" width="20" height="15"/>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Times-Bold" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="40">
+			<staticText>
+				<reportElement x="0" y="9" width="168" height="15"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true" isItalic="false" pdfFontName="Times-Bold" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Total premi yg sudah terpakai]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="24" width="168" height="15"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true" isItalic="false" pdfFontName="Times-Bold" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Premi blm terpakai]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="200" y="9" width="20" height="15"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Times-Bold" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="200" y="24" width="20" height="15"/>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Times-Bold" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement x="220" y="9" width="150" height="15"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_jum}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement x="220" y="24" width="150" height="15"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_sisa}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

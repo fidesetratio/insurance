@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="list_outstanding_premiCb" pageWidth="1495" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="1455" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<property name="com.jasperassistant.designer.VGuides.Title" value="18,32"/>
+	<parameter name="tglBayar" class="java.lang.String"/>
+	<parameter name="medis_tt" class="java.lang.String"/>
+	<parameter name="medis_pp" class="java.lang.String"/>
+	<parameter name="nospaj" class="java.lang.String"/>
+	<parameter name="tglAwal" class="java.lang.String"/>
+	<parameter name="tglAkhir" class="java.lang.String"/>
+	<parameter name="lca_id" class="java.lang.String"/>
+	<parameter name="props" class="java.lang.String"/>
+	<parameter name="tanggalAwal" class="java.lang.String"/>
+	<parameter name="tanggalAkhir" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT   distinct *
+    FROM (	SELECT /*+ first_rows */
+                 (CASE
+                     WHEN pol.lca_id = '09' THEN 'Bancassurance'
+                     WHEN pol.lca_id IN ('08', '42') THEN 'Worksite'
+                     ELSE 'Agency Regional'
+                  END
+                 ) dist,mste_tgl_terima_spaj,
+				 UPPER(rider.lsdbs_name) rider_name,
+                 pol.reg_spaj, 
+				 det_bisnis.lsdbs_name, 
+				 pol.mspo_policy_no_format,
+				 pp.mcl_first pp_nama,
+				 tt.mcl_first tt_nama,
+                 prod.mspr_premium, 
+				 kurs.lku_symbol,
+                -- ceil((msur_awal_prm_upaid - mste_beg_date)/360) usia_polis, 
+				 sysdate,
+				 pol.mspo_pay_period,
+				 cab.lca_nama,
+				 ins.mste_beg_date,
+				 clm.NM_DIAGNOS,
+				 clm.AMOUNTACCEPT,
+				 keket.msps_desc,pol.mspo_age,ins.mste_age,
+				 hsp.tgl_update,
+				 nvl(trunc(sysdate) - trunc(hsp.tgl_update), 0) lama_proses1,
+				 round(((sysdate) - (hsp.tgl_update))/30,1) lama_proses, prod.mspr_tsi
+            FROM eka.mst_policy pol,
+                 eka.mst_insured ins,
+                 eka.mst_product_insured prod,
+                 eka.mst_client_new pp,
+				(SELECT distinct ROWNUM NO, x.*, y.lsdbs_name
+		          FROM eka.MST_PRODUCT_INSURED x, eka.LST_DET_BISNIS y, eka.mst_policy z
+		         WHERE x.lsbs_id = y.lsbs_id
+		           AND x.lsdbs_number = y.lsdbs_number
+		           AND x.lsbs_id >= 800
+				   AND x.reg_spaj  = z.reg_spaj)rider,
+				 (select msps_desc, reg_spaj 
+				  from eka.mst_position_spaj ff
+				  where lssa_id=5 and lspd_id=2 
+				  		and msps_date= (select Max(msps_date) from eka.mst_position_spaj where reg_spaj=ff.reg_spaj))keket,
+                 eka.mst_client_new tt,
+                 eka.lst_kurs kurs,
+                 eka.lst_bisnis bis,
+				 eka.lst_det_bisnis det_bisnis, 
+				 eka.mst_history_sts_polis hsp,
+				 eka.lst_cabang cab, eka.ID_MST_CLM clm
+           WHERE pol.reg_spaj = ins.reg_spaj
+		   	 AND pol.reg_spaj = hsp.reg_spaj
+		     AND pol.reg_spaj = clm.REGSPAJ(+)
+		     AND pol.reg_spaj = rider.reg_spaj(+)
+			 AND pol.reg_spaj = keket.reg_spaj(+)
+             AND ins.mste_insured_no = prod.mste_insured_no
+             AND ins.reg_spaj = prod.reg_spaj
+			 --- AND ins.reg_spaj = ccc.reg_spaj
+             AND prod.lsbs_id < 300
+			 and pol.lssp_id = 14
+			 and pol.lssp_id= hsp.new_status
+			 and pol.lssp_id =hsp.new_status
+			 ANd kurs.lku_id =pol.lku_id
+             AND pol.mspo_policy_holder = pp.mcl_id
+             AND ins.mste_insured = tt.mcl_id
+             AND prod.lsbs_id = bis.lsbs_id
+			 AND prod.lsbs_id = det_bisnis.lsbs_id
+			 AND prod.lsdbs_number = det_bisnis.lsdbs_number
+			 AND pol.lca_id= cab.lca_id
+			 and nvl(trunc(sysdate) - trunc(hsp.tgl_update), 0) >90
+			 And nvl(trunc(sysdate) - trunc(hsp.tgl_update), 0)<730
+			 and hsp.tgl_update= (select min(tgl_update) from eka.mst_history_sts_polis where reg_spaj=pol.reg_spaj and new_status = 14)
+ 			AND pol.lca_id =$P{lca_id}
+			 AND ins.mste_tgl_terima_spaj >=to_date($P{tanggalAwal},'dd/mm/yyyy')
+      		 AND ins.mste_tgl_terima_spaj<= to_date($P{tanggalAkhir},'dd/mm/yyyy')
+			 )
+ORDER BY 1, 2]]>
+	</queryString>
+	<field name="AMOUNTACCEPT" class="java.math.BigDecimal"/>
+	<field name="DIST" class="java.lang.String"/>
+	<field name="LAMA_PROSES" class="java.math.BigDecimal"/>
+	<field name="LAMA_PROSES1" class="java.math.BigDecimal"/>
+	<field name="LCA_NAMA" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="MSPO_AGE" class="java.math.BigDecimal"/>
+	<field name="MSPO_PAY_PERIOD" class="java.math.BigDecimal"/>
+	<field name="MSPO_POLICY_NO_FORMAT" class="java.lang.String"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="MSPR_TSI" class="java.math.BigDecimal"/>
+	<field name="MSPS_DESC" class="java.lang.String"/>
+	<field name="MSTE_AGE" class="java.math.BigDecimal"/>
+	<field name="MSTE_BEG_DATE" class="java.util.Date"/>
+	<field name="MSTE_TGL_TERIMA_SPAJ" class="java.util.Date"/>
+	<field name="NM_DIAGNOS" class="java.lang.String"/>
+	<field name="PP_NAMA" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="RIDER_NAME" class="java.lang.String"/>
+	<field name="SYSDATE" class="java.util.Date"/>
+	<field name="TGL_UPDATE" class="java.util.Date"/>
+	<field name="TT_NAMA" class="java.lang.String"/>
+	<title>
+		<band height="50">
+			<staticText>
+				<reportElement x="1" y="1" width="339" height="15"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[LIST  POLIS  DENGAN  OUTSTANDING  PREMI > 90 HARI  ( 3 BULAN )					
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1" y="18" width="43" height="14"/>
+				<textElement>
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[Periode]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1" y="32" width="43" height="18"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[Cabang]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="48" y="18" width="80" height="15"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggalAwal}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="147" y="19" width="80" height="13"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggalAkhir}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="48" y="32" width="120" height="17"/>
+				<textElement>
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LCA_NAMA}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="128" y="18" width="19" height="14"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[s/d]]></text>
+			</staticText>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="23">
+			<rectangle>
+				<reportElement x="0" y="1" width="1449" height="22"/>
+				<graphicElement/>
+			</rectangle>
+			<staticText>
+				<reportElement x="2" y="3" width="25" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="27" y="3" width="78" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[No Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="105" y="3" width="96" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Nm Pemegang Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="201" y="3" width="32" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Usia PP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="233" y="3" width="103" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Tertanggung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="336" y="3" width="32" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Usia TTG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="368" y="3" width="72" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[UP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="440" y="3" width="128" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Plan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="675" y="3" width="80" height="17"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[MPP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="755" y="3" width="80" height="17"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Efektif Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="835" y="3" width="71" height="17"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Tgl Lapse]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="906" y="3" width="73" height="18"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Lama Lapse
+(Dlm Hari)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="979" y="3" width="173" height="17"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Hasil UW]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1153" y="3" width="60" height="17"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Jns Klaim]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1214" y="3" width="91" height="17"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Diagnosa]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1306" y="3" width="67" height="17"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Klaim Di Bayar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1373" y="3" width="35" height="17"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Medis PP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1409" y="3" width="39" height="17"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Medis TTG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="568" y="3" width="108" height="20"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Rider]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="13">
+			<textField isBlankWhenNull="true">
+				<reportElement x="105" y="0" width="96" height="13"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="25" y="0" width="80" height="13"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_POLICY_NO_FORMAT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="233" y="0" width="104" height="13"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="440" y="0" width="128" height="13"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="675" y="0" width="81" height="13"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSPO_PAY_PERIOD}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="568" y="0" width="108" height="13"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{RIDER_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="755" y="-1" width="81" height="14"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{MSTE_BEG_DATE})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1" y="1" width="24" height="11"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_COUNT}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="-1" width="1" height="14"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="1448" y="0" width="1" height="13"/>
+				<graphicElement/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="979" y="-1" width="174" height="14"/>
+				<textElement>
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPS_DESC}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="201" y="0" width="32" height="13"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSPO_AGE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="337" y="0" width="31" height="13"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSTE_AGE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="368" y="0" width="72" height="13"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MSPR_TSI}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="836" y="-1" width="70" height="14"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{TGL_UPDATE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="906" y="0" width="73" height="13"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{LAMA_PROSES1}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

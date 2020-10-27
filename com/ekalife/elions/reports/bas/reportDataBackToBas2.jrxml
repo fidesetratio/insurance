@@ -1,0 +1,458 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="reportDataBackToBas2" pageWidth="1450" pageHeight="842" whenNoDataType="NoDataSection" columnWidth="1410" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="dataprod"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<parameter name="bdate" class="java.lang.String"/>
+	<parameter name="edate" class="java.lang.String"/>
+	<parameter name="pdate" class="java.lang.String"/>
+	<parameter name="jenis" class="java.lang.String"/>
+	<parameter name="jn_transfer" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select distinct
+            a.mspo_input_date tgl_input, a.reg_spaj, 
+            c.lus_full_name user_input,
+             (select distinct 
+                  c.lus_full_name from eka.mst_position_spaj v, eka.lst_user c
+             where 
+                  v.msps_date = (select min(x.msps_date) 
+                                  from eka.mst_position_spaj x 
+                                  where x.msps_desc like '%TRANSFER KE SPEEDY%' and x.reg_spaj = a.reg_spaj)
+                  and v.lus_id =c.lus_id
+                  and v.reg_spaj=a.reg_spaj)user_transfer_speedy, d.lsrg_nama cabang, 
+            (select max(msps_date) from eka.mst_position_spaj where lspd_id = 27 and msps_desc like '%BACK TRANSFER KE BAS%' and reg_spaj = a.reg_spaj)tgl_back_transfer_bas,
+            (select 
+                  z.msps_desc from eka.mst_position_spaj z 
+             where 
+                  z.msps_date = (select max(x.msps_date) 
+                                  from eka.mst_position_spaj x 
+                                  where x.lspd_id = 27 and x.msps_desc like '%BACK TRANSFER KE BAS%' and x.reg_spaj = a.reg_spaj)
+                  and z.reg_spaj=a.reg_spaj)keterangan,
+                  eka.utils.agen(f.msag_id)nama_agen, f.msag_id kode_agen, back.lus_full_name user_back_to_bas
+        from
+            eka.mst_policy a,
+            eka.lst_user c,
+            eka.lst_region d,
+            eka.mst_product_insured e,
+            eka.mst_agent_prod f,
+             (select 
+                  r.lus_id, r.reg_spaj from eka.mst_position_spaj r 
+             where 
+                  r.msps_date = (select max(t.msps_date) 
+                                  from eka.mst_position_spaj t 
+                                  where t.lspd_id = 27 and t.msps_desc like '%BACK TRANSFER KE BAS%' and t.reg_spaj = r.reg_spaj)
+                  )xx,
+            eka.lst_user back
+        where
+            a.lus_id = c.lus_id
+            and a.lca_id = d.lca_id
+            and a.lwk_id = d.lwk_id
+            and F.LSLE_ID=4
+            and f.reg_spaj =a.reg_spaj
+            and a.lsrg_id = d.lsrg_id
+            and a.reg_spaj = e.reg_spaj
+            and xx.reg_spaj = a.reg_spaj
+            and back.lus_id = xx.lus_id
+            and a.lca_id not in ('09')
+            and c.lde_id not in ('24')
+            and a.reg_spaj not in (SELECT distinct reg_spaj FROM EKA.MST_PENDING_MRI)
+            and (e.lsbs_id != 163 and e.lsdbs_number not in (6,7,8,9,10))
+            and a.mspo_input_date between to_date('01/07/2015','dd/MM/yyyy') and to_date('31/07/2015','dd/MM/yyyy')+1 
+            and exists(select 1 from eka.mst_position_spaj where reg_spaj = a.reg_spaj and msps_desc like '%TRANSFER KE SPEEDY%')
+        UNION
+        select distinct
+            a.mspo_input_date tgl_input, a.reg_spaj, 
+            c.lus_full_name user_input,
+            (select distinct 
+                  c.lus_full_name from eka.mst_position_spaj v, eka.lst_user c
+             where 
+                  v.msps_date = (select min(x.msps_date) 
+                                  from eka.mst_position_spaj x 
+                                  where x.msps_desc like '%TRANSFER KE SPEEDY%' and x.reg_spaj = a.reg_spaj)
+                  and v.lus_id =c.lus_id
+                  and v.reg_spaj=a.reg_spaj)user_transfer_speedy, d.lsrg_nama cabang, 
+            (select max(msps_date) from eka.mst_position_spaj where lspd_id = 27 and msps_desc like '%BACK TRANSFER KE BAS%' and reg_spaj = a.reg_spaj)tgl_back_transfer_bas,
+            (select 
+                  z.msps_desc from eka.mst_position_spaj z 
+             where 
+                  z.msps_date = (select max(x.msps_date) 
+                                  from eka.mst_position_spaj x 
+                                  where x.lspd_id = 27 and x.msps_desc like '%BACK TRANSFER KE BAS%' and x.reg_spaj = a.reg_spaj)
+                  and z.reg_spaj=a.reg_spaj)keterangan,
+             eka.utils.agen(h.msag_id)nama_agen, h.msag_id kode_agen, back.lus_full_name user_back_to_bas
+        from
+            eka.mst_policy a,
+            eka.lst_user c,
+            eka.lst_region d,
+            eka.mst_insured e,
+            eka.mst_product_insured f,
+            eka.mst_agent_prod h,
+            (select 
+                  r.lus_id, r.reg_spaj from eka.mst_position_spaj r 
+             where 
+                  r.msps_date = (select max(t.msps_date) 
+                                  from eka.mst_position_spaj t 
+                                  where t.lspd_id = 27 and t.msps_desc like '%BACK TRANSFER KE BAS%' and t.reg_spaj = r.reg_spaj)
+                  )xx,
+            eka.lst_user back
+        where
+            a.reg_spaj = h.reg_spaj
+            and a.lus_id = c.lus_id
+            and a.lca_id = d.lca_id
+            and a.lwk_id = d.lwk_id
+            and a.lsrg_id = d.lsrg_id
+            and xx.reg_spaj = a.reg_spaj
+            and back.lus_id = xx.lus_id
+            and h.LSLE_ID=4
+            and a.reg_spaj = e.reg_spaj
+            and e.reg_spaj = f.reg_spaj
+            and e.mste_insured_no = f.mste_insured_no
+            and e.mste_insured_no = 1
+            and f.lsbs_id = 120
+            and a.lca_id = '09'
+            and c.lde_id not in ('24')
+            and a.mspo_input_date between to_date('01/07/2015','dd/MM/yyyy') and to_date('31/07/2015','dd/MM/yyyy')+1 
+            and exists(select 1 from eka.mst_position_spaj where reg_spaj = a.reg_spaj and msps_desc like '%TRANSFER KE SPEEDY%')
+            and a.reg_spaj not in (SELECT distinct reg_spaj FROM EKA.MST_PENDING_MRI)
+        order by user_transfer_speedy asc]]>
+	</queryString>
+	<field name="CABANG" class="java.lang.String"/>
+	<field name="KETERANGAN" class="java.lang.String"/>
+	<field name="KODE_AGEN" class="java.lang.String"/>
+	<field name="NAMA_AGEN" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="TGL_BACK_TRANSFER_BAS" class="java.sql.Timestamp"/>
+	<field name="TGL_INPUT" class="java.sql.Timestamp"/>
+	<field name="USER_BACK_TO_BAS" class="java.lang.String"/>
+	<field name="USER_INPUT" class="java.lang.String"/>
+	<field name="USER_TRANSFER_SPEEDY" class="java.lang.String"/>
+	<variable name="c_user" class="java.lang.String" calculation="Count">
+		<variableExpression><![CDATA[$F{REG_SPAJ}]]></variableExpression>
+	</variable>
+	<variable name="t_user" class="java.math.BigDecimal" resetType="Group" resetGroup="user" calculation="Sum">
+		<variableExpression><![CDATA[$F{USER_TRANSFER_SPEEDY}.equals("") ? new BigDecimal(0) : new BigDecimal(1)]]></variableExpression>
+	</variable>
+	<group name="user">
+		<groupExpression><![CDATA[$F{USER_TRANSFER_SPEEDY}]]></groupExpression>
+		<groupHeader>
+			<band height="50">
+				<staticText>
+					<reportElement x="310" y="30" width="133" height="20"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[User Transfer]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="190" y="30" width="120" height="20"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[User Input]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="110" y="30" width="80" height="20"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[No SPAJ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="30" y="30" width="80" height="20"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[Tgl Input]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="30" width="30" height="20"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[No.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="443" y="30" width="150" height="20"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[Cabang]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="811" y="30" width="357" height="20"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Keterangan]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1168" y="30" width="120" height="20"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[Nama Agen]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1288" y="30" width="120" height="20"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[Kode Agen]]></text>
+				</staticText>
+				<textField hyperlinkType="None">
+					<reportElement x="0" y="0" width="450" height="20"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+						<font size="11" isBold="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["User  Transfer   :   "+$F{USER_TRANSFER_SPEEDY}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="593" y="30" width="114" height="20"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[User Back To BAS]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="707" y="30" width="104" height="20"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Tgl Back Transfer]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="55">
+				<textField hyperlinkType="None">
+					<reportElement x="0" y="0" width="204" height="20"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Total SPAJ yang diinput      :   "+$V{user_COUNT}]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="0" y="23" width="204" height="20"/>
+					<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="2">
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Total SPAJ yang ditransfer  :   "+$V{t_user}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<columnHeader>
+		<band height="55">
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="20" width="450" height="33"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tanggal "+$P{jenis}+" : "+$P{bdate}+" s/d "+$P{edate}+"\n"+
+"Tanggal Print : "+$P{pdate}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="0" width="450" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Report Data Upload All Cabang "+$P{jn_transfer}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="30" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Number"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="30" y="0" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{TGL_INPUT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="110" y="0" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatSPAJ($F{REG_SPAJ})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="190" y="0" width="120" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{USER_INPUT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="443" y="0" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CABANG}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="811" y="0" width="357" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KETERANGAN}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1168" y="0" width="120" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_AGEN}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1288" y="0" width="120" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KODE_AGEN}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="310" y="0" width="133" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{USER_TRANSFER_SPEEDY}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="707" y="0" width="104" height="20"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{TGL_BACK_TRANSFER_BAS}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="593" y="0" width="114" height="20"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{USER_BACK_TO_BAS}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

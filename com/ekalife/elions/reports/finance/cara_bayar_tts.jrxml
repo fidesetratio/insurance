@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="cara_bayar_tts" pageWidth="612" pageHeight="791" columnWidth="612" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<property name="com.jasperassistant.designer.HGuides" value="73"/>
+	<parameter name="mst_no" class="java.lang.String">
+		<defaultValueExpression><![CDATA["00201200701IE"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT mst_tts.mst_no_reff_btl,mst_no_reff_new,mst_cara_byr.no_urut, mst_cara_byr.mst_no_rekening,
+       mst_cara_byr.mst_nama_bank, mst_cara_byr.mst_no,
+       lst_payment_type.lsjb_type,mst_tts.mst_flag_batal,
+ 	   (CASE
+           WHEN lst_payment_type.lsjb_id = 11
+              THEN (
+			  			  select distinct lku_symbol
+						  from eka.mst_policy_tts a,
+						  	   eka.lst_kurs b 
+						  where a.lku_id_tahapan=b.lku_id and
+						  		a.mst_no=$P{mst_no}
+			  ) 
+        END
+       ) LKU_ID_TAHAPAN,
+       (CASE
+           WHEN lst_payment_type.lsjb_id = 11
+              THEN (SELECT  SUM (head.mst_jumlah_tahapan) tahapan
+                          FROM eka.mst_policy_tts head
+	                             WHERE head.mst_no = $P{mst_no}
+	                ) 
+        END
+       ) jumlah_tahapan
+  FROM eka.mst_cara_byr mst_cara_byr, eka.lst_payment_type lst_payment_type,eka.mst_tts mst_tts
+ WHERE (mst_cara_byr.lsjb_id = lst_payment_type.lsjb_id)
+ 	and   mst_tts.mst_no=mst_cara_byr.mst_no 
+   AND mst_cara_byr.mst_no = $P{mst_no} order by no_urut asc]]>
+	</queryString>
+	<field name="JUMLAH_TAHAPAN" class="java.math.BigDecimal"/>
+	<field name="LKU_ID_TAHAPAN" class="java.lang.String"/>
+	<field name="LSJB_TYPE" class="java.lang.String"/>
+	<field name="MST_FLAG_BATAL" class="java.math.BigDecimal"/>
+	<field name="MST_NAMA_BANK" class="java.lang.String"/>
+	<field name="MST_NO" class="java.lang.String"/>
+	<field name="MST_NO_REFF_BTL" class="java.lang.String"/>
+	<field name="MST_NO_REFF_NEW" class="java.lang.String"/>
+	<field name="MST_NO_REKENING" class="java.lang.String"/>
+	<field name="NO_URUT" class="java.math.BigDecimal"/>
+	<columnHeader>
+		<band/>
+	</columnHeader>
+	<detail>
+		<band height="11">
+			<textField>
+				<reportElement mode="Transparent" x="88" y="0" width="98" height="11"/>
+				<textElement>
+					<font fontName="Times New Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NO_URUT}+"  "+$F{LSJB_TYPE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Transparent" x="206" y="0" width="80" height="11"/>
+				<textElement>
+					<font fontName="Times New Roman" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatNullValue($F{MST_NAMA_BANK})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Transparent" x="298" y="0" width="80" height="11"/>
+				<textElement>
+					<font fontName="Times New Roman" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatNullValue($F{MST_NO_REKENING})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="39">
+			<textField isBlankWhenNull="true">
+				<reportElement x="87" y="3" width="376" height="35"/>
+				<textElement>
+					<font fontName="Times New Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{JUMLAH_TAHAPAN}==null )?
+	($F{MST_NO_REFF_BTL}!=null)?
+		  		(
+		  			"- TTS ini mempunyai Referensi TTS yang batal, dengan no TTS "+$P{REPORT_SCRIPTLET}.formatTTS($F{MST_NO_REFF_BTL})
+		  		)
+	  		:
+		  		(
+		  			"-"
+		  		)
+:
+	(	  	($F{MST_NO_REFF_BTL}==null)?
+		  		(
+		  			"- Ada Pembayaran Dengan Menggunakan Tahapan Sebesar "+$F{LKU_ID_TAHAPAN}+$F{JUMLAH_TAHAPAN}
+		  		)
+	  		:
+		  		(
+		  			"- Ada Pembayaran Dengan Menggunakan Tahapan Sebesar "+$F{LKU_ID_TAHAPAN}+$F{JUMLAH_TAHAPAN}
+		  			+"\n- TTS ini mempunyai Referensi TTS yang batal, dengan no TTS "+$P{REPORT_SCRIPTLET}.formatTTS($F{MST_NO_REFF_BTL}	)
+		  		)
+		)]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="2" y="3" width="46" height="14"/>
+				<textElement>
+					<font fontName="Times New Roman" size="9" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Keterangan ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="73" y="2" width="10" height="14"/>
+				<textElement textAlignment="Left">
+					<font fontName="Times New Roman" size="9" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

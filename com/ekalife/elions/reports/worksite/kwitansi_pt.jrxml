@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="kwitansi_pt" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<subDataset name="periode"/>
+	<parameter name="props" class="java.lang.String"/>
+	<parameter name="kode" class="java.lang.String"/>
+	<parameter name="tgl1" class="java.lang.String"/>
+	<parameter name="tgl2" class="java.lang.String"/>
+	<parameter name="bulan" class="java.lang.String">
+		<parameterDescription><![CDATA[February]]></parameterDescription>
+	</parameter>
+	<parameter name="tahun" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT   COUNT (a.reg_spaj) jumlah, SUM (b.msdb_premium) total_premi,
+         perusahaan.mcl_first
+    FROM eka.mst_billing a,
+         eka.mst_det_billing b,
+         eka.mst_policy c,
+         eka.mst_insured d,
+         eka.mst_company e,
+         eka.mst_client_new perusahaan,
+         eka.mst_product_insured f,
+         eka.mst_production g
+   WHERE a.reg_spaj = b.reg_spaj
+     AND a.msbi_tahun_ke = b.msbi_tahun_ke
+     AND a.msbi_premi_ke = b.msbi_premi_ke
+     AND a.reg_spaj = g.reg_spaj
+     AND a.msbi_tahun_ke = g.msbi_tahun_ke
+     AND a.msbi_premi_ke = g.msbi_premi_ke
+     AND a.reg_spaj = c.reg_spaj
+     AND c.reg_spaj = d.reg_spaj
+     AND d.reg_spaj = f.reg_spaj
+     AND d.mste_insured_no = f.mste_insured_no
+     AND c.mspo_customer = e.mcl_id
+     AND e.mcl_id = perusahaan.mcl_id
+	 AND d.mste_flag_cc = 3
+     AND f.lsbs_id < 300
+     AND a.msbi_beg_date BETWEEN to_date($P{tgl1}, 'yyyymmdd') AND (to_date($P{tgl2}, 'yyyymmdd')+1)
+     AND g.mspro_prod_ke > 1
+     AND c.mspo_customer = $P{kode}
+GROUP BY perusahaan.mcl_first]]>
+	</queryString>
+	<field name="JUMLAH" class="java.math.BigDecimal"/>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="TOTAL_PREMI" class="java.math.BigDecimal"/>
+	<summary>
+		<band height="346">
+			<staticText>
+				<reportElement x="227" y="47" width="80" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[KUITANSI]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="22" y="75" width="227" height="12"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[SUDAH DITERIMA DARI (PERUSAHAAN) ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="22" y="93" width="227" height="12"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[UNTUK PEMBAYARAN ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="22" y="111" width="227" height="12"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[PERIODE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="22" y="129" width="227" height="12"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[JUMLAH PESERTA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="22" y="147" width="227" height="12"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[JUMLAH PREMI 	]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="374" y="235" width="55" height="12"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[JAKARTA]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy" hyperlinkType="None">
+				<reportElement x="432" y="235" width="80" height="13"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="359" y="329" width="138" height="13"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Underwriting Department]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="22" y="168" width="146" height="13"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[(sesuai lampiran) ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="359" y="312" width="138" height="14"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[dr. Asri Wulan, AAAIJ, CPLHI]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="259" y="75" width="230" height="12"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MCL_FIRST}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="259" y="91" width="230" height="12"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[PREMI ASURANSI]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="259" y="129" width="230" height="12"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{JUMLAH}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="259" y="149" width="230" height="12"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("Rp ",$F{TOTAL_PREMI})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="99" y="184" width="407" height="42"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatTerbilang($F{TOTAL_PREMI},"01")]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="259" y="111" width="230" height="13"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.toMonYearIndonesian($P{tgl1})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="22" y="184" width="70" height="13"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[TERBILANG :]]></text>
+			</staticText>
+			<image hAlign="Center" hyperlinkType="None">
+				<reportElement x="382" y="250" width="93" height="61"/>
+				<imageExpression class="java.lang.String"><![CDATA["com/ekalife/utils/images/asri_wulan_ttd.gif"]]></imageExpression>
+			</image>
+		</band>
+	</summary>
+</jasperReport>

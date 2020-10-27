@@ -1,0 +1,991 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_produksi_mingguan" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="ekatestdr"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<parameter name="bdate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["01/01/2013"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="edate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["02/01/2013"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="knt_pemasaran" class="java.lang.String">
+		<defaultValueExpression><![CDATA["JL. KAWI NO. 11 MALANG (0341) 69372,69373"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select distinct
+    sum((case when d.lsbs_id in (116,118,140,141,153,159,160,191) and (a.lscb_id = 0 or (select distinct reg_spaj from eka.mst_ulink where lt_id = 2 and reg_spaj=a.reg_spaj)is not null) then 1 else 0 end))single_link,
+    sum((case when d.lsbs_id in (116,118,140,141,153,159,160,191) and (a.lscb_id > 0 and (select distinct reg_spaj from eka.mst_ulink where lt_id <>2 and reg_spaj=a.reg_spaj)is not null) then 1 else 0 end))reg_link,
+    sum((case when d.lsbs_id not in (116,118,140,141,153,159,160,191) and a.lscb_id = 0 then 1 else 0 end))single_trad,
+    sum((case when d.lsbs_id not in (116,118,140,141,153,159,160,191) and a.lscb_id > 0 then 1 else 0 end))reg_trad, 
+    sum((case when d.lsbs_id in (116,118,140,141,153,159,160,191) and (a.lscb_id = 0 or (select distinct reg_spaj from eka.mst_ulink where lt_id = 2 and reg_spaj=a.reg_spaj)is not null) then d.mspr_premium else 0 end))premi_single_link,
+    sum((case when d.lsbs_id in (116,118,140,141,153,159,160,191) and (a.lscb_id > 0 and (select distinct reg_spaj from eka.mst_ulink where lt_id = 5 and reg_spaj=a.reg_spaj)is not null) then d.mspr_premium else 0 end))premi_reg_link,
+    sum((case when d.lsbs_id not in (116,118,140,141,153,159,160,191) and a.lscb_id = 0 then d.mspr_premium else 0 end))premi_single_trad,
+    sum((case when d.lsbs_id not in (116,118,140,141,153,159,160,191) and a.lscb_id > 0 then d.mspr_premium else 0 end))premi_reg_trad, 
+    (SELECT 
+            x.msag_id
+        FROM 
+            eka.mst_agent x,
+            eka.mst_client_new y,
+            eka.lst_level_agent z 
+        WHERE 
+            x.msag_active = 1
+            and x.mcl_id = y.mcl_id
+            and x.lstb_id = z.lstb_id
+            and x.lsle_id = z.lsle_id
+            and x.lsle_id = 1
+            START WITH x.msag_id = e.msag_id
+            CONNECT BY x.msag_id = PRIOR x.mst_leader)leader_id,
+	(SELECT 
+        y.mcl_first
+    FROM 
+        eka.mst_agent x,
+        eka.mst_client_new y,
+        eka.lst_level_agent z 
+    WHERE 
+        x.msag_active = 1
+        and x.mcl_id = y.mcl_id
+        and x.lstb_id = z.lstb_id
+        and x.lsle_id = z.lsle_id
+        and x.lsle_id = 1
+        START WITH x.msag_id = e.msag_id
+        CONNECT BY x.msag_id = PRIOR x.mst_leader)leader_name,
+    (SELECT 
+        z.lsle_name
+    FROM 
+        eka.mst_agent x,
+        eka.mst_client_new y,
+        eka.lst_level_agent z 
+    WHERE 
+        x.msag_active = 1
+        and x.mcl_id = y.mcl_id
+        and x.lstb_id = z.lstb_id
+        and x.lsle_id = z.lsle_id
+        and x.lsle_id = 1
+        START WITH x.msag_id = e.msag_id
+        CONNECT BY x.msag_id = PRIOR x.mst_leader)leader_jbtn,
+    (select lsrg_nama from eka.lst_region where lca_id = f.lca_id and lwk_id = f.lwk_id and lsrg_id ='00')regional
+from
+    eka.mst_policy a,
+    eka.lst_user b,
+    eka.mst_insured c,
+    eka.mst_product_insured d,
+    eka.mst_agent_prod e,
+    eka.mst_agent f
+where
+    a.lus_id = b.lus_id
+    and a.reg_spaj = c.reg_spaj
+    and c.reg_spaj = d.reg_spaj
+    and c.mste_insured_no = d.mste_insured_no
+    and a.reg_spaj = e.reg_spaj
+    and e.msag_id = f.msag_id
+    and c.mste_insured_no = 1
+    and (e.lev_comm = 4 or e.lsle_id = 4)
+    and d.lsbs_id not in (86,94,123,124,142,143,144,158,164,174,175,176,184)
+    and d.lsbs_id < 300
+    and a.lus_id = 500
+    and a.mspo_input_date between to_date('01/01/2012','dd/MM/yyyy') and to_date('08/01/2012','dd/MM/yyyy')+1
+group by e.msag_id, f.lca_id, f.lwk_id]]>
+	</queryString>
+	<field name="LEADER_ID" class="java.lang.String"/>
+	<field name="LEADER_JBTN" class="java.lang.String"/>
+	<field name="LEADER_NAME" class="java.lang.String"/>
+	<field name="PREMI_REG_LINK" class="java.math.BigDecimal"/>
+	<field name="PREMI_REG_TRAD" class="java.math.BigDecimal"/>
+	<field name="PREMI_SINGLE_LINK" class="java.math.BigDecimal"/>
+	<field name="PREMI_SINGLE_TRAD" class="java.math.BigDecimal"/>
+	<field name="REGIONAL" class="java.lang.String"/>
+	<field name="REG_LINK" class="java.math.BigDecimal"/>
+	<field name="REG_TRAD" class="java.math.BigDecimal"/>
+	<field name="SINGLE_LINK" class="java.math.BigDecimal"/>
+	<field name="SINGLE_TRAD" class="java.math.BigDecimal"/>
+	<variable name="sum_polis_single" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal($F{SINGLE_LINK}.doubleValue() + $F{SINGLE_TRAD}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="sum_premi_single" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal($F{PREMI_SINGLE_LINK}.doubleValue() + $F{PREMI_SINGLE_TRAD}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="sum_polis_reg" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal($F{REG_LINK}.doubleValue() + $F{REG_TRAD}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="sum_premi_reg" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal($F{PREMI_REG_LINK}.doubleValue() + $F{PREMI_REG_TRAD}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="sum_polis" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal($V{sum_polis_single}.doubleValue() + $V{sum_polis_reg}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="sum_premi" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal($V{sum_premi_single}.doubleValue() + $V{sum_premi_reg}.doubleValue())]]></variableExpression>
+	</variable>
+	<group name="Msag_id">
+		<groupExpression><![CDATA[$F{LEADER_ID}]]></groupExpression>
+	</group>
+	<detail>
+		<band height="714">
+			<staticText>
+				<reportElement mode="Transparent" x="0" y="108" width="200" height="20" backcolor="#C0C0C0"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Keterangan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="200" y="108" width="80" height="20" backcolor="#C0C0C0"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Number of Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="280" y="108" width="150" height="20" backcolor="#C0C0C0"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="128" width="200" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Single Premium]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="200" y="128" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+			</staticText>
+			<staticText>
+				<reportElement x="280" y="128" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="148" width="200" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[*)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="200" y="148" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+			</staticText>
+			<staticText>
+				<reportElement x="280" y="148" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="168" width="200" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[*) Single Premium  Non Save Series]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="200" y="168" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+			</staticText>
+			<staticText>
+				<reportElement x="280" y="168" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="188" width="200" height="20"/>
+				<box topPadding="2" leftPadding="20" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[	- Link Produk]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="200" y="188" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{SINGLE_LINK}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="280" y="188" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_SINGLE_LINK})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="208" width="200" height="20"/>
+				<box topPadding="2" leftPadding="20" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[	- Traditional]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="200" y="208" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{SINGLE_TRAD}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="280" y="208" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_SINGLE_TRAD})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="228" width="200" height="20"/>
+				<box topPadding="2" leftPadding="27" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Single Premium]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="200" y="228" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{sum_polis_single}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="280" y="228" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$V{sum_premi_single})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="248" width="200" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Reguler Premium]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="200" y="248" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+			</staticText>
+			<staticText>
+				<reportElement x="280" y="248" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="268" width="200" height="20"/>
+				<box topPadding="2" leftPadding="20" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[	- Link Produk]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="200" y="268" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{REG_LINK}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="280" y="268" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_REG_LINK})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="288" width="200" height="20"/>
+				<box topPadding="2" leftPadding="20" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[	- Traditional]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="200" y="288" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{REG_TRAD}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="280" y="288" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_REG_TRAD})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="308" width="200" height="20"/>
+				<box topPadding="2" leftPadding="20" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[	- Rider]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="200" y="308" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+			</staticText>
+			<staticText>
+				<reportElement x="280" y="308" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="328" width="200" height="20"/>
+				<box topPadding="2" leftPadding="27" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Reguler Premium]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="200" y="328" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{sum_polis_reg}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="280" y="328" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$V{sum_premi_reg})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="348" width="200" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Renewal]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="200" y="348" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+			</staticText>
+			<staticText>
+				<reportElement x="280" y="348" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="368" width="200" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Premium exclude save series]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="200" y="368" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+			</staticText>
+			<staticText>
+				<reportElement x="280" y="368" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="388" width="200" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Grand Total Premium]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="200" y="388" width="80" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{sum_polis}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="280" y="388" width="150" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("",$V{sum_premi})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="408" width="430" height="20"/>
+				<textElement/>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="0" y="430" width="430" height="20" backcolor="#C0C0C0"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Keterangan Produk]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="0" y="450" width="215" height="20" backcolor="#C0C0C0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tipe Produk]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="215" y="450" width="215" height="20" backcolor="#C0C0C0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Produk]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="470" width="215" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[*) Single Premium Save Series]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="215" y="470" width="215" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[Power Save, Stable Link dan Stable Save]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="490" width="215" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+			</staticText>
+			<staticText>
+				<reportElement x="215" y="490" width="215" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="510" width="215" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[*) Single Premium Non Save Series]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="215" y="510" width="215" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="530" width="215" height="30"/>
+				<box topPadding="2" leftPadding="20" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[	- Link Produk]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="215" y="530" width="215" height="30"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[SMiLe Link Series (pembayaran single), Top Up Single]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="560" width="215" height="40"/>
+				<box topPadding="2" leftPadding="20" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[	- Traditional]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="215" y="560" width="215" height="40"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[Produk-produk selain Save Series dan selain SMiLe Link Series (pembayaran Single/Sekaligus)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="600" width="215" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Reguler Premium]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="215" y="600" width="215" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="620" width="215" height="30"/>
+				<box topPadding="2" leftPadding="20" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[	- Link Produk]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="215" y="620" width="215" height="30"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[SMiLe Link Series (pembayaran Reguler), Top Up Berkala]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="650" width="215" height="30"/>
+				<box topPadding="2" leftPadding="20" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[	- Traditional]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="215" y="650" width="215" height="30"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[Produk-produk selain Save Series dan selain Link Series (Pembayaran Reguler)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="680" width="215" height="20"/>
+				<box topPadding="2" leftPadding="20" bottomPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[	- Rider]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="215" y="680" width="215" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[Produk Rider]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="110" y="50" width="290" height="15"/>
+				<box padding="0"/>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REGIONAL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="110" y="65" width="290" height="15"/>
+				<box padding="0"/>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LEADER_NAME}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="110" y="20" width="290" height="15"/>
+				<box padding="0"/>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{bdate} + " s/d " + $P{edate}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="100" y="20" width="10" height="15"/>
+				<box padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="0" width="400" height="20"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Laporan Produksi Mingguan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="100" y="50" width="10" height="15"/>
+				<box padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="100" y="35" width="10" height="15"/>
+				<box padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="110" y="80" width="290" height="15"/>
+				<box padding="0"/>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LEADER_JBTN}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="20" width="100" height="15"/>
+				<box padding="0"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Periode]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="100" y="80" width="10" height="15"/>
+				<box padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="80" width="100" height="15"/>
+				<box padding="0"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jabatan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="35" width="100" height="15"/>
+				<box padding="0"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Kantor Pemasaran]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="50" width="100" height="15"/>
+				<box padding="0"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Regional]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="65" width="100" height="15"/>
+				<box padding="0"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Leader]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="100" y="65" width="10" height="15"/>
+				<box padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="110" y="35" width="290" height="15"/>
+				<box padding="0"/>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{knt_pemasaran}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

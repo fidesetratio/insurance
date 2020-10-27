@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using an evaluation version of JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="payment_selisih3" language="java" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.DataSource" value="EkaTest"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.Grid" value="true"/>
+	<reportFont name="Arial" isDefault="false" fontName="Arial" size="9" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Arial" pdfEncoding="Cp1252" isPdfEmbedded="true"/>
+	<parameter name="startDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["20010115"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="endDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["20010130"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ket" class="java.lang.String">
+		<defaultValueExpression><![CDATA["THP"]]></defaultValueExpression>
+	</parameter>
+	<queryString><![CDATA[SELECT   a.no_pre, b.no_voucher, b.tgl_jurnal, a.keterangan, a.jumlah,
+         b.tgl_input, 0 AS baru, b.tgl_rk
+    FROM eka.mst_dbank a, eka.mst_tbank b
+   WHERE b.no_pre = a.no_pre
+     AND b.tgl_input BETWEEN to_date($P{startDate}, 'yyyymmdd') AND to_date($P{endDate},'yyyymmdd')+1
+     AND (SUBSTR (a.keterangan, 6, 4) = $P{ket})
+     AND b.POSITION <= 4
+     AND (    SUBSTR (a.keterangan, 1, 7) <> 'PIJ KRY'
+          AND SUBSTR (a.keterangan, 1, 7) <> 'PIJ.KRY'
+          AND SUBSTR (a.keterangan, 1, 8) <> 'PIJ. KRY'
+         )
+ORDER BY b.tgl_jurnal ASC, b.tgl_input ASC]]></queryString>
+	<field name="BARU" class="java.math.BigDecimal">
+	</field>
+	<field name="JUMLAH" class="java.math.BigDecimal">
+	</field>
+	<field name="KETERANGAN" class="java.lang.String">
+	</field>
+	<field name="NO_PRE" class="java.lang.String">
+	</field>
+	<field name="NO_VOUCHER" class="java.lang.String">
+	</field>
+	<field name="TGL_INPUT" class="java.sql.Timestamp">
+	</field>
+	<field name="TGL_JURNAL" class="java.sql.Timestamp">
+	</field>
+	<field name="TGL_RK" class="java.sql.Timestamp">
+	</field>
+	<variable name="totJum" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{JUMLAH}]]></variableExpression>
+	</variable>
+	<variable name="totBayar" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{TGL_JURNAL}==null?new BigDecimal(0):$F{JUMLAH}]]></variableExpression>
+	</variable>
+	<variable name="totUtang" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{TGL_JURNAL}==null?$F{JUMLAH}:new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<columnHeader>
+		<band height="32">
+			<textField>
+				<reportElement positionType="Float" x="385" y="0" width="141" height="10"/>
+				<textElement textAlignment="Right">
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement positionType="Float" x="530" y="0" width="25" height="10" isPrintWhenDetailOverflows="true"/>
+				<textElement>
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement positionType="Float" x="0" y="11" width="555" height="1"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="0" y="30" width="555" height="1"/>
+				<graphicElement/>
+			</line>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="13" width="54" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" isStyledText="true">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">No Pre</style>]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="55" y="13" width="60" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" isStyledText="true">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">No Voucher</style>]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="115" y="13" width="60" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" isStyledText="true">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">Tgl Input</style>]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="175" y="13" width="60" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" isStyledText="true">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">Tgl Bayar</style>]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="235" y="13" width="60" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" isStyledText="true">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">Tgl R/K</style>]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="294" y="13" width="191" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" isStyledText="true">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">Keterangan</style>]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="485" y="13" width="70" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" isStyledText="true">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">Jumlah</style>]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="0" y="0" width="54" height="15">
+					<printWhenExpression><![CDATA[new Boolean($V{COLUMN_COUNT}.intValue()%2!=0)]]></printWhenExpression>
+				</reportElement>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Center">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatMask($F{NO_PRE}, "@@@@.@@@@@")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="55" y="0" width="60" height="15">
+					<printWhenExpression><![CDATA[new Boolean($V{COLUMN_COUNT}.intValue()%2!=0)]]></printWhenExpression>
+				</reportElement>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Center">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NO_VOUCHER}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="115" y="0" width="60" height="15">
+					<printWhenExpression><![CDATA[new Boolean($V{COLUMN_COUNT}.intValue()%2!=0)]]></printWhenExpression>
+				</reportElement>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Center">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{TGL_INPUT})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="175" y="0" width="60" height="15">
+					<printWhenExpression><![CDATA[new Boolean($V{COLUMN_COUNT}.intValue()%2!=0)]]></printWhenExpression>
+				</reportElement>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Center">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{TGL_JURNAL})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="235" y="0" width="60" height="15">
+					<printWhenExpression><![CDATA[new Boolean($V{COLUMN_COUNT}.intValue()%2!=0)]]></printWhenExpression>
+				</reportElement>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Center">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{TGL_RK})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="294" y="0" width="191" height="15">
+					<printWhenExpression><![CDATA[new Boolean($V{COLUMN_COUNT}.intValue()%2!=0)]]></printWhenExpression>
+				</reportElement>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement>
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KETERANGAN}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="485" y="0" width="70" height="15">
+					<printWhenExpression><![CDATA[new Boolean($V{COLUMN_COUNT}.intValue()%2!=0)]]></printWhenExpression>
+				</reportElement>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Right">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatNumber($F{JUMLAH})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="1" y="0" width="54" height="15" backcolor="#c0c0c0">
+					<printWhenExpression><![CDATA[new Boolean($V{COLUMN_COUNT}.intValue()%2==0)]]></printWhenExpression>
+				</reportElement>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Center">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatMask($F{NO_PRE}, "@@@@.@@@@@")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="56" y="0" width="60" height="15" backcolor="#c0c0c0">
+					<printWhenExpression><![CDATA[new Boolean($V{COLUMN_COUNT}.intValue()%2==0)]]></printWhenExpression>
+				</reportElement>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Center">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NO_VOUCHER}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="116" y="0" width="60" height="15" backcolor="#c0c0c0">
+					<printWhenExpression><![CDATA[new Boolean($V{COLUMN_COUNT}.intValue()%2==0)]]></printWhenExpression>
+				</reportElement>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Center">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{TGL_INPUT})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="176" y="0" width="60" height="15" backcolor="#c0c0c0">
+					<printWhenExpression><![CDATA[new Boolean($V{COLUMN_COUNT}.intValue()%2==0)]]></printWhenExpression>
+				</reportElement>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Center">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{TGL_JURNAL})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="236" y="0" width="60" height="15" backcolor="#c0c0c0">
+					<printWhenExpression><![CDATA[new Boolean($V{COLUMN_COUNT}.intValue()%2==0)]]></printWhenExpression>
+				</reportElement>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Center">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{TGL_RK})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="295" y="0" width="191" height="15" backcolor="#c0c0c0">
+					<printWhenExpression><![CDATA[new Boolean($V{COLUMN_COUNT}.intValue()%2==0)]]></printWhenExpression>
+				</reportElement>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement>
+					<font reportFont="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KETERANGAN}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="486" y="0" width="70" height="15" backcolor="#c0c0c0">
+					<printWhenExpression><![CDATA[new Boolean($V{COLUMN_COUNT}.intValue()%2==0)]]></printWhenExpression>
+				</reportElement>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Right">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatNumber($F{JUMLAH})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="58">
+			<textField isStretchWithOverflow="true" evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="484" y="10" width="71" height="15"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Right">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatNumber($V{totJum})]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement positionType="Float" x="0" y="5" width="555" height="1"/>
+				<graphicElement/>
+			</line>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="485" y="25" width="71" height="15"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Right">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatNumber($V{totBayar})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="485" y="41" width="71" height="15"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Right">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatNumber($V{totUtang})]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement positionType="Float" x="485" y="40" width="70" height="1"/>
+				<graphicElement/>
+			</line>
+			<textField isStretchWithOverflow="true" evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="325" y="10" width="157" height="15"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Right" isStyledText="true">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["<style isBold=\"true\"> TOTAL SELURUH " + 
+($P{ket}.equals("THP")?"TAHAPAN":
+$P{ket}.equals("NTS")?"NILAI TUNAI":
+$P{ket}.equals("EBK")?"KLAIM EB":
+$P{ket}.equals("PIJ")?"PINJAMAN":
+$P{ket}.equals("AKH")?"MATURITY":
+$P{ket}.equals("ASK")?"ASKOL":
+$P{ket}.equals("SRS")?"SELISIH":
+$P{ket}.equals("SIMP")?"SIMPANAN":"")
++"</style>"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="325" y="25" width="157" height="15"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Right" isStyledText="true">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["<style isBold=\"true\">"+
+($P{ket}.equals("THP")?"TAHAPAN":
+$P{ket}.equals("NTS")?"NILAI TUNAI":
+$P{ket}.equals("EBK")?"KLAIM EB":
+$P{ket}.equals("PIJ")?"PINJAMAN":
+$P{ket}.equals("AKH")?"MATURITY":
+$P{ket}.equals("ASK")?"ASKOL":
+$P{ket}.equals("SRS")?"SELISIH":
+$P{ket}.equals("SIMP")?"SIMPANAN":"")
++ " YANG SUDAH DIBAYAR</style>"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="325" y="41" width="157" height="15"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Right" isStyledText="true">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["<style isBold=\"true\">"+
+($P{ket}.equals("THP")?"TAHAPAN":
+$P{ket}.equals("NTS")?"NILAI TUNAI":
+$P{ket}.equals("EBK")?"KLAIM EB":
+$P{ket}.equals("PIJ")?"PINJAMAN":
+$P{ket}.equals("AKH")?"MATURITY":
+$P{ket}.equals("ASK")?"ASKOL":
+$P{ket}.equals("SRS")?"SELISIH":
+$P{ket}.equals("SIMP")?"SIMPANAN":"")
++ " YANG BELUM DIBAYAR</style>"]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="surat_simcard" pageWidth="595" pageHeight="842" columnWidth="495" leftMargin="50" rightMargin="50" topMargin="120" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<reportFont name="Roman" isDefault="false" fontName="Times New Roman" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["09200918332"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT s.reg_spaj, msc_jenis, no_kartu, nama, s.alamat, s.kota, decode(kode_pos,null, '',kode_pos) kode_pos, flag_print,
+       nvl(s.tgl_print, a.mspo_date_print) tgl_print, lca_cabang, s.lca_id, s.flag_aktif, 
+	   nvl(o.nama_cabang, m.nama_cabang) nama_cabang, 
+	   decode(o.nama_cabang, null, m.kci, null) kci
+  FROM eka.mst_policy a, eka.mst_simcard s, 
+ 	 (select a.mns_kd_nasabah, b.nama_cabang, c.nama_cabang kci from eka.mst_nasabah a, eka.lst_cab_bii b, eka.lst_cab_bii c
+		where a.kd_region = b.kd_region
+		and a.kd_koord = b.kd_koord
+		and a.kd_area = b.kd_area
+		and a.kd_cabang = b.kd_cabang
+		and a.kd_region = c.kd_region
+		and a.kd_koord = c.kd_koord
+		and a.kd_area = c.kd_area
+		and c.kd_cabang = '000'
+	) m,
+	eka.lst_user n, eka.lst_cabang_bii o
+where a.reg_spaj = $P{spaj}
+and a.reg_spaj = s.reg_spaj	
+and a.mspo_plan_provider = m.mns_kd_nasabah (+)
+and a.lus_id = n.lus_id
+and n.cab_bank = o.lcb_no(+)
+and msc_jenis = 0]]>
+	</queryString>
+	<field name="ALAMAT" class="java.lang.String"/>
+	<field name="NAMA_CABANG" class="java.lang.String"/>
+	<field name="FLAG_AKTIF" class="java.math.BigDecimal"/>
+	<field name="FLAG_PRINT" class="java.math.BigDecimal"/>
+	<field name="KODE_POS" class="java.lang.String"/>
+	<field name="KOTA" class="java.lang.String"/>
+	<field name="LCA_CABANG" class="java.lang.String"/>
+	<field name="LCA_ID" class="java.lang.String"/>
+	<field name="MSC_JENIS" class="java.math.BigDecimal"/>
+	<field name="NAMA" class="java.lang.String"/>
+	<field name="NO_KARTU" class="java.lang.String"/>
+	<field name="TGL_PRINT" class="java.util.Date"/>
+	<field name="KCI" class="java.lang.String"/>
+	<detail>
+		<band height="387">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="0" width="525" height="15"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Jakarta, " + $P{REPORT_SCRIPTLET}.formatDateIndonesian($F{TGL_PRINT})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="45" width="496" height="265" isRemoveLineWhenBlank="true"/>
+				<textElement textAlignment="Justified" markup="styled">
+					<font reportFont="Roman" fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Kepada Yth." + "\n" +
+"Bpk/Ibu " + $F{NAMA}+ "\n" +
+$P{REPORT_SCRIPTLET}.replaceDan($F{ALAMAT})  + "\n" +
+$F{KOTA} + " "+($F{KODE_POS}==null?"":$F{KODE_POS}) + "\n\n" +
+"Hal : Simas Card" + "\n\n" +
+"Dengan Hormat," + "\n\n" +
+"Terima kasih atas kepercayaan Bapak / Ibu menjadi Nasabah kami.Sebagai bentuk ungkapan penghargaan, bersama ini kami lampirkan Kartu SimasCard untuk Anda, yang dapat berfungsi sebagai Kartu Diskon di seluruh jariangan merchant SimasCard." + "\n\n" + 
+"Kartu SimasCard dapat Anda manfaatkan di lebih dari 10.000 Merchant yang telah bergabung dengan SimasCard. Manfaatkan kartu tersebut untuk mendapatkan diskon, penawaran spesial, tiket seminar <style isBold=\"true\" pdfFontName=\"Tahoma-Bold\">GRATIS</style>, promosi dan fasilitas istimewa lainnya di berbagai Hotel, Restoran, Rumah Sakit, Apotik, Klinik, Bengkel, Salon yang tersebar di seluruh Indonesia."+ "\n\n"+
+"Untuk keterangan lebih lanjut mengenai informasi seputar SimasCard dan kabar terbaru merchant - merchant favorit Anda, silahkan mengakses salah satu dari beberapa fasilitas yang kami sediakan diantaranya :" + "\n\n" +
+"   1.	Kunjungi situs <style isUnderline=\"true\">www.simascard.com</style>"+"\n"+
+"   2.	Khusus bagi Anda pengguna Blackberry, nikmati kemudahan dengan memanfaatkan"+"\n"+
+"       Blackberry Application dengan mengakses <style isUnderline=\"true\">www.simascard.com/bb/SimasCard.jad</style>"+"\n"+
+"   3. Follow twitter kami @simascard"+"\n"+
+"   4. Hubungi kami di alamat,  nomor telepon dan email berikut ini :"+"\n"+
+"      Roxy Square Lt.2 Jl.Kyai Tapa No.1 Jakarta Barat 11440-Indonesia."+"\n"+
+"       Telp.  (021) 50507777,  (021) 50509999, 50459866" +"\n"+
+"       Faks. (021) 6257837 / 56954718."+"\n"+
+"       Email : <style isUnderline=\"true\">admin@simascard.com</style>"+"\n\n"+
+"Anda dapat juga mendaftarkan Usaha Anda sebagai Merchant SimasCard. Keuntungan yang dapat anda peroleh adalah sebagai berikut:"+"\n"+
+"   1. <style isBold=\"true\" pdfFontName=\"Arial-Bold\">GRATIS</style> Publikasi produk/nama perusahaan di website <style isUnderline=\"true\">www.simascard.com</style>."+"\n"+
+"   2. <style isBold=\"true\" pdfFontName=\"Arial-Bold\">GRATIS</style> Promosi di Media Komunikasi internal Unit usaha Sinar Mas."+"\n"+
+"   3. <style isBold=\"true\" pdfFontName=\"Arial-Bold\">GRATIS</style> partisipasi dalam seminar kesehatan."+"\n"+
+"   4.	Pangsa pasar yang sangat besar, dimana saat ini Pemegang SimasCard telah "+"\n"+
+"       mencapai 3,9 Juta orang."+"\n\n"+
+"Akhir kata, kami ucapkan \"Selamat Menikmati Fasilitas <style isBold=\"true\" pdfFontName=\"Arial-Bold\">SimasCard</style>.\"" + "\n\n" + 
+"Salam,"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="135" y="30" width="361" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{NAMA_CABANG} != null) ? ("Cabang: " + $F{NAMA_CABANG}) : ""]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="135" y="15" width="361" height="15" isRemoveLineWhenBlank="true"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{KCI} != null) ? ("KCI: " + $F{KCI}) : ""]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="371" width="496" height="16"/>
+				<textElement textAlignment="Justified">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("company.name")]]></textFieldExpression>
+			</textField>
+			<image hAlign="Center" hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="315" width="96" height="31"/>
+				<imageExpression class="java.lang.String"><![CDATA["com/ekalife/utils/images/andrew_bain.png"]]></imageExpression>
+			</image>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="346" width="174" height="12"/>
+				<textElement textAlignment="Justified" markup="none">
+					<font fontName="Tahoma" size="9" isBold="true" isUnderline="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("printing.namaDirektur")]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="358" width="174" height="12"/>
+				<textElement textAlignment="Justified" markup="none">
+					<font fontName="Tahoma" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("printing.jabatanDirektur")]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

@@ -1,0 +1,1637 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_summarySPAJBatalRefund" pageWidth="2000" pageHeight="595" orientation="Landscape" columnWidth="1960" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="Ekatest"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<parameter name="periode" class="java.lang.String"/>
+	<parameter name="tgl" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select
+    to_char(i.cancel_when,'MONTH') tanggal_proses_refund,to_char(i.cancel_when,'MM') tgl,
+    --agency
+    sum(case when a.lca_id='37' and a.lku_id='01' then (select count(z.mste_insured_no) from eka.mst_insured z where z.reg_spaj = a.reg_spaj) else 0 end)TTG_RP_Agency,
+    sum(case when a.lca_id='37' and a.lku_id='02' then (select count(z.mste_insured_no) from eka.mst_insured z where z.reg_spaj = a.reg_spaj) else 0 end)TTG_USD_Agency,
+    sum(case when a.lca_id='37' and a.lku_id='01' then i.premi_refund else 0 end)Premi_rp_Agency,
+    sum(case when a.lca_id='37' and a.lku_id='02' then i.premi_refund else 0 end)Premi_usd_Agency,
+    --hybrid
+    sum(case when a.lca_id='46' and a.lku_id='01' then (select count(z.mste_insured_no) from eka.mst_insured z where z.reg_spaj = a.reg_spaj) else 0 end)TTG_RP_Hybrid,
+    sum(case when a.lca_id='46' and a.lku_id='02' then (select count(z.mste_insured_no) from eka.mst_insured z where z.reg_spaj = a.reg_spaj) else 0 end)TTG_USD_Hybrid,
+    sum(case when a.lca_id='46' and a.lku_id='01' then i.premi_refund else 0 end)Premi_rp_Hybrid,
+    sum(case when a.lca_id='46' and a.lku_id='02' then i.premi_refund else 0 end)Premi_usd_Hybrid,
+    --worksite
+    sum(case when a.lca_id='42' and a.lku_id='01' then (select count(z.mste_insured_no) from eka.mst_insured z where z.reg_spaj = a.reg_spaj) else 0 end)TTG_RP_Worksite,
+    sum(case when a.lca_id='42' and a.lku_id='02' then (select count(z.mste_insured_no) from eka.mst_insured z where z.reg_spaj = a.reg_spaj) else 0 end)TTG_USD_Worksite,
+    sum(case when a.lca_id='42' and a.lku_id='01' then i.premi_refund else 0 end)Premi_rp_Worksite,
+    sum(case when a.lca_id='42' and a.lku_id='02' then i.premi_refund else 0 end)Premi_usd_Worksite,
+    --Mall Assurance
+    sum(case when a.lca_id='58' and a.lku_id='01' then (select count(z.mste_insured_no) from eka.mst_insured z where z.reg_spaj = a.reg_spaj) else 0 end)TTG_RP_MA,
+    sum(case when a.lca_id='58' and a.lku_id='02' then (select count(z.mste_insured_no) from eka.mst_insured z where z.reg_spaj = a.reg_spaj) else 0 end)TTG_USD_MA,
+    sum(case when a.lca_id='58' and a.lku_id='01' then i.premi_refund else 0 end)Premi_rp_MA,
+    sum(case when a.lca_id='58' and a.lku_id='02' then i.premi_refund else 0 end)Premi_usd_MA,
+    --DMTM
+    sum(case when a.lca_id='40' and a.lku_id='01' then (select count(z.mste_insured_no) from eka.mst_insured z where z.reg_spaj = a.reg_spaj) else 0 end)TTG_RP_DMTM,
+    sum(case when a.lca_id='40' and a.lku_id='02' then (select count(z.mste_insured_no) from eka.mst_insured z where z.reg_spaj = a.reg_spaj) else 0 end)TTG_USD_DMTM,
+    sum(case when a.lca_id='40' and a.lku_id='01' then i.premi_refund else 0 end)Premi_rp_DMTM,
+    sum(case when a.lca_id='40' and a.lku_id='02' then i.premi_refund else 0 end)Premi_usd_DMTM,
+    --Regional
+    sum(case when a.lca_id not in (09,37,40,42,58,59,60,61) and a.lku_id='01' then (select count(z.mste_insured_no) from eka.mst_insured z where z.reg_spaj = a.reg_spaj) else 0 end)TTG_RP_Regional,
+    sum(case when a.lca_id not in (09,37,40,42,58,59,60,61) and a.lku_id='02' then (select count(z.mste_insured_no) from eka.mst_insured z where z.reg_spaj = a.reg_spaj) else 0 end)TTG_USD_Regional,
+    sum(case when a.lca_id not in (09,37,40,42,58,59,60,61) and a.lku_id='01' then i.premi_refund else 0 end)Premi_rp_Regional,
+    sum(case when a.lca_id not in (09,37,40,42,58,59,60,61) and a.lku_id='02' then i.premi_refund else 0 end)Premi_usd_Regional,
+    --Bancassurance 1
+    sum(case when a.lca_id='09' and upper(m.team_name) like '%YANTI SUMIRKAN%' and a.lku_id='01' then (select count(z.mste_insured_no) from eka.mst_insured z where z.reg_spaj = a.reg_spaj) else 0 end)TTG_RP_Bancass1,
+    sum(case when a.lca_id='09' and upper(m.team_name) like '%YANTI SUMIRKAN%' and a.lku_id='02' then (select count(z.mste_insured_no) from eka.mst_insured z where z.reg_spaj = a.reg_spaj) else 0 end)TTG_USD_Bancass1,
+    sum(case when a.lca_id='09' and upper(m.team_name) like '%YANTI SUMIRKAN%' and a.lku_id='01' then i.premi_refund else 0 end)Premi_rp_Bancass1,
+    sum(case when a.lca_id='09' and upper(m.team_name) like '%YANTI SUMIRKAN%' and a.lku_id='02' then i.premi_refund else 0 end)Premi_usd_Bancass1,
+    --Bancassurance 2
+    sum(case when a.lca_id='09' and upper(m.team_name) like '%JAN ROSADI%' and a.lku_id='01' then (select count(z.mste_insured_no) from eka.mst_insured z where z.reg_spaj = a.reg_spaj) else 0 end)TTG_RP_Bancass2,
+    sum(case when a.lca_id='09' and upper(m.team_name) like '%JAN ROSADI%' and a.lku_id='02' then (select count(z.mste_insured_no) from eka.mst_insured z where z.reg_spaj = a.reg_spaj) else 0 end)TTG_USD_Bancass2,
+    sum(case when a.lca_id='09' and upper(m.team_name) like '%JAN ROSADI%' and a.lku_id='01' then i.premi_refund else 0 end)Premi_rp_Bancass2,
+    sum(case when a.lca_id='09' and upper(m.team_name) like '%JAN ROSADI%' and a.lku_id='02' then i.premi_refund else 0 end)Premi_usd_Bancass2,
+    --Bancassurance 3
+    sum(case when a.lca_id='09' and upper(m.team_name) like '%DEWI%' and a.lku_id='01' then (select count(z.mste_insured_no) from eka.mst_insured z where z.reg_spaj = a.reg_spaj) else 0 end)TTG_RP_Bancass3,
+    sum(case when a.lca_id='09' and upper(m.team_name) like '%DEWI%' and a.lku_id='02' then (select count(z.mste_insured_no) from eka.mst_insured z where z.reg_spaj = a.reg_spaj) else 0 end)TTG_USD_Bancass3,
+    sum(case when a.lca_id='09' and upper(m.team_name) like '%DEWI%' and a.lku_id='01' then i.premi_refund else 0 end)Premi_rp_Bancass3,
+    sum(case when a.lca_id='09' and upper(m.team_name) like '%DEWI%' and a.lku_id='02' then i.premi_refund else 0 end)Premi_usd_Bancass3
+from
+    eka.mst_policy a,
+    eka.lst_region b,
+    eka.mst_agent_prod c,
+    eka.mst_agent d,
+    eka.mst_insured e,
+    eka.mst_product_insured f,
+    eka.lst_det_bisnis g,
+    eka.lst_pay_mode h,
+    eka.mst_refund i,
+    eka.mst_batal j,
+    eka.lst_kurs k,
+    eka.mst_reff_bii l,
+    eka.lst_cabang_bii m,
+    eka.mst_client_new agent
+where
+    a.lca_id = b.lca_id
+    and a.lwk_id = b.lwk_id
+    and a.lsrg_id = b.lsrg_id
+    and a.reg_spaj = c.reg_spaj(+)
+    and c.msag_id = d.msag_id
+    and a.reg_spaj = e.reg_spaj(+)
+    and d.mcl_id = agent.mcl_id
+    and e.reg_spaj = f.reg_spaj
+    and e.mste_insured_no = f.mste_insured_no
+    and f.lsbs_id = g.lsbs_id
+    and f.lsdbs_number = g.lsdbs_number
+    and a.lscb_id = h.lscb_id
+    and a.reg_spaj = i.reg_spaj
+    and i.reg_spaj = j.reg_spaj
+    and a.lku_id = k.lku_id
+    and a.reg_spaj = l.reg_spaj(+)
+    and l.lcb_no = m.lcb_no(+)
+    and c.lsle_id = '4'
+    and a.lstb_id = 1
+    and f.lsbs_id < 300
+    and i.cancel_when between to_date('01/01/2011','dd/MM/yyyy') and to_date('28/02/2011','dd/MM/yyyy')
+    group by to_char(i.cancel_when,'MONTH'),to_char(i.cancel_when,'MM')
+    order by tgl asc]]>
+	</queryString>
+	<field name="PREMI_RP_AGENCY" class="java.math.BigDecimal"/>
+	<field name="PREMI_RP_BANCASS1" class="java.math.BigDecimal"/>
+	<field name="PREMI_RP_BANCASS2" class="java.math.BigDecimal"/>
+	<field name="PREMI_RP_BANCASS3" class="java.math.BigDecimal"/>
+	<field name="PREMI_RP_DMTM" class="java.math.BigDecimal"/>
+	<field name="PREMI_RP_HYBRID" class="java.math.BigDecimal"/>
+	<field name="PREMI_RP_MA" class="java.math.BigDecimal"/>
+	<field name="PREMI_RP_REGIONAL" class="java.math.BigDecimal"/>
+	<field name="PREMI_RP_WORKSITE" class="java.math.BigDecimal"/>
+	<field name="PREMI_USD_AGENCY" class="java.math.BigDecimal"/>
+	<field name="PREMI_USD_BANCASS1" class="java.math.BigDecimal"/>
+	<field name="PREMI_USD_BANCASS2" class="java.math.BigDecimal"/>
+	<field name="PREMI_USD_BANCASS3" class="java.math.BigDecimal"/>
+	<field name="PREMI_USD_DMTM" class="java.math.BigDecimal"/>
+	<field name="PREMI_USD_HYBRID" class="java.math.BigDecimal"/>
+	<field name="PREMI_USD_MA" class="java.math.BigDecimal"/>
+	<field name="PREMI_USD_REGIONAL" class="java.math.BigDecimal"/>
+	<field name="PREMI_USD_WORKSITE" class="java.math.BigDecimal"/>
+	<field name="TANGGAL_PROSES_REFUND" class="java.lang.String"/>
+	<field name="TGL" class="java.lang.String"/>
+	<field name="TTG_RP_AGENCY" class="java.math.BigDecimal"/>
+	<field name="TTG_RP_BANCASS1" class="java.math.BigDecimal"/>
+	<field name="TTG_RP_BANCASS2" class="java.math.BigDecimal"/>
+	<field name="TTG_RP_BANCASS3" class="java.math.BigDecimal"/>
+	<field name="TTG_RP_DMTM" class="java.math.BigDecimal"/>
+	<field name="TTG_RP_HYBRID" class="java.math.BigDecimal"/>
+	<field name="TTG_RP_MA" class="java.math.BigDecimal"/>
+	<field name="TTG_RP_REGIONAL" class="java.math.BigDecimal"/>
+	<field name="TTG_RP_WORKSITE" class="java.math.BigDecimal"/>
+	<field name="TTG_USD_AGENCY" class="java.math.BigDecimal"/>
+	<field name="TTG_USD_BANCASS1" class="java.math.BigDecimal"/>
+	<field name="TTG_USD_BANCASS2" class="java.math.BigDecimal"/>
+	<field name="TTG_USD_BANCASS3" class="java.math.BigDecimal"/>
+	<field name="TTG_USD_DMTM" class="java.math.BigDecimal"/>
+	<field name="TTG_USD_HYBRID" class="java.math.BigDecimal"/>
+	<field name="TTG_USD_MA" class="java.math.BigDecimal"/>
+	<field name="TTG_USD_REGIONAL" class="java.math.BigDecimal"/>
+	<field name="TTG_USD_WORKSITE" class="java.math.BigDecimal"/>
+	<variable name="sum_ttg_agency" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal( $F{TTG_RP_AGENCY}.doubleValue() + $F{TTG_USD_AGENCY}.doubleValue() )]]></variableExpression>
+	</variable>
+	<variable name="sum_ttg_regional" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal($F{TTG_RP_REGIONAL}.doubleValue() + $F{TTG_USD_REGIONAL}.doubleValue() )]]></variableExpression>
+	</variable>
+	<variable name="sum_ttg_hybrid" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal( $F{PREMI_RP_HYBRID}.doubleValue() + $F{PREMI_USD_HYBRID}.doubleValue() )]]></variableExpression>
+	</variable>
+	<variable name="sum_ttg_ws" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal( $F{TTG_RP_WORKSITE}.doubleValue() + $F{TTG_USD_WORKSITE}.doubleValue() )]]></variableExpression>
+	</variable>
+	<variable name="sum_ttg_bancass1" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal( $F{TTG_RP_BANCASS1}.doubleValue() + $F{TTG_USD_BANCASS1}.doubleValue() )]]></variableExpression>
+	</variable>
+	<variable name="sum_ttg_bancass2" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal( $F{TTG_RP_BANCASS2}.doubleValue() + $F{TTG_USD_BANCASS2}.doubleValue() )]]></variableExpression>
+	</variable>
+	<variable name="sum_ttg_bancass3" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal( $F{TTG_RP_BANCASS3}.doubleValue() + $F{TTG_USD_BANCASS3}.doubleValue() )]]></variableExpression>
+	</variable>
+	<variable name="sum_ttg_dmtm" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal( $F{TTG_RP_DMTM}.doubleValue() + $F{TTG_USD_DMTM}.doubleValue() )]]></variableExpression>
+	</variable>
+	<variable name="sum_ttg_ma" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal( $F{TTG_RP_MA}.doubleValue() + $F{TTG_USD_MA}.doubleValue() )]]></variableExpression>
+	</variable>
+	<variable name="total_ttg_agency" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{sum_ttg_agency}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_rp_agency" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_RP_AGENCY}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_usd_agency" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_USD_AGENCY}]]></variableExpression>
+	</variable>
+	<variable name="total_ttg_regional" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{sum_ttg_regional}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_rp_regional" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_RP_REGIONAL}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_usd_regional" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_USD_REGIONAL}]]></variableExpression>
+	</variable>
+	<variable name="total_ttg_hybrid" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{sum_ttg_hybrid}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_rp_hybrid" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_RP_HYBRID}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_usd_hybrid" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_USD_HYBRID}]]></variableExpression>
+	</variable>
+	<variable name="total_ttg_ws" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{sum_ttg_ws}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_rp_ws" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_RP_WORKSITE}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_usd_ws" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_USD_WORKSITE}]]></variableExpression>
+	</variable>
+	<variable name="total_ttg_bancass1" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{sum_ttg_bancass1}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_rp_bancass1" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_RP_BANCASS1}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_usd_bancass1" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_USD_BANCASS1}]]></variableExpression>
+	</variable>
+	<variable name="total_ttg_bancass2" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{sum_ttg_bancass2}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_rp_bancass2" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_RP_BANCASS2}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_usd_bancass2" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_USD_BANCASS2}]]></variableExpression>
+	</variable>
+	<variable name="total_ttg_bancass3" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{sum_ttg_bancass3}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_rp_bancass3" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_RP_BANCASS3}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_usd_bancass3" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_USD_BANCASS3}]]></variableExpression>
+	</variable>
+	<variable name="total_ttg_dmtm" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{sum_ttg_dmtm}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_rp_dmtm" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_RP_DMTM}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_usd_dmtm" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_USD_DMTM}]]></variableExpression>
+	</variable>
+	<variable name="total_ttg_ma" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{sum_ttg_ma}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_rp_ma" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_RP_MA}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_usd_ma" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREMI_USD_MA}]]></variableExpression>
+	</variable>
+	<variable name="grand_total_ttg_rp" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal( $F{TTG_RP_AGENCY}.doubleValue() + $F{TTG_RP_REGIONAL}.doubleValue()+ $F{TTG_RP_HYBRID}.doubleValue()+ $F{TTG_RP_WORKSITE}.doubleValue()+$F{TTG_RP_BANCASS1}.doubleValue()+$F{TTG_RP_BANCASS2}.doubleValue()+$F{TTG_RP_BANCASS3}.doubleValue()+$F{TTG_RP_DMTM}.doubleValue()+$F{TTG_RP_MA}.doubleValue() )]]></variableExpression>
+	</variable>
+	<variable name="grand_total_ttg_usd" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal( $F{TTG_USD_AGENCY}.doubleValue() + $F{TTG_USD_REGIONAL}.doubleValue()+ $F{TTG_USD_HYBRID}.doubleValue()+ $F{TTG_USD_WORKSITE}.doubleValue()+$F{TTG_USD_BANCASS1}.doubleValue()+$F{TTG_USD_BANCASS2}.doubleValue()+$F{TTG_USD_BANCASS3}.doubleValue()+$F{TTG_USD_DMTM}.doubleValue()+$F{TTG_USD_MA}.doubleValue() )]]></variableExpression>
+	</variable>
+	<variable name="grand_total_premi_rp" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal( $V{total_premi_rp_agency}.doubleValue()+$V{total_premi_rp_regional}.doubleValue()+$V{total_premi_rp_hybrid}.doubleValue()+$V{total_premi_rp_ws}.doubleValue()+$V{total_premi_rp_bancass1}.doubleValue()+$V{total_premi_rp_bancass2}.doubleValue()+$V{total_premi_rp_bancass3}.doubleValue()+$V{total_premi_rp_dmtm}.doubleValue()+$V{total_premi_rp_ma}.doubleValue() )]]></variableExpression>
+	</variable>
+	<variable name="grand_total_premi_usd" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal( $V{total_premi_usd_agency}.doubleValue()+$V{total_premi_usd_regional}.doubleValue()+$V{total_premi_usd_hybrid}.doubleValue()+$V{total_premi_usd_ws}.doubleValue()+$V{total_premi_usd_bancass1}.doubleValue()+$V{total_premi_usd_bancass2}.doubleValue()+$V{total_premi_usd_bancass3}.doubleValue()+$V{total_premi_usd_dmtm}.doubleValue()+$V{total_premi_usd_ma}.doubleValue() )]]></variableExpression>
+	</variable>
+	<title>
+		<band height="40">
+			<staticText>
+				<reportElement x="0" y="0" width="439" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Summary Refund Premi by lini bisnis]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="20" width="439" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tahun : " + $P{periode}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="60">
+			<staticText>
+				<reportElement x="0" y="0" width="60" height="60"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[BULAN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="60" y="0" width="200" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[AGENCY]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="60" y="20" width="40" height="40"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[TTG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="100" y="20" width="160" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="100" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Rupiah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="180" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[US Dollar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="260" y="0" width="200" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[REGIONAL]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="260" y="20" width="40" height="40"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[TTG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="300" y="20" width="160" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="300" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Rupiah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="380" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[US Dollar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="460" y="0" width="200" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[HYBRID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="460" y="20" width="40" height="40"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[TTG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="500" y="20" width="160" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="500" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Rupiah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="580" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[US Dollar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="660" y="0" width="200" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[WORKSITE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="660" y="20" width="40" height="40"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[TTG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="700" y="20" width="160" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="700" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Rupiah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="780" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[US Dollar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="860" y="0" width="200" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[BANCASSURANCE-1]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="900" y="20" width="160" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="860" y="20" width="40" height="40"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[TTG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="900" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Rupiah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="980" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[US Dollar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1060" y="0" width="200" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[BANCASSURANCE-2]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1060" y="20" width="40" height="40"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[TTG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1100" y="20" width="160" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1100" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Rupiah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1180" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[US Dollar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1260" y="20" width="40" height="40"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[TTG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1260" y="0" width="200" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[BANCASSURANCE-3]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1300" y="20" width="160" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1300" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Rupiah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1380" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[US Dollar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1460" y="0" width="200" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[DMTM]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1460" y="20" width="40" height="40"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[TTG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1500" y="20" width="160" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1500" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Rupiah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1580" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[US Dollar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1660" y="0" width="200" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[MALL-ASSURANCE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1660" y="20" width="40" height="40"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[TTG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1700" y="20" width="160" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1700" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Rupiah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1780" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[US Dollar]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="60" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TANGGAL_PROSES_REFUND}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="100" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{PREMI_RP_AGENCY}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_RP_AGENCY}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="180" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{PREMI_USD_AGENCY}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_USD_AGENCY}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="60" y="0" width="40" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{sum_ttg_agency}.toString().equals("0")?"":$V{sum_ttg_agency}.toString())]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="260" y="0" width="40" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{sum_ttg_regional}.toString().equals("0")?"":$V{sum_ttg_regional}.toString())]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="300" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{PREMI_RP_REGIONAL}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_RP_REGIONAL}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="380" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{PREMI_USD_REGIONAL}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_USD_REGIONAL}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="460" y="0" width="40" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{sum_ttg_hybrid}.toString().equals("0")?"":$V{sum_ttg_hybrid}.toString())]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="500" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{PREMI_RP_HYBRID}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_RP_HYBRID}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="580" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{PREMI_USD_HYBRID}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_USD_HYBRID}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="660" y="0" width="40" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{sum_ttg_ws}.toString().equals("0")?"":$V{sum_ttg_ws}.toString())]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="700" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{PREMI_RP_WORKSITE}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_RP_WORKSITE}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="780" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{TTG_USD_WORKSITE}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$F{TTG_USD_WORKSITE}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="860" y="0" width="40" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{sum_ttg_bancass1}.toString().equals("0")?"":$V{sum_ttg_bancass1}.toString())]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="900" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{PREMI_RP_BANCASS1}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_RP_BANCASS1}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="980" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{PREMI_USD_BANCASS1}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_USD_BANCASS1}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1060" y="0" width="40" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{sum_ttg_bancass2}.toString().equals("0")?"":$V{sum_ttg_bancass2}.toString())]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1100" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{PREMI_RP_BANCASS2}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_RP_BANCASS2}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1180" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{PREMI_USD_BANCASS2}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_USD_BANCASS2}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1260" y="0" width="40" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{sum_ttg_bancass3}.toString().equals("0")?"":$V{sum_ttg_bancass3}.toString())]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1300" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{PREMI_RP_BANCASS3}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_RP_BANCASS3}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1380" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{PREMI_USD_BANCASS3}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_USD_BANCASS3}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1460" y="0" width="40" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{sum_ttg_dmtm}.toString().equals("0")?"":$V{sum_ttg_dmtm}.toString())]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1500" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{PREMI_RP_DMTM}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_RP_DMTM}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1580" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{PREMI_USD_DMTM}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_USD_DMTM}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1660" y="0" width="40" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{sum_ttg_ma}.toString().equals("0")?"":$V{sum_ttg_ma}.toString())]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1700" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{PREMI_RP_MA}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_RP_MA}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1780" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{PREMI_USD_MA}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$F{PREMI_USD_MA}))]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="80">
+			<staticText>
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="60" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[JUMLAH]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="20" width="100" height="40"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[GRAND TOTAL]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="180" y="20" width="80" height="40"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[PREMI : ]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="60" y="0" width="40" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_ttg_agency}.toString().equals("0")?"":$V{total_ttg_agency}.toString())]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="100" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_premi_rp_agency}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$V{total_premi_rp_agency}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="180" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_premi_usd_agency}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$V{total_premi_usd_agency}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="260" y="0" width="40" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_ttg_regional}.toString().equals("0")?"":$V{total_ttg_regional}.toString())]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="300" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_premi_rp_regional}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$V{total_premi_rp_regional}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="380" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_premi_usd_regional}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$V{total_premi_usd_regional}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="460" y="0" width="40" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_ttg_hybrid}.toString().equals("0")?"":$V{total_ttg_hybrid}.toString())]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="500" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_premi_rp_hybrid}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$V{total_premi_rp_hybrid}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="580" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_premi_usd_hybrid}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$V{total_premi_usd_hybrid}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="660" y="0" width="40" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_ttg_ws}.toString().equals("0")?"":$V{total_ttg_ws}.toString())]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="700" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_premi_rp_ws}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$V{total_premi_rp_ws}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="780" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_premi_usd_ws}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$V{total_premi_usd_ws}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="860" y="0" width="40" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_ttg_bancass1}.toString().equals("0")?"":$V{total_ttg_bancass1}.toString())]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="900" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_premi_rp_bancass1}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$V{total_premi_rp_bancass1}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="980" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_premi_usd_bancass1}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$V{total_premi_usd_bancass1}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1060" y="0" width="40" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_ttg_bancass2}.toString().equals("0")?"":$V{total_ttg_bancass2}.toString())]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1100" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_premi_rp_bancass2}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$V{total_premi_rp_bancass2}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1180" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_premi_usd_bancass2}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$V{total_premi_usd_bancass2}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1300" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_premi_rp_bancass3}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$V{total_premi_rp_bancass3}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1260" y="0" width="40" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_ttg_bancass3}.toString().equals("0")?"":$V{total_ttg_bancass3}.toString())]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1380" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_premi_usd_bancass3}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$V{total_premi_usd_bancass3}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1460" y="0" width="40" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_ttg_dmtm}.toString().equals("0")?"":$V{total_ttg_dmtm}.toString())]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1500" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_premi_rp_dmtm}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$V{total_premi_rp_dmtm}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1580" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_premi_usd_dmtm}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$V{total_premi_usd_dmtm}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1660" y="0" width="40" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{sum_ttg_ma}.toString().equals("0")?"":$V{sum_ttg_ma}.toString())]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1700" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_premi_rp_ma}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$V{total_premi_rp_ma}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="1780" y="0" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{total_premi_usd_ma}.toString().equals("0")?"":$P{REPORT_SCRIPTLET}.formatCurrency("",$V{total_premi_usd_ma}))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="100" y="20" width="80" height="20"/>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["TTG  : "+$V{grand_total_ttg_rp}.toString()+" (RP)"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="100" y="40" width="80" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["TTG : "+$V{grand_total_ttg_usd}.toString()+" (USD)"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="260" y="20" width="120" height="20"/>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("Rp. ",$V{grand_total_premi_rp})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="260" y="40" width="120" height="20"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("USD ",$V{grand_total_premi_usd})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="380" y="20" width="1480" height="40"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="60" width="439" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tgl. Proses : " + $P{tgl}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

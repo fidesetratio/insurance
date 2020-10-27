@@ -1,0 +1,498 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="postpone_decline" pageWidth="1350" pageHeight="847" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="1310" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<property name="com.jasperassistant.designer.HGuides" value="1309"/>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="tanggalAwal" class="java.lang.String">
+		<defaultValueExpression><![CDATA["24/10/2007"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.lang.String">
+		<defaultValueExpression><![CDATA["24/10/2007"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lca_id" class="java.lang.String"/>
+	<parameter name="judul" class="java.lang.String"/>
+	<parameter name="note" class="java.lang.String"/>
+	<parameter name="cab_bank" class="java.lang.String">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="datasource" class="net.sf.jasperreports.engine.data.JRBeanCollectionDataSource" isForPrompting="false"/>
+	<parameter name="ProductsSubreport" class="net.sf.jasperreports.engine.JasperReport" isForPrompting="false"/>
+	<parameter name="yearbefore" class="java.lang.String"/>
+	<parameter name="month1" class="java.lang.String"/>
+	<parameter name="month2" class="java.lang.String"/>
+	<parameter name="month3" class="java.lang.String"/>
+	<parameter name="month4" class="java.lang.String"/>
+	<parameter name="month5" class="java.lang.String"/>
+	<parameter name="month6" class="java.lang.String"/>
+	<parameter name="month7" class="java.lang.String"/>
+	<parameter name="month8" class="java.lang.String"/>
+	<parameter name="month9" class="java.lang.String"/>
+	<parameter name="month10" class="java.lang.String"/>
+	<parameter name="month11" class="java.lang.String"/>
+	<parameter name="month12" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT   l.lca_nama, o.team_name, m.kci,
+		         NVL (m.nama_cabang, n.nama_cabang) nama_cabang,
+		         decode(n.jenis, 2, r.mcl_first,DECODE (pol.lca_id,
+		                 '09', (SELECT distinct NVL (d.nama_reff,
+		                                    NVL (g.nama_ref, h.nama_bfa)
+		                                   ) reff
+		                          FROM eka.mst_policy a,
+		                               (select * 
+ 										from eka.mst_reff_bii a
+										 where	  level_id=4
+ 										and	  no_urut=(select max(no_urut) from eka.mst_reff_bii where reg_spaj=a.reg_spaj)) b,
+		                               eka.mst_nasabah c,
+		                               eka.lst_reff_bii d,
+		                               eka.lst_referrer_bii g,
+		                               eka.mst_bfa h
+		                         WHERE a.reg_spaj = pol.reg_spaj
+		                           AND a.reg_spaj = b.reg_spaj(+)
+		                           AND a.mspo_plan_provider = c.mns_kd_nasabah(+)
+		                           AND b.lrb_id = d.lrb_id(+)
+		                           AND c.referrer_id = g.referrer_id(+)
+		                           AND c.referrer_fa = h.msag_id(+)),
+		                 c3.mcl_first
+		                )) nama_penutup, 
+		         pol.mspo_policy_no, pol.lca_id, k.msag_id, pol.reg_spaj,
+		         c1.mcl_first nama_pp, c2.mcl_first nama_tt, e.lsdbs_name,
+		         f.lscb_pay_mode, prod_ins.lku_id, prod_ins.mspr_premium,
+		         ins.mste_tgl_aksep, ins.mste_beg_date, pol.mspo_date_print,
+		         h.telpon_rumah, i.msap_area_code1, msap_phone1, ins.mste_tgl_terima_spaj,
+		         (SELECT msps_desc
+		            FROM eka.mst_position_spaj
+		           WHERE reg_spaj = pol.reg_spaj
+		             AND lssa_id = ins.lssa_id
+		             AND msps_date IN (SELECT MIN (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id))
+		                                                                  kurang_data,
+		         (SELECT msps_date
+		            FROM eka.mst_position_spaj
+		           WHERE reg_spaj = pol.reg_spaj
+		             AND lssa_id = ins.lssa_id
+		             AND msps_date IN (SELECT MIN (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id))
+		                                                                  tgl_kurang_data,
+		         (SELECT b.lus_login_name
+		            FROM eka.mst_position_spaj a, eka.lst_user b 
+		           WHERE a.reg_spaj = pol.reg_spaj
+				     AND a.lus_id = b.lus_id
+		             AND a.lssa_id = ins.lssa_id
+		             AND a.msps_date IN (SELECT MIN (msps_date)
+		                                 FROM eka.mst_position_spaj
+		                                WHERE reg_spaj = pol.reg_spaj AND lssa_id = ins.lssa_id))
+		                                                                  user_kurang_data,
+		         p.lar_email,s.lssp_status
+		    FROM eka.mst_policy pol,
+		         eka.mst_insured ins,
+		         eka.mst_product_insured prod_ins,
+		         eka.mst_agent_prod agent_prod,
+		         eka.mst_client_new c1,
+		         eka.mst_client_new c2,
+		         eka.mst_client_new c3,
+		         eka.lst_det_bisnis e,
+		         eka.lst_pay_mode f,
+		         eka.mst_address_new h,
+		         eka.mst_address_billing i,
+		         eka.mst_agent k,
+		         eka.lst_cabang l,
+		         (SELECT a.mns_kd_nasabah, b.nama_cabang, c.nama_cabang kci
+		            FROM eka.mst_nasabah a, eka.lst_cab_bii b, eka.lst_cab_bii c
+		           WHERE a.kd_region = b.kd_region
+		             AND a.kd_koord = b.kd_koord
+		             AND a.kd_area = b.kd_area
+		             AND a.kd_cabang = b.kd_cabang
+		             AND a.kd_region = c.kd_region
+		             AND a.kd_koord = c.kd_koord
+		             AND a.kd_area = c.kd_area
+		             AND c.kd_cabang = '000') m,
+		         (SELECT a.reg_spaj, b.nama_reff, b.jenis, c.nama_cabang
+		            FROM (select * 
+ 								from eka.mst_reff_bii a
+							 	where	  level_id=4
+ 								and	  no_urut=(select max(no_urut) from eka.mst_reff_bii where reg_spaj=a.reg_spaj)) a, 
+						eka.lst_reff_bii b, 
+						eka.lst_cabang_bii c
+		           WHERE a.lrb_id = b.lrb_id AND a.lcb_no = c.lcb_no) n,
+		         eka.lst_region o,
+		         eka.lst_addr_region p,
+				 eka.mst_agent q,
+				 eka.mst_client_new r,
+				 eka.lst_policy_status s
+		   WHERE pol.lstb_id = 1
+		     AND pol.lspd_id not in (0, 14, 15, 16, 25, 95, 103, 999)
+		     AND pol.reg_spaj = ins.reg_spaj
+		     AND ins.lssa_id = 10
+		     AND ins.mste_insured_no = prod_ins.mste_insured_no
+		     AND ins.reg_spaj = prod_ins.reg_spaj
+		     AND prod_ins.lsbs_id < 300
+		     AND pol.reg_spaj = agent_prod.reg_spaj
+		     AND agent_prod.lsle_id = 4
+		     AND pol.lscb_id = f.lscb_id
+		     AND prod_ins.lsbs_id = e.lsbs_id
+		     AND pol.reg_spaj = i.reg_spaj
+		     AND prod_ins.lsdbs_number = e.lsdbs_number
+		     AND pol.mspo_policy_holder = c1.mcl_id
+		     AND ins.mste_insured = c2.mcl_id
+		     AND pol.mspo_policy_holder = h.mcl_id
+		     AND agent_prod.msag_id = k.msag_id
+		     AND k.mcl_id = c3.mcl_id
+		     AND pol.lca_id = l.lca_id
+		     AND pol.mspo_plan_provider = m.mns_kd_nasabah(+)
+		     AND pol.reg_spaj = n.reg_spaj(+)
+		     AND pol.lca_id = o.lca_id
+		     AND pol.lwk_id = o.lwk_id
+		     AND pol.lsrg_id = o.lsrg_id
+		     AND o.lar_id = p.lar_id
+			 AND pol.mspo_ao = q.msag_id(+)
+			 AND q.mcl_id = r.mcl_id(+)
+			 AND pol.lssp_id = s.lssp_id
+AND ROWNUM < 10
+		 ORDER BY s.lssp_status, 1, 2, 3, 4, 5, 6]]>
+	</queryString>
+	<field name="KCI" class="java.lang.String"/>
+	<field name="KURANG_DATA" class="java.lang.String"/>
+	<field name="LCA_ID" class="java.lang.String"/>
+	<field name="LCA_NAMA" class="java.lang.String"/>
+	<field name="LKU_ID" class="java.lang.String"/>
+	<field name="LSCB_PAY_MODE" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSSP_STATUS" class="java.lang.String"/>
+	<field name="MSAG_ID" class="java.lang.String"/>
+	<field name="MSAP_AREA_CODE1" class="java.lang.String"/>
+	<field name="MSAP_PHONE1" class="java.lang.String"/>
+	<field name="MSPO_DATE_PRINT" class="java.util.Date"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="MSTE_BEG_DATE" class="java.util.Date"/>
+	<field name="MSTE_TGL_AKSEP" class="java.util.Date"/>
+	<field name="MSTE_TGL_TERIMA_SPAJ" class="java.util.Date"/>
+	<field name="NAMA_CABANG" class="java.lang.String"/>
+	<field name="NAMA_PENUTUP" class="java.lang.String"/>
+	<field name="NAMA_PP" class="java.lang.String"/>
+	<field name="NAMA_TT" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="TELPON_RUMAH" class="java.lang.String"/>
+	<field name="TGL_KURANG_DATA" class="java.util.Date"/>
+	<field name="USER_KURANG_DATA" class="java.lang.String"/>
+	<group name="cabang" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{LCA_ID}]]></groupExpression>
+		<groupHeader>
+			<band height="60">
+				<textField>
+					<reportElement x="0" y="40" width="400" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Sampai Dengan " + $P{REPORT_SCRIPTLET}.formatDateIndonesian(new Date())]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="0" y="0" width="400" height="20"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Cabang : "+$F{LCA_NAMA} + " " + $P{cab_bank}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement mode="Transparent" x="0" y="20" width="400" height="20"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{judul}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="kci_cabang">
+		<groupExpression><![CDATA[$F{KCI} + $F{NAMA_CABANG}]]></groupExpression>
+		<groupHeader>
+			<band height="65">
+				<textField isBlankWhenNull="true">
+					<reportElement positionType="Float" x="725" y="0" width="445" height="30"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle"/>
+					<textFieldExpression class="java.lang.String"><![CDATA[(($F{KCI} != null) ? ("KCI: " + $F{KCI}) : "" )
++"\n"+
+(($F{NAMA_CABANG} != null) ? ("Cabang: " + $F{NAMA_CABANG}) : "")]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="130" y="35" width="110" height="30"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<text><![CDATA[Nama Pemegang Polis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="930" y="35" width="315" height="30"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[Keterangan]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="35" width="30" height="30"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[No.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="605" y="35" width="65" height="30"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[Premi]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="30" y="35" width="100" height="30"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[Nama Penutup]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="670" y="35" width="55" height="30"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle"/>
+					<text><![CDATA[Beg Date]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="540" y="35" width="65" height="30"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[Cara Bayar]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="240" y="35" width="120" height="30"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[Nama Tertanggung]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="450" y="35" width="90" height="30"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[Nama Produk]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="360" y="35" width="90" height="30"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle"/>
+					<text><![CDATA[Nomor Spaj]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="725" y="35" width="65" height="30"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle"/>
+					<text><![CDATA[Tanggal Terima SPAJ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="790" y="35" width="65" height="30"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[Tanggal Keputusan U/W]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1245" y="35" width="66" height="30"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[User]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="855" y="35" width="75" height="30"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[Status Polis]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+	</group>
+	<detail>
+		<band height="15">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="30" y="0" width="100" height="15"/>
+				<box border="None"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PENUTUP}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="130" y="0" width="110" height="15"/>
+				<box border="None"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PP}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="240" y="0" width="120" height="15"/>
+				<box border="None"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_TT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="360" y="0" width="90" height="15"/>
+				<box border="None"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REG_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="450" y="0" width="90" height="15"/>
+				<box border="None"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="540" y="0" width="65" height="15"/>
+				<box border="None"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSCB_PAY_MODE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="605" y="0" width="65" height="15"/>
+				<box border="None"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($F{MSPR_PREMIUM})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="670" y="0" width="55" height="15"/>
+				<box border="None"/>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{MSTE_BEG_DATE})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="30" height="15"/>
+				<box border="None"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{REPORT_COUNT}+"."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="930" y="0" width="315" height="15"/>
+				<box border="None"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{KURANG_DATA}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="725" y="0" width="65" height="15"/>
+				<box border="None"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{MSTE_TGL_TERIMA_SPAJ})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="790" y="0" width="65" height="15"/>
+				<box border="None"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{TGL_KURANG_DATA})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="1245" y="0" width="66" height="15"/>
+				<box border="None"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{USER_KURANG_DATA}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="855" y="0" width="75" height="15"/>
+				<box border="None"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSSP_STATUS}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="75">
+			<textField isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="5" y="5" width="696" height="61"/>
+				<textElement>
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{note}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="50">
+			<subreport>
+				<reportElement x="0" y="2" width="1351" height="14"/>
+				<subreportParameter name="month3">
+					<subreportParameterExpression><![CDATA[$P{month3}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="month12">
+					<subreportParameterExpression><![CDATA[$P{month12}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="month11">
+					<subreportParameterExpression><![CDATA[$P{month11}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="month4">
+					<subreportParameterExpression><![CDATA[$P{month4}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="month5">
+					<subreportParameterExpression><![CDATA[$P{month5}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="month7">
+					<subreportParameterExpression><![CDATA[$P{month7}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="month10">
+					<subreportParameterExpression><![CDATA[$P{month10}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="month6">
+					<subreportParameterExpression><![CDATA[$P{month6}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="month8">
+					<subreportParameterExpression><![CDATA[$P{month8}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="month1">
+					<subreportParameterExpression><![CDATA[$P{month1}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="cab_bank">
+					<subreportParameterExpression><![CDATA[$P{cab_bank}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="month9">
+					<subreportParameterExpression><![CDATA[$P{month9}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="month2">
+					<subreportParameterExpression><![CDATA[$P{month2}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="yearbefore">
+					<subreportParameterExpression><![CDATA[$P{yearbefore}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$P{datasource}]]></dataSourceExpression>
+				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{ProductsSubreport}]]></subreportExpression>
+			</subreport>
+		</band>
+	</summary>
+</jasperReport>

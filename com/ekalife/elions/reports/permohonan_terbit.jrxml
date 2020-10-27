@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="permohonan_terbit" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="EKATEST"/>
+	<parameter name="user" class="java.lang.String"/>
+	<parameter name="spaj" class="java.lang.String"/>
+	<parameter name="props" class="java.util.Properties"/>
+	<queryString>
+		<![CDATA[SELECT   "MST_AGENT_PROD"."LSLE_ID", "MST_POLICY"."REG_SPAJ",
+         decode(MST_CLIENT_NEW.MCL_JENIS, 1, decode(MST_CLIENT_NEW.LTI_ID, null, '', (select upper(lti_note || ' ') from eka.lst_title where lti_id = MST_CLIENT_NEW.LTI_ID) || ' '), "MST_CLIENT_NEW"."MCL_FIRST") "pp", "LST_DET_BISNIS"."LSDBS_NAME",
+         "MST_POLICY"."MSPO_NO_BLANKO", "MST_CLIENT_NEW_1"."MCL_FIRST" "ttg",
+         "LST_KURS"."LKU_SYMBOL", "MST_PRODUCT_INSURED"."LSBS_ID",
+         "MST_PRODUCT_INSURED"."MSPR_TSI",
+         "MST_PRODUCT_INSURED"."MSPR_PREMIUM",
+         "MST_PRODUCT_INSURED"."MSPR_DISCOUNT",
+         "LST_PAY_MODE"."LSCB_PAY_MODE", "MST_DEPOSIT_PREMIUM"."MSDP_NUMBER",
+         "MST_DEPOSIT_PREMIUM"."MSDP_PAYMENT", "LST_CABANG"."LCA_NAMA",
+         "MST_PRODUCT_INSURED"."LKU_ID", "LST_DET_BISNIS"."LSBS_ID",
+		 T1.nilai3,T1.nilai4	,
+		 ("MST_PRODUCT_INSURED"."MSPR_PREMIUM" -  "MST_PRODUCT_INSURED"."MSPR_DISCOUNT") "PREMI",
+		 decode (T2.jumlah , 1,'Titipan Premi','Titipan Premi Ke- ' || T2.jumlah) "KETERANGAN",
+		 (case when "MST_PRODUCT_INSURED"."LSBS_ID" in (51,77,84,79,80,81,87,88,90,91,92,97,98,100,101,102,103,111,112,113,114,115,116,117,118,119,120,122,127,128,129,133,135,136,137,138,139,150,151,107,140,141,148,134,155,158,161,165,163,166)
+or MST_PRODUCT_INSURED.LSBS_ID >300		OR NVL("MST_INSURED"."MSTE_FLAG_GUTHRIE",0) =1
+ then 0
+		 else
+			(case when "MST_PRODUCT_INSURED"."LKU_ID" = '01' then   T1.nilai3
+				  else
+				  T1.nilai4	
+				 end)
+		 end) T,
+ (select sum(a.mspr_premium) from eka.mst_product_insured a where a.reg_spaj="MST_POLICY"."REG_SPAJ") total_premi
+    FROM "EKA"."LST_DET_BISNIS" "LST_DET_BISNIS",
+         "EKA"."LST_PAY_MODE" "LST_PAY_MODE",
+         "EKA"."MST_POLICY" "MST_POLICY",
+         "EKA"."MST_PRODUCT_INSURED" "MST_PRODUCT_INSURED",
+         "EKA"."LST_CABANG" "LST_CABANG",
+         "EKA"."MST_AGENT_PROD" "MST_AGENT_PROD",
+         "EKA"."MST_CLIENT_NEW" "MST_CLIENT_NEW",
+         "EKA"."MST_INSURED" "MST_INSURED",
+         "EKA"."LST_KURS" "LST_KURS",
+         "EKA"."MST_DEPOSIT_PREMIUM" "MST_DEPOSIT_PREMIUM",
+         "EKA"."MST_CLIENT_NEW" "MST_CLIENT_NEW_1",
+		 (SELECT 
+		EKA."MST_DEFAULT"."MSDEF_NUMERIC" nilai3,
+		a."MSDEF_NUMERIC" nilai4
+		FROM "EKA"."MST_DEFAULT", "EKA"."MST_DEFAULT" a
+		WHERE EKA."MST_DEFAULT"."MSDEF_ID"=3 and 
+		a."MSDEF_ID"=4) T1,
+		(select count ( eka.MST_DEPOSIT_PREMIUM.MSDP_NUMBER) jumlah from eka.MST_DEPOSIT_PREMIUM where 
+		eka.MST_DEPOSIT_PREMIUM.reg_spaj =$P{spaj}) T2
+   WHERE ("LST_PAY_MODE"."LSCB_ID" = "MST_POLICY"."LSCB_ID")
+     AND ("MST_POLICY"."REG_SPAJ" = "MST_PRODUCT_INSURED"."REG_SPAJ")
+     AND ("MST_POLICY"."LCA_ID" = "LST_CABANG"."LCA_ID")
+     AND ("MST_POLICY"."REG_SPAJ" = "MST_AGENT_PROD"."REG_SPAJ")
+     AND ("MST_POLICY"."MSPO_POLICY_HOLDER" = "MST_CLIENT_NEW"."MCL_ID")
+     AND (    ("LST_DET_BISNIS"."LSBS_ID" = "MST_PRODUCT_INSURED"."LSBS_ID")
+          AND ("LST_DET_BISNIS"."LSDBS_NUMBER" =
+                                          "MST_PRODUCT_INSURED"."LSDBS_NUMBER"
+              )
+         )
+     AND (    ("MST_PRODUCT_INSURED"."REG_SPAJ" = "MST_INSURED"."REG_SPAJ")
+          AND ("MST_POLICY"."REG_SPAJ" = "MST_INSURED"."REG_SPAJ")
+         )
+     AND (    ("MST_PRODUCT_INSURED"."LKU_ID" = "LST_KURS"."LKU_ID")
+          AND ("MST_POLICY"."LKU_ID" = "LST_KURS"."LKU_ID")
+         )
+     AND (    (    ("MST_INSURED"."REG_SPAJ" =
+                                              "MST_DEPOSIT_PREMIUM"."REG_SPAJ"
+                   )
+              )
+          AND ("MST_POLICY"."REG_SPAJ" = "MST_DEPOSIT_PREMIUM"."REG_SPAJ")
+         )
+     AND ("MST_INSURED"."MSTE_INSURED" = "MST_CLIENT_NEW_1"."MCL_ID")
+     AND "MST_POLICY"."REG_SPAJ" =$P{spaj}
+     AND "MST_AGENT_PROD"."LSLE_ID" = 4
+     AND "MST_DEPOSIT_PREMIUM"."MSDP_NUMBER" = 1
+ORDER BY "MST_DEPOSIT_PREMIUM"."MSDP_NUMBER",MST_PRODUCT_INSURED.lsbs_Id DESC]]>
+	</queryString>
+	<field name="KETERANGAN" class="java.lang.String"/>
+	<field name="LCA_NAMA" class="java.lang.String"/>
+	<field name="LKU_ID" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSCB_PAY_MODE" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="LSLE_ID" class="java.math.BigDecimal"/>
+	<field name="MSDP_NUMBER" class="java.math.BigDecimal"/>
+	<field name="MSDP_PAYMENT" class="java.math.BigDecimal"/>
+	<field name="MSPO_NO_BLANKO" class="java.lang.String"/>
+	<field name="MSPR_DISCOUNT" class="java.math.BigDecimal"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="MSPR_TSI" class="java.math.BigDecimal"/>
+	<field name="NILAI3" class="java.math.BigDecimal"/>
+	<field name="NILAI4" class="java.math.BigDecimal"/>
+	<field name="PREMI" class="java.math.BigDecimal"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="T" class="java.math.BigDecimal"/>
+	<field name="TOTAL_PREMI" class="java.math.BigDecimal"/>
+	<field name="pp" class="java.lang.String"/>
+	<field name="ttg" class="java.lang.String"/>
+	<variable name="sumpremi" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[new Double($F{PREMI}.doubleValue() + $F{T}.doubleValue())]]></variableExpression>
+	</variable>
+	<summary>
+		<band height="309">
+			<staticText>
+				<reportElement x="11" y="9" width="185" height="52"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Kepada yth
+Bagian Underwriting
+PT ASURANSI JIWA SINARMAS MSIG Tbk.
+di tempat.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="192" y="58" width="215" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[SURAT PERMOHONAN TERBIT POLIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="18" y="85" width="152" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Nomor SPAJ / No. Blangko]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="18" y="104" width="152" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Nama Pemegang Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="18" y="123" width="152" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Nama Calon Tertanggung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="18" y="140" width="152" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Jenis Program]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="18" y="158" width="152" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Jumlah UP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="18" y="176" width="152" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Jumlah Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="18" y="196" width="152" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Cara Pembayaran]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="181" y="85" width="160" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatSPAJ($F{REG_SPAJ})+" / "+$F{MSPO_NO_BLANKO}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="181" y="140" width="244" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="207" y="158" width="85" height="20"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($F{MSPR_TSI})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="207" y="176" width="85" height="20"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSBS_ID}.intValue() == 161 ?
+($V{sumpremi}.doubleValue() >1000000 ? 
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($V{sumpremi}.doubleValue()+37000)))
+:
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($V{sumpremi}.doubleValue()+31000)))
+
+):
+$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal($V{sumpremi}.doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="181" y="196" width="244" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSCB_PAY_MODE}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="181" y="104" width="244" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{pp}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="181" y="123" width="244" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ttg}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="181" y="158" width="22" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="181" y="176" width="22" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="347" y="85" width="126" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["("+$F{LCA_NAMA}+")"]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement x="-3" y="212" width="430" height="77"/>
+				<subreportParameter name="spaj">
+					<subreportParameterExpression><![CDATA[$P{spaj}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user">
+					<subreportParameterExpression><![CDATA[$P{user}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.sub_terbit")+".jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</summary>
+</jasperReport>

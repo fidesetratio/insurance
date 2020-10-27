@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="produksi_percabang_all" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperFunctionReport">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="props" class="java.lang.String"/>
+	<parameter name="elionsManager" class="com.ekalife.elions.service.ElionsManager"/>
+	<parameter name="id" class="java.lang.String"/>
+	<parameter name="tgl1" class="java.lang.String"/>
+	<parameter name="tgl2" class="java.lang.String"/>
+	<parameter name="tanggal1" class="java.lang.String"/>
+	<parameter name="tanggal2" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT /*+ first_rows */   distinct 
+         "EKA"."MST_PRODUCTION"."MSPRO_PROD_KE",   
+         "EKA"."MST_PRODUCTION"."MSBI_TAHUN_KE",   
+         "EKA"."MST_PRODUCTION"."REG_SPAJ",   
+         "EKA"."MST_PRODUCTION"."MSPRO_JN_PROD",  
+		 decode ("EKA"."MST_PRODUCTION"."MSPRO_JN_PROD" , 3 , -1 , 1) "jenis",  
+         "EKA"."MST_PRODUCTION"."LKU_ID",   
+         "EKA"."MST_PRODUCTION"."MSPRO_NILAI_KURS",   
+         "EKA"."MST_DET_PRODUCTION"."LSBS_ID",   
+         "EKA"."MST_DET_PRODUCTION"."LSDBS_NUMBER",   
+        "EKA"."MST_DET_PRODUCTION"."MSDPR_PREMIUM",
+        "EKA"."MST_DET_PRODUCTION"."MSDPR_DISCOUNT",   
+        "EKA"."MST_DET_PRODUCTION"."MSDPR_TSI",   
+         "EKA"."LST_BISNIS"."LSGB_ID",   
+         "EKA"."MST_PRODUCTION"."LCA_ID"||"EKA"."MST_PRODUCTION"."LWK_ID"||'.'||"EKA"."MST_PRODUCTION"."LSRG_ID" region,   
+         "EKA"."LST_REGION"."LSRG_NAMA",   
+         "EKA"."MST_PRODUCTION"."MSPRO_PROD_DATE",   
+         "EKA"."MST_POLICY"."LSCB_ID",   
+         "EKA"."MST_PRODUCTION"."MSBI_PREMI_KE",   
+    	 SUBSTR ("EKA"."MST_PRODUCTION"."REG_SPAJ", 1, 2)
+		       || '.'
+		       || SUBSTR ("EKA"."MST_PRODUCTION"."REG_SPAJ", 3, 4)
+		       || '.'
+		       || SUBSTR ("EKA"."MST_PRODUCTION"."REG_SPAJ", 7) spaj_formatted,
+		 decode( "EKA"."MST_POLICY"."MSPO_POLICY_NO",null,'',SUBSTR ( "EKA"."MST_POLICY"."MSPO_POLICY_NO", 1, 2)
+				       || '.'
+				       || SUBSTR ("EKA"."MST_POLICY"."MSPO_POLICY_NO", 3, 3)
+				       || '.'
+				       || SUBSTR ("EKA"."MST_POLICY"."MSPO_POLICY_NO", 6, 4)
+				       || '.'
+				       || SUBSTR ("EKA"."MST_POLICY"."MSPO_POLICY_NO", 10, 5)) POLICY_FORMATTED ,
+		decode (( SELECT sum(MST_DET_PRODUCTION."MSDPR_PREMIUM" - MST_DET_PRODUCTION."MSDPR_DISCOUNT") 
+    FROM "EKA"."MST_DET_PRODUCTION" MST_DET_PRODUCTION
+   WHERE MST_DET_PRODUCTION.REG_SPAJ ="EKA"."MST_PRODUCTION"."REG_SPAJ" and
+   ( MST_DET_PRODUCTION."MSPRO_PROD_KE" = "EKA"."MST_PRODUCTION"."MSPRO_PROD_KE")  and
+   ( MST_DET_PRODUCTION."MSPRO_PROD_DATE" = "EKA"."MST_PRODUCTION"."MSPRO_PROD_DATE")) , null , 0 , ( SELECT sum(MST_DET_PRODUCTION."MSDPR_PREMIUM" - MST_DET_PRODUCTION."MSDPR_DISCOUNT") 
+    FROM "EKA"."MST_DET_PRODUCTION" MST_DET_PRODUCTION
+   WHERE MST_DET_PRODUCTION.REG_SPAJ ="EKA"."MST_PRODUCTION"."REG_SPAJ" and
+   ( MST_DET_PRODUCTION."MSPRO_PROD_KE" = "EKA"."MST_PRODUCTION"."MSPRO_PROD_KE")  and
+   ( MST_DET_PRODUCTION."MSPRO_PROD_DATE" = "EKA"."MST_PRODUCTION"."MSPRO_PROD_DATE")))"hasil",
+   "EKA"."LST_CABANG"."LCA_NAMA",
+    decode (( SELECT sum(MST_DET_PRODUCTION."MSDPR_PREMIUM") 
+    FROM "EKA"."MST_DET_PRODUCTION" MST_DET_PRODUCTION
+   WHERE MST_DET_PRODUCTION.REG_SPAJ ="EKA"."MST_PRODUCTION"."REG_SPAJ" and
+   ( MST_DET_PRODUCTION."MSPRO_PROD_KE" = "EKA"."MST_PRODUCTION"."MSPRO_PROD_KE")  and
+   ( MST_DET_PRODUCTION."MSPRO_PROD_DATE" = "EKA"."MST_PRODUCTION"."MSPRO_PROD_DATE")) , null , 0 , ( SELECT sum(MST_DET_PRODUCTION."MSDPR_PREMIUM" ) 
+    FROM "EKA"."MST_DET_PRODUCTION" MST_DET_PRODUCTION
+   WHERE MST_DET_PRODUCTION.REG_SPAJ ="EKA"."MST_PRODUCTION"."REG_SPAJ" and
+   ( MST_DET_PRODUCTION."MSPRO_PROD_KE" = "EKA"."MST_PRODUCTION"."MSPRO_PROD_KE")  and
+   ( MST_DET_PRODUCTION."MSPRO_PROD_DATE" = "EKA"."MST_PRODUCTION"."MSPRO_PROD_DATE")))"prm",
+ decode (( SELECT sum( MST_DET_PRODUCTION."MSDPR_DISCOUNT") 
+    FROM "EKA"."MST_DET_PRODUCTION" MST_DET_PRODUCTION
+   WHERE MST_DET_PRODUCTION.REG_SPAJ ="EKA"."MST_PRODUCTION"."REG_SPAJ" and
+   ( MST_DET_PRODUCTION."MSPRO_PROD_KE" = "EKA"."MST_PRODUCTION"."MSPRO_PROD_KE")  and
+   ( MST_DET_PRODUCTION."MSPRO_PROD_DATE" = "EKA"."MST_PRODUCTION"."MSPRO_PROD_DATE")) , null , 0 , ( SELECT sum( MST_DET_PRODUCTION."MSDPR_DISCOUNT") 
+    FROM "EKA"."MST_DET_PRODUCTION" MST_DET_PRODUCTION
+   WHERE MST_DET_PRODUCTION.REG_SPAJ ="EKA"."MST_PRODUCTION"."REG_SPAJ" and
+   ( MST_DET_PRODUCTION."MSPRO_PROD_KE" = "EKA"."MST_PRODUCTION"."MSPRO_PROD_KE")  and
+   ( MST_DET_PRODUCTION."MSPRO_PROD_DATE" = "EKA"."MST_PRODUCTION"."MSPRO_PROD_DATE")))"disc"
+    FROM "EKA"."MST_AGENT_PROD",   
+         "EKA"."MST_DET_PRODUCTION",   
+         "EKA"."MST_PRODUCTION",   
+         "EKA"."MST_AGENT",   
+         "EKA"."MST_POLICY",   
+         "EKA"."LST_BISNIS",   
+         "EKA"."LST_CABANG",   
+		 "EKA"."LST_USER_ADMIN",
+		 "EKA"."LST_REGION"
+   WHERE ( "EKA"."MST_AGENT_PROD"."REG_SPAJ" = "EKA"."MST_DET_PRODUCTION"."REG_SPAJ" ) and  
+         ( "EKA"."MST_PRODUCTION"."LSTB_ID" = "EKA"."MST_DET_PRODUCTION"."LSTB_ID" ) and  
+         ( "EKA"."MST_PRODUCTION"."REG_SPAJ" = "EKA"."MST_DET_PRODUCTION"."REG_SPAJ" ) and  
+         ( "EKA"."MST_PRODUCTION"."MSPRO_PROD_KE" = "EKA"."MST_DET_PRODUCTION"."MSPRO_PROD_KE" ) and  
+         ( "EKA"."MST_PRODUCTION"."MSPRO_PROD_DATE" = "EKA"."MST_DET_PRODUCTION"."MSPRO_PROD_DATE" ) and  
+         ( "EKA"."MST_AGENT"."MSAG_ID" = "EKA"."MST_AGENT_PROD"."MSAG_ID" ) and  
+         ( "EKA"."MST_PRODUCTION"."REG_SPAJ" = "EKA"."MST_POLICY"."REG_SPAJ" ) and  
+         ( "EKA"."MST_DET_PRODUCTION"."LSBS_ID" = "EKA"."LST_BISNIS"."LSBS_ID" ) and  
+         ( "EKA"."MST_AGENT"."LCA_ID" = "EKA"."LST_CABANG"."LCA_ID" ) and  
+         ( ( EKA."MST_PRODUCTION"."MSPRO_JN_PROD" in (1,3) ) AND  
+         (TO_CHAR(EKA."MST_PRODUCTION"."MSPRO_PROD_DATE",'YYYYMMDD') between $P{tgl1} and  $P{tgl2}  ) AND  
+         ( EKA."MST_DET_PRODUCTION"."LSBS_ID" < 300 )  )    and
+		 ( "EKA"."LST_USER_ADMIN"."LUS_ID"=  $P{id} ) AND
+          ("EKA"."LST_USER_ADMIN"."LAR_ID" =  "EKA"."LST_REGION"."LAR_ID") and
+		  ("EKA"."LST_REGION"."LCA_ID" = "EKA"."MST_PRODUCTION"."LCA_ID") and
+         ("EKA"."LST_REGION"."LWK_ID" = "EKA"."MST_PRODUCTION"."LWK_ID") and
+         ("EKA"."LST_REGION"."LSRG_ID" = "EKA"."MST_PRODUCTION"."LSRG_ID")]]>
+	</queryString>
+	<field name="LKU_ID" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSCB_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="LSGB_ID" class="java.math.BigDecimal"/>
+	<field name="LSRG_NAMA" class="java.lang.String"/>
+	<field name="MSBI_PREMI_KE" class="java.math.BigDecimal"/>
+	<field name="MSBI_TAHUN_KE" class="java.math.BigDecimal"/>
+	<field name="MSDPR_DISCOUNT" class="java.math.BigDecimal"/>
+	<field name="MSDPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="MSDPR_TSI" class="java.math.BigDecimal"/>
+	<field name="MSPRO_JN_PROD" class="java.math.BigDecimal"/>
+	<field name="MSPRO_NILAI_KURS" class="java.math.BigDecimal"/>
+	<field name="MSPRO_PROD_DATE" class="java.util.Date"/>
+	<field name="MSPRO_PROD_KE" class="java.math.BigDecimal"/>
+	<field name="POLICY_FORMATTED" class="java.lang.String"/>
+	<field name="REGION" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="SPAJ_FORMATTED" class="java.lang.String"/>
+	<field name="disc" class="java.math.BigDecimal"/>
+	<field name="hasil" class="java.math.BigDecimal"/>
+	<field name="jenis" class="java.math.BigDecimal"/>
+	<field name="prm" class="java.math.BigDecimal"/>
+	<variable name="premi_basic" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal(($F{prm}.doubleValue() -$F{disc}.doubleValue()))]]></variableExpression>
+	</variable>
+	<variable name="premi_rider" class="java.math.BigDecimal" resetType="Group" resetGroup="region">
+		<variableExpression><![CDATA[new BigDecimal(($F{hasil}.doubleValue() - ($F{MSDPR_PREMIUM}.doubleValue() - $F{MSDPR_DISCOUNT}.doubleValue()) 
+))]]></variableExpression>
+	</variable>
+	<variable name="upp_evaluasi" class="java.math.BigDecimal" resetType="Group" resetGroup="region">
+		<variableExpression><![CDATA[($F{LSGB_ID}.intValue() != 17) ?
+new BigDecimal (($F{MSDPR_PREMIUM}.doubleValue() + $V{premi_rider}.doubleValue() - $F{MSDPR_DISCOUNT}.doubleValue())
+* $F{MSPRO_NILAI_KURS}.doubleValue() *
+ ($P{REPORT_SCRIPTLET}.f_koef_upp_evaluasi($F{LSGB_ID}.intValue(),$F{LSBS_ID}.intValue() ,$F{LSDBS_NUMBER}.intValue(),$F{LSCB_ID}.intValue(),$F{MSPRO_JN_PROD}.intValue(),$F{MSPRO_PROD_KE}.intValue(),$F{MSBI_TAHUN_KE}.intValue(),$F{REG_SPAJ},$F{MSBI_PREMI_KE}.intValue(),$P{elionsManager})).doubleValue()
+ ):
+new BigDecimal( (($F{MSDPR_PREMIUM}.doubleValue()  - $F{MSDPR_DISCOUNT}.doubleValue())
+* ( $P{REPORT_SCRIPTLET}.f_koef_upp_evaluasi($F{LSGB_ID}.intValue(),$F{LSBS_ID}.intValue() ,$F{LSDBS_NUMBER}.intValue(),$F{LSCB_ID}.intValue(),$F{MSPRO_JN_PROD}.intValue(),$F{MSPRO_PROD_KE}.intValue(),$F{MSBI_TAHUN_KE}.intValue(),$F{REG_SPAJ},$F{MSBI_PREMI_KE}.intValue(),$P{elionsManager})).doubleValue()
+  +($V{premi_rider}.doubleValue()*( ($F{MSPRO_JN_PROD}.intValue() ==3  )  ? -1 : 1) )) *$F{MSPRO_NILAI_KURS}.doubleValue()  )]]></variableExpression>
+	</variable>
+	<variable name="total_premi" class="java.math.BigDecimal" resetType="Group" resetGroup="region" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal(($V{premi_basic}.doubleValue()  ) 
+* $F{MSPRO_NILAI_KURS}.doubleValue() * $F{jenis}.doubleValue() )]]></variableExpression>
+	</variable>
+	<variable name="funct" class="java.lang.Double">
+		<variableExpression><![CDATA[$P{REPORT_SCRIPTLET}.f_koef_upp_evaluasi($F{LSGB_ID}.intValue(),$F{LSBS_ID}.intValue() ,$F{LSDBS_NUMBER}.intValue(),$F{LSCB_ID}.intValue(),$F{MSPRO_JN_PROD}.intValue(),$F{MSPRO_PROD_KE}.intValue(),$F{MSBI_TAHUN_KE}.intValue(),
+$F{REG_SPAJ},$F{MSBI_PREMI_KE}.intValue(),$P{elionsManager})]]></variableExpression>
+	</variable>
+	<variable name="total_up" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{MSDPR_TSI}]]></variableExpression>
+	</variable>
+	<variable name="total_premi_all" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{total_premi}]]></variableExpression>
+	</variable>
+	<variable name="total_upp_evaluasi" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{upp_evaluasi}]]></variableExpression>
+	</variable>
+	<variable name="tanda" class="java.lang.String">
+		<variableExpression><![CDATA[$V{upp_evaluasi}.doubleValue() < 0 ? "*" : ""]]></variableExpression>
+	</variable>
+	<variable name="up" class="java.math.BigDecimal" resetType="Group" resetGroup="region" calculation="Sum">
+		<variableExpression><![CDATA[$F{MSDPR_TSI}]]></variableExpression>
+	</variable>
+	<variable name="total_polis" class="java.lang.Integer" resetType="Group" resetGroup="region" calculation="Count">
+		<variableExpression><![CDATA[$F{REG_SPAJ}]]></variableExpression>
+	</variable>
+	<variable name="total_polis_all" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$V{total_polis}]]></variableExpression>
+	</variable>
+	<variable name="no" class="java.lang.Integer" incrementType="Group" incrementGroup="region" calculation="Sum">
+		<variableExpression><![CDATA[new Integer(1)]]></variableExpression>
+	</variable>
+	<group name="region">
+		<groupExpression><![CDATA[$F{REGION}]]></groupExpression>
+		<groupFooter>
+			<band height="20">
+				<textField>
+					<reportElement x="626" y="3" width="145" height="13"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("Rp ",$V{upp_evaluasi})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="114" y="3" width="152" height="13"/>
+					<textElement>
+						<font fontName="Arial" size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{LSRG_NAMA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="33" y="3" width="78" height="13"/>
+					<textElement>
+						<font fontName="Arial" size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{REGION}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="269" y="3" width="35" height="13"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Integer"><![CDATA[$V{total_polis}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="310" y="3" width="159" height="13"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("Rp ",$V{up})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="474" y="3" width="142" height="13"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("Rp ",$V{total_premi})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="6" y="3" width="24" height="13"/>
+					<textElement>
+						<font fontName="Arial" size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Integer"><![CDATA[$V{no}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<title>
+		<band height="24">
+			<staticText>
+				<reportElement x="269" y="4" width="237" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[VIEW PRODUKSI PER CABANG]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="37">
+			<staticText>
+				<reportElement x="4" y="21" width="150" height="13"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PERIODE PRODUKSI ]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="160" y="21" width="294" height="13"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggal1} + " s/d "+$P{tanggal2}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="546" y="21" width="197" height="13"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Print : "+$P{REPORT_SCRIPTLET}.formatDateWithTime(new Date())]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="19">
+			<staticText>
+				<reportElement x="6" y="3" width="24" height="14"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="33" y="3" width="78" height="14"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[KODE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="114" y="3" width="152" height="14"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[REGION]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="269" y="3" width="35" height="14"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[POLIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="310" y="3" width="159" height="14"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[UANG PERTANGGUNGAN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="626" y="3" width="145" height="14"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[UPP EVALUASI]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="474" y="3" width="142" height="14"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TOTAL PREMI]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<summary>
+		<band height="21">
+			<staticText>
+				<reportElement x="109" y="5" width="157" height="13"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TOTAL PER CABANG]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="310" y="5" width="159" height="13"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("Rp ",$V{total_up})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="474" y="5" width="142" height="13"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("Rp ",$V{total_premi_all})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="626" y="5" width="145" height="13"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency("Rp ",$V{total_upp_evaluasi})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="269" y="5" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{total_polis_all}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

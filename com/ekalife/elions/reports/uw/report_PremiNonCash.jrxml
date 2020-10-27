@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="report_PremiNonCash" pageWidth="1350" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="1310" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<parameter name="tanggalAkhir" class="java.lang.String">
+		<defaultValueExpression><![CDATA["23/03/2010"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAwal" class="java.lang.String">
+		<defaultValueExpression><![CDATA["23/03/2010"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select 
+	   nvl(a.mspo_policy_no, a.reg_spaj) polis, sum(c.msdb_premium) premi, o.status_accept, a.reg_spaj,
+	   decode(nvl(g.lt_id,1), 1, 'Premi Pokok', g.lt_transksi) tipe_premi,
+	   trunc(e.mspa_date_book) tgl_rk,
+	   e.mspa_payment payment, e.mspa_no_pre pre, e.mspa_no_voucher voucher, e.mspa_old_policy polis_lama,
+	   h.lsjb_type tipe_noncash, i.no_jm, nvl(nvl(k.mssur_no_surr, l.mstah_no_tahapan), e.mspa_desc) no_reg,trunc( n.mste_tgl_aksep) tgl_aksep, 
+	  p.mcl_first
+from 
+	 eka.mst_policy a, eka.mst_billing b, eka.mst_det_billing c, eka.mst_tag_payment d, eka.mst_payment e,
+	 eka.mst_ulink f, eka.lst_transaksi g, eka.lst_payment_type h, eka.mst_ptc_tm i,
+	 eka.mst_policy j, eka.mst_surrender k, eka.mst_tahapan l, (SELECT * FROM eka.mst_bayar_tahapan WHERE lsjta_id IN (2, 4)) m,
+	 eka.mst_insured n, eka.lst_status_accept o ,eka.mst_client_new p
+where 
+	e.mspa_input_date BETWEEN  to_date($P{tanggalAwal},'dd/MM/yyyy') AND  
+	to_date($P{tanggalAwal},'dd/MM/yyyy')+1
+	and a.reg_spaj = b.reg_spaj
+    and b.msbi_beg_date = 
+		(SELECT msbi_beg_date FROM eka.mst_billing 
+		 WHERE reg_spaj = b.reg_spaj AND msbi_tahun_ke = 1 AND msbi_premi_ke = 1)
+	and b.reg_spaj = c.reg_spaj
+	and b.msbi_tahun_ke = c.msbi_tahun_ke
+	and b.msbi_premi_ke = c.msbi_premi_ke
+	and b.reg_spaj = d.reg_spaj
+	and a.mspo_policy_holder=p.mcl_id
+	and b.msbi_tahun_ke = d.msbi_tahun_ke
+	and b.msbi_premi_ke = d.msbi_premi_ke
+	and d.mspa_payment_id = e.mspa_payment_id
+	and b.reg_spaj = f.reg_spaj(+)
+	and b.msbi_tahun_ke = f.mu_tahun_ke(+)
+	and b.msbi_premi_ke = f.mu_premi_ke(+)
+	and f.lt_id = g.lt_id(+)
+	and e.lsjb_id = h.lsjb_id
+	and e.mspa_no_pre = i.no_pre(+)
+	and e.mspa_old_policy = j.mspo_policy_no(+)
+	and j.reg_spaj = k.reg_spaj(+)
+	and a.reg_spaj = l.reg_spaj(+)
+	and l.reg_spaj = m.reg_spaj(+)
+	and n.lssa_id=o.lssa_id
+	and l.mstah_tahapan_ke = m.mstah_tahapan_ke(+)
+	and a.reg_spaj = n.reg_spaj
+	and h.lsjb_type_bank = 0
+group by 
+	  a.reg_spaj, a.mspo_policy_no, e.mspa_payment, e.mspa_no_pre, e.mspa_no_voucher, e.mspa_old_policy,
+	  g.lt_id, g.lt_transksi, h.lsjb_type, e.mspa_date_book, i.no_jm, k.mssur_no_surr, l.mstah_no_tahapan, n.mste_tgl_aksep,o.status_accept,p.mcl_first,
+nvl(nvl(k.mssur_no_surr, l.mstah_no_tahapan), e.mspa_desc)
+order by nvl(a.mspo_policy_no, a.reg_spaj), e.mspa_date_book]]>
+	</queryString>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="NO_JM" class="java.lang.String"/>
+	<field name="NO_REG" class="java.lang.String"/>
+	<field name="PAYMENT" class="java.math.BigDecimal"/>
+	<field name="POLIS" class="java.lang.String"/>
+	<field name="POLIS_LAMA" class="java.lang.String"/>
+	<field name="PRE" class="java.lang.String"/>
+	<field name="PREMI" class="java.math.BigDecimal"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="STATUS_ACCEPT" class="java.lang.String"/>
+	<field name="TGL_AKSEP" class="java.util.Date"/>
+	<field name="TGL_RK" class="java.util.Date"/>
+	<field name="TIPE_NONCASH" class="java.lang.String"/>
+	<field name="TIPE_PREMI" class="java.lang.String"/>
+	<field name="VOUCHER" class="java.lang.String"/>
+	<title>
+		<band height="35">
+			<staticText>
+				<reportElement x="0" y="0" width="290" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi Non Cash]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="0" y="20" width="290" height="15"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Periode " + $P{tanggalAwal} + " s/d " + $P{tanggalAkhir}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="15">
+			<staticText>
+				<reportElement x="0" y="0" width="45" height="15"/>
+				<box border="1Point"/>
+				<textElement/>
+				<text><![CDATA[No.Urut]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="45" y="0" width="80" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Top"/>
+				<text><![CDATA[Jns Non Cash]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="200" y="0" width="90" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[No.Polis Lama]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="290" y="0" width="90" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[No Polis Baru]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="505" y="0" width="85" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="590" y="0" width="105" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Tipe Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="910" y="0" width="180" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[No. Registrasi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1195" y="0" width="110" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Tgl.Akseptasi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="125" y="0" width="75" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement/>
+				<text><![CDATA[SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="380" y="0" width="125" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Nama Pemegang Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="695" y="0" width="130" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Tgl.RK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="825" y="0" width="85" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Jumlah Bayar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1090" y="0" width="105" height="15"/>
+				<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Status Polis]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15">
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="45" height="15"/>
+				<box topBorder="None" leftBorder="1Point" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="45" y="0" width="80" height="15"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TIPE_NONCASH}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="200" y="0" width="90" height="15"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatPolis($F{POLIS_LAMA})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="290" y="0" width="90" height="15"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatPolis($F{POLIS})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="505" y="0" width="85" height="15"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(" ",$F{PREMI})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="910" y="0" width="180" height="15"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NO_REG}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1090" y="0" width="105" height="15"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{STATUS_ACCEPT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="125" y="0" width="75" height="15"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatSPAJ($F{REG_SPAJ})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="380" y="0" width="125" height="15"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MCL_FIRST}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="590" y="0" width="105" height="15"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TIPE_PREMI}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="695" y="0" width="130" height="15"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{TGL_RK}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="825" y="0" width="85" height="15"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(" ",$F{PAYMENT})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1195" y="0" width="110" height="15"/>
+				<box topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{TGL_AKSEP}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="15">
+			<textField>
+				<reportElement positionType="Float" x="1140" y="5" width="140" height="10"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement positionType="Float" x="1280" y="5" width="25" height="10" isPrintWhenDetailOverflows="true"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="3" y="-3" width="1212" height="1"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</pageFooter>
+</jasperReport>

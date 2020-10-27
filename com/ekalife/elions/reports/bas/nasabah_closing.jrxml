@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="nasabah_closing" pageWidth="791" pageHeight="612" orientation="Landscape" columnWidth="751" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<parameter name="print" class="java.util.Date">
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("01/08/2011")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("31/08/2011")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select  trunc(a.tgl_input) tgl_input,a.nama_tamu, round((trunc(a.tgl_input) - a.tgl_lahir)/360) as usia,  a.job, (mpr_libur + mpr_usia + mpr_pp + mpr_kinvestasi + mpr_minvestasi + mpr_anggaran) nilai_investasi,
+       c.mpr_nilai_tensi, d.lsdbs_name, a.reason_sale, e.nama_bfa, f.nama_spg  
+  from eka.mst_tamu @mallins a,
+       eka.lst_grp_job b,
+       eka.mst_risk_profile @mallins c,
+       (
+        select distinct a.mcl_first, c.reg_spaj, d.lsbs_id, d.lsdbs_number, e.lsdbs_name
+          from eka.mst_client_new a,
+               eka.mst_tamu @mallins b,
+               eka.mst_policy c,
+               eka.mst_product_insured d,
+               eka.lst_det_bisnis e
+         where a.mcl_first = b.nama_tamu     
+           and a.mspe_date_birth = b.tgl_lahir  
+           and a.mcl_id = c.mspo_policy_holder
+           and c.reg_spaj = d.reg_spaj
+           and d.lsbs_id = e.lsbs_id
+           and d.lsdbs_number = e.lsdbs_number       
+       ) d,
+       eka.lst_bfa @mallins e,
+       eka.lst_spg @mallins f
+ where a.job = b.lgj_id(+)     
+    and a.kd_tamu = c.kd_tamu
+    and a.nama_tamu = d.mcl_first(+)
+    and a.msag_id = e.msag_id
+    and a.kd_spg = f.kd_spg
+    and d.lsdbs_name is not null
+    and trunc(a.tgl_input) between $P{tanggalAwal} and $P{tanggalAkhir}
+order by f.nama_spg, e.nama_bfa, a.tgl_input, a.in_room]]>
+	</queryString>
+	<field name="JOB" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="MPR_NILAI_TENSI" class="java.lang.String"/>
+	<field name="NAMA_BFA" class="java.lang.String"/>
+	<field name="NAMA_SPG" class="java.lang.String"/>
+	<field name="NAMA_TAMU" class="java.lang.String"/>
+	<field name="NILAI_INVESTASI" class="java.math.BigDecimal"/>
+	<field name="REASON_SALE" class="java.lang.String"/>
+	<field name="TGL_INPUT" class="java.util.Date"/>
+	<field name="USIA" class="java.math.BigDecimal"/>
+	<group name="Usher" isStartNewPage="true" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{NAMA_SPG}]]></groupExpression>
+		<groupHeader>
+			<band height="30">
+				<staticText>
+					<reportElement x="0" y="10" width="50" height="20"/>
+					<box topPadding="2" leftPadding="0" bottomPadding="0" rightPadding="0"/>
+					<textElement verticalAlignment="Middle">
+						<font size="11" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Usher : ]]></text>
+				</staticText>
+				<textField hyperlinkType="None">
+					<reportElement x="50" y="10" width="213" height="20"/>
+					<textElement verticalAlignment="Middle" markup="none">
+						<font size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_SPG}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="FA" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{NAMA_BFA}]]></groupExpression>
+		<groupHeader>
+			<band height="65">
+				<staticText>
+					<reportElement x="245" y="25" width="115" height="40"/>
+					<box padding="0">
+						<topPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="11"/>
+					</textElement>
+					<text><![CDATA[Pekerjaan]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="360" y="25" width="80" height="40"/>
+					<box padding="0">
+						<topPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="11"/>
+					</textElement>
+					<text><![CDATA[Tensi Investasi]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="25" width="65" height="40"/>
+					<box padding="0">
+						<pen lineWidth="1.0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="11"/>
+					</textElement>
+					<text><![CDATA[Tanngal]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="65" y="25" width="150" height="40"/>
+					<box padding="0">
+						<pen lineWidth="1.0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="11"/>
+					</textElement>
+					<text><![CDATA[Nama Calon Nasabah]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="215" y="25" width="30" height="40"/>
+					<box padding="0">
+						<topPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="11"/>
+					</textElement>
+					<text><![CDATA[Usia]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="440" y="25" width="170" height="40"/>
+					<box padding="0">
+						<topPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="11"/>
+					</textElement>
+					<text><![CDATA[Product Sales]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="10" y="5" width="50" height="20"/>
+					<box topPadding="2" leftPadding="0" bottomPadding="0" rightPadding="0"/>
+					<textElement verticalAlignment="Middle">
+						<font size="11" isBold="true"/>
+					</textElement>
+					<text><![CDATA[FA : ]]></text>
+				</staticText>
+				<textField hyperlinkType="None">
+					<reportElement x="60" y="5" width="213" height="20"/>
+					<textElement verticalAlignment="Middle" markup="none">
+						<font size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_BFA}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<pageHeader>
+		<band height="21">
+			<staticText>
+				<reportElement x="0" y="0" width="130" height="20"/>
+				<box padding="0"/>
+				<textElement verticalAlignment="Middle">
+					<font size="15" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nasabah Closing]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="130" y="1" width="90" height="20"/>
+				<box topPadding="2" leftPadding="0" bottomPadding="0" rightPadding="0"/>
+				<textElement verticalAlignment="Middle">
+					<font size="11"/>
+				</textElement>
+				<text><![CDATA[Mulai tanggal :]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="220" y="1" width="200" height="20"/>
+				<box topPadding="2" leftPadding="0" bottomPadding="0" rightPadding="0"/>
+				<textElement verticalAlignment="Middle">
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).format($P{tanggalAwal})+ "  s/d  "+(new SimpleDateFormat("dd/MM/yyyy")).format($P{tanggalAkhir})]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="20">
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="65" y="0" width="150" height="20"/>
+				<box padding="0">
+					<pen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_TAMU}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="215" y="0" width="30" height="20"/>
+				<box padding="0">
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{USIA}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="360" y="0" width="80" height="20"/>
+				<box padding="0">
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MPR_NILAI_TENSI}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="440" y="0" width="170" height="20"/>
+				<box padding="0">
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="245" y="0" width="115" height="20"/>
+				<box padding="0">
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{JOB}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="0" y="0" width="65" height="20"/>
+				<box padding="0">
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{TGL_INPUT})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="50">
+			<textField hyperlinkType="None">
+				<reportElement x="80" y="20" width="150" height="20"/>
+				<textElement markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateWithTime($P{print})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="20" width="80" height="20"/>
+				<textElement/>
+				<text><![CDATA[Tanggal Print : ]]></text>
+			</staticText>
+			<textField evaluationTime="Report" hyperlinkType="None">
+				<reportElement x="720" y="21" width="30" height="20"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="670" y="21" width="30" height="20"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="635" y="21" width="35" height="20"/>
+				<textElement/>
+				<text><![CDATA[Page :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="700" y="21" width="20" height="20"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[of]]></text>
+			</staticText>
+		</band>
+	</pageFooter>
+</jasperReport>

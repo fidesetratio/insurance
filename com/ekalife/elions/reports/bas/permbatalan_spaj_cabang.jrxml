@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="permbatalan_spaj_cabang" pageWidth="1000" pageHeight="842" columnWidth="960" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.VGuides.Detail" value="19"/>
+	<property name="com.jasperassistant.designer.HGuides" value="0,0,1,1,1"/>
+	<property name="com.jasperassistant.designer.DataSource" value="E-Lions"/>
+	<parameter name="tanggalAwal" class="java.lang.String">
+		<defaultValueExpression><![CDATA["01/01/2008"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.lang.String">
+		<defaultValueExpression><![CDATA["31/12/2009"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="print" class="java.util.Date">
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT a.reg_spaj, a.cancel_who, a.cancel_when, b.mspo_no_blanko,
+trim ( (case when ( upper(a.alasan_lain) like 'PEMBATALAN POLIS%' ) then substr(a.alasan_lain, 19, length(a.alasan_lain)) else a.alasan_lain end )) alasan_lain,
+ a.alasan_cd , c.lca_nama, d.lus_full_name, b.mspo_input_date
+FROM 
+		eka.mst_refund a, 
+		eka.mst_policy b,
+		eka.lst_cabang c,
+		eka.lst_user d
+WHERE
+	a.reg_spaj = b.reg_spaj AND
+	 b.lca_id = c.lca_id AND
+	 flag_user_cabang = 1 AND 
+	 a.cancel_who = d.lus_id AND
+	TRUNC(a.cancel_when) >=to_date($P{tanggalAwal},'dd/mm/yyyy') AND 
+	TRUNC(a.cancel_when) <=to_date($P{tanggalAkhir},'dd/mm/yyyy')]]>
+	</queryString>
+	<field name="ALASAN_CD" class="java.math.BigDecimal"/>
+	<field name="ALASAN_LAIN" class="java.lang.String"/>
+	<field name="CANCEL_WHEN" class="java.util.Date"/>
+	<field name="CANCEL_WHO" class="java.math.BigDecimal"/>
+	<field name="LCA_NAMA" class="java.lang.String"/>
+	<field name="LUS_FULL_NAME" class="java.lang.String"/>
+	<field name="MSPO_INPUT_DATE" class="java.util.Date"/>
+	<field name="MSPO_NO_BLANKO" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<pageHeader>
+		<band height="85">
+			<staticText>
+				<reportElement x="4" y="4" width="537" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="13" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PT Asuransi Jiwa Sinarmas MSIG Tbk. - REPORT PEMBATALAN CABANG SPAJ
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4" y="24" width="145" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[Periode (Tgl Pembatalan) :]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy">
+				<reportElement x="149" y="24" width="200" height="20"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggalAwal} +  " s/d " + $P{tanggalAkhir}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="4" y="65" width="23" height="20"/>
+				<box border="1Point" topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0"/>
+				<textElement verticalAlignment="Middle" lineSpacing="Single"/>
+				<text><![CDATA[No.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="26" y="65" width="152" height="20"/>
+				<box topBorder="1Point" topPadding="0" leftBorder="None" leftPadding="5" bottomBorder="1Point" bottomPadding="0" rightBorder="1Point" rightPadding="0"/>
+				<textElement verticalAlignment="Middle" lineSpacing="Single"/>
+				<text><![CDATA[Cabang]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="178" y="65" width="150" height="20"/>
+				<box topBorder="1Point" topPadding="0" leftBorder="None" leftPadding="5" bottomBorder="1Point" bottomPadding="0" rightBorder="1Point" rightPadding="0"/>
+				<textElement verticalAlignment="Middle" lineSpacing="Single"/>
+				<text><![CDATA[Nama Admin]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="328" y="65" width="145" height="20"/>
+				<box topBorder="1Point" topPadding="0" leftBorder="None" leftPadding="5" bottomBorder="1Point" bottomPadding="0" rightBorder="1Point" rightPadding="0"/>
+				<textElement verticalAlignment="Middle" lineSpacing="Single"/>
+				<text><![CDATA[Tanggal Input]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="473" y="65" width="109" height="20"/>
+				<box topBorder="1Point" topPadding="0" leftBorder="None" leftPadding="5" bottomBorder="1Point" bottomPadding="0" rightBorder="1Point" rightPadding="0"/>
+				<textElement verticalAlignment="Middle" lineSpacing="Single"/>
+				<text><![CDATA[No Blanko]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="581" y="65" width="115" height="20"/>
+				<box topBorder="1Point" topPadding="0" leftBorder="None" leftPadding="5" bottomBorder="1Point" bottomPadding="0" rightBorder="1Point" rightPadding="0"/>
+				<textElement verticalAlignment="Middle" lineSpacing="Single"/>
+				<text><![CDATA[No SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="695" y="65" width="92" height="20"/>
+				<box topBorder="1Point" topPadding="0" leftBorder="None" leftPadding="5" bottomBorder="1Point" bottomPadding="0" rightBorder="1Point" rightPadding="0"/>
+				<textElement verticalAlignment="Middle" lineSpacing="Single"/>
+				<text><![CDATA[Tanggal Batal]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="785" y="65" width="175" height="20"/>
+				<box topBorder="1Point" topPadding="0" leftBorder="None" leftPadding="5" bottomBorder="1Point" bottomPadding="0" rightBorder="1Point" rightPadding="0"/>
+				<textElement verticalAlignment="Middle" lineSpacing="Single"/>
+				<text><![CDATA[Alasan Batal]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="20">
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToBandHeight" x="4" y="0" width="23" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="1Point" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{REPORT_COUNT} + ". "]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToBandHeight" x="26" y="0" width="152" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LCA_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToBandHeight" x="178" y="0" width="150" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LUS_FULL_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy">
+				<reportElement stretchType="RelativeToBandHeight" x="328" y="0" width="145" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSPO_INPUT_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToBandHeight" x="473" y="0" width="109" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_NO_BLANKO}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="581" y="0" width="115" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REG_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy">
+				<reportElement stretchType="RelativeToBandHeight" x="695" y="0" width="92" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{CANCEL_WHEN}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToBandHeight" x="785" y="0" width="175" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ALASAN_LAIN}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="50">
+			<textField>
+				<reportElement x="83" y="20" width="80" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$P{print}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="3" y="20" width="80" height="20"/>
+				<textElement/>
+				<text><![CDATA[Tanggal Print : ]]></text>
+			</staticText>
+		</band>
+	</pageFooter>
+</jasperReport>

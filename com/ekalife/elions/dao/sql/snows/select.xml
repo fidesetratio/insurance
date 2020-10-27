@@ -1,0 +1,1024 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<typeAlias alias="hashMap" type="java.util.HashMap"/>
+		
+	<select id="elions.snows.selectGenMIID" resultClass="java.lang.String">
+		SELECT eka.pac_counter.get_inbox_id() FROM DUAL
+	</select>
+
+	<select id="elions.snows.selectLstJnJob" resultClass="id.co.sinarmaslife.std.model.vo.DropDown">
+		select LJJ_ID "key", LJJ_DESC "value"
+		from eka.lst_jn_job
+		where ljj_active = '1'
+		and ljj_id in(2,5,6,7,8,9,10,11,13,14,15,16,17,18,23,24,20,27,3,26)
+		order by ljj_id asc
+	</select>
+	
+	<select id="elions.snows.selectMstInbox" resultClass="hashMap" parameterClass="hashMap">
+		select
+		    a.*,
+		    b.mspo_policy_no_format "polis",
+		    c.lus_full_name "nama",
+    		f.ljj_desc "jnsInbox",
+		    eka.utils.pemegang(a.reg_spaj) "Pemegang",
+		    EKA.UTILS.TERTANGGUNG(a.reg_spaj) "Tertanggung",
+		    decode(a.lstb_id,1,'INDIVIDU',
+		    decode(a.lstb_id,2,'MRI','DMTM')) "Tipe",
+		    b.lca_id,SUBSTR (b.reg_spaj, 1, 2)
+		    || '.'
+		    || SUBSTR (b.reg_spaj, 3, 4)
+		    || '.'
+		    || SUBSTR (b.reg_spaj, 7) spaj_formatted,
+		    d.lsbs_id, e.lsdbs_name, e.lsdbs_number, f.ljj_folder, f.ljj_file 
+		from
+		    eka.mst_inbox a, eka.mst_policy b, eka.lst_user c, eka.MST_PRODUCT_INSURED d, eka.LST_DET_BISNIS e, eka.lst_jn_job f
+		where A.REG_SPAJ = b.reg_spaj
+		and a.batal = '0'
+		and a.lspd_id = '207'
+		and c.lus_id = a.create_id
+		<isNotEqual property="lde_id" compareValue="35">and a.create_id = #lus_id#</isNotEqual>
+		<isNotNull property="mi_id" >and a.mi_id = #mi_id#</isNotNull>
+		<isNotNull property="polis">and b.mspo_policy_no = #polis#</isNotNull>
+		and a.reg_spaj = d.reg_spaj
+		and d.lsbs_id = e.lsbs_id
+		and e.lsdbs_number = e.lsdbs_number 
+		and b.lstb_id in (1,2)
+		and d.lsbs_id <![CDATA[<]]> 800
+		and a.ljj_id = f.ljj_id
+		and d.lsdbs_number = e.lsdbs_number
+		union all
+		select
+		    a.*,
+		    b.no_sertifikat "polis",
+		    c.lus_full_name "nama",
+    		f.ljj_desc "jnsInbox",
+		    b.HOLDER_NAME Pemegang,
+		    d.NAMA_PESERTA Tertanggung,
+		    'DMTM' Tipe,
+		    '40' lca_id,
+		    SUBSTR (b.id, 1, 2)
+		    || '.'
+		    || SUBSTR (b.id, 3, 4)
+		    || '.'
+		    || SUBSTR (b.id, 7) spaj_formatted,
+		    to_number(e.PRODUCT_CODE) lsbs_id , e.PRODUCT_NAME lsdbs_name, d.PLAN lsdbs_number, f.ljj_folder, f.ljj_file
+		from
+		    eka.mst_inbox a, eka.mst_tmms@eb b, eka.lst_user c, EKA.MST_TMMS_DET@eb d, EKA.LST_TM_PRODUCT@eb e, eka.lst_jn_job f
+		where A.REG_SPAJ = b.id
+		and a.batal = '0'
+		and a.lspd_id = '207'
+		and c.lus_id = a.create_id
+		<isNotEqual property="lde_id" compareValue="35">and a.create_id = #lus_id#</isNotEqual>
+		<isNotNull property="mi_id" >and a.mi_id = #mi_id#</isNotNull>
+		<isNotNull property="polis">and b.no_sertifikat = #polis#</isNotNull>
+		and b.ID = d.ID
+		and b.PRODUCT_CODE = d.PRODUCT_CODE
+		and a.ljj_id = f.ljj_id
+	</select>
+	
+	<select id="elions.snows.selectCheckPending" resultClass="java.lang.String" parameterClass="hashMap">
+		Select
+			count(a.mi_id) jmlh
+		from
+			eka.mst_inbox a,
+			eka.mst_policy b
+			<isEqual property="lstb_id" compareValue="11">, eka.mst_tmms@eb c</isEqual>			
+		where 1=1
+		<isEqual property="lstb_id" compareValue="1">
+			<isNotNull property="nopol">and b.mspo_policy_no = #nopol#</isNotNull>
+			<isNotNull property="spaj">and a.reg_spaj = #spaj#</isNotNull>
+			and b.reg_spaj = a.reg_spaj
+		</isEqual>
+		<isEqual property="lstb_id" compareValue="2">
+			<isNotNull property="nopol">and b.mspo_policy_no = #nopol#</isNotNull>
+			<isNotNull property="spaj">and a.reg_spaj = #spaj#</isNotNull>
+			and b.reg_spaj = a.reg_spaj
+		</isEqual>
+		<isEqual property="lstb_id" compareValue="11">
+			<isNotNull property="nopol">and c.NO_SERTIFIKAT = #nopol#</isNotNull>
+			<isNotNull property="spaj">and c.ID = #spaj#</isNotNull>
+			and c.ID = a.reg_spaj
+		</isEqual>
+		and a.mi_pos = 1
+		and a.batal = 0
+		and a.lspd_id = 207
+	</select>
+	
+	<select id="elions.snows.selectMstInboxChecklist" resultClass="hashMap" parameterClass="hashMap">
+		select 
+		    a.mi_id,
+		    a.ljj_id,
+		    b.lc_id,
+		    b.mi_flag,
+		    b.mi_desc,
+		    c.lc_nama
+		from
+		    eka.mst_inbox a,
+		    eka.mst_inbox_checklist b,
+		    eka.lst_checklist c
+		where
+		    a.mi_id = #mi_id#
+		    and b.ljj_id = a.ljj_id
+		    and b.mi_id = a.mi_id
+		    and c.lc_id = b.lc_id
+		    <isNotNull property="mi_flag">and b.mi_flag = #mi_flag#</isNotNull>
+	    order by c.lc_nama asc
+	</select>
+	
+	<select id="elions.snows.selectNmFileChecklist" parameterClass="hashMap" resultClass="hashMap">
+	select
+	    a.mi_id,
+	    a.ljj_id,
+	    a.lstb_id,
+	    a.lspd_id,
+	    b.lc_id,
+	    b.mi_flag,
+	    c.lc_nama,
+	    c.id_scan,
+	    d.ket,
+	    d.nmfile,
+	    e.ljj_folder,
+	    f.lca_id,
+	    a.reg_spaj
+	from 
+	    eka.mst_inbox a,
+	    eka.mst_inbox_checklist b,
+	    eka.lst_checklist c,
+	    eka.lst_scan d,
+	    eka.lst_jn_job e,
+	    eka.mst_policy f
+	where
+	    a.mi_id = #mi_id#
+	    and b.ljj_id = a.ljj_id
+	    and b.mi_id = a.mi_id
+	    and b.mi_flag = '1'
+	    <isNotNull property="lc_id">and b.lc_id = #lc_id#</isNotNull>
+	    and c.lc_id = b.lc_id
+	    and d.ID = c.id_scan
+	    and e.ljj_id = a.ljj_id
+	    and f.reg_spaj = a.reg_spaj
+	</select>
+	
+	<select id="elions.snows.selectCountChecklist" resultClass="java.lang.String" parameterClass="hashMap">
+		select count(*) jmlh
+		from eka.mst_inbox_checklist
+		where
+		mi_id = #mi_id#
+		<isNotNull property="mi_flag">and mi_flag = '1'</isNotNull>
+	</select>
+	
+	<select id="elions.snows.selectListLeft" resultClass="hashMap" parameterClass="hashMap">
+		select
+		    a.mi_id, a.reg_spaj, a.lstb_id, a.lspd_id_from,
+		    b.mspo_policy_no_format "polis"
+		from
+		    eka.mst_inbox a, eka.mst_policy b
+		where A.REG_SPAJ = b.reg_spaj
+			and a.batal = '0'
+			and a.lspd_id = '207'
+			and a.ljj_id in (2,5,6,7,8,9,10,11,13,14,15,16,17,18,23,24,20,27,3,26)
+		<isNotEqual property="lde_id" compareValue="35">	
+			and a.create_id = #lus_id#
+		</isNotEqual>
+		union all
+		select
+		    a.mi_id, a.reg_spaj, a.lstb_id, a.lspd_id_from,
+		    b.no_sertifikat "polis"
+		from
+		    eka.mst_inbox a, eka.mst_tmms@eb b    
+		where A.REG_SPAJ = b.id
+			and a.batal = '0'
+			and a.lspd_id = '207'
+			and a.ljj_id in (2,5,6,7,8,9,10,11,13,14,15,16,17,18,23,24,20,27,3,26)
+		<isNotEqual property="lde_id" compareValue="35">	
+			and a.create_id = #lus_id#
+		</isNotEqual>
+	</select>
+	
+	<select id="elions.snows.selectMstPolicy" resultClass="hashMap" parameterClass="hashMap">
+		SELECT    a.lca_id,SUBSTR (a.reg_spaj, 1, 2)
+			       || '.'
+			       || SUBSTR (a.reg_spaj, 3, 4)
+			       || '.'
+			       || SUBSTR (a.reg_spaj, 7) spaj_formatted,
+			       a.reg_spaj, a.mspo_policy_no_format policy_formatted,
+			       a.mspo_policy_no, a.lspd_id, a.lstb_id, a.lsre_id,
+                   eka.utils.pemegang(a.reg_spaj) "Pemegang",
+                   EKA.UTILS.TERTANGGUNG(a.reg_spaj) "Tertanggung",
+                   decode(a.lstb_id,1,'INDIVIDU',
+                   decode(a.lstb_id,2,'MRI','DMTM')) "Tipe",
+                   b.lsbs_id, c.lsdbs_name
+		from eka.mst_policy a, eka.MST_PRODUCT_INSURED b, eka.LST_DET_BISNIS c
+		where 1=1
+		<isNotNull property="polis">AND a.MSPO_POLICY_NO = #polis#</isNotNull>
+		<isNotNull property="spaj">AND a.REG_SPAJ = #spaj#</isNotNull>
+		and a.reg_spaj = b.reg_spaj
+		and b.lsbs_id = c.lsbs_id
+		and c.lsdbs_number = b.lsdbs_number 
+		and a.lstb_id in (1,2)
+		and b.lsbs_id <![CDATA[<]]> 800
+	</select>
+	
+	<select id="elions.snows.selectMstTmms" resultClass="hashMap" parameterClass="hashMap">
+		select '40' lca_id, 
+			SUBSTR (a.id, 1, 2)
+                   || '.'
+                   || SUBSTR (a.id, 3, 4)
+                   || '.'
+                   || SUBSTR (a.id, 7) spaj_formatted,
+	        A.ID reg_spaj,
+	        A.NO_SERTIFIKAT policy_formatted , A.NO_SERTIFIKAT mspo_policy_no,
+	        A.POSISI lspd_id, 11 lstb_id, C.RELASI lsre_id,
+            A.HOLDER_NAME Pemegang, C.NAMA_PESERTA Tertanggung,
+            'DMTM' Tipe,
+            to_number(B.PRODUCT_CODE) lsbs_id , B.PRODUCT_NAME lsdbs_name, c.PLAN lsdbs_number  
+		from EKA.MST_TMMS@eb a, EKA.LST_TM_PRODUCT@eb b, EKA.MST_TMMS_DET@eb c
+		where A.PRODUCT_CODE = B.PRODUCT_CODE
+		and A.ID = C.ID
+		<isNotNull property="polis">AND a.NO_SERTIFIKAT = #polis#</isNotNull>
+		<isNotNull property="spaj">AND a.id = #spaj#</isNotNull>
+	</select>
+	
+	<select id="elions.snows.selectLstChecklist" resultClass="hashMap" parameterClass="hashMap">
+		select B.LJJ_DESC, C.LC_NAMA, C.LC_ID, B.LJJ_ID, A.PRIORITY
+		from EKA.MST_JOBLIST A,
+		    EKA.LST_JN_JOB B,
+		    EKA.LST_CHECKLIST C
+		where A.LJJ_ID = B.LJJ_ID and
+		    A.LC_ID = C.LC_ID and
+		    A.ACTIVE = 1 and
+		    B.LJJ_ACTIVE = 1 and
+		    C.LC_ACTIVE = 1 and
+		    A.PRIORITY IN (1,2)
+		    <isNotNull property="ljj_id">and b.LJJ_ID = #ljj_id#</isNotNull>
+		    <isNotNull property="mi_id">
+		    	and c.lc_id not in (select lc_id from eka.mst_inbox_checklist where mi_id = #mi_id# and ljj_id = #ljj_id#)
+	    	</isNotNull>
+		order by B.LJJ_DESC
+	</select>
+	
+	<select id="elions.snows.selectLstDocumentPosition" resultClass="id.co.sinarmaslife.std.model.vo.DropDown">
+		SELECT LSPD_ID "key", LSPD_POSITION "value"
+		FROM EKA.LST_DOCUMENT_POSITION
+		WHERE LSPD_ID BETWEEN 201 AND 212
+		ORDER BY LSPD_POSITION
+	</select>
+	
+	<select id="elions.snows.selectLstDocumentPositionByLSPDID" resultClass="string" parameterClass="hashMap">
+		SELECT lspd_position
+		FROM EKA.LST_DOCUMENT_POSITION
+		WHERE LSPD_ID = #lspd_id#
+	</select>
+	
+	<select id="elions.snows.selectWithdrawStableLink" resultClass="hashMap" parameterClass="hashMap">
+		SELECT "EKA"."MST_POLICY"."MSPO_POLICY_NO",   
+			"EKA"."MST_SLINK"."REG_SPAJ",   
+			"EKA"."MST_SLINK"."MSL_NO",   
+			"EKA"."MST_SLINK"."LJI_ID",   
+            "EKA"."LST_JENIS_INVEST"."LJI_INVEST",
+			"EKA"."MST_SLINK"."MSL_KODE",   
+			"EKA"."MST_SLINK"."MSL_RO",   
+			DECODE("EKA"."MST_SLINK"."MSL_RO",1,'Roll Over ALL', 
+				DECODE("EKA"."MST_SLINK"."MSL_RO",2,'Roll Over Premi','Auto Break')) "JN_RO",
+			"EKA"."MST_SLINK"."MSL_POSISI",   
+			"EKA"."MST_SLINK"."MSL_BDATE",   
+			"EKA"."MST_SLINK"."MSL_EDATE",   
+			"EKA"."MST_SLINK"."MSL_PREMI",   
+			"EKA"."MST_SLINK"."MSL_RATE",   
+			"EKA"."MST_SLINK"."MSL_MGI",   
+			"EKA"."MST_SLINK"."MSL_BUNGA",   
+			"EKA"."MST_SLINK"."MSL_TAX",   
+			"EKA"."MST_SLINK"."MSL_TGL_NAB",   
+			"EKA"."MST_SLINK"."MSL_NAB",   
+			"EKA"."MST_SLINK"."MSL_UNIT",   
+			"EKA"."MST_SLINK"."MSL_BP_RATE",   
+			"EKA"."MST_SLINK"."MSL_TGL_NAB_BP",   
+			"EKA"."MST_SLINK"."MSL_NAB_BP",   
+			"EKA"."MST_SLINK"."MSL_BP",   
+			"EKA"."MST_SLINK"."MSL_BP_PT",   
+			"EKA"."MST_SLINK"."MSL_UP",   
+			"EKA"."MST_SLINK"."MSL_HARI",   
+			"EKA"."MST_SLINK"."MSL_NEXT_DATE",   
+			"EKA"."MST_SLINK"."MSL_BAYAR_BUNGA",   
+			"EKA"."MST_SLINK"."MSL_BAYAR_BP",   
+			"EKA"."MST_SLINK"."MSL_INPUT_DATE",   
+			"EKA"."MST_SLINK"."MSL_PROSES_DATE",   
+			"EKA"."MST_SLINK"."MSL_CONFIRM_DATE",   
+			"EKA"."MST_SLINK"."MSL_PROD_DATE",   
+			"EKA"."MST_SLINK"."FLAG_RATE",   
+			"EKA"."MST_SLINK"."MSL_NOTE",   
+			"EKA"."MST_SLINK"."LUS_ID",   
+			"EKA"."MST_SLINK"."MSL_PRINT_DATE",   
+			"EKA"."MST_SLINK"."MSL_TAHUN_KE",   
+			"EKA"."MST_SLINK"."MSL_PREMI_KE",   
+			"EKA"."MST_SLINK"."TARIK_BUNGA",   
+			"EKA"."MST_SLINK"."MSL_SALDO_UNIT",   
+			"EKA"."MST_SLINK"."MSL_AKTIF",   
+			"EKA"."MST_SLINK"."MSL_TARIK_PERTAMA",   
+			"EKA"."MST_SLINK"."MSL_TU_KE",   
+			"EKA"."MST_SLINK"."MSL_FLAG_UP",   
+			Trim("EKA"."MST_SLINK"."NO_REG") NO_REG,   
+			"EKA"."MST_SLINK"."MSL_FLAG_COMM",   
+			"EKA"."MST_SLINK"."MSL_JN_RUMUS",
+			"EKA"."MST_PRODUCT_INSURED"."LSBS_ID"  
+		FROM "EKA"."MST_POLICY",   
+			"EKA"."MST_SLINK" ,
+			"EKA"."MST_PRODUCT_INSURED",
+            "EKA"."LST_JENIS_INVEST"
+		WHERE ( "EKA"."MST_POLICY"."REG_SPAJ" = "EKA"."MST_SLINK"."REG_SPAJ" ) AND
+			( "EKA"."MST_POLICY"."REG_SPAJ" = "EKA"."MST_PRODUCT_INSURED"."REG_SPAJ" ) AND
+			( "EKA"."MST_PRODUCT_INSURED"."LSBS_ID" <![CDATA[<]]> 300 ) and
+            ( "EKA"."LST_JENIS_INVEST"."LJI_ID" =  "EKA"."MST_SLINK"."LJI_ID" ) AND
+			( ( "EKA"."MST_SLINK"."REG_SPAJ" = #spaj# ) AND
+			( "EKA"."MST_SLINK"."MSL_POSISI" = 78 ) AND
+			( "EKA"."MST_SLINK"."MSL_AKTIF" = 1 ) AND
+			( "EKA"."MST_SLINK"."MSL_KODE" IN (2,3,5,8) ) )
+	</select>
+	
+	<select id="elions.snows.selectWithdrawUnitLink" resultClass="hashMap" parameterClass="hashMap">
+		SELECT "EKA"."MST_POLICY"."MSPO_POLICY_NO",   
+			"EKA"."MST_ULINK"."REG_SPAJ",   
+			"EKA"."MST_ULINK"."MU_KE",   
+			"EKA"."MST_ULINK"."NO_REGISTER",  
+			"EKA"."LST_TRANSAKSI"."LT_TRANSKSI",   
+			"EKA"."MST_ULINK"."MU_TGL_NAB",   
+			"EKA"."MST_ULINK"."MU_TGL_TRANS",  
+			"EKA"."MST_ULINK"."MU_JLH_PREMI",   
+			"EKA"."MST_ULINK"."MU_JLH_UNIT",   
+			"EKA"."MST_ULINK"."MU_TGL_SURAT",   
+			"EKA"."MST_ULINK"."MU_BULAN_SURAT",   
+			"EKA"."MST_ULINK"."MU_PERIODIC_TU",   
+			"EKA"."MST_ULINK"."MU_JLH_TU",   
+			"EKA"."MST_ULINK"."MU_SWITCH_CNT",   
+			"EKA"."MST_ULINK"."MU_LAST_SWITCH",   
+			"EKA"."MST_ULINK"."MU_WDRAW_CNT",   
+			"EKA"."MST_ULINK"."MU_LAST_WDRAW",   
+			"EKA"."MST_ULINK"."MU_LSPD_ID",   
+			"EKA"."MST_ULINK"."MU_TGL_INPUT",   
+			"EKA"."MST_ULINK"."MU_AKTIF",   
+			"EKA"."MST_ULINK"."MU_TAHUN_KE",   
+			"EKA"."MST_ULINK"."MU_PREMI_KE",   
+			"EKA"."MST_ULINK"."MU_FLAG_PRINT",   
+			"EKA"."MST_ULINK"."MU_LUS_ID",   
+			"EKA"."MST_ULINK"."MU_BONUS",   
+			"EKA"."MST_ULINK"."MU_FLAG_ONLINE",   
+			"EKA"."MST_ULINK"."URUT_PSN"
+		FROM "EKA"."MST_ULINK",
+			"EKA"."MST_POLICY",
+			"EKA"."LST_TRANSAKSI"
+		WHERE ( "EKA"."MST_POLICY"."REG_SPAJ" = "EKA"."MST_ULINK"."REG_SPAJ" ) AND
+			( "EKA"."MST_ULINK"."LT_ID" in (3, 11, 12 )) AND
+			( "EKA"."MST_ULINK"."MU_AKTIF" = 1 ) AND
+			( "EKA"."MST_ULINK"."REG_SPAJ" = #spaj# ) AND
+			( "EKA"."MST_ULINK"."LT_ID" = "EKA"."LST_TRANSAKSI"."LT_ID" )
+			and not exists ( select 1 from eka.mst_inbox x
+		            where x.reg_spaj = "EKA"."MST_ULINK"."REG_SPAJ"
+		            and x.no_reff = "EKA"."MST_ULINK"."NO_REGISTER" )                
+	</select>
+	
+	<select id="elions.snows.selectSwitchingUnitLink" resultClass="hashMap" parameterClass="hashMap">
+		SELECT "EKA"."MST_POLICY"."MSPO_POLICY_NO",   
+			"EKA"."MST_ULINK"."REG_SPAJ",   
+			"EKA"."MST_ULINK"."MU_KE",   
+			"EKA"."MST_ULINK"."NO_REGISTER",  
+			"EKA"."LST_TRANSAKSI"."LT_TRANSKSI",   
+			"EKA"."MST_ULINK"."MU_TGL_NAB",
+			"EKA"."MST_ULINK"."MU_TGL_TRANS",   
+			"EKA"."MST_ULINK"."MU_JLH_PREMI",   
+			"EKA"."MST_ULINK"."MU_JLH_UNIT",   
+			"EKA"."MST_ULINK"."MU_TGL_SURAT",   
+			"EKA"."MST_ULINK"."MU_BULAN_SURAT",   
+			"EKA"."MST_ULINK"."MU_PERIODIC_TU",   
+			"EKA"."MST_ULINK"."MU_JLH_TU",   
+			"EKA"."MST_ULINK"."MU_SWITCH_CNT",   
+			"EKA"."MST_ULINK"."MU_LAST_SWITCH",   
+			"EKA"."MST_ULINK"."MU_WDRAW_CNT",   
+			"EKA"."MST_ULINK"."MU_LAST_WDRAW",   
+			"EKA"."MST_ULINK"."MU_LSPD_ID",   
+			"EKA"."MST_ULINK"."MU_TGL_INPUT",   
+			"EKA"."MST_ULINK"."MU_AKTIF",   
+			"EKA"."MST_ULINK"."MU_TAHUN_KE",   
+			"EKA"."MST_ULINK"."MU_PREMI_KE",   
+			"EKA"."MST_ULINK"."MU_FLAG_PRINT",   
+			"EKA"."MST_ULINK"."MU_LUS_ID",   
+			"EKA"."MST_ULINK"."MU_BONUS",   
+			"EKA"."MST_ULINK"."MU_FLAG_ONLINE",   
+			"EKA"."MST_ULINK"."URUT_PSN"
+		FROM "EKA"."MST_ULINK",
+			"EKA"."MST_POLICY",
+			"EKA"."LST_TRANSAKSI"
+		WHERE ( "EKA"."MST_POLICY"."REG_SPAJ" = "EKA"."MST_ULINK"."REG_SPAJ" ) AND
+			( "EKA"."MST_ULINK"."LT_ID" = 4 ) AND
+			( "EKA"."MST_ULINK"."MU_AKTIF" = 1 ) AND
+			( "EKA"."MST_ULINK"."REG_SPAJ" = #spaj# ) AND
+			( "EKA"."MST_ULINK"."LT_ID" = "EKA"."LST_TRANSAKSI"."LT_ID" )
+			and not exists ( select 1 from eka.mst_inbox x
+		            where x.reg_spaj = "EKA"."MST_ULINK"."REG_SPAJ"
+		            and x.no_reff = "EKA"."MST_ULINK"."NO_REGISTER" )       
+	</select>
+	
+	<select id="elions.snows.selectEndorsmentRollover" resultClass="hashMap" parameterClass="hashMap">
+		SELECT "EKA"."MST_POLICY"."MSPO_POLICY_NO",   
+			"EKA"."MST_SLINK"."REG_SPAJ",   
+			"EKA"."MST_SLINK"."MSL_NO",   
+			"EKA"."MST_SLINK"."LJI_ID",   
+			"EKA"."MST_SLINK"."MSL_KODE",   
+			"EKA"."MST_SLINK"."MSL_RO",   
+			"EKA"."MST_SLINK"."MSL_POSISI",   
+			"EKA"."MST_SLINK"."MSL_BDATE",   
+			"EKA"."MST_SLINK"."MSL_EDATE",   
+			"EKA"."MST_SLINK"."MSL_PREMI",   
+			"EKA"."MST_SLINK"."MSL_RATE",   
+			"EKA"."MST_SLINK"."MSL_MGI",   
+			"EKA"."MST_SLINK"."MSL_BUNGA",   
+			"EKA"."MST_SLINK"."MSL_TAX",   
+			"EKA"."MST_SLINK"."MSL_TGL_NAB",   
+			"EKA"."MST_SLINK"."MSL_NAB",   
+			"EKA"."MST_SLINK"."MSL_UNIT",   
+			"EKA"."MST_SLINK"."MSL_BP_RATE",   
+			"EKA"."MST_SLINK"."MSL_TGL_NAB_BP",   
+			"EKA"."MST_SLINK"."MSL_NAB_BP",   
+			"EKA"."MST_SLINK"."MSL_BP",   
+			"EKA"."MST_SLINK"."MSL_BP_PT",   
+			"EKA"."MST_SLINK"."MSL_UP",   
+			"EKA"."MST_SLINK"."MSL_HARI",   
+			"EKA"."MST_SLINK"."MSL_NEXT_DATE",   
+			"EKA"."MST_SLINK"."MSL_BAYAR_BUNGA",   
+			"EKA"."MST_SLINK"."MSL_BAYAR_BP",   
+			"EKA"."MST_SLINK"."MSL_INPUT_DATE",   
+			"EKA"."MST_SLINK"."MSL_PROSES_DATE",   
+			"EKA"."MST_SLINK"."MSL_CONFIRM_DATE",   
+			"EKA"."MST_SLINK"."MSL_PROD_DATE",   
+			"EKA"."MST_SLINK"."FLAG_RATE",   
+			"EKA"."MST_SLINK"."MSL_NOTE",   
+			"EKA"."MST_SLINK"."LUS_ID",   
+			"EKA"."MST_SLINK"."MSL_PRINT_DATE",   
+			"EKA"."MST_SLINK"."MSL_TAHUN_KE",   
+			"EKA"."MST_SLINK"."MSL_PREMI_KE",   
+			"EKA"."MST_SLINK"."TARIK_BUNGA",   
+			"EKA"."MST_SLINK"."MSL_SALDO_UNIT",   
+			"EKA"."MST_SLINK"."MSL_AKTIF",   
+			"EKA"."MST_SLINK"."MSL_TARIK_PERTAMA",   
+			"EKA"."MST_SLINK"."MSL_TU_KE",   
+			"EKA"."MST_SLINK"."MSL_FLAG_UP",   
+			Trim("EKA"."MST_SLINK"."NO_REG") NO_REG,   
+			"EKA"."MST_SLINK"."MSL_FLAG_COMM",   
+			"EKA"."MST_SLINK"."MSL_JN_RUMUS",
+			"EKA"."MST_PRODUCT_INSURED"."LSBS_ID"  
+		FROM "EKA"."MST_POLICY",   
+			"EKA"."MST_SLINK" ,
+			"EKA"."MST_PRODUCT_INSURED"
+		WHERE ( "EKA"."MST_POLICY"."REG_SPAJ" = "EKA"."MST_SLINK"."REG_SPAJ" ) AND
+			( "EKA"."MST_POLICY"."REG_SPAJ" = "EKA"."MST_PRODUCT_INSURED"."REG_SPAJ" ) AND
+			( "EKA"."MST_PRODUCT_INSURED"."LSBS_ID" <![CDATA[<]]> 300 ) and
+			( ( "EKA"."MST_SLINK"."REG_SPAJ" = #spaj# ) AND
+			( "EKA"."MST_SLINK"."MSL_AKTIF" = 1 ) AND
+			( "EKA"."MST_SLINK"."MSL_KODE" IN (2,3,5) ) )
+	</select>
+	<select id="elions.snows.selectReturSLink" resultClass="hashMap" parameterClass="hashMap">
+		SELECT "EKA"."MST_POLICY"."MSPO_POLICY_NO",   
+			"EKA"."MST_SLINK"."REG_SPAJ",   
+			"EKA"."MST_SLINK"."MSL_NO",   
+			"EKA"."MST_SLINK"."LJI_ID",   
+			"EKA"."MST_SLINK"."MSL_KODE",   
+			"EKA"."MST_SLINK"."MSL_RO",   
+			"EKA"."MST_SLINK"."MSL_POSISI",   
+			"EKA"."MST_SLINK"."MSL_BDATE",   
+			"EKA"."MST_SLINK"."MSL_EDATE",   
+			"EKA"."MST_SLINK"."MSL_PREMI",   
+			"EKA"."MST_SLINK"."MSL_RATE",   
+			"EKA"."MST_SLINK"."MSL_MGI",   
+			"EKA"."MST_SLINK"."MSL_BUNGA",   
+			"EKA"."MST_SLINK"."MSL_TAX",   
+			"EKA"."MST_SLINK"."MSL_TGL_NAB",   
+			"EKA"."MST_SLINK"."MSL_NAB",   
+			"EKA"."MST_SLINK"."MSL_UNIT",   
+			"EKA"."MST_SLINK"."MSL_BP_RATE",   
+			"EKA"."MST_SLINK"."MSL_TGL_NAB_BP",   
+			"EKA"."MST_SLINK"."MSL_NAB_BP",   
+			"EKA"."MST_SLINK"."MSL_BP",   
+			"EKA"."MST_SLINK"."MSL_BP_PT",   
+			"EKA"."MST_SLINK"."MSL_UP",   
+			"EKA"."MST_SLINK"."MSL_HARI",   
+			"EKA"."MST_SLINK"."MSL_NEXT_DATE",   
+			"EKA"."MST_SLINK"."MSL_BAYAR_BUNGA",   
+			"EKA"."MST_SLINK"."MSL_BAYAR_BP",   
+			"EKA"."MST_SLINK"."MSL_INPUT_DATE",   
+			"EKA"."MST_SLINK"."MSL_PROSES_DATE",   
+			"EKA"."MST_SLINK"."MSL_CONFIRM_DATE",   
+			"EKA"."MST_SLINK"."MSL_PROD_DATE",   
+			"EKA"."MST_SLINK"."FLAG_RATE",   
+			"EKA"."MST_SLINK"."MSL_NOTE",   
+			"EKA"."MST_SLINK"."LUS_ID",   
+			"EKA"."MST_SLINK"."MSL_PRINT_DATE",   
+			"EKA"."MST_SLINK"."MSL_TAHUN_KE",   
+			"EKA"."MST_SLINK"."MSL_PREMI_KE",   
+			"EKA"."MST_SLINK"."TARIK_BUNGA",   
+			"EKA"."MST_SLINK"."MSL_SALDO_UNIT",   
+			"EKA"."MST_SLINK"."MSL_AKTIF",   
+			"EKA"."MST_SLINK"."MSL_TARIK_PERTAMA",   
+			"EKA"."MST_SLINK"."MSL_TU_KE",   
+			"EKA"."MST_SLINK"."MSL_FLAG_UP",   
+			"EKA"."MST_SLINK_BAYAR"."MSLB_BAYAR_ID",
+			"EKA"."MST_SLINK"."MSL_FLAG_COMM",   
+			"EKA"."MST_SLINK"."MSL_JN_RUMUS",
+			"EKA"."MST_PRODUCT_INSURED"."LSBS_ID"  
+		FROM "EKA"."MST_POLICY",   
+			"EKA"."MST_SLINK" ,
+			"EKA"."MST_PRODUCT_INSURED",
+			"EKA"."MST_SLINK_BAYAR"   
+		WHERE ( "EKA"."MST_POLICY"."REG_SPAJ" = "EKA"."MST_SLINK"."REG_SPAJ" ) AND
+			( "EKA"."MST_POLICY"."REG_SPAJ" = "EKA"."MST_PRODUCT_INSURED"."REG_SPAJ" ) AND
+			( "EKA"."MST_SLINK"."REG_SPAJ" = "EKA"."MST_SLINK_BAYAR"."REG_SPAJ" ) AND
+			( "EKA"."MST_SLINK"."MSL_NO" = "EKA"."MST_SLINK_BAYAR"."MSL_NO" ) AND
+			( "EKA"."MST_SLINK"."LJI_ID" = "EKA"."MST_SLINK_BAYAR"."LJI_ID" ) AND            
+			( "EKA"."MST_PRODUCT_INSURED"."LSBS_ID" <![CDATA[<]]> 300 ) and
+			( ( "EKA"."MST_SLINK"."REG_SPAJ" = #spaj# ) AND
+			( "EKA"."MST_SLINK"."MSL_POSISI" = 78 ) AND
+			( "EKA"."MST_SLINK"."MSL_KODE" IN (2,3,5) ) )  and
+			("EKA"."MST_SLINK_BAYAR"."MSLB_BEG_PERIOD" = (
+				SELECT MAX(MSLB_BEG_PERIOD) 
+				FROM "EKA"."MST_SLINK_BAYAR" X 
+				WHERE "EKA"."MST_SLINK_BAYAR"."REG_SPAJ" = X.REG_SPAJ 
+					AND "EKA"."MST_SLINK_BAYAR"."MSLB_TU_KE" =  X.MSLB_TU_KE))
+	</select>
+	
+	<select id="elions.snows.selectJmlhTahapan" resultClass="java.lang.String" parameterClass="hashMap">
+		SELECT COUNT(*) "jmlh"
+		FROM EKA.MST_TAHAPAN
+		WHERE REG_SPAJ = RPAD (#spaj#, 11, ' ')
+			AND MSTAH_TGL_KONFIRMASI IS NULL
+			AND ( REG_SPAJ, MSTAH_NO_TAHAPAN, MSTAH_JT_TEMPO ) NOT IN ( 
+				SELECT REG_SPAJ, NO_REFF, TGL_JT_TEMPO 
+				FROM EKA.MST_INBOX 
+				WHERE LJJ_ID = #ljj_id# and
+				BATAL = 0 and
+				LSTB_ID in (1,2) 
+			)
+	</select>
+	
+	<select id="elions.snows.selectJtTempoTahapan" resultClass="hashMap" parameterClass="hashMap">
+		SELECT MSTAH_JT_TEMPO "jt_tempo",
+			MSTAH_NO_TAHAPAN "no_reff"
+		FROM EKA.MST_TAHAPAN
+		WHERE REG_SPAJ = RPAD (#spaj#, 11, ' ')
+			AND MSTAH_TGL_KONFIRMASI IS NULL
+			AND ( REG_SPAJ, MSTAH_NO_TAHAPAN, MSTAH_JT_TEMPO ) NOT IN ( 
+				SELECT REG_SPAJ, NO_REFF, TGL_JT_TEMPO 
+				FROM EKA.MST_INBOX 
+				WHERE LJJ_ID = #ljj_id# and
+				BATAL = 0 and
+				LSTB_ID in (1, 2) 
+			)
+			and mstah_jt_tempo = to_date(#tggl#,'dd/mm/yyyy')
+	</select>
+	
+	<select id="elions.snows.selectJtTempoTahapanMulti" resultClass="hashMap" parameterClass="hashMap">
+		SELECT to_char(MSTAH_JT_TEMPO,'dd/mm/yyyy') jt_tempo 
+		FROM EKA.MST_TAHAPAN
+		WHERE REG_SPAJ = RPAD (#spaj#, 11, ' ')
+			AND MSTAH_TGL_KONFIRMASI IS NULL
+			AND ( REG_SPAJ, MSTAH_NO_TAHAPAN, MSTAH_JT_TEMPO ) NOT IN ( 
+				SELECT REG_SPAJ, NO_REFF, TGL_JT_TEMPO 
+				FROM EKA.MST_INBOX 
+				WHERE LJJ_ID = #ljj_id# and
+				BATAL = 0 and
+				LSTB_ID in (1, 2) 
+			)
+	</select>
+	
+	<select id="elions.snows.selectMutliInvest" resultClass="hashMap" parameterClass="hashMap">
+		SELECT COUNT(*) "jmlh"
+		FROM EKA.MST_PRODUCT_INSURED A, 
+			EKA.LST_BISNIS B
+		WHERE A.LSBS_ID = B.LSBS_ID
+			AND A.REG_SPAJ = #spaj#
+			AND B.GROUP_NAME = 'MULTI INVEST'	
+	</select>
+	
+	<select id="elions.snows.selectBegDateInsured" resultClass="java.util.Date" parameterClass="hashMap">
+		SELECT ADD_MONTHS(MSTE_BEG_DATE, 60) "jt_tempo"
+		<dynamic prepend="FROM">
+			<isEqual property="ljj_id" compareValue="11">
+				FROM EKA.MST_TMMS@eb A
+				WHERE A.ID = #spaj#
+			</isEqual>
+			<isEqual property="ljj_id" compareValue="1">
+				FROM EKA.MST_INSURED
+				WHERE REG_SPAJ = #spaj#
+			</isEqual>
+			<isEqual property="ljj_id" compareValue="3">
+				FROM EKA.MST_INSURED
+				WHERE REG_SPAJ = #spaj#
+			</isEqual>
+		</dynamic>
+	</select>
+	
+	<select id="elions.snows.selectTmmsTHP" resultClass="java.lang.String" parameterClass="hashMap">
+		SELECT COUNT(*) "jmlh"
+		FROM EKA.MST_TMMS_THP@eb
+		WHERE MSTHP_ID = #spaj#
+			AND MSTHP_TGL_KONFIRM IS NULL
+			AND ( MSTHP_ID, MSTHP_NO_THP, MSTHP_JTH_TEMPO ) NOT IN ( 
+				SELECT REG_SPAJ, NO_REFF, TGL_JT_TEMPO 
+				FROM EKA.MST_INBOX 
+				WHERE LJJ_ID = #ljj_id# and 
+					BATAL = 0 and
+				LSTB_ID = 11)
+	</select>
+	
+	<select id="elions.snows.selectJtTempoTmmsTHP" resultClass="hashMap" parameterClass="hashMap">
+		SELECT MSTHP_JTH_TEMPO "jt_tempo",
+			MSTHP_NO_THP "no_reff"
+		FROM EKA.MST_TMMS_THP@eb
+		WHERE MSTHP_ID = #spaj#
+			AND MSTHP_TGL_KONFIRM IS NULL
+			AND ( MSTHP_ID, MSTHP_NO_THP, MSTHP_JTH_TEMPO ) NOT IN ( 
+				SELECT REG_SPAJ, NO_REFF, TGL_JT_TEMPO 
+				FROM EKA.MST_INBOX 
+				WHERE LJJ_ID = #ljj_id# and
+					BATAL = 0 and
+					LSTB_ID = 11 )
+	</select>
+	
+	<select id="elions.snows.selectTmmsDet" resultClass="hashMap" parameterClass="hashMap">
+		SELECT COUNT(*) "jmlh"
+		FROM EKA.MST_TMMS_DET@eb A
+		WHERE A.ID = #spaj# and
+			A.URUT = 1 	
+	</select>
+	
+	<select id="elions.snows.selectWithdrawULSnows" resultClass="hashMap" parameterClass="hashMap">
+		SELECT 
+		    b.MSPO_POLICY_NO,   
+		    a.REG_SPAJ,   
+		    a.MU_KE,   
+		    a.NO_REGISTER,  
+		    c.LT_TRANSKSI,
+		    a.MU_TGL_INPUT,   
+		    a.MU_AKTIF 
+		FROM 
+		    EKA.MST_ULINK a,
+		    EKA.MST_POLICY b,
+		    EKA.LST_TRANSAKSI c
+		WHERE 
+		    b.REG_SPAJ = a.REG_SPAJ 
+		AND a.LT_ID in (3, 11, 12) 
+		AND a.MU_AKTIF = 1  
+		AND a.REG_SPAJ = rpad(replace(#spaj# ,'.'),11,' ')  
+		AND a.LT_ID = c.LT_ID
+		AND not exists ( select 1 from eka.mst_inbox x
+		                 where x.reg_spaj = a.REG_SPAJ
+		                 and x.no_reff = a.NO_REGISTER 
+		                 and x.batal not in (1)) 	
+	</select>
+	
+	<select id="elions.snows.selectWithdrawULSnowsMuKe" resultClass="hashMap" parameterClass="hashMap">
+		SELECT 
+		    b.MSPO_POLICY_NO,   
+		    a.REG_SPAJ,   
+		    a.MU_KE,   
+		    a.NO_REGISTER,  
+		    c.LT_TRANSKSI,
+		    a.MU_TGL_INPUT,   
+		    a.MU_AKTIF
+		FROM 
+		    EKA.MST_ULINK a,
+		    EKA.MST_POLICY b,
+		    EKA.LST_TRANSAKSI c
+		WHERE 
+		    b.REG_SPAJ = a.REG_SPAJ 
+		AND a.LT_ID in (3, 11, 12) 
+		AND a.MU_AKTIF = 1  
+		AND a.REG_SPAJ = rpad(replace(#spaj# ,'.'),11,' ')  
+		AND a.LT_ID = c.LT_ID
+		AND not exists ( select 1 from eka.mst_inbox x
+		                 where x.reg_spaj = a.REG_SPAJ
+		                 and x.no_reff = a.NO_REGISTER 
+		                 and x.batal not in (1)) 	
+		and a.mu_ke = #mu_ke#
+	</select>
+	
+	<select id="elions.snows.selectJmlhSimpanan" resultClass="java.lang.String" parameterClass="hashMap">
+		SELECT COUNT(*) "jmlh"
+		FROM EKA.MST_SIMPANAN
+		WHERE REG_SPAJ = RPAD (#spaj#, 11, ' ')
+			AND MSSIM_TGL_TRANS IS NULL
+			and mssim_aktif = 1
+			AND ( REG_SPAJ, MSSIM_NO_DEPOSITO, MSSIM_END_DATE + 1 ) NOT IN ( 
+				SELECT REG_SPAJ, NO_REFF, TGL_JT_TEMPO 
+				FROM EKA.MST_INBOX 
+				WHERE LJJ_ID = #ljj_id# and
+				BATAL = 0)
+	</select>
+	
+	<select id="elions.snows.selectJtTempoSimpanan" resultClass="hashMap" parameterClass="hashMap">
+		SELECT MSSIM_END_DATE + 1 "jt_tempo",
+		MSSIM_NO_DEPOSITO "no_reff"
+		FROM EKA.MST_SIMPANAN
+		WHERE REG_SPAJ = RPAD (#spaj#, 11, ' ')
+			AND MSSIM_TGL_TRANS IS NULL
+			and mssim_aktif = 1
+			AND ( REG_SPAJ, MSSIM_NO_DEPOSITO, MSSIM_END_DATE + 1 ) NOT IN ( 
+				SELECT REG_SPAJ, NO_REFF, TGL_JT_TEMPO 
+				FROM EKA.MST_INBOX 
+				WHERE LJJ_ID = #ljj_id# and
+				BATAL = 0 )
+			and to_char(MSSIM_END_DATE+1 ,'dd/mm/yyyy') =#tggl#
+	</select>
+	
+	<select id="elions.snows.selectJtTempoSimpananMulti" resultClass="hashMap" parameterClass="hashMap">
+        SELECT  to_char(MSSIM_END_DATE+1,'dd/mm/yyyy') jt_tempo
+        FROM EKA.MST_SIMPANAN
+        WHERE REG_SPAJ = RPAD (#spaj#, 11, ' ')
+            AND MSSIM_TGL_TRANS IS NULL
+            and mssim_aktif = 1
+            AND ( REG_SPAJ, MSSIM_NO_DEPOSITO, MSSIM_END_DATE + 1 ) NOT IN ( 
+                SELECT REG_SPAJ, NO_REFF, TGL_JT_TEMPO 
+                FROM EKA.MST_INBOX 
+                WHERE LJJ_ID = #ljj_id# and
+                BATAL = 0)
+	</select>
+	
+	<select id="elions.snows.selectJmlhMaturity" resultClass="java.lang.String" parameterClass="hashMap">
+		SELECT COUNT(*) "jmlh"
+		FROM EKA.MST_MATURITY
+		WHERE REG_SPAJ = #spaj#
+			AND TGL_KLAIM IS NULL
+			AND ( REG_SPAJ, NO_KLAIM, TGL_JT_TEMPO + 1 ) NOT IN ( 
+				SELECT REG_SPAJ, NO_REFF, TGL_JT_TEMPO 
+				FROM EKA.MST_INBOX 
+				WHERE LJJ_ID = #ljj_id# and
+				BATAL = 0 and
+				LSTB_ID in (1, 2) )
+	</select>
+	
+	<select id="elions.snows.selectJtTempoMaturity" resultClass="hashMap" parameterClass="hashMap">
+		SELECT TGL_JT_TEMPO + 1 "jt_tempo",
+			NO_KLAIM "no_reff"
+		FROM EKA.MST_MATURITY
+		WHERE REG_SPAJ = #spaj#
+			AND TGL_KLAIM IS NULL
+			AND ( REG_SPAJ, NO_KLAIM, TGL_KLAIM + 1 ) NOT IN ( 
+				SELECT REG_SPAJ, NO_REFF, TGL_JT_TEMPO 
+				FROM EKA.MST_INBOX 
+				WHERE LJJ_ID = #ljj_id# and
+				BATAL = 0 and
+				LSTB_ID in (1, 2))
+	</select>
+	
+	<select id="elions.snows.selectTmmsMaturity" resultClass="java.lang.String" parameterClass="hashMap">
+		SELECT COUNT(*) "jmlh"
+		FROM EKA.MST_TMMS_MATURITY@eb
+		WHERE ID = #spaj#
+			AND TGL_KLAIM IS NULL
+			AND ( ID, NO_KLAIM, TGL_JT_TEMPO + 1 ) NOT IN ( 
+				SELECT REG_SPAJ, NO_REFF, TGL_JT_TEMPO 
+				FROM EKA.MST_INBOX 
+				WHERE LJJ_ID = #ljj_id# and
+					BATAL = 0 and
+					LSTB_ID = 11 )
+	</select>
+	
+	<select id="elions.snows.selectJtTempoTmmsMaturity" resultClass="hashMap" parameterClass="hashMap">
+		SELECT TGL_JT_TEMPO + 1 "jt_tempo",
+			NO_KLAIM "no_reff"
+		FROM EKA.MST_TMMS_MATURITY@eb
+		WHERE ID = #spaj#
+			AND TGL_KLAIM IS NULL
+			AND ( ID, NO_KLAIM, TGL_KLAIM + 1 ) NOT IN ( 
+				SELECT REG_SPAJ, NO_REFF, TGL_JT_TEMPO 
+				FROM EKA.MST_INBOX 
+				WHERE LJJ_ID = #ljj_id# and
+					BATAL = 0 and
+					LSTB_ID = 11 )
+	</select>
+	
+	<select id="elions.snows.selectJmlPencairanAllStableLink" resultClass="java.lang.String" parameterClass="hashMap">
+		SELECT COUNT(*) "jmlh"
+		FROM EKA.MST_SLINK,
+			EKA.MST_POLICY,
+			EKA.MST_PRODUCT_INSURED
+		WHERE ( "EKA"."MST_POLICY"."REG_SPAJ" = "EKA"."MST_SLINK"."REG_SPAJ" ) AND
+			( "EKA"."MST_POLICY"."REG_SPAJ" = "EKA"."MST_PRODUCT_INSURED"."REG_SPAJ" ) AND
+			( "EKA"."MST_PRODUCT_INSURED"."LSBS_ID" <![CDATA[<]]> 300 ) and
+			( ( "EKA"."MST_SLINK"."REG_SPAJ" = #spaj# ) AND
+			( "EKA"."MST_SLINK"."MSL_POSISI" = 78 ) AND
+			( "EKA"."MST_SLINK"."MSL_AKTIF" = 1 ) AND
+			( "EKA"."MST_SLINK"."MSL_KODE" IN (2,3,5) ) )
+			AND ( "EKA"."MST_SLINK"."REG_SPAJ" ) NOT IN ( 
+				SELECT EKA.MST_INBOX.REG_SPAJ
+				FROM EKA.MST_INBOX 
+				WHERE EKA.MST_INBOX.REG_SPAJ = #spaj# and
+				EKA.MST_INBOX.LJJ_ID =  26 )
+	</select>
+	
+	<select id="elions.snows.selectJmlNilaiTunaiMRI" resultClass="java.lang.String" parameterClass="hashMap">
+		SELECT COUNT(*) "jmlh"
+		FROM EKA.MST_SURRENDER
+		WHERE REG_SPAJ = #spaj#
+			AND LSTB_ID = 2
+			AND ( REG_SPAJ, MSSUR_NO_SURR, MSSUR_TGL_KLAIM ) NOT IN ( 
+				SELECT REG_SPAJ, NO_REFF, TGL_JT_TEMPO 
+				FROM EKA.MST_INBOX 
+				WHERE LJJ_ID = #ljj_id# and
+					BATAL = 0 )
+	</select>
+	
+	<select id="elions.snows.selectJtTempoMstSurrender" resultClass="hashMap" parameterClass="hashMap">
+		SELECT MSSUR_TGL_KLAIM "jt_tempo",
+			MSSUR_NO_SURR "no_reff"
+		FROM EKA.MST_SURRENDER
+		WHERE REG_SPAJ = #spaj#
+			AND LSTB_ID = 2             
+			AND ( REG_SPAJ, MSSUR_NO_SURR, MSSUR_TGL_KLAIM ) NOT IN ( 
+			SELECT REG_SPAJ, NO_REFF, TGL_JT_TEMPO 
+				FROM EKA.MST_INBOX 
+				WHERE LJJ_ID = #ljj_id# and
+				BATAL = 0 )
+	</select>
+	
+	<select id="elions.snows.selectDataBmaterai" parameterClass="hashMap" resultClass="hashMap">
+	  select  a.*, b.* ,(case when (b.jenis = 2) then 'BANK SINARMAS'
+              when (b.jenis = 3) then 'SINARMAS SEKURITAS'
+              when (b.jenis = 16) then 'BANK SINARMAS SYARIAH' else 'NON SINARMAS' end) jenis_bank
+	  from eka.mst_stamp_fee a , eka.lst_cabang_bii b
+      where a.msf_lcb_no = b.lcb_no
+     	   <isNotNull property="periode2"> and a.msf_date between #periode# and #periode2#</isNotNull>
+     	   <isNull property="periode2"> and a.msf_date <![CDATA[<=]]> #periode#</isNull>
+     	   <isNotEqual property="status" compareValue="5">AND a.msf_posisi = #status#</isNotEqual>
+	       <isNotNull property="jenis"> AND b.jenis in (#jenis#)</isNotNull>
+	       <!-- <isNotNull property="filter"> AND trim(a.msf_cabang) LIKE UPPER (TRIM ('%' || #filter# || '%'))</isNotNull> -->
+	       <isNotNull property="lcb_no">AND trim(a.msf_lcb_no) =trim(#lcb_no#)</isNotNull>
+	  order by a.msf_date , a.msf_no desc
+    </select>
+    
+    <select id="elions.snows.selectDataBmateraiDet" parameterClass="hashMap" resultClass="hashMap">
+		 select a.reg_spaj no_spaj, a.mspo_policy_no_format no_polis, EKA.UTILS.PEMEGANG(a.reg_spaj)nama_pp, EKA.UTILS.TERTANGGUNG(d.reg_spaj)nama_tt
+		 from eka.mst_policy a, eka.mst_stamp_fee b , eka.mst_stamp_det c, eka.mst_insured d
+	     where b.msf_no =c.msd_no and c.msd_spaj=a.reg_spaj 
+	     and   a.reg_spaj = d.reg_spaj 	and   a.lspd_id not in (95,999) and  trim(b.msf_no)=trim(#no#)
+    </select>
+    
+    <select id="elions.snows.selectMstInboxHist" parameterClass="hashMap" resultClass="hashMap">
+    	select A.MI_ID, 
+    		A.create_date,
+		    A.LSPD_BEFORE, 
+		    (select B.LSPD_POSITION from EKA.LST_DOCUMENT_POSITION b where B.LSPD_ID = A.LSPD_BEFORE) before , 
+		    A.LSPD_AFTER,
+		    (select C.LSPD_POSITION from EKA.LST_DOCUMENT_POSITION C where C.LSPD_ID = A.LSPD_AFTER) after,
+		    '['|| create_date ||'] '|| a.MI_DESC ket
+		from EKA.MST_INBOX_HIST a
+		where A.MI_ID = #mi_id#
+    </select>
+    
+    <select id="elions.snows.selectListAjuanBiaya" resultClass="hashMap" parameterClass="hashMap">
+		select distinct a.mi_id No_Berkas, to_char( a.create_date, 'dd/mm/yyyy')  Tgl_Ajuan ,
+					A.LJJ_ID Alokasi_kode, b.ljj_desc Alokasi_Biaya, to_char( a.tgl_berkas_masuk, 'dd/mm/yyyy') Tgl_kirim_berkas,
+       				a.lspd_id posisi_berkas, a.lspd_id_from, a.create_id , c.LUS_FULL_NAME , c.lca_id , D.LCA_NAMA CabangUserCreate, 
+       				e.MRC_CABANG nama_bank , E.MRC_NO_AC,e.mrc_atas_nama, E.MRC_KOTA
+		from EKA.MST_INBOX a ,  eka.lst_jn_job b , eka.lst_user c , eka.lst_cabang d, EKA.MST_INBOX_DET e
+		where a.ljj_id = b.ljj_id
+			        and b.ljj_id in (59,60,69,68)
+			        and a.batal = 0
+			        and a.lspd_id = 207
+			        and a.create_id = c.lus_id
+			        and c.lca_id = d.lca_id	
+			        and a.mi_id = e.mi_id	
+			        <isEqual property="detail" compareValue="0">		        
+			        and c.lca_id = #lca_id#	
+			         </isEqual>		      
+			        <isEqual property="detail" compareValue="1">			        
+			        and A.MI_ID = E.MI_ID
+			        and A.MI_ID = #mi_id#  
+			        </isEqual>
+			        <isEqual property="detail" compareValue="3">		        
+			        and e.mrc_kota = #lcaName#	
+			         </isEqual>
+		order by  a.lspd_id_from, a.mi_id asc
+	</select>
+	
+	 <select id="elions.snows.selectDataNoBerkasDet" resultClass="hashMap" parameterClass="hashMap">
+		   select rownum no_urut, e.mi_id No_Berkas, e.MID_ID,
+       			  E.MID_DESC, E.AB_QTY kuantitas, E.AB_TYPE, e.MID_NOMINAL , to_char( e.AB_TGL_GUNA, 'dd/mm/yyyy') TGL_GUNA , E.MID_KET
+			from  EKA.MST_INBOX_DET e
+			where e.MI_ID = #mi_id#  
+			order by e.MID_ID
+	</select>
+	
+	<select id="elions.snows.selectLstScanAB" resultClass="com.ekalife.elions.model.Scan" parameterClass="hashMap">
+		 select b.lc_desc nmfile,lc_nama ket,a.mi_flag wajib , a.lc_id , a.ljj_id  from  eka.mst_inbox_checklist a, eka.lst_checklist b 
+			where   a.lc_id = b.lc_id
+       		 and a.mi_id = #NoBerkas# 
+	</select>
+	
+	<select id="elions.snows.selectCekRolAB" resultClass="hashMap" parameterClass="hashMap">
+		select a.mi_id, a.ljj_id , b.mrc_kota ,b.ab_type , to_char( b.ab_tgl_guna, 'dd/mm/yyyy') ab_tgl_guna
+		from EKA.MST_INBOX a ,  eka.MST_INBOX_DET b
+		where   a.mi_id = b.mi_id
+		and a.batal = 0
+        and a.ljj_id in (59,60,69,68) 
+        and b.ab_type = #jenis# 
+        and b.mrc_kota = #kota# 
+        <isEqual property="role" compareValue="1">	
+        and to_char(b.ab_tgl_guna, 'Month') = to_char(to_date(#tgl_pemakaian#, 'DD/MM/YYYY'), 'Month') 
+        and to_char(b.ab_tgl_guna, 'Year') = to_char(to_date(#tgl_pemakaian#, 'DD/MM/YYYY'), 'Year')
+        </isEqual>
+        <isEqual property="role" compareValue="3">	
+        and to_date(#tgl_pemakaian#, 'dd/MM/yyyy')   between  TO_DATE(to_char(b.ab_tgl_guna,'dd/MM/yyyy'),'dd/MM/yyyy')  and  ADD_MONTHS(TO_DATE(to_char(b.ab_tgl_guna,'dd/MM/yyyy'),'dd/MM/yyyy'), 5)                     
+ 		</isEqual>
+        <isEqual property="role" compareValue="4">	
+        and to_char(b.ab_tgl_guna, 'Year') = to_char(to_date(#tgl_pemakaian#, 'DD/MM/YYYY'), 'Year')
+        </isEqual>
+        <isEqual property="jnUpd" compareValue="1">	
+        and a.mi_id  <![CDATA[<>]]> #no_berkas#
+        </isEqual>
+	</select>
+	
+	<select id="elions.snows.selectHistoryBerkas" resultClass="hashMap" parameterClass="hashMap">
+		select A.MI_ID , b.create_date, b.create_id, d.lus_full_name, c.lspd_position, b.lspd_after, b.mi_desc ,
+		(select distinct f.MRC_KOTA from EKA.MST_INBOX_det f where f.mi_id = a.mi_id) lca_nama
+		from EKA.MST_INBOX a, eka.mst_inbox_hist b  , EKA.LST_DOCUMENT_POSITION c , EKA.LST_USER d ,eka.lst_cabang e
+		where A.MI_ID = b.mi_id 
+        and  a.ljj_id in (59,60,69,68)
+        and a.batal = 0
+        and b.lspd_after = c.lspd_id
+        and b.create_id = d.lus_id
+        and d.lca_id = e.lca_id
+        and b.lspd_after = c.lspd_id
+        <isEqual property="jnsearch" compareValue="1">
+      	 and A.MI_ID = #noBerkas#
+        </isEqual>
+        and d.lca_id = E.lca_id
+        <isEqual property="jnsearch" compareValue="2">
+      	 and  (select distinct f.MRC_KOTA from EKA.MST_INBOX_det f where f.mi_id = a.mi_id) = #cabang#
+      	 </isEqual>
+      	 <isEqual property="jnsearch" compareValue="3">
+      	 and A.MI_ID = #noBerkas#
+      	 and  (select distinct f.MRC_KOTA from EKA.MST_INBOX_det f where f.mi_id = a.mi_id) = #cabang#
+      	 </isEqual>
+		order by  a.create_date desc , a.mi_id asc , b.create_date asc
+	</select>
+	
+	<select id="elions.snows.selectListInboxCheck" resultClass="hashMap" parameterClass="hashMap">
+		select  a.mi_id , a.ljj_id, a.lc_id, a.mi_flag, a.mi_desc , a.create_id, to_char(a.create_date, 'dd/mm/yyyy') create_date, b.lc_nama
+		from eka.mst_inbox_checklist a,  eka.lst_checklist b, EKA.MST_INBOX c
+		where a.lc_id = b.lc_id 
+			  and a.mi_id = c.mi_id
+     		  and a.mi_id = #noBerkas#
+     		  <isEqual property="jnc" compareValue="1">
+     		  and a.mi_flag =  #jnupl#  
+     		  </isEqual>
+     		  <isEqual property="jnc" compareValue="0">
+     		  and c.tgl_berkas_masuk is not null  
+     		  </isEqual>   	
+     		  <isEqual property="jnc" compareValue="2">
+     		  and a.MI_DESC = 'REVISI'
+     		  </isEqual> 
+	</select>
+	
+	<select id="elions.snows.selectLcaIdAB" resultClass="java.lang.String" parameterClass="hashMap">
+		select distinct b.lca_id from EKA.MST_INBOX_det a, eka.lst_cabang b
+		where a.mrc_kota = b.lca_nama 
+		<isEqual property="jnlcaid" compareValue="1">
+        and a.mi_id = #noBerkas#
+        </isEqual>
+        <isEqual property="jnlcaid" compareValue="2">
+        and b.lca_nama = #kota#
+        </isEqual>
+	</select>
+	
+	<select id="elions.snows.selectAllLstCabangAB" resultClass="java.util.HashMap"
+	parameterClass="java.util.HashMap">
+		select lca_id key, lca_nama value from eka.lst_cabang 
+		 <isEqual property="jnuselcaid" compareValue="1">
+			where lca_id = #lca_id#
+		  </isEqual>
+		order by lca_nama asc
+	</select>
+	
+	<select id="elions.snows.selectKotaInboxDet" resultClass="java.lang.String"	parameterClass="java.lang.String">
+		select distinct MRC_KOTA from eka.MST_INBOX_DET where mi_id = #noBerkas#
+	</select>
+	
+	<select id="elions.snows.selectSysdateddmmyyy" parameterClass="java.lang.String" resultClass="java.lang.String">
+		SELECT TO_CHAR(SYSDATE,'dd/mm/yyyy') FROM DUAL
+	 </select>
+	 
+	 <select id="elions.snows.selectMaxMscsfDialKe" resultClass="string" parameterClass="java.util.HashMap">
+	 	SELECT MAX(mscsf_dial_ke)
+	 	FROM eka.mst_csf_dial
+	 	where reg_spaj = #spaj#
+	 </select>
+	 
+	 <!-- sysdate dengan pengecekan pada tabel mst_inbox_hist, karena create_date merupakan primary Key tabel mst_inbox_hist -->
+	<select id="elions.snows.selectSysdateByInboxHist" resultClass="date" parameterClass="string">
+		select (case when sysdate <![CDATA[<=]]>max(create_date)  then max(create_date) + 1/86400
+      	 else sysdate end ) sisdate  
+		from eka.mst_inbox_hist where mi_id = #mi_id# 
+	</select>
+	
+	
+</sqlMap>

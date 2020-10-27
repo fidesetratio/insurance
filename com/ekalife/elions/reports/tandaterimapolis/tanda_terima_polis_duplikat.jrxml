@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="tanda_terima_polis_duplikat" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="45" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<import value="net.sf.jasperreports.engine.xml.JRXmlLoader"/>
+	<import value="com.ibatis.common.resources.Resources"/>
+	<import value="net.sf.jasperreports.engine.design.JRJdtCompiler"/>
+	<reportFont name="Arial" isDefault="false" fontName="Arial" size="11" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["09180227572"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="referal" class="java.lang.Integer"/>
+	<parameter name="tipePolis" class="java.lang.String">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select 
+	   i.lscb_print, a.mspo_policy_no, a.reg_spaj, 
+ (select count(*) from eka.mst_visa_camp where reg_spaj =$P{spaj})fiesta_visa,
+	   (case 
+             when 0 = 1 then eka.f_lsbs(a.reg_spaj, c.lsbs_id)
+             when b.lsbs_id=74 then eka.f_lsdbs(a.reg_spaj, c.lsbs_id, c.lsdbs_number)
+	   		 when b.lsbs_id = 134 and b.lsdbs_number in (10) then 'SIMAS PRIME LINK'
+			 when b.lsbs_id= 96 and b.lsdbs_number in (7,8,9,13,14,15) then 'HOLYLAND INVEST'
+			 when b.lsbs_id=142 and b.lsdbs_number=4 then 'POWER SAVE - PROGRAM MY SAVING INVESTA'
+			 when b.lsbs_id=142 and b.lsdbs_number IN (5,6) then 'POWER SAVE'
+			 when b.lsbs_id=142 and b.lsdbs_number IN (7) then 'BUNG MAKSI - Power Save'
+			 when b.lsbs_id=143 and b.lsdbs_number IN (4,5,6) then 'STABLE SAVE'
+			 when b.lsbs_id=155 and b.lsdbs_number in (2,3) then eka.f_lsdbs(a.reg_spaj, c.lsbs_id, c.lsdbs_number)
+			 when b.lsbs_id=158 then decode(n.jenis, 8, eka.f_lsbs(a.reg_spaj, c.lsbs_id), eka.f_lsdbs(a.reg_spaj, c.lsbs_id, c.lsdbs_number))
+			 when b.lsbs_id=158 and b.lsdbs_number IN (13,15,16) then 'STABLE SAVE MANFAAT BULANAN'
+			 when b.lsbs_id=164 and b.lsdbs_number=1 then 'STABLE LINK'
+			 when b.lsbs_id=164 and b.lsdbs_number=2 then 'SIMAS STABIL LINK'
+			 when b.lsbs_id=127 and b.lsdbs_number in (3,4) then 'CERDAS SISWA PLUS'
+		     when b.lsbs_id=127 and b.lsdbs_number in (7,8) then 'EXCELLENT LINK (For Your Eduction)'
+             when b.lsbs_id=127 and b.lsdbs_number in (9,10) then 'EXCELLENT LINK (For Your Eduction Plus)'
+			 when b.lsbs_id=171 and b.lsdbs_number = 2 then 'HOSPITAL CASH PLAN (HCP)'
+			 when b.lsbs_id=120 and b.lsdbs_number in (10,11,12,22,23,24) then eka.f_lsdbs(a.reg_spaj, c.lsbs_id, c.lsdbs_number)
+			 when b.lsbs_id in (134,158,212,220) then eka.f_lsdbs(a.reg_spaj, c.lsbs_id, c.lsdbs_number)
+			 else eka.f_lsbs(a.reg_spaj, c.lsbs_id)
+	   end) nama_plan,
+	   e.mcl_first nama_pp, (select upper(lti_note || ' ') from eka.lst_title where lti_id = f.lti_id) || f.mcl_first nama_tt, a.mspo_spaj_date, d.mste_beg_date, b.mspr_tsi,
+	   nvl(o.premi_slink, g.total_premi) total_premi, h.lku_symbol, a.mspo_date_print, b.lsbs_id, decode(instr(l.mcl_first,'BII'),0,'',l.mcl_first) bii , 
+       m.kci,
+       b.lsbs_id, b.lsdbs_number,
+	   (case when m.jn_lead = 2 and m.referrer_id is not null then 'Selfgen BII'
+			when m.jn_lead = 2 and m.referrer_id is null then 'Selfgen Internal AJS'
+			else nvl(m.nama_cabang, n.nama_cabang) end) nama_cabang, m.jn_lead,
+	   (select substr(keterangan, instr(keterangan, '(')+1, instr(keterangan, ')') - instr(keterangan, '(') - 1)
+        from eka.lst_ulangan
+        where reg_spaj = RPAD ($P{spaj}, 11, ' ')
+            and jenis like '%DUPLIKAT POLIS%'
+            and keterangan like '%(%'
+            and tanggal = (select max(tanggal) from eka.lst_ulangan where reg_spaj = RPAD ($P{spaj}, 11, ' ') and  jenis like '%DUPLIKAT POLIS%')) duplikat
+from 
+	 eka.mst_policy a, eka.mst_product_insured b, 
+	 (select a.lsbs_id, a.lsbs_name, b.lsdbs_number, b.lsdbs_name from eka.lst_bisnis a, eka.lst_det_bisnis b where a.lsbs_id = b.lsbs_id) c,
+	 eka.mst_insured d, eka.mst_client_new e, eka.mst_client_new f,
+	 (select sum(mspr_premium) total_premi from eka.mst_product_insured where reg_spaj = RPAD ($P{spaj}, 11, ' ')) g,
+	 eka.lst_kurs h, 
+     eka.lst_pay_mode i, eka.mst_agent_prod j,
+	 eka.mst_agent k,
+	 eka.mst_client_new l,
+	(select a.mns_kd_nasabah, b.nama_cabang, c.nama_cabang kci, a.jn_nasabah, d.nm_jenis, a.referrer_id, a.jn_lead
+		from eka.mst_nasabah a, eka.lst_cab_bii b, eka.lst_cab_bii c, eka.lst_jn_nasabah d
+		where a.kd_region = b.kd_region
+		and a.kd_koord = b.kd_koord
+		and a.kd_area = b.kd_area
+		and a.kd_cabang = b.kd_cabang
+		and a.kd_region = c.kd_region
+		and a.kd_koord = c.kd_koord
+		and a.kd_area = c.kd_area
+		and c.kd_cabang = '000'
+		AND a.jn_nasabah = d.jn_nasabah
+	) m,
+	(select a.reg_spaj, B.NAMA_REFF, B.JENIS, C.NAMA_CABANG 
+		from eka.mst_refF_bii A, EKA.LST_REFF_BII B, EKA.LST_CABANG_BII C
+		WHERE A.LRB_ID = B.LRB_ID
+		AND A.LCB_NO = C.LCB_NO
+    ) n,
+	(select sum(msl_premi) premi_slink from eka.mst_slink where reg_spaj = RPAD ($P{spaj}, 11, ' ') and msl_no < 3) o
+where a.reg_spaj = RPAD ($P{spaj}, 11, ' ')
+	and a.reg_spaj = b.reg_spaj
+	and b.lsbs_id < 800
+	and b.mspr_active = 1
+	and b.lsbs_id = c.lsbs_id
+	and b.lsdbs_number = c.lsdbs_number
+	and a.reg_spaj = d.reg_spaj
+	and a.mspo_policy_holder = e.mcl_id
+	and d.mste_insured = f.mcl_id
+	and b.lku_id = h.lku_id
+	and a.lscb_id = i.lscb_id
+	and a.reg_spaj = j.reg_spaj
+	and j.msag_id = k.msag_id
+	and k.mcl_id = l.mcl_id
+	and j.lsle_id = 4
+	and a.mspo_plan_provider = m.mns_kd_nasabah (+)
+	and a.reg_spaj = n.reg_spaj(+)]]>
+	</queryString>
+	<field name="BII" class="java.lang.String"/>
+	<field name="DUPLIKAT" class="java.lang.String"/>
+	<field name="FIESTA_VISA" class="java.math.BigDecimal"/>
+	<field name="JN_LEAD" class="java.math.BigDecimal"/>
+	<field name="KCI" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSCB_PRINT" class="java.lang.String"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="MSPO_DATE_PRINT" class="java.util.Date"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSPO_SPAJ_DATE" class="java.util.Date"/>
+	<field name="MSPR_TSI" class="java.math.BigDecimal"/>
+	<field name="MSTE_BEG_DATE" class="java.util.Date"/>
+	<field name="NAMA_CABANG" class="java.lang.String"/>
+	<field name="NAMA_PLAN" class="java.lang.String"/>
+	<field name="NAMA_PP" class="java.lang.String"/>
+	<field name="NAMA_TT" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="TOTAL_PREMI" class="java.math.BigDecimal"/>
+	<detail>
+		<band height="625">
+			<staticText>
+				<reportElement positionType="Float" x="45" y="103" width="461" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="styled">
+					<font fontName="Arial" size="14" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">TANDA TERIMA POLIS</style>]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="15" y="168" width="222" height="16"/>
+				<textElement verticalAlignment="Top" markup="styled">
+					<font fontName="Arial" size="11" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">Saya yang bertanda tangan dibawah ini :</style>]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="50" y="253" width="160" height="15"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[No Registrasi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="50" y="268" width="160" height="15"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[Polis Asuransi Jiwa No.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="50" y="283" width="160" height="15"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[Nama Produk]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="50" y="298" width="160" height="15"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[Nama Pemegang Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="50" y="328" width="160" height="15"/>
+				<textElement verticalAlignment="Middle" markup="styled">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[Tanggal Mulai Berlaku Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="215" y="253" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Top" markup="styled">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="225" y="253" width="330" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatSPAJ($F{REG_SPAJ})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="225" y="268" width="330" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatPolis($F{MSPO_POLICY_NO})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="225" y="283" width="330" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PLAN}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="225" y="298" width="330" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PP}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="225" y="313" width="330" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_TT}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="50" y="373" width="160" height="15">
+					<printWhenExpression><![CDATA[new Boolean($F{LSBS_ID}.intValue()!=157)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PLAN}.contains("SYARIAH")?"Jumlah Kontribusi/Premi":"Jumlah Premi"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="15" y="523" width="176" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[Diterima oleh Pemegang Polis,]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="15" y="543" width="106" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[Tanggal]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="15" y="603" width="106" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[Tanda Tangan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="122" y="573" width="5" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="122" y="603" width="5" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="15" y="198" width="16" height="16"/>
+				<textElement verticalAlignment="Top" markup="styled">
+					<font fontName="Arial" size="11" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">1.</style>]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="33" y="198" width="476" height="41"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top" markup="styled">
+					<font fontName="Arial" size="11" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">Menerangkan bahwa saya ( sebagai Pemegang Polis ) telah menerima, membaca dan mengerti isi Polis di bawah ini  beserta lampiran-lampirannya, serta menyetujui  keseluruhan isi Polis.</style>]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="50" y="343" width="160" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[Tanggal Penerbitan Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="50" y="358" width="160" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[Jumlah Uang Pertanggungan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="215" y="268" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="215" y="283" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="215" y="298" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="215" y="313" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="215" y="328" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="215" y="343" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="215" y="358" width="5" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="215" y="373" width="5" height="15">
+					<printWhenExpression><![CDATA[new Boolean($F{LSBS_ID}.intValue()!=157)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="225" y="328" width="330" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSTE_BEG_DATE})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="225" y="343" width="330" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSPO_DATE_PRINT})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="250" y="358" width="86" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null, $F{MSPR_TSI})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="250" y="373" width="86" height="15">
+					<printWhenExpression><![CDATA[new Boolean($F{LSBS_ID}.intValue()!=157)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null, $F{TOTAL_PREMI})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="15" y="403" width="16" height="16"/>
+				<textElement verticalAlignment="Top" markup="styled">
+					<font fontName="Arial" size="11" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">2.</style>]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="33" y="403" width="476" height="26"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top" markup="styled">
+					<font fontName="Arial" size="11" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">Mengerti bahwa program asuransi ini memberikan jaminan sesuai dengan manfaat yang tercantum dalam Polis.</style>]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="33" y="443" width="476" height="26"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top" markup="styled">
+					<font fontName="Arial" size="11" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">Mengerti bahwa Tanda Terima Polis ini merupakan bagian yang tak terpisahkan dari Polis.</style>]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="15" y="443" width="16" height="16"/>
+				<textElement verticalAlignment="Top" markup="styled">
+					<font fontName="Arial" size="11" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">3.</style>]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="15" y="573" width="106" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[Nama Lengkap]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="122" y="543" width="5" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="130" y="573" width="425" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_PP}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="225" y="358" width="25" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="225" y="373" width="25" height="15">
+					<printWhenExpression><![CDATA[new Boolean($F{LSBS_ID}.intValue()!=157)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="340" y="373" width="215" height="15">
+					<printWhenExpression><![CDATA[new Boolean($F{LSBS_ID}.intValue()!=157)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font reportFont="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{LSCB_PRINT}!=null ? !$F{LSCB_PRINT}.trim().equals("") ? $F{LSCB_PRINT} : "" : "")]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="50" y="313" width="160" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Arial" fontName="Arial" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("product.syariah").indexOf($F{LSBS_ID}.toString())>-1?"Nama Peserta":"Nama Tertanggung"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="245" y="68" width="261" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{JN_LEAD}.intValue() == 2 ? "" :
+(($F{KCI} != null) ? ("KCI: " + $F{KCI}) : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="145" y="83" width="361" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{NAMA_CABANG} != null) ? ("Cabang: " + $F{NAMA_CABANG}) : ""]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="45" y="123" width="461" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{LSBS_ID}.intValue() == 142 && ($F{LSDBS_NUMBER}.intValue() == 5 || $F{LSDBS_NUMBER}.intValue() == 6)) ?
+"(UOB)" : ""]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="15" y="47" width="226" height="15">
+					<printWhenExpression><![CDATA[new Boolean($F{DUPLIKAT} != null)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="sansserif"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Duplikat Reg: " + $F{DUPLIKAT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="15" y="65" width="216" height="18" isRemoveLineWhenBlank="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Tahoma" size="10" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tipePolis}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="187" y="14" width="361" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{FIESTA_VISA}.intValue() == 1 ? "" :""]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="38">
+			<staticText>
+				<reportElement positionType="Float" x="5" y="1" width="546" height="14">
+					<printWhenExpression><![CDATA[new Boolean(!$F{NAMA_PLAN}.contains("SYARIAH"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="styled">
+					<font reportFont="Arial" size="10" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">Lembar ini harus dikembalikan kepada PT Asuransi Jiwa Sinarmas MSIG Tbk. (Kantor Pusat atau Kantor Cabang)</style>]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="5" y="0" width="546" height="14">
+					<printWhenExpression><![CDATA[new Boolean($F{NAMA_PLAN}.contains("SYARIAH"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="styled">
+					<font reportFont="Arial" size="8" isBold="true" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[<style isBold="true">Lembar ini harus dikembalikan kepada PT Asuransi Jiwa Sinarmas MSIG Tbk. Unit Syariah</style>]]></text>
+			</staticText>
+		</band>
+	</pageFooter>
+</jasperReport>

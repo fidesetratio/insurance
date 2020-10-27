@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="nb_profil_sp" pageWidth="900" pageHeight="842" columnWidth="880" leftMargin="10" rightMargin="10" topMargin="10" bottomMargin="10" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<parameter name="tgl_a" class="java.lang.String">
+		<defaultValueExpression><![CDATA["01/01/2012"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tgl_b" class="java.lang.String">
+		<defaultValueExpression><![CDATA["31/12/2012"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lcb_no" class="java.lang.String">
+		<defaultValueExpression><![CDATA["S01"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="statement1" class="java.lang.String"/>
+	<parameter name="lsbsId" class="java.lang.String"/>
+	<parameter name="lsdbsNumber" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT tgl_prod,bulan, count(*) polis, sum(premi) premi, (sum(premi) / count(*)) premi_per_polis FROM (
+    SELECT 
+        a.reg_spaj, to_char(a.mspro_prod_date, 'yyyy/mm') tgl_prod,to_char(a.mspro_prod_date,'MONTH')bulan, sum(a.mspro_nilai_kurs * b.msdpr_premium) premi
+    FROM 
+        eka.mst_production a, eka.mst_det_production b, eka.mst_policy c, eka.mst_reff_bii d
+    WHERE 
+        a.lstb_id = 1 
+        AND a.mspro_prod_date between to_date($P{tgl_a},'dd/MM/yyyy') and to_date($P{tgl_b},'dd/MM/yyyy')
+        AND a.lstb_id = b.lstb_id
+        AND a.reg_spaj = b.reg_spaj
+        AND a.mspro_prod_ke = b.mspro_prod_ke
+        AND a.mspro_prod_date = b.mspro_prod_date
+        AND b.lsbs_id = 164
+        AND b.lsdbs_number = 2
+        AND a.reg_spaj = c.reg_spaj
+        AND c.lspd_id <> 95
+        AND c.reg_spaj = d.reg_spaj
+        AND d.no_urut = (select max(no_urut) from eka.mst_reff_bii where level_id = 4 and reg_spaj = d.reg_spaj)
+		AND trim(d.lcb_penutup) = trim($P{lcb_no})
+        AND exists 
+            (SELECT 1 FROM eka.mst_slink WHERE msl_new = 1 AND reg_spaj = a.reg_spaj AND msl_tahun_ke = a.msbi_tahun_ke AND msl_premi_ke = a.msbi_premi_ke)
+    GROUP BY 
+        a.reg_spaj, to_char(a.mspro_prod_date, 'yyyy/mm'),to_char(a.mspro_prod_date,'MONTH')
+) GROUP BY tgl_prod ,bulan ORDER BY tgl_prod, bulan]]>
+	</queryString>
+	<field name="POLIS" class="java.math.BigDecimal"/>
+	<field name="BULAN" class="java.lang.String"/>
+	<field name="PREMI" class="java.math.BigDecimal"/>
+	<field name="PREMI_PER_POLIS" class="java.math.BigDecimal"/>
+	<field name="TGL_PROD" class="java.lang.String"/>
+	<title>
+		<band height="40">
+			<staticText>
+				<reportElement mode="Opaque" x="11" y="10" width="170" height="30" forecolor="#000000" backcolor="#EBEBEB"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Item]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="281" y="10" width="200" height="15" forecolor="#000000" backcolor="#EBEBEB"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Laki-Laki]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="481" y="10" width="200" height="15" forecolor="#000000" backcolor="#EBEBEB"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Perempuan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="681" y="10" width="99" height="15" forecolor="#000000" backcolor="#EBEBEB"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="281" y="25" width="100" height="15" forecolor="#000000" backcolor="#EBEBEB"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jumlah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="381" y="25" width="100" height="15" forecolor="#000000" backcolor="#EBEBEB"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[J/T]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="581" y="25" width="100" height="15" forecolor="#000000" backcolor="#EBEBEB"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[J/T]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="481" y="25" width="100" height="15" forecolor="#000000" backcolor="#EBEBEB"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jumlah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="681" y="25" width="99" height="15" forecolor="#000000" backcolor="#EBEBEB"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jumlah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="181" y="10" width="100" height="30" forecolor="#000000" backcolor="#EBEBEB"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Kisaran]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="11" y="0" width="622" height="10" forecolor="#000000" backcolor="#00FF80"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Profil Produk]]></text>
+			</staticText>
+		</band>
+	</title>
+	<detail>
+		<band/>
+	</detail>
+	<summary>
+		<band height="20">
+			<subreport isUsingCache="true">
+				<reportElement key="sub_profil" positionType="Float" x="0" y="0" width="480" height="2"/>
+				<subreportParameter name="statement1">
+					<subreportParameterExpression><![CDATA[$P{statement1}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tgl_a">
+					<subreportParameterExpression><![CDATA[$P{tgl_a}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lsbsId">
+					<subreportParameterExpression><![CDATA[$P{lsbsId}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lcb_no">
+					<subreportParameterExpression><![CDATA[$P{lcb_no}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lsdbsNumber">
+					<subreportParameterExpression><![CDATA[$P{lsdbsNumber}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tgl_b">
+					<subreportParameterExpression><![CDATA[$P{tgl_b}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("subreport.polis.sub_profil")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="true">
+				<reportElement key="sub_profil_usiapp" positionType="Float" x="0" y="4" width="480" height="2"/>
+				<subreportParameter name="statement1">
+					<subreportParameterExpression><![CDATA[$P{statement1}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tgl_a">
+					<subreportParameterExpression><![CDATA[$P{tgl_a}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lsbsId">
+					<subreportParameterExpression><![CDATA[$P{lsbsId}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lcb_no">
+					<subreportParameterExpression><![CDATA[$P{lcb_no}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lsdbsNumber">
+					<subreportParameterExpression><![CDATA[$P{lsdbsNumber}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tgl_b">
+					<subreportParameterExpression><![CDATA[$P{tgl_b}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("subreport.polis.sub_profil_usiapp")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="true">
+				<reportElement key="sub_profil_usiatt" positionType="Float" x="0" y="8" width="480" height="2"/>
+				<subreportParameter name="statement1">
+					<subreportParameterExpression><![CDATA[$P{statement1}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tgl_a">
+					<subreportParameterExpression><![CDATA[$P{tgl_a}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lsbsId">
+					<subreportParameterExpression><![CDATA[$P{lsbsId}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lcb_no">
+					<subreportParameterExpression><![CDATA[$P{lcb_no}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lsdbsNumber">
+					<subreportParameterExpression><![CDATA[$P{lsdbsNumber}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tgl_b">
+					<subreportParameterExpression><![CDATA[$P{tgl_b}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("subreport.polis.sub_profil_usiatt")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="true">
+				<reportElement key="sub_profil_rider" positionType="Float" x="0" y="12" width="480" height="2"/>
+				<subreportParameter name="statement1">
+					<subreportParameterExpression><![CDATA[$P{statement1}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tgl_a">
+					<subreportParameterExpression><![CDATA[$P{tgl_a}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lsbsId">
+					<subreportParameterExpression><![CDATA[$P{lsbsId}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lcb_no">
+					<subreportParameterExpression><![CDATA[$P{lcb_no}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lsdbsNumber">
+					<subreportParameterExpression><![CDATA[$P{lsdbsNumber}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tgl_b">
+					<subreportParameterExpression><![CDATA[$P{tgl_b}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("subreport.polis.sub_profil_rider")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="true">
+				<reportElement key="sub_profil_mgi" positionType="Float" x="0" y="16" width="480" height="2"/>
+				<subreportParameter name="statement1">
+					<subreportParameterExpression><![CDATA[$P{statement1}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tgl_a">
+					<subreportParameterExpression><![CDATA[$P{tgl_a}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lsbsId">
+					<subreportParameterExpression><![CDATA[$P{lsbsId}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lcb_no">
+					<subreportParameterExpression><![CDATA[$P{lcb_no}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lsdbsNumber">
+					<subreportParameterExpression><![CDATA[$P{lsdbsNumber}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tgl_b">
+					<subreportParameterExpression><![CDATA[$P{tgl_b}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("subreport.polis.sub_profil_mgi")+".jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</summary>
+</jasperReport>

@@ -1,0 +1,681 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="elions.scheduler">
+
+<select id="selectUserKirimSphSptKeLbScheduler" parameterClass="hashMap" resultClass="hashMap">
+		select distinct(d.lus_login_name) from 
+eka.mst_insured a,
+eka.mst_policy b,
+eka.mst_position_spaj c,
+eka.lst_user d,
+eka.lst_department e
+where 
+a.mste_tgl_kirim_lb is not null and
+b.lspd_id <![CDATA[<>]]> 95 and
+d.lus_active = 1 and
+( c.msps_desc = 'SPH KIRIM KE LIFE BENEFIT' or c.msps_desc = 'SPT KIRIM KE LIFE BENEFIT' or  c.msps_desc = 'SPH DAN SPT KIRIM KE LIFE BENEFIT' ) and
+e.lde_id = 11 and
+a.mste_tgl_terima_lb  between to_date(#tanggalAwal#,'dd/mm/yyyy') and  to_date(#tanggal#,'dd/mm/yyyy')  and
+a.reg_spaj = b.reg_spaj and
+a.reg_spaj = c.reg_spaj and
+b.reg_spaj = c.reg_spaj and
+c.lus_id = d.lus_id and
+d.lde_id = e.lde_id 
+	</select>
+	
+	<select id="selectCompanyWsScheduler" parameterClass="java.util.HashMap" resultClass="com.ekalife.elions.model.Company_ws">
+	select b.mcl_first nama_perusahaan,a.mcl_id, trunc(a.tgl_invoice) tgl_invoice,a.jumlah_invoice, c.telp_kantor, d.lus_admin_ws, c.nama_lengkap,
+    e.lus_full_name nama_admin
+        from eka.mst_company_ws a,
+        eka.mst_client b,
+        eka.mst_company_contact c,
+        eka.mst_company d,
+        eka.lst_user e
+        where 
+        a.mcl_id = b.mcl_id and
+        a.mcl_id = c.mcl_id and
+        d.mcl_id = c.mcl_id and
+        d.lus_admin_ws = e.lus_id
+         and tgl_invoice+15 <![CDATA[<=]]> sysdate
+		 and tgl_bayar is null
+       </select>
+       
+	<select id="selectUserKirimPolisKeDeltaScheduler" parameterClass="hashMap" resultClass="hashMap">
+	select distinct(c.lus_login_name) from 
+filing.mfile a,
+filing.mbox_histori b,
+eka.lst_user c,
+eka.lst_department d
+where 
+a.tipe_file = 'NB' and 
+a.sts_dokumen = 'READY FOR DELIVERY' and
+d.lde_id = 11 and
+b.tgl_trans between to_date(#tanggalAwal#,'dd/mm/yyyy') and to_date(#tanggal#,'dd/mm/yyyy') and
+a.kd_box = b.kd_box and
+b.user_id = c.lus_id and
+c.lde_id = d.lde_id 
+	</select>
+	
+	<select id="selectUserKirimSphSptKeLbListScheduler" parameterClass="hashMap" resultClass="hashMap">
+		select to_char( a.mste_tgl_terima_lb ,'dd') tgl_terima,d.lus_full_name,   count(a.reg_spaj) jml from 
+eka.mst_insured a,
+eka.mst_policy b,
+eka.mst_position_spaj c,
+eka.lst_user d,
+eka.lst_department e
+where 
+a.mste_tgl_kirim_lb is not null and
+b.lspd_id <![CDATA[<>]]> 95 and
+d.lus_active = 1 and
+( c.msps_desc = 'SPH KIRIM KE LIFE BENEFIT' or c.msps_desc = 'SPT KIRIM KE LIFE BENEFIT' or  c.msps_desc = 'SPH DAN SPT KIRIM KE LIFE BENEFIT' ) and
+e.lde_id = 11 and
+a.mste_tgl_terima_lb  between to_date(#tanggalAwal#,'dd/mm/yyyy') and  to_date(#tanggal#,'dd/mm/yyyy')  and
+d.lus_login_name = #user# and
+a.reg_spaj = b.reg_spaj and
+a.reg_spaj = c.reg_spaj and
+b.reg_spaj = c.reg_spaj and
+c.lus_id = d.lus_id and
+d.lde_id = e.lde_id 
+group by to_char( a.mste_tgl_terima_lb ,'dd'), d.lus_full_name,e.lde_dept,d.lus_id
+order by to_char( a.mste_tgl_terima_lb ,'dd')
+	</select>
+	
+	<select id="selectJmlHrKirimSphSptKeLb" parameterClass="hashMap" resultClass="java.math.BigDecimal">
+	select count(distinct(to_char( trunc(a.mste_tgl_terima_lb )))) jml_hr from 
+eka.mst_insured a,
+eka.mst_policy b,
+eka.mst_position_spaj c,
+eka.lst_user d,
+eka.lst_department e
+where 
+a.mste_tgl_kirim_lb is not null and
+b.lspd_id <![CDATA[<>]]> 95 and
+d.lus_active = 1 and
+( c.msps_desc = 'SPH KIRIM KE LIFE BENEFIT' or c.msps_desc = 'SPT KIRIM KE LIFE BENEFIT' or  c.msps_desc = 'SPH DAN SPT KIRIM KE LIFE BENEFIT' ) and
+e.lde_id = 11 and
+a.mste_tgl_terima_lb  between to_date(#tanggalAwal#,'dd/mm/yyyy') and  to_date(#tanggal#,'dd/mm/yyyy')  and
+d.lus_login_name = #user# and
+a.reg_spaj = b.reg_spaj and
+a.reg_spaj = c.reg_spaj and
+b.reg_spaj = c.reg_spaj and
+c.lus_id = d.lus_id and
+d.lde_id = e.lde_id 
+		</select>
+	
+	<select id="selectUserKirimPolisKeDeltaListScheduler" parameterClass="hashMap" resultClass="hashMap">
+select tgl_trans,tgl_terima,lus_full_name,sum(jml) jml
+from(
+select trunc(b.tgl_trans) tgl_trans,to_char( b.tgl_trans ,'dd') tgl_terima,c.lus_full_name,   count(a.kd_file) jml from 
+filing.mfile a,
+filing.mbox_histori b,
+eka.lst_user c,
+eka.lst_department d
+where 
+a.tipe_file = 'NB' and 
+a.sts_dokumen = 'READY FOR DELIVERY' and
+d.lde_id = 11 and
+b.tgl_trans between to_date(#tanggalAwal#,'dd/mm/yyyy') and to_date(#tanggal#,'dd/mm/yyyy') and
+c.lus_login_name = #user# and
+a.kd_box = b.kd_box and
+b.user_id = c.lus_id and
+c.lde_id = d.lde_id 
+group by b.tgl_trans,to_char( b.tgl_trans ,'dd'), c.lus_full_name
+) group by tgl_trans,tgl_terima,lus_full_name
+order by to_char( tgl_trans ,'dd')
+	</select>
+	
+	<select id="selectJmlHrKirimPolisKeDelta" parameterClass="hashMap" resultClass="java.math.BigDecimal">
+	select count(distinct(trunc(b.tgl_trans))) jml_hr from 
+filing.mfile a,
+filing.mbox_histori b,
+eka.lst_user c,
+eka.lst_department d
+where 
+a.tipe_file = 'NB' and 
+a.sts_dokumen = 'READY FOR DELIVERY' and
+d.lde_id = 11 and
+b.tgl_trans between to_date(#tanggalAwal#,'dd/mm/yyyy') and to_date(#tanggal#,'dd/mm/yyyy') and
+c.lus_login_name = #user# and
+a.kd_box = b.kd_box and
+b.user_id = c.lus_id and
+c.lde_id = d.lde_id 
+</select>
+
+		<select id="selectUserKirimSphSptKeLbListYearlyScheduler" parameterClass="hashMap" resultClass="hashMap">
+	select to_char( a.mste_tgl_terima_lb ,'mm') bulan, to_char( a.mste_tgl_terima_lb ,'Month') bln_terima,d.lus_full_name,   count(a.reg_spaj) jml from 
+eka.mst_insured a,
+eka.mst_policy b,
+eka.mst_position_spaj c,
+eka.lst_user d,
+eka.lst_department e
+where 
+a.mste_tgl_kirim_lb is not null and
+b.lspd_id <![CDATA[<>]]>  95 and
+d.lus_active = 1 and
+( c.msps_desc = 'SPH KIRIM KE LIFE BENEFIT' or c.msps_desc = 'SPT KIRIM KE LIFE BENEFIT' or  c.msps_desc = 'SPH DAN SPT KIRIM KE LIFE BENEFIT' ) and
+e.lde_id = 11 and
+a.mste_tgl_terima_lb between to_date(#bulanAwal#,'dd/mm/yyyy') and  to_date(#tanggal#,'dd/mm/yyyy')  and
+d.lus_login_name = #user# and
+a.reg_spaj = b.reg_spaj and
+a.reg_spaj = c.reg_spaj and
+b.reg_spaj = c.reg_spaj and
+c.lus_id = d.lus_id and
+d.lde_id = e.lde_id 
+group by to_char( a.mste_tgl_terima_lb ,'mm'), to_char( a.mste_tgl_terima_lb ,'Month'),d.lus_full_name,e.lde_dept,d.lus_id
+order by to_char( a.mste_tgl_terima_lb ,'mm')
+	</select>
+	
+	<select id="selectJmlBlnKirimSphSptKeLbYearly" parameterClass="hashMap" resultClass="java.math.BigDecimal">
+	select count(distinct(to_char( a.mste_tgl_terima_lb ,'mm'))) jml_bln from 
+eka.mst_insured a,
+eka.mst_policy b,
+eka.mst_position_spaj c,
+eka.lst_user d,
+eka.lst_department e
+where 
+a.mste_tgl_kirim_lb is not null and
+b.lspd_id <![CDATA[<>]]> 95 and
+d.lus_active = 1 and
+( c.msps_desc = 'SPH KIRIM KE LIFE BENEFIT' or c.msps_desc = 'SPT KIRIM KE LIFE BENEFIT' or  c.msps_desc = 'SPH DAN SPT KIRIM KE LIFE BENEFIT' ) and
+e.lde_id = 11 and
+a.mste_tgl_terima_lb between to_date(#bulanAwal#,'dd/mm/yyyy') and  to_date(#tanggal#,'dd/mm/yyyy')  and
+d.lus_login_name = #user# and
+a.reg_spaj = b.reg_spaj and
+a.reg_spaj = c.reg_spaj and
+b.reg_spaj = c.reg_spaj and
+c.lus_id = d.lus_id and
+d.lde_id = e.lde_id 
+		</select>
+	
+	<select id="selectUserKirimPolisKeDeltaListYearlyScheduler" parameterClass="hashMap" resultClass="hashMap">
+	select to_char( b.tgl_trans ,'mm') bulan, to_char( b.tgl_trans ,'Month') bln_terima,c.lus_full_name,   count(a.kd_file) jml from
+filing.mfile a,
+filing.mbox_histori b,
+eka.lst_user c,
+eka.lst_department d
+where 
+a.tipe_file = 'NB' and 
+a.sts_dokumen = 'READY FOR DELIVERY' and
+d.lde_id = 11 and
+b.tgl_trans between to_date(#bulanAwal#,'dd/mm/yyyy') and to_date(#tanggal#,'dd/mm/yyyy') and
+c.lus_login_name = #user# and
+a.kd_box = b.kd_box and
+b.user_id = c.lus_id and
+c.lde_id = d.lde_id 
+group by to_char( b.tgl_trans ,'mm'), to_char( b.tgl_trans ,'Month'), c.lus_full_name
+order by to_char( b.tgl_trans ,'mm')
+</select>
+
+<select id="selectJmlBlnKirimPolisKeDeltaYearly" parameterClass="hashMap" resultClass="java.math.BigDecimal">
+select count(distinct(to_char( b.tgl_trans ,'mm'))) jml_bln
+    from
+filing.mfile a,
+filing.mbox_histori b,
+eka.lst_user c,
+eka.lst_department d
+where 
+a.tipe_file = 'NB' and 
+a.sts_dokumen = 'READY FOR DELIVERY' and
+d.lde_id = 11 and
+b.tgl_trans between to_date(#bulanAwal#,'dd/mm/yyyy') and to_date(#tanggal#,'dd/mm/yyyy') and
+c.lus_login_name = #user# and
+a.kd_box = b.kd_box and
+b.user_id = c.lus_id and
+c.lde_id = d.lde_id 
+</select>
+
+<select id="selectAutoCancelPolisMallAssurance" resultClass="string">
+select reg_spaj  
+from eka.mst_policy where lca_id = '58' and lspd_id = 1 
+and (trunc(sysdate) - trunc(mspo_input_date) > 14) 
+</select>
+
+<select id="selectAlreadyExistScheduler" resultClass="int" parameterClass="string">
+select count(msh_name)
+from eka.mst_scheduler_hist
+where msh_name like #msh_name#
+and msh_bdate between to_date(to_char(sysdate,'dd/mm/yyyy'),'dd/mm/yyyy') and to_date(to_char(sysdate+1, 'dd/mm/yyyy'),'dd/mm/yyyy')
+and msh_desc='OK'
+</select>
+
+<select id="selectRekapReferensi" resultClass="hashMap">
+	select
+	    create_date tgl_buat,
+	    a.id_seller kd_ref,
+	    b.nama nama_ref,
+	    b.tgl_lahir tgl_lahir_ref,
+	    nvl(b.email,' ') email_ref,
+	    a.name nama,
+	    a.birth_date tgl_lahir,
+	    a.contact_number no_telp,
+	    (case when a.flag_reference = 0 then 'Nasabah' else 'Agen' end)jenis,
+	    nvl(a.msag_id,' ') kd_agen,
+	    nvl(a.msag_name,' ') nama_agen,
+	    nvl(d.mspe_email,' ') email_agen
+	from
+	    eka.mst_referensi a,
+	    eka.prw_seller b,
+	    eka.mst_agent c,
+	    eka.mst_client_new d
+	where
+	    a.flag_rekap = 0
+	    and a.id_seller = b.id_seller
+	    and a.msag_id = c.msag_id(+)
+	    and c.mcl_id = d.mcl_id(+)
+</select>
+
+	<select id="selectValidasiCheckListBySpaj" resultClass="hashMap" parameterClass="string">
+		SELECT NVL (SUM (DECODE (tgl_adm, NULL, 0, 1)), 0) adm,
+		       NVL (SUM (DECODE (tgl_uw, NULL, 0, 1)), 0) uw,
+		       NVL (SUM (DECODE (tgl_print, NULL, 0, 1)), 0) PRINT,
+		       NVL (SUM (DECODE (tgl_filling, NULL, 0, 1)), 0) filling
+		  FROM eka.mst_checklist
+		 WHERE reg_spaj = RPAD (#value#, 11, ' ')	
+	</select>
+	
+	<select id="selectPosisiDokumenBySpaj" parameterClass="string" resultClass="int">
+		SELECT lspd_id
+		  FROM eka.mst_policy
+		 WHERE reg_spaj = RPAD (#value#, 11, ' ')	
+	</select>
+
+	<select id="selectStsAksepBySpaj" parameterClass="string" resultClass="int">
+		SELECT lssa_id
+          FROM eka.mst_insured
+         WHERE reg_spaj = RPAD (#value#, 11, ' ')	
+	</select>
+	
+	<select id="selectWarningUploadTransferSpaj" parameterClass="hashMap" resultClass="hashMap">
+		select distinct
+		    a.reg_spaj, a.lspd_id, b.no_indek, a.lus_id, c.lus_email email, a.mspo_input_date,
+		    to_char(a.mspo_input_date,'dd/MM/yyyy') tgl_input, eka.utils.pemegang(a.reg_spaj)pemegang, eka.utils.tertanggung(a.reg_spaj)tertanggung,
+		    f.lsdbs_name produk
+		from
+		    eka.mst_policy a,
+		    eka.mst_scan b,
+		    eka.lst_user c,
+		    eka.mst_insured d,
+		    eka.mst_product_insured e,
+		    eka.lst_det_bisnis f
+		where
+		    a.reg_spaj = b.no_indek(+)
+		    and a.lus_id = c.lus_id
+		    and a.reg_spaj = d.reg_spaj
+		    and d.reg_spaj = e.reg_spaj
+		    and d.mste_insured_no = e.mste_insured_no
+		    and e.lsbs_id = f.lsbs_id
+		    and e.lsdbs_number = f.lsdbs_number
+		    and d.mste_insured_no = 1
+		    and a.lspd_id = 1
+		    and a.mspo_input_date between to_date(#bdate#,'dd/MM/yyyy') and to_date(#edate#,'dd/MM/yyyy')
+		    and c.lus_email is not null
+		    and a.lstb_id = 1
+		    and e.lsbs_id <![CDATA[<]]> 300 
+		    and (e.lsbs_id != 163 and e.lsdbs_number not in (6,7,8,9,10))
+		order by a.mspo_input_date desc
+	</select>
+	
+	<select id="selectEmailSuratDomisili" parameterClass="hashMap" resultClass="hashMap">
+		select
+		    a.lar_email, a.lar_end_date_sewa, a.lar_end_date_domisili
+		from
+		    eka.lst_addr_region a
+		where
+			<isEqual property="jenis" compareValue="1">
+				a.lar_end_date_sewa = trunc(add_months(sysdate, 6))
+			</isEqual>
+			<isEqual property="jenis" compareValue="2">
+				a.lar_end_date_sewa = trunc(add_months(sysdate, 3))
+			</isEqual>
+			<isEqual property="jenis" compareValue="3">
+				a.lar_end_date_sewa <![CDATA[<=]]> trunc(add_months(sysdate, 1))
+			</isEqual>
+			<isEqual property="jenis" compareValue="4">
+				a.lar_end_date_domisili <![CDATA[<=]]> trunc(add_months(sysdate, 2))
+			</isEqual>
+			<!--<isEqual property="jenis" compareValue="5">
+				a.upper(lar_status_gedung) like (upper('%TUTUP%'))
+				and (a.lar_end_date_sewa <![CDATA[=]]> trunc(add_months(sysdate, 1))
+						or a.lar_end_date_domisili <![CDATA[=]]> trunc(add_months(sysdate, 1))
+			</isEqual>-->
+			and a.flag_aktif = 1
+	</select>
+	
+	<select id="selectMinVA" parameterClass="string" resultClass="hashMap">
+		select
+            'PAPER KONVENSIONAL' type, 
+            nvl(sum(case when substr(a.no_va,9,2) = '01' then 1 else 0 end),0)ul,
+            nvl(sum(case when substr(a.no_va,9,2) = '02' then 1 else 0 end),0)nul,
+            nvl(sum(case when substr(a.no_va,9,2) = '03' then 1 else 0 end),0)simpol,
+            nvl(sum(case when substr(a.no_va,9,2) = '04' then 1 else 0 end),0)sprima,
+            nvl(sum(case when substr(a.no_va,9,2) = '05' then 1 else 0 end),0)psave,
+            nvl(sum(case when substr(a.no_va,9,2) = '06' then 1 else 0 end),0)slsatu,
+            nvl(sum(case when substr(a.no_va,9,2) = '07' then 1 else 0 end),0)kcl,
+            nvl(sum(case when substr(a.no_va,9,2) = '08' then 1 else 0 end),0)family,
+            nvl(sum(case when substr(a.no_va,9,2) = '12' then 1 else 0 end),0)psavesyh,
+            nvl(sum(case when substr(a.no_va,9,2) = '15' then 1 else 0 end),0)dnmasprm
+        from
+            eka.mst_det_va a
+        where
+            a.flag_active = 1
+            and a.spaj is null
+            and substr(a.no_va,6,1) = 0     
+        union all  
+        select
+            'PAPER SYARIAH' type, 
+            nvl(sum(case when substr(a.no_va,9,2) = '09' then 1 else 0 end),0)ul,
+            nvl(sum(case when substr(a.no_va,9,2) = '10' then 1 else 0 end),0)nul,
+            nvl(sum(case when substr(a.no_va,9,2) = '11' then 1 else 0 end),0)simpol,
+            nvl(sum(case when substr(a.no_va,9,2) = '04' then 1 else 0 end),0)sprima,
+            nvl(sum(case when substr(a.no_va,9,2) = '13' then 1 else 0 end),0)psave,
+            nvl(sum(case when substr(a.no_va,9,2) = '06' then 1 else 0 end),0)slsatu,
+            nvl(sum(case when substr(a.no_va,9,2) = '14' then 1 else 0 end),0)kcl,
+            nvl(sum(case when substr(a.no_va,9,2) = '08' then 1 else 0 end),0)family,
+            nvl(sum(case when substr(a.no_va,9,2) = '12' then 1 else 0 end),0)psavesyh,
+            nvl(sum(case when substr(a.no_va,9,2) = '15' then 1 else 0 end),0)dnmasprm
+        from
+            eka.mst_det_va a
+        where
+            a.flag_active = 1
+            and a.spaj is null
+            and substr(a.no_va,6,1) = 1         
+        union all     
+        select
+            'GADGET KONVENSIONAL' type, 
+            nvl(sum(case when substr(a.no_va,9,2) = '01' then 1 else 0 end),0)ul,
+            nvl(sum(case when substr(a.no_va,9,2) = '02' then 1 else 0 end),0)nul,
+            nvl(sum(case when substr(a.no_va,9,2) = '03' then 1 else 0 end),0)simpol,
+            nvl(sum(case when substr(a.no_va,9,2) = '04' then 1 else 0 end),0)sprima,
+            nvl(sum(case when substr(a.no_va,9,2) = '05' then 1 else 0 end),0)psave,
+            nvl(sum(case when substr(a.no_va,9,2) = '06' then 1 else 0 end),0)slsatu,
+            nvl(sum(case when substr(a.no_va,9,2) = '07' then 1 else 0 end),0)kcl,
+            nvl(sum(case when substr(a.no_va,9,2) = '08' then 1 else 0 end),0)family,
+            nvl(sum(case when substr(a.no_va,9,2) = '12' then 1 else 0 end),0)psavesyh,
+            nvl(sum(case when substr(a.no_va,9,2) = '15' then 1 else 0 end),0)dnmasprm
+        from
+            eka.mst_det_va a
+        where
+            a.flag_active = 1
+            and a.no_spaj_gadget is null
+            and substr(a.no_va,6,1) = 2 
+        union all
+        select
+            'GADGET SYARIAH' type, 
+            nvl(sum(case when substr(a.no_va,9,2) = '09' then 1 else 0 end),0)ul,
+            nvl(sum(case when substr(a.no_va,9,2) = '10' then 1 else 0 end),0)nul,
+            nvl(sum(case when substr(a.no_va,9,2) = '11' then 1 else 0 end),0)simpol,
+            nvl(sum(case when substr(a.no_va,9,2) = '04' then 1 else 0 end),0)sprima,
+            nvl(sum(case when substr(a.no_va,9,2) = '13' then 1 else 0 end),0)psave,
+            nvl(sum(case when substr(a.no_va,9,2) = '06' then 1 else 0 end),0)slsatu,
+            nvl(sum(case when substr(a.no_va,9,2) = '14' then 1 else 0 end),0)kcl,
+            nvl(sum(case when substr(a.no_va,9,2) = '08' then 1 else 0 end),0)family,
+            nvl(sum(case when substr(a.no_va,9,2) = '12' then 1 else 0 end),0)psavesyh,
+            nvl(sum(case when substr(a.no_va,9,2) = '15' then 1 else 0 end),0)dnmasprm
+        from
+            eka.mst_det_va a
+        where
+            a.flag_active = 1
+            and a.no_spaj_gadget is null
+            and substr(a.no_va,6,1) = 3
+	</select>
+	
+	<select id="selectJtNeonBox" parameterClass="hashMap" resultClass="hashMap">
+		select
+		    a.lar_id, a.lar_admin, a.lar_email
+		from
+		    eka.lst_addr_region a
+		where
+		    a.lar_end_date_reklame between to_date(#bdate#,'dd/MM/yyyy') and to_date(#edate#,'dd/MM/yyyy')
+	</select>
+	
+	<select id="selectFRkeCabang" parameterClass="int" resultClass="hashMap">
+		select
+		    d.lwk_nama perwakilan, 
+		    (case when a.lca_id = '09' then h.penutup else g.mcl_first end)nm_penutup,
+		    (case when a.lca_id = '09' then h.reff else '' end)nm_refferal, 
+		    eka.utils.pemegang(a.reg_spaj) pemegang, eka.utils.tertanggung(a.reg_spaj) tertanggung,
+		    a.reg_spaj spaj, a.mspo_policy_no polis, j.lsdbs_name produk, k.lscb_pay_mode cara_bayar, i.mspr_premium premi, 
+		    b.mste_beg_date beg_date, b.mste_tgl_terima_spaj tgl_terima_spaj, b.mste_tgl_aksep tgl_aksep, l.lssp_status status_polis, 
+		    m.msps_desc kekurangan_data, 
+		    n.lus_full_name user_input 
+		from
+		    eka.mst_policy a,
+		    eka.mst_insured b,
+		    eka.lst_cabang c,
+		    eka.lst_wakil d,
+		    eka.mst_agent_prod e,
+		    eka.mst_agent f,
+		    eka.mst_client_new g,
+		    (select
+		        x.reg_spaj, penutup.nama_reff penutup, reff.nama_reff reff
+		    from
+		        eka.mst_reff_bii x,
+		        eka.lst_reff_bii penutup,
+		        eka.lst_reff_bii reff
+		    where
+		        x.lrb_id = penutup.lrb_id
+		        and x.lrb_id = reff.lrb_id
+		        and x.level_id = 4)h,
+		    eka.mst_product_insured i,
+		    eka.lst_det_bisnis j,
+		    eka.lst_pay_mode k,
+		    eka.lst_policy_status l,
+		    eka.mst_position_spaj m,
+		    eka.lst_user n,
+		    eka.lst_region o
+		where
+		    a.reg_spaj = b.reg_spaj
+		    and a.lca_id = c.lca_id
+		    and a.lca_id = d.lca_id
+		    and a.lwk_id = d.lwk_id
+		    and a.reg_spaj = e.reg_spaj
+		    and e.msag_id = f.msag_id
+		    and f.mcl_id = g.mcl_id
+		    and a.reg_spaj = h.reg_spaj(+)
+		    and b.reg_spaj = i.reg_spaj
+		    and b.mste_insured_no = i.mste_insured_no
+		    and i.lsbs_id = j.lsbs_id
+		    and i.lsdbs_number =  j.lsdbs_number
+		    and a.lscb_id = k.lscb_id
+		    and a.lssp_id = l.lssp_id
+		    and a.reg_spaj = m.reg_spaj
+		    and m.lus_id = n.lus_id
+		    and a.lca_id = o.lca_id
+		    and a.lwk_id = o.lwk_id
+		    and a.lsrg_id = o.lsrg_id
+		    and b.mste_insured_no = 1
+		    and i.lsbs_id <![CDATA[<]]> 300
+		    and e.lsle_id = 4
+		    and b.lssa_id= 3
+		    and m.msps_date = (select max(msps_date) from eka.mst_position_spaj where reg_spaj = a.reg_spaj and lssa_id = 3 and msps_desc like 'FR:%')
+		    and o.lar_id = #value#
+		    and trunc(m.msps_date) = trunc(sysdate-1)
+	</select>
+	
+	<select id="selectListDashboardInput" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+	    SELECT
+		    *
+		FROM
+		    (SELECT
+		        a.reg_spaj,
+		        to_char(e.tgl_input_spaj_admin,'dd/mm/yyyy hh24:mi:ss') tgl_input,
+		        eka.workdays(e.tgl_terima_spaj_admin,e.tgl_input_spaj_admin) lama_proses
+		    FROM
+		        eka.mst_policy a,
+		        eka.mst_insured b,
+		        eka.mst_product_insured c,
+		        eka.lst_bisnis d,
+		        eka.mst_trans_history e
+		    WHERE
+		        a.reg_spaj = b.reg_spaj
+		        AND b.reg_spaj = c.reg_spaj
+		        AND c.lsbs_id = d.lsbs_id
+		        AND a.reg_spaj = e.reg_spaj
+		        AND a.lstb_id = 1
+		        AND a.lspd_id NOT IN(95,999)
+		        AND c.lsbs_id <![CDATA[<]]> 300
+		        AND e.jenis = 23
+		        AND (c.lsbs_id || c.lsdbs_number) NOT IN ('1422','1586')
+		        AND a.lspd_id = 1
+		        AND e.tgl_terima_spaj_admin IS NOT NULL
+		        AND e.tgl_input_spaj_admin IS NOT NULL
+		        AND TRUNC(e.tgl_input_spaj_admin) = TRUNC(SYSDATE))
+        <dynamic prepend="WHERE">
+            <isEqual property="tipe" compareValue="warning" prepend="AND" removeFirstPrepend="true">
+                lama_proses <![CDATA[>=]]> 2 AND lama_proses <![CDATA[<]]> 3
+            </isEqual>
+            <isEqual property="tipe" compareValue="crisis" prepend="AND" removeFirstPrepend="true">
+                lama_proses <![CDATA[>=]]> 3
+            </isEqual>
+        </dynamic>
+	</select>
+	
+	<select id="selectListDashboardFurther" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+	    SELECT
+		    *
+		FROM
+		    (SELECT
+		        a.reg_spaj,
+		        to_char(e.tgl_further,'dd/mm/yyyy hh24:mi:ss') tgl_input,
+		        eka.workdays(e.tgl_further,SYSDATE) lama_proses,
+		        g.lar_email email
+		    FROM
+		        eka.mst_policy a,
+		        eka.mst_insured b,
+		        eka.mst_product_insured c,
+		        eka.lst_bisnis d,
+		        eka.mst_trans_history e,
+		        eka.lst_region f,
+		        eka.lst_addr_region g
+		    WHERE
+		        a.reg_spaj = b.reg_spaj
+		        AND b.reg_spaj = c.reg_spaj
+		        AND c.lsbs_id = d.lsbs_id
+		        AND a.reg_spaj = e.reg_spaj
+		        AND a.lca_id = f.lca_id
+		        AND a.lwk_id = f.lwk_id
+		        AND a.lsrg_id = f.lsrg_id
+		        AND f.lar_id = g.lar_id
+		        AND a.lstb_id = 1
+		        AND a.lspd_id NOT IN(95,999)
+		        AND c.lsbs_id <![CDATA[<]]> 300
+		        AND e.jenis = 23
+		        AND (c.lsbs_id || c.lsdbs_number) NOT IN ('1422','1586')
+		        AND a.mspo_input_date BETWEEN TO_DATE('01/' || TO_CHAR(SYSDATE,'mm/yyyy'),'dd/mm/yyyy') AND LAST_DAY(SYSDATE)
+		        AND e.tgl_further IS NOT NULL
+		        AND b.lssa_id = 3
+		    ORDER BY
+		        g.lar_email)
+		<dynamic prepend="WHERE">
+		    <isEqual property="tipe" compareValue="warning" prepend="AND" removeFirstPrepend="true">
+		        lama_proses <![CDATA[>=]]> 2 AND lama_proses <![CDATA[<]]> 5
+		    </isEqual>
+		    <isEqual property="tipe" compareValue="crisis" prepend="AND" removeFirstPrepend="true">
+		        lama_proses <![CDATA[>=]]> 5
+		    </isEqual>
+		</dynamic>
+	</select>
+	
+	<select id="selectListDashboardAksep" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+	    SELECT
+		    *
+		FROM
+		    (SELECT
+		        a.reg_spaj,
+		        TO_CHAR(
+		            GREATEST(
+		                COALESCE(e.tgl_transfer_uw_speedy,e.tgl_uw_proses,e.tgl_transfer_uw_hd),
+		                COALESCE(e.tgl_uw_proses,e.tgl_transfer_uw_hd,e.tgl_transfer_uw_speedy),
+		                COALESCE(e.tgl_transfer_uw_hd,e.tgl_transfer_uw_speedy,e.tgl_uw_proses)
+		            ),
+		            'dd/mm/yyyy hh24:mi:ss'
+		        ) tgl_input,
+		        eka.workdays(
+		            GREATEST(
+		                COALESCE(e.tgl_transfer_uw_speedy,e.tgl_uw_proses,e.tgl_transfer_uw_hd),
+		                COALESCE(e.tgl_uw_proses,e.tgl_transfer_uw_hd,e.tgl_transfer_uw_speedy),
+		                COALESCE(e.tgl_transfer_uw_hd,e.tgl_transfer_uw_speedy,e.tgl_uw_proses)
+		            ),
+		            SYSDATE
+		        ) lama_proses
+		    FROM
+		        eka.mst_policy a,
+		        eka.mst_insured b,
+		        eka.mst_product_insured c,
+		        eka.lst_bisnis d,
+		        eka.mst_trans_history e
+		    WHERE
+		        a.reg_spaj = b.reg_spaj
+		        AND b.reg_spaj = c.reg_spaj
+		        AND c.lsbs_id = d.lsbs_id
+		        AND a.reg_spaj = e.reg_spaj
+		        AND a.lstb_id = 1
+		        AND a.lspd_id NOT IN(95,999)
+		        AND c.lsbs_id <![CDATA[<]]> 300
+		        AND e.jenis = 23
+		        AND (c.lsbs_id || c.lsdbs_number) NOT IN ('1422','1586')
+		        AND a.mspo_input_date BETWEEN TO_DATE('01/' || TO_CHAR(SYSDATE,'mm/yyyy'),'dd/mm/yyyy') AND LAST_DAY(SYSDATE)
+		        AND e.tgl_akseptasi_polis IS NULL
+		        AND GREATEST(
+		            COALESCE(e.tgl_transfer_uw_speedy,e.tgl_uw_proses,e.tgl_transfer_uw_hd),
+		            COALESCE(e.tgl_uw_proses,e.tgl_transfer_uw_hd,e.tgl_transfer_uw_speedy),
+		            COALESCE(e.tgl_transfer_uw_hd,e.tgl_transfer_uw_speedy,e.tgl_uw_proses)
+		        ) IS NOT NULL
+		        AND b.lssa_id <![CDATA[<>]]> 3
+		        AND (
+		            e.tgl_back_to_bas IS NULL
+		            OR e.tgl_back_to_bas <![CDATA[<]]> GREATEST(
+		                COALESCE(e.tgl_transfer_uw_speedy,e.tgl_uw_proses,e.tgl_transfer_uw_hd),
+		                COALESCE(e.tgl_uw_proses,e.tgl_transfer_uw_hd,e.tgl_transfer_uw_speedy),
+		                COALESCE(e.tgl_transfer_uw_hd,e.tgl_transfer_uw_speedy,e.tgl_uw_proses)
+		            )
+		        ))
+		<dynamic prepend="WHERE">
+		    <isEqual property="tipe" compareValue="warning" prepend="AND" removeFirstPrepend="true">
+		        lama_proses <![CDATA[>=]]> 3 AND lama_proses <![CDATA[<]]> 7
+		    </isEqual>
+		    <isEqual property="tipe" compareValue="crisis" prepend="AND" removeFirstPrepend="true">
+		        lama_proses <![CDATA[>=]]> 7
+		    </isEqual>
+		</dynamic>
+	</select>
+	
+	<select id="selectListDashboardPrint" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+	    SELECT
+		    *
+		FROM
+		    (SELECT
+		        a.reg_spaj,
+		        to_char(e.tgl_akseptasi_polis,'dd/mm/yyyy hh24:mi:ss') tgl_input,
+		        eka.workdays(e.tgl_akseptasi_polis,a.mspo_date_print) lama_proses
+		    FROM
+		        eka.mst_policy a,
+		        eka.mst_insured b,
+		        eka.mst_product_insured c,
+		        eka.lst_bisnis d,
+		        eka.mst_trans_history e
+		    WHERE
+		        a.reg_spaj = b.reg_spaj
+		        AND b.reg_spaj = c.reg_spaj
+		        AND c.lsbs_id = d.lsbs_id
+		        AND a.reg_spaj = e.reg_spaj
+		        AND a.lstb_id = 1
+		        AND a.lspd_id NOT IN(95,999)
+		        AND c.lsbs_id <![CDATA[<]]> 300
+		        AND e.jenis = 23
+		        AND (c.lsbs_id || c.lsdbs_number) NOT IN ('1422','1586')
+		        AND e.tgl_akseptasi_polis IS NOT NULL
+		        AND a.mspo_date_print IS NULL
+		        AND e.tgl_akseptasi_polis BETWEEN TO_DATE('01/' || TO_CHAR(SYSDATE,'MM/YYYY'),'DD/MM/YYYY') AND TRUNC(SYSDATE)
+		        AND (c.lsbs_id || '-' || c.lsdbs_number) not in ('142-2','158-6','188-2','164-11','175-2','73-12','73-13','73-14'))
+		<dynamic prepend="WHERE">
+		    <isEqual property="tipe" compareValue="warning" prepend="AND" removeFirstPrepend="true">
+		        lama_proses <![CDATA[>=]]> 6 AND lama_proses <![CDATA[<]]> 7
+		    </isEqual>
+		    <isEqual property="tipe" compareValue="crisis" prepend="AND" removeFirstPrepend="true">
+		        lama_proses <![CDATA[>=]]> 7
+		    </isEqual>
+		</dynamic>
+	</select>
+	
+</sqlMap>

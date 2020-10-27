@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<cacheModel id="elions.rekruitment.cache.references" type="LRU" readOnly="true"
+		serialize="false">
+		<flushInterval hours="8" />
+		<property name="cache-size" value="100" />
+		<flushOnExecute statement="elions.common.resetIbatisCache"/>
+		<!-- <flushOnExecute statement="insert.history"/> -->
+	</cacheModel>
+	
+	<select id="elions.rekruitment.cek_rekrut" parameterClass="java.util.HashMap" resultClass="int">
+	<!--SELECT COUNT(*) jumlah
+		FROM EKA.MST_KUESIONER
+		WHERE trim(EKA.MST_KUESIONER.MKU_FIRST)=trim(#nama#)  AND
+		to_char(EKA.MST_KUESIONER.MKU_DATE_BIRTH,'YYYYMMDD') =#tgllhr# 
+	-->	
+		SELECT COUNT(*) jumlah  FROM eka.mst_agent  a,
+		eka.mst_client_new b,
+		eka.mst_kuesioner c
+		WHERE 	a.mcl_id=b.mcl_id AND 
+				trim(b.mcl_first )  = trim(  #nama#)   AND
+				to_char (b.mspe_date_birth,'YYYYMMDD') =#tgllhr#  AND 
+				a.msag_active  =1 AND
+				trim(b.mcl_first)=trim(c.mku_first) AND
+				b.mspe_date_birth=c.mku_date_birth 
+		
+	</select>
+	
+	<select id="elions.rekruitment.no_reg" parameterClass="string" resultClass="string">
+		<!-- SELECT MAX(EKA."MST_KUESIONER"."MKU_NO_REG")  max
+		     FROM "EKA"."MST_KUESIONER"  
+		  WHERE substr(EKA."MST_KUESIONER"."MKU_NO_REG",1,6) = #value# -->
+		  select eka.pac_counter.Get_no_reg_Seq(#value#) from dual
+	</select>
+	
+	<select id="elions.rekruitment.selectkuesioner" parameterClass="string"  resultClass="com.ekalife.elions.model.Kuesioner">
+		select 
+			to_char(mku_tgl_transfer_admin,'dd/MM/yyyy') mku_tgl_transfer_admin_str,
+		    to_char(mku_tglkues,'dd/MM/yyyy') mku_tglkues_str,
+		    to_char(mku_tglinput,'dd/MM/yyyy') mku_tglinput_str,
+		    to_char(mku_tglkirim,'dd/MM/yyyy') mku_tglkirim_str,
+		    to_char(mku_tgl_berkas,'dd/MM/yyyy') mku_tgl_berkas_str,
+		    to_char(mku_tglmsk_experusahaan,'dd/MM/yyyy') mku_tglmsk_experusahaan_str,
+		    to_char(mku_tglklr_experusahaan,'dd/MM/yyyy') mku_tglklr_experusahaan_str,
+		    to_char(mku_tglexp_lisensi ,'dd/MM/yyyy')mku_tglexp_lisensi_str,
+    		to_char(mku_date_birth ,'dd/MM/yyyy')mku_date_birth_str,
+    		(select b.nama_dist from eka.lst_jalur_dist b where b.id_dist = a.mku_jenis_cabang ) mku_jenis_cabang_str,
+    		(select lsrg_nama from eka.lst_region where lca_id = (select substr(mku_region,1,2) from dual) and lwk_id = (select substr(mku_region,3,2) from dual) and lsrg_id = (select substr(mku_region,5,2) from dual) ) mku_region_nama,
+			(select decode(lsle_initial, 'AD', 'BP***', 'AM', 'BP**','SM', 'BP*', 'SE', 'FC',lsle_initial) from eka.lst_level_dist b where b.id_dist = a.id_dist and b.lsle_id = a.lsle_id and b.msag_flag_bm = a.msag_flag_bm
+                and b.msag_sbm = a.msag_sbm and b.msag_gws = a.msag_gws and b.msag_mws = a.msag_mws) mku_posisi_agen,
+    		a.* 
+		from eka.mst_kuesioner a
+		where mku_no_reg = #value#
+	</select>
+	
+	<!-- kuesioner -->
+	<select id="elions.rekruitment.select_tertanggung_rekrut" parameterClass="string"  resultClass="com.ekalife.elions.model.KuesionerTanggungan">
+		select * from eka.mst_tanggungan_kuesioner
+		where mku_no_reg=#value#
+	</select>
+	
+	<select id="elions.rekruitment.selectkuesionerBy" parameterClass="java.util.HashMap"  resultClass="java.util.HashMap">
+		select a.*, b.lsrg_nama regional
+		from eka.mst_kuesioner a, eka.lst_region b
+		where 1=1
+		and a.mku_region = b.lca_id||b.lwk_id||b.lsrg_id
+		<isNotNull property="lus_id" prepend=" and ">lus_id = #lus_id#</isNotNull>
+		<isEqual property="posisi" compareValue="1" prepend=" and " >posisi in ('1','3')</isEqual>
+		<isNotNull property="no_reg" prepend=" and " >mku_no_reg like #no_reg#||'%'</isNotNull>
+	</select>
+	
+	
+	
+	
+	<select id="elions.rekruitment.selectdaftarRegKuesioner" resultClass="java.util.HashMap" parameterClass="string" >
+		select mku_no_reg||decode(mku_agent,null,'',' - '||mku_agent) no_reg, mku_no_reg,
+			DECODE(mku_tgl_transfer_admin,NULL,'rgb(255,255,255)',DECODE(MKU_AGENT,NULL,'rgb(255,255,128)','rgb(102,255,51)'))BG
+			from eka.mst_kuesioner 
+		where msag_id=#value#
+	</select>
+	
+	
+	<select id="elions.rekruitment.selectEmailAdmin" resultClass="string" parameterClass="string" >
+		select 
+			  c.lar_email
+		from eka.mst_agent a, eka.lst_region b, eka.lst_addr_region c
+		where a.lca_id = b.lca_id
+		and a.lwk_id = b.lwk_id
+		and a.lsrg_id = b.lsrg_id
+		and b.lar_id = c.lar_id
+		and a.msag_id=#value#
+	</select>
+	
+	<select id="elions.rekruitment.selectAAJICalonKaryawan" parameterClass="java.util.HashMap"  resultClass="java.util.HashMap">
+		select
+		    ktp,
+		    nama,
+		    case
+                when jk=1 then 'Laki-Laki'
+                when jk=2 then 'Perempuan'
+            end jk,
+            alamat,
+            tempat_lahir,
+            tanggal_lahir,
+            dokumen,
+            case
+                when blacklist=1 then 'Tidak bermasalah'
+                when blacklist=2 then 'Bermasalah'
+            end blacklist,
+            case
+                when perusahaan_lama=1 then 'Active'
+                when perusahaan_lama=2 then 'Inactive'
+                when perusahaan_lama=3 then 'Retaker'
+                when perusahaan_lama=4 then 'Tenggarai'
+            end perusahaan_lama,
+            case
+                when status_join=1 then 'Bisa'
+                when status_join=2 then 'Tidak Bisa'
+            end status_join,
+		    lca_id,
+		    tanggal_input,
+    		keterangan
+		from eka.lst_aaji_calon_karyawan
+		where 1=1
+		<isNotEmpty prepend=" AND " property="tglA">tanggal_input BETWEEN #tglA# AND #tglB# </isNotEmpty>
+		<isNotEmpty prepend=" AND " property="ktp">ktp=#ktp#</isNotEmpty>
+	</select>
+	
+	<select id="elions.rekruitment.selectProsesAAJICalonKaryawan" parameterClass="java.util.HashMap"  resultClass="java.util.HashMap">
+		select
+			ktp,
+		    nama,
+		    case
+                when jk=1 then 'Laki-Laki'
+                when jk=2 then 'Perempuan'
+            end jk,
+            alamat,
+            tempat_lahir,
+            tanggal_lahir,
+            dokumen,
+            case
+                when blacklist=1 then 'Tidak bermasalah'
+                when blacklist=2 then 'Bermasalah'
+            end blacklist,
+            case
+                when perusahaan_lama=1 then 'Active'
+                when perusahaan_lama=2 then 'Inactive'
+                when perusahaan_lama=3 then 'Retaker'
+                when perusahaan_lama=4 then 'Tenggarai'
+            end perusahaan_lama,
+            case
+                when status_join=1 then 'Bisa'
+                when status_join=2 then 'Tidak Bisa'
+            end status_join,
+		    lca_id,
+		    tanggal_input,
+    		keterangan 
+		from eka.lst_aaji_calon_karyawan
+		where blacklist is null
+		and perusahaan_lama is null
+		and status_join is null
+	</select>
+	
+	<select id="elions.rekruitment.selectDataTsr" parameterClass="java.util.HashMap"  resultClass="java.util.HashMap">
+		select
+    		 nama, to_char(tgl_awal,'dd/MM/yyyy')tgl_awal,to_char(tgl_akhir,'dd/MM/yyyy')tgl_akhir,nip,
+    		evaluasi,(case when lde_id='49' then 'DMTM' else 'MALLASSURANCE'end )dis,jabatan,jangka,alamat, no_surat_direksi,no_ktp,nama_atasan,jabatan_atasan,no_surat
+	 	from eka.mst_tsr_surat
+ 		where 
+ 		<isEqual property="flag" compareValue="1">
+ 		tgl_kirim between to_date(#bdate#|| ' (00:00:00)', 'dd/mm/yyyy (hh24:mi:ss)') and to_date(#edate# || ' (23:59:59)', 'dd/mm/yyyy (hh24:mi:ss)')
+ 		and lde_id=#dist1#
+ 		</isEqual>
+ 		<isEqual property="flag" compareValue="2">
+ 		nip= rpad(replace(#nip#,'.'),12,' ')
+ 		</isEqual>
+	</select>
+	
+	<select id="elions.rekruitment.selectLstLevelDistRek" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+        SELECT id_dist, lsle_id, msag_flag_bm, msag_sbm, msag_gws, msag_mws
+        FROM eka.lst_level_dist
+        WHERE id_dist = #dist#
+        	AND lsle_initial like #inisial#
+	</select>
+	
+	<select id="elions.rekruitment.selectMstKuesioner_hist" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+        SELECT a.mku_no_reg, a.mkh_date, a.mkh_desc, a.lus_id,
+		    case
+		        when a.posisi = '1' then 'BAS'
+		        when a.posisi = '2' then 'DISTRIBUTION SUPPORT'
+		        when a.posisi = '3' then 'BAS'
+		        when a.posisi = '4' then 'DONE'
+		    END posisi, 
+    		b.lus_full_name nama, c.lde_dept dept
+        FROM eka.mst_kuesioner_hist a, eka.lst_user b, EKA.LST_DEPARTMENT c
+        WHERE mku_no_reg = #mku_no_reg#
+        and a.lus_id = b.lus_id
+ 		and b.lde_id = c.lde_id
+ 		ORDER BY a.mkh_date ASC
+	</select>
+	
+	<select id="elions.rekruitment.selectLstScan" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+        SELECT *
+        FROM eka.lst_scan
+        WHERE 1=1
+        <isNotNull property="dept" prepend=" and ">trim(dept) = trim(#dept#)</isNotNull> 
+        <isNotNull property="id" prepend=" and ">ID = #id#</isNotNull>
+        ORDER by ID ASC
+	</select>
+</sqlMap>

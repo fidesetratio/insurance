@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="asuransi_rider_syariah" pageWidth="533" pageHeight="842" columnWidth="533" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<reportFont name="Tahoma" isDefault="false" fontName="Tahoma" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Tahoma" pdfEncoding="Cp1252" isPdfEmbedded="true"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["37201410828"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT a.mspr_premium, d.lku_symbol, a.mspr_tsi, b.mste_beg_date, b.mste_end_date,
+       a.mspr_end_pay,c.lsbs_id,nvl(g.flag_jenis_peserta,'10') jenis,
+        (case 
+                when c.lsbs_id in (811,819,820,823,825,826,827,830,832,810,837) then 
+                    (case when e.mspo_flag_new != 1 then 
+                        c.lsdbs_name_syariah0
+                    else
+                        c.lsdbs_name_syariah
+                    end)
+                when c.lsbs_id = 811 then
+                    c.lsdbs_name_syariah
+                when c.lsbs_id = 812
+                    then 'SMiLe TPD'
+                when c.lsbs_id = 813
+                    then 'SMiLe CI Syariah'
+                when c.lsbs_id = 810
+                    then 'SMiLe PA Syariah'
+				 when c.lsbs_id = 838
+                    then c.lsdbs_view_syariah
+        else c.lsdbs_name end)lsdbs_name, a.mspr_beg_date, a.mspr_end_date
+  FROM eka.mst_product_insured a, eka.mst_insured b, eka.lst_det_bisnis c, eka.lst_kurs d, eka.mst_policy e, eka.lst_bisnis f,eka.mst_peserta g
+ WHERE a.reg_spaj = b.reg_spaj
+   AND a.reg_spaj = e.reg_spaj
+   AND a.lsbs_id = c.lsbs_id
+   AND a.lsbs_id = f.lsbs_id
+   AND a.lsdbs_number = c.lsdbs_number
+   AND a.reg_spaj = rpad($P{spaj},11,' ')
+   AND a.mste_insured_no = 1
+   AND a.lsbs_id >= 800
+   AND a.lsbs_id < 900
+ 	and a.lsbs_id not in(839)
+   AND a.mspr_active = 1   
+   AND a.lku_id = d.lku_id
+   AND a.reg_Spaj=g.reg_spaj(+)
+   AND a.lsbs_id=g.lsbs_id(+)
+  and  a.lsdbs_number=g.lsdbs_number(+)]]>
+	</queryString>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="MSPR_BEG_DATE" class="java.util.Date"/>
+	<field name="MSPR_END_DATE" class="java.util.Date"/>
+	<field name="MSPR_END_PAY" class="java.util.Date"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="MSPR_TSI" class="java.math.BigDecimal"/>
+	<field name="MSTE_BEG_DATE" class="java.util.Date"/>
+	<field name="MSTE_END_DATE" class="java.util.Date"/>
+	<field name="JENIS" class="java.math.BigDecimal"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<title>
+		<band height="11">
+			<staticText>
+				<reportElement positionType="Float" x="0" y="0" width="145" height="10"/>
+				<textElement verticalAlignment="Bottom">
+					<font reportFont="Tahoma" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<text><![CDATA[Asuransi Tambahan Syariah]]></text>
+			</staticText>
+		</band>
+	</title>
+	<detail>
+		<band height="18">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="0" width="136" height="10"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Tahoma" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["- "+ $F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="175" y="0" width="60" height="10">
+					<printWhenExpression><![CDATA[new Boolean(($F{LSBS_ID}.intValue() != 838 )==true)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font reportFont="Tahoma" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(null, $F{MSPR_TSI})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="234" y="0" width="82" height="10">
+					<printWhenExpression><![CDATA[new Boolean(($F{LSBS_ID}.intValue() != 838 )==true)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Tahoma" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSPR_BEG_DATE})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="308" y="0" width="95" height="10">
+					<printWhenExpression><![CDATA[new Boolean(($F{LSBS_ID}.intValue() != 838 )==true)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Tahoma" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSPR_END_DATE})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="409" y="0" width="82" height="10">
+					<printWhenExpression><![CDATA[new Boolean(($F{LSBS_ID}.intValue() != 838 )==true)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font reportFont="Tahoma" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSPR_END_PAY})]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="155" y="0" width="15" height="10">
+					<printWhenExpression><![CDATA[new Boolean(($F{LSBS_ID}.intValue() != 838 )==true)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font reportFont="Tahoma" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<subreport isUsingCache="true">
+				<reportElement key="rider_med_plus" positionType="Float" x="0" y="10" width="510" height="5">
+					<printWhenExpression><![CDATA[new Boolean(($F{LSBS_ID}.intValue() == 838 )==true)]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="spaj">
+					<subreportParameterExpression><![CDATA[$P{spaj}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="jenis">
+					<subreportParameterExpression><![CDATA[$F{JENIS}.toString()]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("subreport.polis.asuransi_rider_med_plus")+".jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+</jasperReport>

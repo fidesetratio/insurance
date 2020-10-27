@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="pembayaran_bunga" pageWidth="1690" pageHeight="842" columnWidth="1650" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<property name="com.jasperassistant.designer.VGuides.Summary" value="92"/>
+	<property name="com.jasperassistant.designer.HGuides" value="25,118,458,757,846,907,969"/>
+	<parameter name="mpb_flag_bs" class="java.lang.String">
+		<defaultValueExpression><![CDATA["1"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lcb_no" class="java.lang.String">
+		<defaultValueExpression><![CDATA["M10"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="startDate" class="java.lang.String"/>
+	<parameter name="endDate" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT a.reg_spaj, a.mpb_bayar_id, a.mpb_jenis, a.mpb_flag_bs, a.mpb_rekening, d.nama_cabang, g.lsdbs_name, h.mcl_first as pemegang, i.mcl_first as tertanggung, 
+			   a.mpb_up, a.mpb_prm_deposit, a.mpb_bunga, ((case when a.mpb_tambah is null then 0 else a.mpb_tambah end) + a.mpb_jum_bayar) mpb_jum_bayar, 
+			   a.mpb_beg_period, a.mpb_end_period, a.mpb_rate, a.mpb_paid_date,
+			   DECODE (a.mpb_flag_bs,1,'BELUM BAYAR',2,'SUDAH BAYAR') as status,
+			   j.lus_login_name, k.lsbp_nama, l.lku_symbol,  (case when a.mpb_tambah is null then 0 else a.mpb_tambah end) mpb_tambah, l.lku_id
+		  FROM eka.mst_prosave_bayar a,
+		       eka.mst_policy b,
+			   (select * 
+ 							from eka.mst_reff_bii a
+							 where	  level_id=4
+ 							and	  no_urut=(select max(no_urut) from eka.mst_reff_bii where reg_spaj=a.reg_spaj)) c,
+		       eka.lst_cabang_bii d,
+			   eka.mst_insured e,
+			   eka.mst_product_insured f,
+			   eka.lst_det_bisnis g,
+			   eka.mst_client_new h,
+			   eka.mst_client_new i,
+			   eka.lst_user j,
+			   eka.lst_bank_pusat k,
+			   eka.lst_kurs l
+		 WHERE a.reg_spaj = b.reg_spaj
+		   AND b.reg_spaj = c.reg_spaj
+		   AND b.reg_spaj = e.reg_spaj
+		   AND e.reg_spaj = f.reg_spaj
+		   AND b.mspo_policy_holder = h.mcl_id
+		   AND e.mste_insured = i.mcl_id
+		   AND f.lsbs_id = g.lsbs_id
+		   AND f.lsdbs_number = g.lsdbs_number
+		   AND c.lcb_no = d.lcb_no
+		   AND a.lus_id = j.lus_id
+		   AND a.lsbp_id = k.lsbp_id
+		   AND a.lku_id = l.lku_id
+		   AND d.jenis = 3
+		   AND a.mpb_flag_bs = $P{mpb_flag_bs}
+		   AND d.lcb_no = $P{lcb_no}
+		   AND a.mpb_paid_date between $P{startDate} AND $P{endDate}
+		 ORDER BY k.lsbp_nama, l.lku_symbol]]>
+	</queryString>
+	<field name="lku_symbol" class="java.lang.String"/>
+	<field name="lsbp_nama" class="java.lang.String"/>
+	<field name="lsdbs_name" class="java.lang.String"/>
+	<field name="lus_login_name" class="java.lang.String"/>
+	<field name="mpb_bayar_id" class="java.lang.String"/>
+	<field name="mpb_beg_period" class="java.util.Date"/>
+	<field name="mpb_bunga" class="java.lang.Double"/>
+	<field name="mpb_end_period" class="java.util.Date"/>
+	<field name="mpb_flag_bs" class="java.math.BigDecimal"/>
+	<field name="mpb_jenis" class="java.math.BigDecimal"/>
+	<field name="mpb_jum_bayar" class="java.lang.Double"/>
+	<field name="mpb_paid_date" class="java.util.Date"/>
+	<field name="mpb_prm_deposit" class="java.lang.Double"/>
+	<field name="mpb_rate" class="java.lang.Double"/>
+	<field name="mpb_rekening" class="java.lang.String"/>
+	<field name="mpb_tambah" class="java.lang.Double"/>
+	<field name="mpb_up" class="java.lang.Double"/>
+	<field name="nama_cabang" class="java.lang.String"/>
+	<field name="pemegang" class="java.lang.String"/>
+	<field name="reg_spaj" class="java.lang.String"/>
+	<field name="status" class="java.lang.String"/>
+	<field name="tertanggung" class="java.lang.String"/>
+	<field name="lku_id" class="java.lang.String"/>
+	<variable name="tot_jum_bayar" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{lku_symbol}.equals("Rp.") ? $F{mpb_jum_bayar} : new Double(0)]]></variableExpression>
+	</variable>
+	<variable name="tot_premi" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{lku_symbol}.equals("Rp.") ? $F{mpb_prm_deposit} : new Double(0)]]></variableExpression>
+	</variable>
+	<variable name="tot_bunga" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{lku_symbol}.equals("Rp.") ? $F{mpb_bunga} : new Double(0)]]></variableExpression>
+	</variable>
+	<variable name="tot_tambah_bunga" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{lku_symbol}.equals("Rp.") ? $F{mpb_tambah} : new Double(0)]]></variableExpression>
+	</variable>
+	<variable name="tot_jum_bayar_dolar" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{lku_symbol}.equals("Rp.") ? new Double(0) : $F{mpb_jum_bayar}]]></variableExpression>
+	</variable>
+	<variable name="tot_premi_dolar" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{lku_symbol}.equals("Rp.") ? new Double(0) : $F{mpb_prm_deposit}]]></variableExpression>
+	</variable>
+	<variable name="tot_bunga_dolar" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{lku_symbol}.equals("Rp.") ? new Double(0) : $F{mpb_bunga}]]></variableExpression>
+	</variable>
+	<variable name="tot_tambah_bunga_dolar" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{lku_symbol}.equals("Rp.") ? new Double(0) : $F{mpb_tambah}]]></variableExpression>
+	</variable>
+	<group name="Group_1">
+		<groupExpression><![CDATA[$F{lsbp_nama}]]></groupExpression>
+		<groupHeader>
+			<band height="27">
+				<textField>
+					<reportElement x="0" y="4" width="319" height="20"/>
+					<textElement>
+						<font isBold="true" isItalic="true" pdfFontName="Helvetica-BoldOblique"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{lsbp_nama}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<title>
+		<band height="57">
+			<staticText>
+				<reportElement x="0" y="4" width="440" height="20"/>
+				<textElement>
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[REPORT PEMBAYARAN BUNGA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="34" width="76" height="20"/>
+				<textElement/>
+				<text><![CDATA[Tanggal Bayar :]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="77" y="34" width="252" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{startDate}+" s/d " + $P{endDate}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="32">
+			<staticText>
+				<reportElement x="0" y="5" width="25" height="20"/>
+				<textElement/>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="25" y="5" width="93" height="20"/>
+				<textElement/>
+				<text><![CDATA[Nama Cabang]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="118" y="5" width="103" height="20"/>
+				<textElement/>
+				<text><![CDATA[Pemegang]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="221" y="5" width="103" height="20"/>
+				<textElement/>
+				<text><![CDATA[Tertanggung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="324" y="5" width="134" height="20"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Periode]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="510" y="5" width="80" height="20"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Premi ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="590" y="5" width="80" height="20"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Bunga ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="762" y="5" width="80" height="20"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Jumlah Bayar ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="842" y="5" width="61" height="20"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Rate]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="992" y="5" width="653" height="20"/>
+				<textElement/>
+				<text><![CDATA[Keterangan Pemilik Rekening]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="5" width="1645" height="1"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="0" y="27" width="1645" height="1"/>
+				<graphicElement/>
+			</line>
+			<staticText>
+				<reportElement x="458" y="5" width="52" height="20"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Mata Uang]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="903" y="5" width="89" height="20"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Status Bayar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="670" y="5" width="92" height="20"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Tambahan Bunga ]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="23">
+			<textField>
+				<reportElement x="0" y="0" width="25" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{REPORT_COUNT}+"."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="25" y="0" width="93" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nama_cabang}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="118" y="0" width="103" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{pemegang}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="221" y="0" width="103" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{tertanggung}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="324" y="0" width="134" height="20"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[new SimpleDateFormat("dd/MM/yyyy") .format($F{mpb_beg_period}) +" s/d "+new SimpleDateFormat("dd/MM/yyyy") .format($F{mpb_end_period})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="510" y="0" width="80" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($F{mpb_prm_deposit}).doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="590" y="0" width="80" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($F{mpb_bunga}).doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="762" y="0" width="80" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($F{mpb_jum_bayar}).doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="842" y="0" width="61" height="20"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{mpb_rate}+"%"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="992" y="0" width="652" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{mpb_rekening}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="458" y="0" width="52" height="20"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{lku_symbol}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="903" y="0" width="89" height="20"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{status}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="670" y="0" width="92" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($F{mpb_tambah}).doubleValue()))]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="99">
+			<textField>
+				<reportElement x="916" y="71" width="117" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($V{tot_jum_bayar_dolar}).doubleValue()))]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="2" y="3" width="1645" height="1"/>
+				<graphicElement/>
+			</line>
+			<textField>
+				<reportElement x="916" y="7" width="117" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($V{tot_premi_dolar}).doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="916" y="28" width="117" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($V{tot_bunga_dolar}).doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="916" y="49" width="117" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($V{tot_tambah_bunga_dolar}).doubleValue()))]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="820" y="7" width="93" height="20"/>
+				<textElement/>
+				<text><![CDATA[TOTAL PREMI($) :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="817" y="28" width="97" height="20"/>
+				<textElement/>
+				<text><![CDATA[TOTAL BUNGA($) :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="759" y="49" width="155" height="20"/>
+				<textElement/>
+				<text><![CDATA[TOTAL TAMBAHAN BUNGA($) :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="776" y="71" width="139" height="20"/>
+				<textElement/>
+				<text><![CDATA[TOTAL JUMLAH BAYAR($) :]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="457" y="28" width="121" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($V{tot_bunga}).doubleValue()))]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="457" y="7" width="121" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($V{tot_premi}).doubleValue()))]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="351" y="8" width="101" height="20"/>
+				<textElement/>
+				<text><![CDATA[TOTAL PREMI(Rp.) :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="346" y="28" width="105" height="20"/>
+				<textElement/>
+				<text><![CDATA[TOTAL BUNGA(Rp.) :]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="457" y="71" width="121" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($V{tot_jum_bayar}).doubleValue()))]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="305" y="71" width="147" height="20"/>
+				<textElement/>
+				<text><![CDATA[TOTAL JUMLAH BAYAR(Rp.) :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="288" y="49" width="163" height="20"/>
+				<textElement/>
+				<text><![CDATA[TOTAL TAMBAHAN BUNGA(Rp.) :]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="457" y="49" width="121" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit(new BigDecimal(($V{tot_tambah_bunga}).doubleValue()))]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

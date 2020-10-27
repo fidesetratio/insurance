@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="surat_slink_trans_rider" pageWidth="555" pageHeight="842" columnWidth="393" leftMargin="81" rightMargin="81" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="3"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="3"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<reportFont name="Roman" isDefault="false" fontName="Times New Roman" size="9" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["37201002265"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select null mtu_nab, null mtu_unit, 
+       null mtu_tgl_proses, null lji_invest, null lt_id,
+       null mtu_tgl_trans, 0 saldo_awal,
+       b.lsdbs_name mtu_desc,
+       null lji_id,  null mtu_tgl_nab, c.mrs_premi mtu_jumlah,
+       a.reg_spaj, 0 mu_ke, null msl_bdate,
+       0 msl_bunga, 
+       d.lku_symbol, c.lsbs_id, c.lsdbs_number
+from eka.mst_policy a,
+     eka.lst_det_bisnis b,
+     eka.mst_rider_save c,
+     eka.lst_kurs d
+where a.reg_spaj = c.reg_spaj
+and a.reg_spaj = RPAD (REPLACE ($P{spaj}, '.'), 11, ' ')   
+and b.lsbs_id = C.lsbs_id
+and b.lsdbs_number = c.lsdbs_number
+and a.lku_id = d.lku_id]]>
+	</queryString>
+	<field name="LJI_ID" class="java.lang.String"/>
+	<field name="LJI_INVEST" class="java.lang.String"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="LT_ID" class="java.lang.String"/>
+	<field name="MSL_BDATE" class="java.lang.String"/>
+	<field name="MSL_BUNGA" class="java.math.BigDecimal"/>
+	<field name="MTU_DESC" class="java.lang.String"/>
+	<field name="MTU_JUMLAH" class="java.math.BigDecimal"/>
+	<field name="MTU_NAB" class="java.lang.String"/>
+	<field name="MTU_TGL_NAB" class="java.lang.String"/>
+	<field name="MTU_TGL_PROSES" class="java.lang.String"/>
+	<field name="MTU_TGL_TRANS" class="java.lang.String"/>
+	<field name="MTU_UNIT" class="java.lang.String"/>
+	<field name="MU_KE" class="java.math.BigDecimal"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="SALDO_AWAL" class="java.math.BigDecimal"/>
+	<variable name="tot_mtu_jumlah" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{MTU_JUMLAH}]]></variableExpression>
+	</variable>
+	<variable name="tot_msl_bunga" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{MSL_BUNGA}]]></variableExpression>
+	</variable>
+	<variable name="tot_all" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{tot_mtu_jumlah}.add($V{tot_msl_bunga})]]></variableExpression>
+	</variable>
+	<pageHeader>
+		<band height="12">
+			<staticText>
+				<reportElement positionType="Float" x="6" y="1" width="256" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="9" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Biaya Asuransi Tambahan (Rider)]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="11">
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="6" y="0" width="255" height="11"/>
+				<textElement verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MTU_DESC}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="261" y="0" width="123" height="11"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font reportFont="Roman" size="9" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($F{MTU_JUMLAH}) + " "]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

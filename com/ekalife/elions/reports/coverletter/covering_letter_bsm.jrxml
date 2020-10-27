@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="covering_letter_bsm" pageWidth="595" pageHeight="390" orientation="Landscape" columnWidth="575" leftMargin="10" rightMargin="10" topMargin="10" bottomMargin="10" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("yyyyMMdd")).parse("20140225")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("yyyyMMdd")).parse("20140305")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="userlogin" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Andhika"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="lcb_no" class="java.lang.String">
+		<defaultValueExpression><![CDATA["S168"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<queryString>
+		<![CDATA[SELECT (substr(a.mspo_policy_no,1,2)||'.'||substr(a.mspo_policy_no,3,3)||'.'||substr(a.mspo_policy_no,6,4)||'.'||substr(a.mspo_policy_no,10)) mspo_policy_no, a.lus_id, hist.msps_date,
+        mst_client_a.mcl_first nm_pp, mst_client_b.mcl_first nm_tt, eka.f_lsdbs(a.reg_spaj,c.lsbs_id,c.lsdbs_number) as lsbs_name, nvl(upper(f.nama_cabang),'-') nama_cabang,
+        nvl(upper(f.alamat),'-') alamat, nvl(upper(f.nama_head),'-') nama_head, upper(e.nama_reff) nama_reff, h.lus_login_name, 
+        decode((select count(reg_spaj) from eka.mst_position_spaj where reg_spaj = a.reg_spaj and msps_desc like '%(ADA SIMASCARD%'),0,'TIDAK ADA','ADA') as "SIMCARD",
+        decode((select count(reg_spaj) from eka.mst_position_spaj where reg_spaj = a.reg_spaj and msps_desc like '%DAN ADA KARTU%'),0,'TIDAK ADA','ADA') as "ADMED",
+        (select substr(msps_desc, instr(msps_desc, ' PO ')+4, (instr(msps_desc, ')')-(instr(msps_desc, ' PO ')+4))) from eka.mst_position_spaj where reg_spaj = a.reg_spaj and msps_desc like '%(NO. PO %') as "NOPO"
+FROM (SELECT * FROM eka.mst_policy WHERE lstb_id = 1) a,
+        eka.mst_insured b,
+        eka.mst_product_insured c,
+        eka.mst_reff_bii d,
+        eka.lst_reff_bii e,
+        eka.lst_cabang_bii f,
+        (select reg_spaj, max(no_urut) as no_urut
+        from eka.mst_reff_bii group by reg_spaj ) g,
+        eka.lst_user h,
+        eka.lst_bisnis i,
+        eka.mst_client_new mst_client_a,
+        eka.mst_client_new mst_client_b,
+        (select reg_spaj, msps_date from eka.mst_position_spaj
+        where msps_desc like '%POLIS TELAH DIKIRIM KE GA%') hist
+WHERE a.reg_spaj = b.reg_spaj
+        AND a.reg_spaj = c.reg_spaj
+        AND a.reg_spaj = d.reg_spaj
+        AND a.reg_spaj = g.reg_spaj
+		AND a.reg_spaj = hist.reg_spaj
+        AND a.lus_id = h.lus_id
+        AND a.mspo_policy_holder = mst_client_a.mcl_id
+        AND b.mste_insured = mst_client_b.mcl_id
+        AND b.lspd_id >= 6
+        AND b.lspd_id != 95
+        AND b.lssa_id >= 5
+        AND c.lsbs_id = i.lsbs_id
+        AND c.lsbs_id < 300
+        AND d.no_urut = g.no_urut
+        AND d.level_id = 4
+        AND d.reff_id = e.lrb_id
+        AND e.lcb_no = f.lcb_no
+        AND f.jenis = 2
+        AND hist.msps_date BETWEEN $P{tanggalAwal} AND $P{tanggalAkhir}
+		AND f.lcb_no = $P{lcb_no}
+ORDER BY f.nama_cabang, to_char(a.mspo_date_print,'dd/MM/yyyy'), f.nama_head, e.nama_reff]]>
+	</queryString>
+	<field name="ADMED" class="java.lang.String"/>
+	<field name="ALAMAT" class="java.lang.String"/>
+	<field name="LSBS_NAME" class="java.lang.String"/>
+	<field name="LUS_ID" class="java.math.BigDecimal"/>
+	<field name="LUS_LOGIN_NAME" class="java.lang.String"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSPS_DATE" class="java.util.Date"/>
+	<field name="NAMA_CABANG" class="java.lang.String"/>
+	<field name="NAMA_HEAD" class="java.lang.String"/>
+	<field name="NAMA_REFF" class="java.lang.String"/>
+	<field name="NM_PP" class="java.lang.String"/>
+	<field name="NM_TT" class="java.lang.String"/>
+	<field name="NOPO" class="java.lang.String"/>
+	<field name="SIMCARD" class="java.lang.String"/>
+	<group name="Cabang" isStartNewPage="true" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{NAMA_CABANG}]]></groupExpression>
+	</group>
+	<pageHeader>
+		<band height="81">
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="41" width="284" height="12"/>
+				<textElement>
+					<font fontName="Bookman Old Style" size="9" isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["BANK SINARMAS CABANG " + $F{NAMA_CABANG}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="53" width="450" height="14"/>
+				<textElement>
+					<font fontName="Bookman Old Style" size="9" isBold="false" isItalic="true" isUnderline="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ALAMAT}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="28" width="80" height="12" isPrintWhenDetailOverflows="true"/>
+				<textElement>
+					<font fontName="Bookman Old Style" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Kepada Yth. : "]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="67" width="450" height="14"/>
+				<textElement markup="none">
+					<font fontName="Bookman Old Style" size="9" isBold="false" isItalic="false" isUnderline="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["UP : PINCAB/PINCAPEM"]]></textFieldExpression>
+			</textField>
+			<image hyperlinkType="None">
+				<reportElement positionType="Float" x="1" y="1" width="100" height="40"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("images.ttd.ekalife.large")]]></imageExpression>
+			</image>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="25">
+			<staticText>
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="23" y="1" width="70" height="24" backcolor="#FFFFFF"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No. Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="432" y="1" width="48" height="24" backcolor="#FFFFFF"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tgl Kirim
+Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="277" y="1" width="74" height="24" backcolor="#FFFFFF"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Refferal]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="93" y="1" width="92" height="24" backcolor="#FFFFFF"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Pemegang Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="185" y="1" width="92" height="24" backcolor="#FFFFFF"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tertanggung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="1" y="1" width="22" height="24" backcolor="#FFFFFF"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="351" y="1" width="81" height="24" backcolor="#FFFFFF"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Produk]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="480" y="1" width="48" height="24" backcolor="#FFFFFF"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Simas
+Card]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="528" y="1" width="48" height="24" backcolor="#FFFFFF"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Admedika]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="24">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="23" y="0" width="70" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="7" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_POLICY_NO}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="432" y="0" width="48" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="7" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateString($F{MSPS_DATE})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="277" y="0" width="74" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="7" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_REFF}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="93" y="0" width="92" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="7" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NM_PP}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="185" y="0" width="92" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="7" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NM_TT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="1" y="0" width="22" height="24" backcolor="#FFFFFF"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Book Antiqua" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{Cabang_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="351" y="0" width="81" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Book Antiqua" size="7" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="480" y="0" width="48" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Book Antiqua" size="7" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{SIMCARD}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="528" y="0" width="48" height="24"/>
+				<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Book Antiqua" size="7" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ADMED}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="56">
+			<staticText>
+				<reportElement positionType="Float" isPrintRepeatedValues="false" x="240" y="5" width="80" height="13"/>
+				<textElement>
+					<font fontName="Book Antiqua" size="8"/>
+				</textElement>
+				<text><![CDATA[*** End ***]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="5" width="120" height="13"/>
+				<textElement textAlignment="Center">
+					<font fontName="Book Antiqua" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Dikirim oleh : "]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="30" width="120" height="13"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Book Antiqua" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["( " + $P{userlogin} + " )"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="456" y="5" width="120" height="13"/>
+				<textElement textAlignment="Center" markup="none">
+					<font fontName="Book Antiqua" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Diterima oleh : "]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="456" y="30" width="120" height="13"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Book Antiqua" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["(                                                  )"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="456" y="43" width="120" height="13"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Book Antiqua" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Jam : "]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnFooter>
+</jasperReport>

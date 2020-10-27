@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="elions.filing">
+
+<select id="selectSpajOrNoPolis" parameterClass="string" resultClass="com.ekalife.elions.model.Filing">
+	select pol.reg_spaj reg_spaj, pol.lspd_id, pol.mspo_policy_no, ins.mste_beg_date, ins.mste_end_date, dpos.lspd_id,
+	   dpos.lspd_position, pins.lsbs_id, pins.lsdbs_number, eka.f_lsdbs(pins.reg_spaj, pins.lsbs_id, pins.lsdbs_number) lsdbs_name, pp.mcl_first pemegang_polis, 
+	   tt.mcl_first tertanggung, pins.lku_id, kurs.lku_symbol, pins.mspr_tsi, pins.mspr_premium
+	from eka.mst_policy pol,
+		 eka.mst_insured ins,
+		 eka.mst_product_insured pins,
+		 eka.mst_client_new pp,
+		 eka.mst_client_new tt,
+		 eka.lst_document_position dpos,
+		 eka.lst_det_bisnis dbis,
+		 eka.lst_kurs kurs
+	where pol.reg_spaj = ins.reg_spaj
+	  and pol.reg_spaj = pins.reg_spaj
+	  and pol.lspd_id = dpos.lspd_id
+	  and pins.lsbs_id = dbis.lsbs_id
+	  and pins.lsdbs_number = dbis.lsdbs_number
+	  and pol.mspo_policy_holder = pp.mcl_id
+	  and ins.mste_insured = tt.mcl_id
+	  and pins.lku_id = kurs.lku_id
+	  and pins.lsbs_id <![CDATA[<]]>300
+	  and (pol.reg_spaj = RPAD (REPLACE(#reg_spaj#,'.',''), 11, ' ')
+	  	  or pol.mspo_policy_no =#reg_spaj#
+	  	  or pol.mspo_policy_no_format = #reg_spaj#
+	  	  )
+</select>
+
+<select id="selectFilterSPAJInFilling" parameterClass="string" resultClass="com.ekalife.elions.model.Filing">
+	select pol.reg_spaj, pol.mspo_policy_no, bun.kd_box, bun.kd_bundle, bun.tgl_created
+	from filing.mbox box,
+		 filing.mbundle bun,
+		 filing.mfile fil,
+		 eka.mst_policy pol,
+		 eka.mst_insured ins
+	where box.kd_box = bun.kd_box
+	  and box.kd_box = fil.kd_box
+	  and bun.kd_bundle = fil.kd_bundle
+	  and fil.noref_file = pol.mspo_policy_no
+	  and pol.reg_spaj = ins.reg_spaj
+	  and ins.lssa_id = 5
+	  and (pol.reg_spaj = RPAD (REPLACE(#reg_spaj#,'.',''), 11, ' ')
+	  	  or pol.mspo_policy_no =#reg_spaj#
+	  	  or pol.mspo_policy_no_format = #reg_spaj#
+	  	  )
+</select>
+
+<select id="selectNoBoxFromMBox" parameterClass="int" resultClass="id.co.sinarmaslife.std.model.vo.DropDown">
+	select kd_box as key, kd_box as value
+	from filing.mbox box,
+		 eka.lst_det_department dept
+	where box.kd_lantai = dept.kd_lantai
+	  and box.kd_blok = dept.kd_blok
+	  and box.kd_lajur = dept.kd_lajur
+	  and box.kd_level = dept.kd_level
+	  and dept.lde_id = #lde_id#
+	  and max_file <![CDATA[>]]> (select count(kd_file) 
+	  	  		   	  from filing.mfile filing
+					  where filing.kd_box = box.kd_box)
+</select>
+
+<select id="selectCountSpajAfterAcceptInFilling" parameterClass="string" resultClass="int">
+	select count(reg_spaj)
+	from eka.mst_policy
+	where lspd_id>6
+	  and lspd_id <![CDATA[<>]]>95
+	  and (reg_spaj = RPAD (REPLACE(#reg_spaj#,'.',''), 11, ' ')
+	  	  or mspo_policy_no =#reg_spaj#
+	  	  or mspo_policy_no_format = #reg_spaj#
+	  	  )
+</select>
+
+<select id="selectCountBundleFilling" parameterClass="string" resultClass="int">
+	select count(kd_bundle)
+	from filing.mbundle
+	where kd_box = #kd_box#
+</select>
+
+</sqlMap>

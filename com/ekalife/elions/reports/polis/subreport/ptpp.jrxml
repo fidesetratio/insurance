@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ptpp" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.DataSource" value="EkaTest"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.Grid" value="true"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["32200700237"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select
+	   lku_symbol, (case when e.lsbs_id in (74, 76) and b.lscb_id<>3 then decode(b.lscb_id,1,e.mspr_premium/0.27,2,e.mspr_premium/0.525,e.mspr_premium) else null end) ptpp
+from
+eka.mst_policy b, 
+(SELECT * FROM eka.mst_product_insured WHERE mspr_active = 1 AND lsbs_id < 800) e,
+eka.lst_kurs h
+where b.reg_spaj=rpad($P{spaj},11,' ') and b.reg_spaj=e.reg_spaj and b.lku_id = h.lku_id]]>
+	</queryString>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="PTPP" class="java.math.BigDecimal"/>
+	<detail>
+		<band height="11">
+			<printWhenExpression><![CDATA[new Boolean($F{PTPP}!=null)]]></printWhenExpression>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="0" width="115" height="11">
+					<printWhenExpression><![CDATA[new Boolean($F{PTPP}!=null)]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Tahoma" size="9"/>
+				</textElement>
+				<text><![CDATA[Premi Tahunan Plan Pokok]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="116" y="0" width="5" height="11">
+					<printWhenExpression><![CDATA[new Boolean($F{PTPP}!=null)]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Tahoma" size="9"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement positionType="Float" x="125" y="0" width="360" height="11">
+					<printWhenExpression><![CDATA[new Boolean($F{PTPP}!=null)]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Tahoma" size="9" isBold="true" pdfFontName="Tahoma-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_SYMBOL}+" ", $F{PTPP})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

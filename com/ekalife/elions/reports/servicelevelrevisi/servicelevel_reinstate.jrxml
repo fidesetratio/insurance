@@ -1,0 +1,783 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="servicelevel_reinstate" pageWidth="1640" pageHeight="803" orientation="Landscape" columnWidth="1620" leftMargin="10" rightMargin="10" topMargin="20" bottomMargin="20" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="3"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="3"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<parameter name="props" class="java.lang.String"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("01/11/2008")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="user_id" class="java.lang.String"/>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("28/11/2008")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT   *
+    FROM (	SELECT /*+ first_rows */
+                 (CASE
+                     WHEN pol.lca_id = '09' THEN 'Bancassurance'
+                     WHEN pol.lca_id IN ('08', '42') THEN 'Worksite'
+                     ELSE 'Agency Regional'
+                  END
+                 ) dist,
+                 pol.reg_spaj, det_bisnis.lsdbs_name, pol.mspo_policy_no_format,
+                 rein.msrt_umur_policy_hld pp_umur, pp.mcl_first pp_nama,
+                 rein.msrt_umur_insured tt_umur, tt.mcl_first tt_nama,
+                 prod.mspr_premium, rein.msrt_tsi, kurs.lku_symbol,
+                 ceil((msur_awal_prm_upaid - mste_beg_date)/360) usia_polis, msur_awal_prm_upaid, round((msrt_tanggal_aju - msur_awal_prm_upaid)/30, 1) lama_lapse,
+                 decode(rein.msrt_check_medis, 1, 'M', 'NM') mste_medical, rein.msrt_tanggal_aju, trs.tgl_berkas_uw,
+                 trs.tgl_berkas_lengkap_uw, trs.tgl_berkas_dr_uw, trs.tgl_berkas_kirim_uw,
+                 /*nvl(round(nvl(trs.tgl_berkas_kirim_uw, trs.tgl_berkas_dr_uw) - trunc(trs.tgl_berkas_lengkap_uw)),0)
+                 NVL
+                    (ROUND
+                          (  DECODE
+                                   (trs.tgl_berkas_dr_uw,
+                                    NULL, trs.tgl_berkas_dr_uw,
+                                    TO_DATE (   TO_CHAR (trs.tgl_berkas_dr_uw,
+                                                         'dd/mm/yyyy'
+                                                        )
+                                             || ' 23:59:59',
+                                             'dd/mm/yyyy hh24:mi:ss'
+                                            )
+                                   )
+                           - trs.tgl_berkas_lengkap_uw
+                          ),
+                     0
+                    )*/
+  				 /*nvl(trunc(trs.tgl_berkas_dr_uw) - trunc(nvl(trs.tgl_berkas_lengkap_uw, trs.tgl_berkas_kirim_uw)), 0) lama_proses,*/
+                 nvl(trunc(trs.tgl_berkas_kirim_uw) - trunc(trs.tgl_berkas_lengkap_uw), 0) lama_proses,
+                 trs.user_note keterangan, sysdate,
+				 msur_kondisi_note, msur_kondisi_polis, pol.mspo_pay_period
+            FROM eka.mst_policy pol,
+                 eka.mst_insured ins,
+                 eka.mst_product_insured prod,
+                 eka.mst_reinstate rein,
+                 eka.mst_client_new pp,
+                 eka.mst_client_new tt,
+                 eka.mst_trans_history trs,
+                 eka.lst_kurs kurs,
+                 eka.lst_bisnis bis,
+				 eka.mst_uw_reinstate uwr,
+				 eka.lst_det_bisnis det_bisnis
+           WHERE pol.reg_spaj = ins.reg_spaj
+             AND ins.mste_insured_no = prod.mste_insured_no
+             AND ins.reg_spaj = prod.reg_spaj
+             AND prod.lsbs_id < 300
+             AND pol.reg_spaj = rein.reg_spaj
+             AND pol.mspo_policy_holder = pp.mcl_id
+             AND ins.mste_insured = tt.mcl_id
+             AND rein.reg_spaj = trs.reg_spaj
+             AND trs.jenis = 4
+             AND TRIM (rein.msrt_reinstate_no) = TRIM (trs.trans_no)
+             AND (trs.tgl_berkas_uw BETWEEN $P{tanggalAwal} AND$P{tanggalAkhir})
+             AND rein.lku_id = kurs.lku_id
+             AND prod.lsbs_id = bis.lsbs_id
+			 AND rein.msrt_reinstate_no = uwr.msrt_reinstate_no
+			 AND prod.lsbs_id = det_bisnis.lsbs_id
+			 AND prod.lsdbs_number = det_bisnis.lsdbs_number
+			 )
+ORDER BY 1, 2]]>
+	</queryString>
+	<field name="DIST" class="java.lang.String"/>
+	<field name="MSPO_POLICY_NO_FORMAT" class="java.lang.String"/>
+	<field name="PP_NAMA" class="java.lang.String"/>
+	<field name="PP_UMUR" class="java.math.BigDecimal"/>
+	<field name="TT_NAMA" class="java.lang.String"/>
+	<field name="TT_UMUR" class="java.math.BigDecimal"/>
+	<field name="MSRT_TSI" class="java.math.BigDecimal"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="USIA_POLIS" class="java.lang.Integer"/>
+	<field name="MSUR_AWAL_PRM_UPAID" class="java.sql.Timestamp"/>
+	<field name="LAMA_LAPSE" class="java.math.BigDecimal"/>
+	<field name="MSTE_MEDICAL" class="java.lang.String"/>
+	<field name="MSRT_TANGGAL_AJU" class="java.sql.Timestamp"/>
+	<field name="TGL_BERKAS_UW" class="java.sql.Timestamp"/>
+	<field name="TGL_BERKAS_LENGKAP_UW" class="java.sql.Timestamp"/>
+	<field name="TGL_BERKAS_DR_UW" class="java.sql.Timestamp"/>
+	<field name="LAMA_PROSES" class="java.lang.Integer"/>
+	<field name="KETERANGAN" class="java.lang.String"/>
+	<field name="SYSDATE" class="java.sql.Timestamp"/>
+	<field name="MSUR_KONDISI_NOTE" class="java.lang.String"/>
+	<field name="MSUR_KONDISI_POLIS" class="java.math.BigDecimal"/>
+	<field name="MSPO_PAY_PERIOD" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="TGL_BERKAS_KIRIM_UW" class="java.sql.Timestamp"/>
+	<variable name="warna" class="java.lang.String">
+		<variableExpression><![CDATA["0"
+/* $F{LAMA_PROSES} != null ? ($F{LAMA_PROSES}.intValue() > 1 ? "1" : "0" ) : "0" */]]></variableExpression>
+	</variable>
+	<variable name="nomor" class="java.lang.Integer" resetType="Group" resetGroup="dist" calculation="Count">
+		<variableExpression><![CDATA[$F{MSPO_POLICY_NO_FORMAT}]]></variableExpression>
+	</variable>
+	<group name="dist" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{DIST}]]></groupExpression>
+		<groupHeader>
+			<band height="13">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="0" y="0" width="405" height="13" isPrintWhenDetailOverflows="true" forecolor="#000000"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Arial" size="9" isItalic="true" isUnderline="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{DIST}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<title>
+		<band height="25">
+			<staticText>
+				<reportElement x="0" y="4" width="1618" height="17"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[REPORT REINSTATE - INDIVIDU UNDERWRITING (ALL DISTRIBUTION)]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="44">
+			<staticText>
+				<reportElement x="0" y="0" width="136" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PERIODE]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="141" y="0" width="493" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAwal}) + " s/d " + $P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAkhir}) + " (Tanggal Terima Reinstate) "]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="12" width="136" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SERVICE LEVEL]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="141" y="12" width="493" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[1 Hari]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="141" y="24" width="493" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jumlah hari kerja sejak berkas reinstate diterima lengkap s/d berkas dikirim kembali ke Life Benefit]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="39" width="1620" height="2"/>
+				<graphicElement/>
+			</line>
+			<staticText>
+				<reportElement x="135" y="0" width="4" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="135" y="12" width="4" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="24" width="136" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[LAMA PROSES REINSTATE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="135" y="24" width="4" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="40">
+			<staticText>
+				<reportElement x="0" y="0" width="24" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="24" y="0" width="85" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO. POLIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="630" y="0" width="87" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[UP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1047" y="0" width="81" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TANGGAL
+TERIMA DARI LB
+(A)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1215" y="0" width="87" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TANGGAL
+KIRIM KE LB
+(C)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1128" y="0" width="87" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TANGGAL
+BERKAS LENGKAP
+(B)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1302" y="0" width="87" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[LAMA PROSES
+(HARI)
+(C - B)]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="39" width="1620" height="1"/>
+				<graphicElement/>
+			</line>
+			<staticText>
+				<reportElement x="1467" y="0" width="150" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[KETERANGAN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="282" y="0" width="150" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PEMEGANG POLIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="456" y="0" width="150" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TERTANGGUNG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="717" y="0" width="52" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[USIA
+POLIS
+(th)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="768" y="0" width="72" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TANGGAL
+LAPSE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="840" y="0" width="72" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[LAMA LAPSE
+(bln)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="912" y="0" width="54" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[M / NM]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="966" y="0" width="81" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TANGGAL
+REINSTATE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="108" y="0" width="150" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PRODUK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="258" y="0" width="25" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[MPP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="432" y="0" width="25" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[USIA
+(th)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="606" y="0" width="25" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[USIA
+(th)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1389" y="0" width="79" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[KEPUTUSAN
+U/W]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="13">
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yy (HH:mm)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1215" y="0" width="87" height="13" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{TGL_BERKAS_KIRIM_UW}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yy (HH:mm)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1215" y="0" width="87" height="13" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{TGL_BERKAS_KIRIM_UW}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1302" y="0" width="87" height="13" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{LAMA_PROSES}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1467" y="0" width="150" height="13">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSUR_KONDISI_NOTE} != null ? 
+	($F{MSUR_KONDISI_NOTE}.equals("Condition note") ? $F{KETERANGAN} : $F{MSUR_KONDISI_NOTE}) 
+: $F{KETERANGAN}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1467" y="0" width="150" height="13" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSUR_KONDISI_NOTE} != null ? 
+	($F{MSUR_KONDISI_NOTE}.equals("Condition note") ? $F{KETERANGAN} : $F{MSUR_KONDISI_NOTE}) 
+: $F{KETERANGAN}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1389" y="0" width="79" height="13">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSUR_KONDISI_POLIS}.intValue() == 1 ? "SUBSTANDARD" : "STANDARD"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="606" y="0" width="25" height="13" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT_UMUR}.toString()]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="456" y="0" width="150" height="13" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="432" y="0" width="25" height="13" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_UMUR}.toString()]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="258" y="0" width="25" height="13" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<box border="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_PAY_PERIOD}.toString()]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="282" y="0" width="150" height="13" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="258" y="0" width="25" height="13" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_PAY_PERIOD}.toString()]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="282" y="0" width="150" height="13" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1302" y="0" width="87" height="13" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{LAMA_PROSES}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="717" y="0" width="52" height="13" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{USIA_POLIS}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="840" y="0" width="72" height="13" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{LAMA_LAPSE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yy (HH:mm)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1128" y="0" width="87" height="13" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{TGL_BERKAS_LENGKAP_UW}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yy (HH:mm)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1047" y="0" width="81" height="13" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{TGL_BERKAS_UW}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yy" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="966" y="0" width="81" height="13" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSRT_TANGGAL_AJU}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yy" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="768" y="0" width="72" height="13" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSUR_AWAL_PRM_UPAID}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yy" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="966" y="0" width="81" height="13" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSRT_TANGGAL_AJU}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yy" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="768" y="0" width="72" height="13" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSUR_AWAL_PRM_UPAID}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="912" y="0" width="54" height="13" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSTE_MEDICAL}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="456" y="0" width="150" height="13" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="24" y="0" width="85" height="13" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_POLICY_NO_FORMAT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="24" y="0" width="85" height="13" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_POLICY_NO_FORMAT}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="630" y="0" width="87" height="13" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_SYMBOL}, $F{MSRT_TSI})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="630" y="0" width="87" height="13" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency($F{LKU_SYMBOL}, $F{MSRT_TSI})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yy (HH:mm)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1047" y="0" width="81" height="13" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{TGL_BERKAS_UW}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement x="0" y="0" width="24" height="13">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{nomor}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement x="0" y="0" width="24" height="13" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{nomor}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="912" y="0" width="54" height="13" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSTE_MEDICAL}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yy (HH:mm)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1128" y="0" width="87" height="13" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{TGL_BERKAS_LENGKAP_UW}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="840" y="0" width="72" height="13" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{LAMA_LAPSE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="717" y="0" width="52" height="13" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{USIA_POLIS}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="108" y="0" width="150" height="13" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<box border="None"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="108" y="0" width="150" height="13" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="432" y="0" width="25" height="13" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("0"))]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PP_UMUR}.toString()]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="606" y="0" width="25" height="13" isPrintWhenDetailOverflows="true" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TT_UMUR}.toString()]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="1389" y="0" width="79" height="13" forecolor="#FF0000">
+					<printWhenExpression><![CDATA[new Boolean($V{warna}.equals("1"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSUR_KONDISI_POLIS}.intValue() == 1 ? "SUBSTANDARD" : "STANDARD"]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<lastPageFooter>
+		<band height="16">
+			<textField hyperlinkType="None">
+				<reportElement x="6" y="2" width="749" height="14"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Printed date : "+$P{REPORT_SCRIPTLET}.formatDateWithTime(new Date()) +"  by User :  "+$P{user_id}]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="46">
+			<subreport>
+				<reportElement x="5" y="10" width="845" height="20"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_reinstate")+".jasper"]]></subreportExpression>
+			</subreport>
+			<line>
+				<reportElement x="0" y="5" width="1620" height="1"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</summary>
+</jasperReport>

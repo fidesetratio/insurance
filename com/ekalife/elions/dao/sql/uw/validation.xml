@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<select id="elions.uw.validationOtorisasiSekuritas" parameterClass="int" resultClass="string">
+		SELECT eka.decrypt (lus_password)
+		  FROM eka.lst_user
+		 WHERE lus_id = #value#
+	</select>
+
+	<!-- Cek apakah polis tersebut merupakan polis cerdas, dan goldlink -->
+	<select id="elions.uw.validationCerdas" parameterClass="java.util.HashMap" resultClass="int">
+		SELECT COUNT (*)
+		  FROM eka.mst_policy a, eka.mst_nasabah b
+		 WHERE a.reg_spaj = rpad(replace(#spaj#,'.'),11,' ')
+		   AND a.mspo_plan_provider = b.mns_kd_nasabah
+		   AND b.jn_nasabah = #jn_nasabah#
+	</select>
+
+	<!-- Cek ada top up atau tidak -->
+	<select id="elions.uw.validationTopup" resultClass="int" parameterClass="string">
+		SELECT mu_periodic_tu
+		  FROM eka.mst_ulink
+		 WHERE reg_spaj = rpad(replace(#value#,'.'),11,' ') AND mu_ke = 1
+	</select>
+	
+	<!-- Cek ada top up stablelink atau tidak -->
+	<select id="elions.uw.validationStableLink" resultClass="int" parameterClass="string">
+		SELECT msl_no
+		  FROM eka.mst_slink
+		 WHERE reg_spaj = rpad(replace(#value#,'.'),11,' ') AND msl_no=2
+		 AND msl_new = 1
+	</select>
+	
+	<!-- Cek ada top up ketiga ada apa gak -->
+	<select id="elions.uw.validationTopup3" resultClass="date" parameterClass="string">
+		select msbi_beg_date
+		from eka.mst_billing
+		where reg_spaj = rpad(replace(#value#,'.'),11,' ')
+		and msbi_premi_ke = 3
+		and msbi_beg_date = (select msbi_beg_date from eka.mst_billing where reg_spaj = rpad(replace(#value#,'.'),11,' ') and msbi_premi_ke = 1)
+	</select>
+	
+	<!-- Cek Posisi Dokumen SPAJ -->
+	<select id="elions.uw.validationPositionSPAJ" resultClass="int" parameterClass="string">
+		SELECT a.lspd_id
+		  FROM eka.mst_policy a, eka.lst_document_position b
+		 WHERE a.reg_spaj = rpad(replace(#value#,'.'),11,' ') AND a.lspd_id = b.lspd_id	
+	</select>
+	
+	<select id="elions.uw.validationTglKirim" resultClass="date" parameterClass="string">
+		select mste_tgl_kirim_polis
+		from eka.mst_insured
+		WHERE reg_spaj = rpad(replace(#value#,'.'),11,' ')
+	</select>
+	
+	<resultMap id="result.mst_position_spaj" class="java.util.HashMap">
+		<result property="LSPD_POSITION" column="LSPD_POSITION" javaType="string" jdbcType="VARCHAR2" nullValue=""/>                                                                                                                                    
+		<result property="LSPD_ID" column="LSPD_ID" javaType="int" jdbcType="NUMBER" />                                                                                                                                                                 
+	</resultMap>
+
+	<!-- Cek apakah polis ini sudah boleh dicetak di cabang -->	
+	<select id="elions.uw.validationPrintPolisCabang" resultClass="date" parameterClass="string">
+		select mste_tgl_valid_print from eka.mst_insured where reg_spaj = rpad(replace(#value#,'.'),11,' ')
+	</select>
+	
+	<!-- Cek posisi dokumen polis -->
+	<select id="elions.uw.F_check_posisi" resultMap="result.mst_position_spaj" parameterClass="string">
+		SELECT a.lspd_id,
+			   b.lspd_position
+		  FROM eka.mst_policy a, eka.lst_document_position b
+		 WHERE a.reg_spaj = rpad(replace(#spaj#,'.'),11,' ') AND a.lspd_id = b.lspd_id	
+	</select>
+
+	<!-- Cek apakah payment topup already paid-->
+	<select id="elions.uw.validationAlreadyPaid" resultClass="int" parameterClass="java.util.HashMap">
+		SELECT msbi_paid
+		  FROM eka.mst_billing
+		 WHERE reg_spaj = rpad(replace(#spaj#,'.'),11,' ') AND msbi_tahun_ke = #tahun# AND msbi_premi_ke = #premi#
+	</select>
+	
+	<!-- Cek apakah pembayaran ini merupakan pembayaran untuk titipan premi pertama -->
+	<select id="elions.uw.validationIsTitipanPremi" resultClass="int" parameterClass="string">
+		select msdp_number from eka.mst_payment where mspa_payment_id = #value#
+	</select>
+	
+	<!-- Cek apakah ada currency untuk hari ini -->
+	<select id="elions.uw.validationDailyCurrency" resultClass="int" parameterClass="java.util.HashMap">
+		select count(*) from eka.lst_daily_currency where lku_id=#lku_id# and to_char(lkh_date,'yyyymmdd') = to_char(#rk_date#,'yyyymmdd')
+	</select>
+
+	<!-- Verify passwords -->
+	<select id="elions.uw.validationVerify" resultClass="java.util.HashMap" parameterClass="int">
+		select lv_id, lv_desc, eka.decrypt(lv_password) password from eka.lst_verify where lv_id = #value#
+	</select>
+
+	<!-- Cek apakah NAB sudah diproses -->
+	<select id="elions.uw.validationNAB" resultClass="int" parameterClass="string">
+		SELECT COUNT (*)
+		  FROM eka.mst_trans_ulink
+		 WHERE reg_spaj = rpad(replace(#value#,'.'),11,' ')
+		   AND MTU_TGL_NAB IS NULL AND lt_id <![CDATA[<>]]> 7
+		   AND mtu_tgl_trans = (select mtu_tgl_trans from eka.mst_trans_ulink where reg_spaj = rpad(replace(#value#,'.'),11,' ') and mu_ke=1 and mtu_ke=1)
+	</select>
+
+	<!-- Cek apakah ORIGINAL / SPECIMENT polis sudah pernah dicetak -->
+	<select id="elions.uw.validationPrintPolis" resultClass="java.util.HashMap" parameterClass="string">
+		SELECT mspo_date_print ori, mspo_date_spec spec, mste_tgl_kirim_polis
+		  FROM eka.mst_policy a, eka.mst_insured b
+		 WHERE a.reg_spaj = rpad(replace(#value#,'.'),11,' ') and a.reg_spaj = b.reg_spaj
+	</select>
+	
+	<!--Cek Status Polis  -->
+	<select id="elions.uw.validationStatusPolis" resultClass="java.util.HashMap" parameterClass="java.util.HashMap">
+		SELECT LSSA_ID, MSTE_REAS
+			FROM   EKA.MST_INSURED  
+			WHERE  ( EKA.MST_INSURED.REG_SPAJ = #reg_spaj# ) AND  
+					 ( EKA.MST_INSURED.MSTE_INSURED_NO = #mste_insured_no# )   
+	</select>
+	
+	<!-- Cek apakah dana investasi mencukupi -->
+	<select id="elions.uw.validationDanaInvestasiMencukupi" resultClass="java.math.BigDecimal" parameterClass="java.lang.String">
+	    select
+		    (premi - biaya) selisih
+		from
+		    (select
+		        a.reg_spaj,
+		        (select sum(nvl(mu_jlh_premi,0)) from eka.mst_ulink where reg_spaj = a.reg_spaj) premi,
+		        (select sum(nvl(mbu_jumlah,0)) from eka.mst_biaya_ulink where reg_spaj = a.reg_spaj and ljb_id != 99) biaya
+		    from
+		        eka.mst_policy a
+		    where
+		        a.reg_spaj = #reg_spaj#)
+	</select>
+	
+</sqlMap>

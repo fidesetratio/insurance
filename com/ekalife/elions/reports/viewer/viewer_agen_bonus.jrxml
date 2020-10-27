@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="viewer_agen_bonus" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="id" class="java.lang.String"/>
+	<parameter name="tgl1" class="java.lang.String"/>
+	<parameter name="tgl2" class="java.lang.String"/>
+	<parameter name="tanggal1" class="java.lang.String"/>
+	<parameter name="tanggal2" class="java.lang.String"/>
+	<parameter name="kode_agen" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT   "EKA"."MST_AGENT_BONUS"."MSAG_ID",   
+         "EKA"."MST_AGENT_BONUS"."MSAB_JLH_BONUS",   
+         "EKA"."MST_AGENT_BONUS"."MSAB_TAX",   
+         "EKA"."MST_AGENT_BONUS"."MSAB_TTL_DPLK",   
+         "EKA"."MST_AGENT_BONUS"."MSAB_PAY_DATE" ,
+         "EKA"."LST_TYPE_BONUS"."LSTBO_TYPE" ,
+         "EKA"."MST_CLIENT_NEW"."MCL_FIRST",
+         "EKA"."MST_AGENT_BONUS"."MSAB_TGL"
+ FROM    "EKA"."MST_AGENT_BONUS" ,
+    	 "EKA"."LST_TYPE_BONUS",
+    	 "EKA"."MST_AGENT",
+    	 "EKA"."MST_CLIENT_NEW",
+    	  "EKA"."LST_USER_ADMIN",   
+         "EKA"."LST_ADDR_REGION",   
+         "EKA"."LST_REGION"
+ WHERE   ("EKA"."MST_AGENT"."MSAG_ID" = "EKA"."MST_AGENT_BONUS"."MSAG_ID" ) AND
+ 	  ("EKA"."MST_AGENT"."MCL_ID" = "EKA"."MST_CLIENT_NEW"."MCL_ID" )AND
+ 	 ("EKA"."MST_AGENT_BONUS"."LSTBO_ID" = "EKA"."LST_TYPE_BONUS"."LSTBO_ID") AND
+ 	 ("EKA"."MST_AGENT_BONUS"."MSAB_PAY_DATE" is not null ) and 
+         ("EKA"."MST_AGENT_BONUS"."LSTB_ID" = 1 ) and
+ 	 ("EKA"."MST_AGENT_BONUS"."MSAG_ID" = $P{kode_agen}) and 
+ 	 ( to_char(EKA."MST_AGENT_BONUS"."MSAB_PAY_DATE",'yyyymmdd') between $P{tgl1} and $P{tgl2}) AND  
+          ( "EKA"."LST_USER_ADMIN"."LAR_ID" = "EKA"."LST_ADDR_REGION"."LAR_ID" ) and  
+         ( "EKA"."LST_REGION"."LAR_ID" = "EKA"."LST_ADDR_REGION"."LAR_ID" ) and  
+         ( "EKA"."LST_REGION"."LCA_ID" = "EKA"."MST_AGENT"."LCA_ID" ) and  
+         ( "EKA"."LST_REGION"."LWK_ID" = "EKA"."MST_AGENT"."LWK_ID" ) and  
+         ( "EKA"."LST_REGION"."LSRG_ID" = "EKA"."MST_AGENT"."LSRG_ID" ) and  
+         ( ( EKA."LST_USER_ADMIN"."LUS_ID" =$P{id}) ) 
+ORDER BY "EKA"."MST_AGENT_BONUS"."MSAG_ID" ASC ,
+	    "EKA"."MST_AGENT_BONUS"."MSAB_PAY_DATE" ASC]]>
+	</queryString>
+	<field name="LSTBO_TYPE" class="java.lang.String"/>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="MSAB_JLH_BONUS" class="java.math.BigDecimal"/>
+	<field name="MSAB_PAY_DATE" class="java.util.Date"/>
+	<field name="MSAB_TAX" class="java.math.BigDecimal"/>
+	<field name="MSAB_TGL" class="java.util.Date"/>
+	<field name="MSAB_TTL_DPLK" class="java.math.BigDecimal"/>
+	<field name="MSAG_ID" class="java.lang.String"/>
+	<variable name="total_bonus" class="java.lang.Double">
+		<variableExpression><![CDATA[new Double($F{MSAB_JLH_BONUS}.doubleValue() + $F{MSAB_TAX}.doubleValue() + $F{MSAB_TTL_DPLK}.doubleValue())]]></variableExpression>
+	</variable>
+	<title>
+		<band height="21">
+			<staticText>
+				<reportElement x="186" y="3" width="422" height="17"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[VIEW BONUS AGEN BERDASARKAN PERIODE TANGGAL BAYAR]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="36">
+			<staticText>
+				<reportElement x="4" y="3" width="163" height="15"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[KODE AGEN / NAMA AGEN :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4" y="21" width="163" height="15"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PERIODE TANGGAL BAYAR :]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="170" y="3" width="209" height="15"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" ( "+$F{MSAG_ID}+" ) " +$F{MCL_FIRST}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="170" y="21" width="209" height="15"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggal1} + " s/d "+$P{tanggal2}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="26">
+			<staticText>
+				<reportElement x="5" y="3" width="131" height="22"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TIPE BONUS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="140" y="3" width="104" height="22" isPrintWhenDetailOverflows="true"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PERIODE PRODUKSI]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="247" y="3" width="114" height="22"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TGL BAYAR]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="364" y="3" width="111" height="22"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TOTAL BONUS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="477" y="3" width="107" height="22"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PAJAK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="587" y="3" width="102" height="22"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TOTAL DPLK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="692" y="3" width="93" height="22"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TOTAL BONUS YANG DIBAYAR]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="17">
+			<textField isBlankWhenNull="true">
+				<reportElement x="5" y="5" width="131" height="12"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSTBO_TYPE}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="247" y="5" width="114" height="12"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSAB_PAY_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="477" y="5" width="107" height="12"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency( "Rp ",$F{MSAB_TAX})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="692" y="5" width="93" height="12"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency( "Rp ",$F{MSAB_JLH_BONUS})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="587" y="5" width="102" height="12"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency( "Rp ",$F{MSAB_TTL_DPLK})]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="140" y="5" width="104" height="12"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{MSAB_TGL}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="364" y="5" width="111" height="12"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency( "Rp ",new BigDecimal($V{total_bonus}.doubleValue()))]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

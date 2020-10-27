@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_followup_billing_sum" pageWidth="350" pageHeight="250" columnWidth="310" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="dataprod"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<parameter name="bdate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["01/12/2016"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="edate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["02/12/2016"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tipe_p" class="java.lang.String"/>
+	<parameter name="status_p" class="java.lang.String"/>
+	<parameter name="prod_p" class="java.lang.String"/>
+	<parameter name="status_q" class="java.lang.String">
+		<defaultValueExpression><![CDATA["1=1"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="prod_q" class="java.lang.String">
+		<defaultValueExpression><![CDATA["1=1"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tipe_q" class="java.lang.String">
+		<defaultValueExpression><![CDATA["(b.MSBI_BEG_DATE BETWEEN TO_DATE('21/12/2016','DD/MM/YYYY') AND TO_DATE('29/12/2016','DD/MM/YYYY'))"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select sum(inforce) inforce, sum(lapse) lapse, sum(lapse)+sum(inforce) jumlah from(
+    SELECT DISTINCT count(a.reg_spaj) inforce, 0 lapse
+        FROM (  SELECT distinct TO_CHAR (b.msbi_beg_date, 'dd/mm/yyyy') msbi_beg_date,
+                       TO_CHAR (b.msbi_end_date, 'dd/mm/yyyy') msbi_end_date,
+                       TO_CHAR (b.msbi_due_date, 'dd/mm/yyyy') msbi_due_date,
+                       a.reg_spaj
+                    FROM eka.mst_followup a,
+                       eka.mst_billing b,
+                       eka.mst_policy c,
+                       eka.lst_followup d,
+                       eka.lst_region e,
+                       eka.lst_user_admin f,
+                       eka.lst_user g,
+                       eka.mst_rmc h,
+                       eka.mst_rmc i,
+                       eka.mst_product_insured j,
+                       eka.lst_cabang k,
+                       eka.LST_det_BISNIS l,
+                       eka.lst_pay_mode m
+                     WHERE a.reg_spaj = b.reg_spaj
+                       AND a.msbi_tahun_ke = b.msbi_tahun_ke
+                       AND a.msbi_premi_ke = b.msbi_premi_ke
+                       AND a.reg_spaj = c.reg_spaj
+                       AND a.lsfu_id = d.lsfu_id
+                       AND c.lca_id = e.lca_id
+                       AND c.lwk_id = e.lwk_id
+                       AND c.lsrg_id = e.lsrg_id
+                       and C.LSCB_ID = M.LSCB_ID
+                       AND e.lar_id = f.lar_id
+                       AND f.lus_id = g.lus_id
+                       AND c.lca_id = k.lca_id
+                       AND (b.MSBI_BEG_DATE BETWEEN TO_DATE('01/10/2016','DD/MM/YYYY') AND TO_DATE('31/10/2016','DD/MM/YYYY'))
+    --                   and (b.MSBI_BEG_DATE between add_months(to_date('01/12/2016','dd/MM/yyyy'),-1) and add_months(to_date('12/12/2016','dd/MM/yyyy'),-1)) 
+                       AND e.aam_id = h.mrmc_id
+                       and C.LSSP_ID = 1
+                       AND e.rad_id = i.mrmc_id
+                       AND a.reg_spaj = j.reg_spaj
+                       and J.LSBS_ID = L.LSBS_ID
+                       and J.lsdbs_number = L.lsdbs_number
+                       AND j.lsbs_id < 300) a
+    union
+    SELECT DISTINCT 0 inforce, count(b.reg_spaj) lapse
+        FROM (  SELECT distinct TO_CHAR (b.msbi_beg_date, 'dd/mm/yyyy') msbi_beg_date,
+                       TO_CHAR (b.msbi_end_date, 'dd/mm/yyyy') msbi_end_date,
+                       TO_CHAR (b.msbi_due_date, 'dd/mm/yyyy') msbi_due_date,
+                       a.reg_spaj
+                    FROM eka.mst_followup a,
+                       eka.mst_billing b,
+                       eka.mst_policy c,
+                       eka.lst_followup d,
+                       eka.lst_region e,
+                       eka.lst_user_admin f,
+                       eka.lst_user g,
+                       eka.mst_rmc h,
+                       eka.mst_rmc i,
+                       eka.mst_product_insured j,
+                       eka.lst_cabang k,
+                       eka.LST_det_BISNIS l,
+                       eka.lst_pay_mode m
+                     WHERE a.reg_spaj = b.reg_spaj
+                       AND a.msbi_tahun_ke = b.msbi_tahun_ke
+                       AND a.msbi_premi_ke = b.msbi_premi_ke
+                       AND a.reg_spaj = c.reg_spaj
+                       AND a.lsfu_id = d.lsfu_id
+                       AND c.lca_id = e.lca_id
+                       AND c.lwk_id = e.lwk_id
+                       AND c.lsrg_id = e.lsrg_id
+                       and C.LSCB_ID = M.LSCB_ID
+                       AND e.lar_id = f.lar_id
+                       AND f.lus_id = g.lus_id
+                       AND c.lca_id = k.lca_id
+                       AND (b.MSBI_BEG_DATE BETWEEN TO_DATE('01/10/2016','DD/MM/YYYY') AND TO_DATE('31/10/2016','DD/MM/YYYY'))
+    --                   and (b.MSBI_BEG_DATE between add_months(to_date('01/12/2016','dd/MM/yyyy'),-1) and add_months(to_date('12/12/2016','dd/MM/yyyy'),-1)) 
+                       AND e.aam_id = h.mrmc_id
+                       and C.LSSP_ID = 14
+                       AND e.rad_id = i.mrmc_id
+                       AND a.reg_spaj = j.reg_spaj
+                       and J.LSBS_ID = L.LSBS_ID
+                       and J.lsdbs_number = L.lsdbs_number
+                       AND j.lsbs_id < 300) b
+)]]>
+	</queryString>
+	<field name="INFORCE" class="java.math.BigDecimal"/>
+	<field name="JUMLAH" class="java.math.BigDecimal"/>
+	<field name="LAPSE" class="java.math.BigDecimal"/>
+	<variable name="no" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[new Integer(1)]]></variableExpression>
+	</variable>
+	<title>
+		<band height="128">
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="20" width="300" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Periode : "+$P{bdate}+" s/d "+$P{edate}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="0" width="300" height="20"/>
+				<textElement>
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Summary Follow Up Billing]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="71" width="73" height="19"/>
+				<box topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font isBold="false" pdfFontName="Helvetica"/>
+				</textElement>
+				<text><![CDATA[All]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="90" width="73" height="19"/>
+				<box topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font isBold="false" pdfFontName="Helvetica"/>
+				</textElement>
+				<text><![CDATA[Inforce]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="109" width="73" height="19"/>
+				<box topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font isBold="false" pdfFontName="Helvetica"/>
+				</textElement>
+				<text><![CDATA[Lapse]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="52" width="73" height="19"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Policy]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="73" y="71" width="73" height="19"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="5">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{JUMLAH}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="73" y="90" width="73" height="19"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="5">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{INFORCE}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="73" y="109" width="73" height="19"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="5">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{LAPSE}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="73" y="52" width="73" height="19"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Summary]]></text>
+			</staticText>
+		</band>
+	</title>
+</jasperReport>

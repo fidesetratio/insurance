@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_daily_aksep" pageWidth="1000" pageHeight="842" columnWidth="960" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.DataSource" value="dataprod"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<parameter name="tanggalAwal" class="java.lang.String">
+		<defaultValueExpression><![CDATA["10/10/2016"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.lang.String">
+		<defaultValueExpression><![CDATA["10/10/2016"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="user" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select distinct no_rek, no_trx, premi, spaj, no_voucher, tgl_print_polis_approved, Tgl_Transfer_to_Speedy_paymnet, username, 
+    abs(eka.workdays(to_date(tgl_print_polis_approved),to_date(Tgl_Transfer_to_Speedy_paymnet))-1) sla from (
+select distinct 
+    B.NOREK_AJS no_Rek,
+    B.NO_TRX No_Trx,
+    a.mspa_payment Premi,
+    A.REG_SPAJ spaj,
+    A.MSPA_NO_VOUCHER No_Voucher,
+    (select to_char(to_date(msps_date,'dd/MM/yyyy')) from eka.mst_position_spaj where upper(MSPS_DESC) = 'APPROVE BY COLLECTION'
+        and reg_spaj = a.reg_spaj and lus_id in (select lus_id from eka.lst_user where lde_id=39 and lus_active=1)) Tgl_print_polis_approved,     
+    (select to_char(to_date(msps_date,'dd/MM/yyyy')) from eka.mst_position_spaj where 
+        (upper(MSPS_DESC)='TRANSFER KE NON-SPEEDY ' or upper(MSPS_DESC)='TRANSFER KE SPEEDY' or upper(MSPS_DESC)='AUTOTRANSFER KE UW SPEEDY')
+        and reg_spaj = a.reg_spaj and msps_date = (select min(msps_date) from eka.mst_position_spaj where reg_spaj = a.reg_spaj and 
+        (upper(MSPS_DESC)='TRANSFER KE NON-SPEEDY ' or upper(MSPS_DESC)='TRANSFER KE SPEEDY' or upper(MSPS_DESC)='AUTOTRANSFER KE UW SPEEDY'))) Tgl_Transfer_to_Speedy_paymnet,    
+    u.lus_login_name username
+from  
+    eka.mst_payment a, 
+    eka.mst_drek_det b, 
+    eka.lst_user u,
+    eka.mst_position_spaj ps,
+    eka.mst_product_insured pi
+where
+        a.mspa_payment_id = (select min(mspa_payment_id) from eka.mst_payment where reg_spaj = a.reg_spaj)
+    and A.MSPA_PAYMENT_ID = B.PAYMENT_ID
+    and A.LUS_ID = u.lus_id
+    and a.mspa_input_date between to_date($P{tanggalAwal},'dd/mm/yyyy') and to_date($P{tanggalAkhir},'dd/mm/yyyy')+1
+    and a.mspa_no_pre = B.NO_PRE
+    and a.reg_spaj = ps.reg_spaj
+    and a.reg_spaj = pi.reg_spaj
+    and pi.lsbs_id < 300
+    and (upper(ps.MSPS_DESC) = 'APPROVE BY COLLECTION')
+    and a.lus_id =$P{user}
+union
+select distinct 
+    B.NOREK_AJS no_Rek,
+    B.NO_TRX No_Trx,
+    a.mspa_payment Premi,
+    A.REG_SPAJ spaj,
+    A.MSPA_NO_VOUCHER No_Voucher,
+    (select to_char(to_date(msps_date,'dd/MM/yyyy')) from eka.mst_position_spaj where upper(MSPS_DESC) = 'TRANSFER KE PRINT POLIS'
+        and reg_spaj = a.reg_spaj and lus_id in (select lus_id from eka.lst_user where lde_id=39 and lus_active=1)) Tgl_print_polis_approved,     
+    (select to_char(to_date(msps_date,'dd/MM/yyyy')) from eka.mst_position_spaj where 
+        (upper(MSPS_DESC) = 'TRANSFER DARI U/W KE PAYMENT' or upper(MSPS_DESC)='TRANSFER KE NON-SPEEDY ' or 
+            upper(MSPS_DESC)='TRANSFER KE SPEEDY' or upper(MSPS_DESC)='AUTOTRANSFER KE UW SPEEDY')
+        and reg_spaj = a.reg_spaj and msps_date = (select min(msps_date) from eka.mst_position_spaj where reg_spaj = a.reg_spaj and 
+        (upper(MSPS_DESC)='TRANSFER KE NON-SPEEDY ' or upper(MSPS_DESC) = 'TRANSFER DARI U/W KE PAYMENT' or upper(MSPS_DESC)='TRANSFER KE SPEEDY' or upper(MSPS_DESC)='AUTOTRANSFER KE UW SPEEDY'))) Tgl_Transfer_to_Speedy_paymnet,    
+    u.lus_login_name username
+from  
+    eka.mst_payment a, 
+    eka.mst_drek_det b, 
+    eka.lst_user u,
+    eka.mst_position_spaj ps,
+    eka.mst_product_insured pi,
+    (select reg_spaj from eka.mst_position_spaj where upper(MSPS_DESC) = 'TRANSFER KE PRINT POLIS'
+    and msps_date between to_date($P{tanggalAwal},'dd/mm/yyyy') and to_date($P{tanggalAkhir},'dd/mm/yyyy')+1
+    and lus_id in (select lus_id from eka.lst_user where lde_id=39 and lus_active=1)) x
+where
+        a.mspa_payment_id = (select min(mspa_payment_id) from eka.mst_payment where reg_spaj = a.reg_spaj)
+    and A.MSPA_PAYMENT_ID = B.PAYMENT_ID
+    and A.LUS_ID = u.lus_id
+    and a.mspa_input_date between to_date($P{tanggalAwal},'dd/mm/yyyy') and to_date($P{tanggalAkhir},'dd/mm/yyyy')+1
+    and a.mspa_no_pre = B.NO_PRE
+    and a.reg_spaj = ps.reg_spaj
+    and a.reg_spaj = pi.reg_spaj
+    and pi.lsbs_id < 300
+    and x.reg_spaj = a.reg_spaj
+    and a.lus_id = $P{user}
+union
+select distinct 
+    B.NOREK_AJS no_Rek,
+    B.NO_TRX No_Trx,
+    a.mspa_payment Premi,
+    A.REG_SPAJ spaj,
+    A.MSPA_NO_VOUCHER No_Voucher,
+    (select to_char(to_date(msps_date,'dd/MM/yyyy')) from eka.mst_position_spaj where (upper(MSPS_DESC) = 'TRANSFER KE PRINT POLIS' or upper(MSPS_DESC) = 'AUTO PROSES PAYMENT')
+        and reg_spaj = a.reg_spaj  
+        and msps_date = (select min(msps_date) from eka.mst_position_spaj where reg_spaj = a.reg_spaj and
+            (upper(MSPS_DESC) = 'TRANSFER KE PRINT POLIS' or upper(MSPS_DESC) = 'AUTO PROSES PAYMENT')
+        and lus_id in (select lus_id from eka.lst_user where lde_id=39 and lus_active=1))) Tgl_print_polis_approved,     
+    (select to_char(to_date(msps_date,'dd/MM/yyyy')) from eka.mst_position_spaj where upper(MSPS_DESC)='INPUT SPAJ'
+        and reg_spaj = a.reg_spaj) Tgl_Transfer_to_Speedy_paymnet,    
+    u.lus_login_name username
+from  
+    eka.mst_payment a, 
+    eka.mst_drek_det b, 
+    eka.lst_user u,
+    eka.mst_position_spaj ps,
+    eka.mst_product_insured pi,
+    eka.mst_pas_sms pa
+where
+        a.mspa_payment_id = (select min(mspa_payment_id) from eka.mst_payment where reg_spaj = a.reg_spaj)
+    and A.MSPA_PAYMENT_ID = B.PAYMENT_ID
+    and A.LUS_ID = u.lus_id
+    and a.mspa_input_date between to_date($P{tanggalAwal},'dd/mm/yyyy') and to_date($P{tanggalAkhir},'dd/mm/yyyy')+1
+    and a.mspa_no_pre = B.NO_PRE
+    and a.reg_spaj = ps.reg_spaj
+    and a.reg_spaj = pi.reg_spaj
+    and pi.lsbs_id < 300
+    and a.reg_spaj = pa.reg_spaj
+    and a.lus_id =$P{user}
+order by spaj
+) where Tgl_Transfer_to_Speedy_paymnet is not null]]>
+	</queryString>
+	<field name="NO_REK" class="java.lang.String"/>
+	<field name="NO_TRX" class="java.lang.String"/>
+	<field name="NO_VOUCHER" class="java.lang.String"/>
+	<field name="PREMI" class="java.math.BigDecimal"/>
+	<field name="SLA" class="java.math.BigDecimal"/>
+	<field name="SPAJ" class="java.lang.String"/>
+	<field name="TGL_PRINT_POLIS_APPROVED" class="java.lang.String"/>
+	<field name="TGL_TRANSFER_TO_SPEEDY_PAYMNET" class="java.lang.String"/>
+	<field name="USERNAME" class="java.lang.String"/>
+	<variable name="no" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[new Integer(1)]]></variableExpression>
+	</variable>
+	<title>
+		<band height="102">
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="20" width="300" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Periode : "+ $P{tanggalAwal} + " s/d " + $P{tanggalAkhir}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="0" width="300" height="20"/>
+				<textElement>
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Report Daily Aksep]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="682" y="62" width="100" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Tgl. Transfer Speedy/Payment]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="782" y="62" width="126" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[User]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="908" y="62" width="50" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[SLA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="62" width="30" height="40"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="582" y="62" width="100" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Tgl. Print Polis/Approved ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="475" y="62" width="107" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[No. Voucher]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="368" y="62" width="107" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="261" y="62" width="107" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="125" y="62" width="136" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[No. TRX]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="30" y="62" width="95" height="40"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[No. Rek]]></text>
+			</staticText>
+		</band>
+	</title>
+	<detail>
+		<band height="20">
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="0" y="0" width="30" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Number"><![CDATA[$V{no}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="30" y="0" width="95" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NO_REK}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="125" y="0" width="136" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NO_TRX}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="368" y="0" width="107" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="475" y="0" width="107" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NO_VOUCHER}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="582" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_PRINT_POLIS_APPROVED}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="782" y="0" width="126" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{USERNAME}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="682" y="0" width="100" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_TRANSFER_TO_SPEEDY_PAYMNET}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="908" y="0" width="50" height="20"/>
+				<box padding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{SLA}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToBandHeight" x="261" y="0" width="107" height="20"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="0" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrency(" ",$F{PREMI})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

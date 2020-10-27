@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="validasi_per_cabang_summary" pageWidth="1200" pageHeight="1146" whenNoDataType="AllSectionsNoDetail" columnWidth="1180" leftMargin="10" rightMargin="10" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet" isIgnorePagination="true">
+	<property name="com.jasperassistant.designer.DataSource" value="Ekatest10"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="2"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="3"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("01/02/2010")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("20/02/2010")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<queryString>
+		<![CDATA[SELECT nama_cabang,
+	   count(*) jml_sales,
+	   sum(clean_case) clean_case,
+	   (sum(clean_case)/(sum(clean_case)+sum(non_clean_case)))*100 clean_case_persen,
+	   sum(non_clean_case) non_clean_case,
+	   (sum(non_clean_case)/(sum(clean_case)+sum(non_clean_case)))*100 non_clean_case_persen
+ FROM (
+	SELECT nama_cabang, nama_ref, 
+		   SUM(DECODE(clean_answer, 4, 1, 0)) clean_case,
+		   SUM(DECODE(clean_answer, 4, 0, 1)) non_clean_case
+	  FROM (SELECT   NVL (d.nama_ref, e.nama_bfa) nama_ref, f.nama_cabang, a.reg_spaj, SUM (a.msqu_jawab) clean_answer
+	            FROM eka.mst_questionnaire a,
+	                 eka.mst_policy b,
+	                 eka.mst_nasabah c,
+	                 eka.lst_referrer_bii d,
+	                 (SELECT   msag_id, nama_bfa FROM eka.mst_bfa GROUP BY msag_id, nama_bfa) e,
+	                 eka.lst_cab_bii f
+	           WHERE a.create_dt BETWEEN '1 feb 2010' AND '20 feb 2010'
+	             AND a.reg_spaj = b.reg_spaj
+	             AND b.mspo_plan_provider = c.mns_kd_nasabah
+	             AND c.referrer_id = d.referrer_id(+)
+	             AND c.referrer_fa = e.msag_id(+)
+	             AND c.kd_region = f.kd_region
+	             AND c.kd_koord = f.kd_koord
+	             AND c.kd_area = f.kd_area
+	             AND c.kd_cabang = f.kd_cabang
+	        GROUP BY NVL (d.nama_ref, e.nama_bfa), f.nama_cabang, a.reg_spaj
+	        ORDER BY NVL (d.nama_ref, e.nama_bfa), a.reg_spaj)
+	GROUP BY nama_cabang, nama_ref
+) 			
+GROUP BY nama_cabang
+ORDER BY nama_cabang]]>
+	</queryString>
+	<field name="NAMA_CABANG" class="java.lang.String"/>
+	<field name="CLEAN_CASE" class="java.math.BigDecimal"/>
+	<field name="CLEAN_CASE_PERSEN" class="java.math.BigDecimal"/>
+	<field name="NON_CLEAN_CASE" class="java.math.BigDecimal"/>
+	<field name="NON_CLEAN_CASE_PERSEN" class="java.math.BigDecimal"/>
+	<field name="JML_SALES" class="java.math.BigDecimal"/>
+	<variable name="reportCount" class="java.lang.Integer">
+		<variableExpression><![CDATA[$V{REPORT_COUNT}]]></variableExpression>
+	</variable>
+	<variable name="totalClean" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{CLEAN_CASE}]]></variableExpression>
+	</variable>
+	<variable name="avgCleanPercent" class="java.math.BigDecimal" calculation="Average">
+		<variableExpression><![CDATA[$F{CLEAN_CASE_PERSEN}]]></variableExpression>
+	</variable>
+	<variable name="totalNonClean" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{NON_CLEAN_CASE}]]></variableExpression>
+	</variable>
+	<variable name="avgNonCleanPercent" class="java.math.BigDecimal" calculation="Average">
+		<variableExpression><![CDATA[$F{NON_CLEAN_CASE_PERSEN}]]></variableExpression>
+	</variable>
+	<title>
+		<band height="27">
+			<staticText>
+				<reportElement x="0" y="0" width="498" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="12" pdfFontName="Arial-Bold"/>
+				</textElement>
+				<text><![CDATA[PT Asuransi Jiwa Sinarmas MSIG Tbk. - Laporan Validasi Per Cabang (Summary)]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="22">
+			<textField pattern="M/d/yy h:mm:ss a">
+				<reportElement x="0" y="0" width="45" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Periode"]]></textFieldExpression>
+			</textField>
+			<textField pattern="M/d/yy h:mm:ss a">
+				<reportElement x="54" y="0" width="447" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAwal}) 
++ " sampai " + 
+$P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAkhir})
++ " ( tgl.adalah tgl. validasi )"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="40">
+			<textField>
+				<reportElement x="0" y="0" width="30" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["No."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="265" y="20" width="120" height="20"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Clean Case"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="165" y="0" width="100" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Jumlah Sales BII yang Divalidasi"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="30" y="0" width="135" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Cabang BII"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="385" y="20" width="120" height="20"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Non Clean Case"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="265" y="0" width="240" height="20"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="None" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Hasil Validasi SPAJ (jumlah SPAJ)"]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="16">
+			<textField>
+				<reportElement x="30" y="0" width="135" height="16"/>
+				<box border="None" padding="0"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $F{NAMA_CABANG}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="165" y="0" width="100" height="16"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{JML_SALES})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="0" width="30" height="16"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{reportCount} + "."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="265" y="0" width="60" height="16"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{CLEAN_CASE})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="325" y="0" width="60" height="16"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($F{CLEAN_CASE_PERSEN})+ "%"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="445" y="0" width="60" height="16"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($F{NON_CLEAN_CASE_PERSEN})+ "%"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="385" y="0" width="60" height="16"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{NON_CLEAN_CASE})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="16">
+			<textField>
+				<reportElement x="265" y="0" width="60" height="16"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($V{totalClean})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="30" height="16"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="165" y="0" width="100" height="16"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+			</textField>
+			<textField>
+				<reportElement x="30" y="0" width="135" height="16"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" Total"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="325" y="0" width="60" height="16"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($V{avgCleanPercent})+ "%"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="385" y="0" width="60" height="16"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($V{totalNonClean})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="445" y="0" width="60" height="16"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="None"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($V{avgNonCleanPercent})+ "%"]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band height="17">
+			<textField evaluationTime="Report">
+				<reportElement x="1165" y="5" width="12" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1158" y="5" width="7" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["/"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1147" y="5" width="12" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

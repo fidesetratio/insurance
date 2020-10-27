@@ -1,0 +1,780 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="laporan_pa" pageWidth="1800" pageHeight="800" columnWidth="1770" leftMargin="15" rightMargin="15" topMargin="20" bottomMargin="20">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="dataprod"/>
+	<property name="net.sf.jasperreports.export.xls.detect.cell.type" value="true"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("01/01/2014")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("12/09/2014")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select kode_agent,
+        referrer,
+        kode as kode_cabang,
+        cabang,
+        wilayah,
+          gm,
+        reg_spaj as spaj_no, 
+        no_Polis as policy_no,
+        kurs as mata_uang, 
+        case when (sum(premi) <= 0 and sum(premi_topup) > 0) then 
+            (select min(MSBI_FLAG_TOPUP) from eka.mst_billing where reg_spaj=x.reg_spaj and MSBI_BEG_DATE=x.MSPRO_BEG_DATE)  
+        else 
+            0
+        end top_up,
+        (select min(msbi_tahun_ke) from eka.mst_production where reg_spaj=x.reg_spaj and MSPRO_BEG_DATE=x.MSPRO_BEG_DATE) as tahun_ke,
+        (select min(msbi_premi_ke) from eka.mst_production where reg_spaj=x.reg_spaj and MSPRO_BEG_DATE=x.MSPRO_BEG_DATE) as flag,
+        lsdbs_name as Insured_Name,
+        nm_pp as nama_nasabah,
+        sum(premi) as premi_pokok,
+        MSPRO_NILAI_KURS as kurs,
+        sum(premi) * MSPRO_NILAI_KURS as Premi_Pokok_CCY,
+        sum(premi_topup) as Premi_Top_Up,
+        sum(premi_topup) * MSPRO_NILAI_KURS as Premi_Top_Up_CCY,
+        sum(premi) + sum(premi_topup) as Total_Premi,
+        (sum(premi) + sum(premi_topup)) * MSPRO_NILAI_KURS as Total_Premi_CCY,
+        case when (sum(premi) <= 0 and sum(premi_topup) > 0) then 
+            'SEKALIGUS' 
+        else 
+            lscb_pay_mode 
+        end Pay_Mode,
+        tgl_bayar as Transaction_Date,
+        sum(fee_pokok) as feebase,
+        sum(fee_topup) as fee_topup,
+        sum(fee_rider) as fee_rider,
+        cabang_referrer,
+        penutup,
+        nvl((select sum(MSDPR_PREMIUM) 
+            from eka.mst_det_production 
+            where reg_spaj=x.reg_spaj 
+            and msbi_premi_ke=(select min(msbi_premi_ke) 
+                                from eka.mst_production 
+                                where reg_spaj=x.reg_spaj 
+                                and MSPRO_BEG_DATE=x.MSPRO_BEG_DATE)
+            and lsbs_id > 300),0) as premi_rider,
+        MSPRO_BEG_DATE,
+        MSPRO_PROD_DATE,
+        sum(upp_pokok_rider) as upp_pokok_rider,
+        sum(upp_topup) as upp_topup,
+        lrbj_ket as jabatan,
+        (select MSPA_PAY_DATE from eka.mst_payment where MSPA_PAYMENT_ID=(select MSPA_PAYMENT_ID from eka.mst_tag_payment where reg_spaj=x.reg_spaj and msbi_premi_ke=1 and rownum=1) ) as tgl_bayar_nb,
+        jab_penutup,
+        penutup_aktif,
+        leader,
+       type_premi
+from (
+select a.reg_spaj,
+        a.mspo_Policy_no as no_polis,
+        e.KODE,
+        e.nama_cabang as cabang_referrer,
+          e.team_name as GM,
+        D.AGENT_CODE AS kode_agent,
+        D.NAMA_REFF as referrer,
+        j.LSCB_PAY_MODE,
+        (select (select mcl_first from eka.mst_client_new where mcl_id=eka.mst_agent.mcl_id) from eka.mst_agent where msag_id=A.MSPO_AO) as ao,
+        (select mcl_first from eka.mst_client_new where mcl_id=a.mspo_policy_holder) as nm_pp,
+       A.MSPO_SPAJ_DATE as tgl_input_spaj,
+       to_date(B.MSTE_TGL_AKSEP) as tgl_aksep,
+       case when nvl(k.MSBI_FLAG_TOPUP,0) = 2 then
+            (select max(MSPA_PAY_DATE) 
+            from eka.mst_payment 
+            where MSPA_PAYMENT_ID in (select MSPA_PAYMENT_ID 
+                                                        from eka.mst_tag_payment 
+                                                        where reg_spaj=k.reg_spaj 
+                                                        and msbi_premi_ke=k.msbi_premi_ke - 1) )
+       else
+           (select max(MSPA_PAY_DATE) 
+            from eka.mst_payment 
+            where MSPA_PAYMENT_ID in (select MSPA_PAYMENT_ID 
+                                                        from eka.mst_tag_payment 
+                                                        where reg_spaj=k.reg_spaj 
+                                                        and msbi_premi_ke=k.msbi_premi_ke) ) 
+        end as tgl_bayar,
+       g.MSPRO_BEG_DATE,
+       g.MSPRO_PROD_DATE,
+         eka.f_lsdbs(a.reg_spaj, l.lsbs_id, l.lsdbs_number) AS LSDBS_NAME,
+       G.MSPRO_NILAI_KURS,
+       decode(f.lku_id,'01','Rp','USD') AS KURS,
+       decode(nvl(k.MSBI_FLAG_TOPUP,0),0,eka.pacpolis.get_premi_prod(g.reg_spaj, g.mspro_prod_ke),0) * CASE  WHEN G.MSPRO_JN_PROD=3 THEN -1 ELSE 1 END as premi,
+       decode(nvl(k.MSBI_FLAG_TOPUP,0),0,0,eka.pacpolis.get_premi_prod(g.reg_spaj, g.mspro_prod_ke)) * CASE  WHEN G.MSPRO_JN_PROD=3 THEN -1 ELSE 1 END as premi_topup,
+       decode(nvl(k.MSBI_FLAG_TOPUP,0),0,m.JLH_KOMISI,0) * CASE  WHEN G.MSPRO_JN_PROD=3 THEN -1 ELSE 1 END as fee_pokok,
+       decode(nvl(k.MSBI_FLAG_TOPUP,0),0,0,m.JLH_KOMISI) * CASE  WHEN G.MSPRO_JN_PROD=3 THEN -1 ELSE 1 END as fee_topup,
+       m.FEE_RIDER * CASE  WHEN G.MSPRO_JN_PROD=3 THEN -1 ELSE 1 END as fee_rider,
+       (select NAMA_CABANG from eka.lst_cabang_bii where lcb_no=c.lcb_freeze) as cabang,
+       penutup.NAMA_REFF as penutup,
+        (select NAMA_CABANG from eka.lst_cabang_bii where lcb_no = (select WIL_NO from eka.lst_cabang_bii where lcb_no=e.LCB_NO)) as wilayah,
+        decode(nvl(k.MSBI_FLAG_TOPUP,0),0,g.UPP_EVA,0) * CASE  WHEN G.MSPRO_JN_PROD=3 THEN -1 ELSE 1 END as upp_pokok_rider,
+       decode(nvl(k.MSBI_FLAG_TOPUP,0),0,0,g.UPP_EVA) * CASE  WHEN G.MSPRO_JN_PROD=3 THEN -1 ELSE 1 END as upp_topup,
+       n.lrbj_ket,
+       o.NAMA_LEVEL as jab_penutup,
+       decode(penutup.FLAG_AKTIF,1,'Aktif','Non Aktif') as penutup_aktif,
+       (select nama_reff from eka.lst_reff_bii where lrb_id=penutup.leader_id) as leader,
+       case when nvl(k.MSBI_FLAG_TOPUP,0) in (0,2) and G.MSPRO_JN_PROD in (1,2) THEN  1 
+               when G.MSPRO_JN_PROD=3 then 3
+                else 2 end as type_premi
+from
+    eka.mst_policy a,
+    eka.mst_insured b,
+    eka.mst_reff_bii c,
+    eka.lst_reff_bii d,
+    eka.lst_cabang_bii e,
+    eka.mst_product_insured f,
+    eka.mst_production g,
+    eka.lst_pay_mode j,
+    eka.mst_billing k,
+    eka.lst_det_bisnis l,
+    eka.mst_comm_reff_bii m,
+     eka.lst_reff_bii penutup,
+     eka.lst_reff_bii_jab n,
+     eka.LST_JAB_REF_BII o
+where a.reg_spaj = b.reg_spaj
+and a.reg_spaj = c.reg_spaj
+and b.reg_spaj = f.reg_spaj
+and b.reg_spaj = g.reg_spaj
+and a.reg_spaj = k.reg_spaj
+and a.reg_spaj = m.reg_spaj
+and b.MSTE_INSURED_NO = f.MSTE_INSURED_NO
+and c.reff_id = d.lrb_id
+and c.lrb_id = penutup.lrb_id
+and d.LCB_NO = e.LCB_NO
+and a.lscb_id=j.lscb_id
+and g.msbi_tahun_ke=k.msbi_tahun_ke
+and g.msbi_premi_ke=k.msbi_premi_ke
+and g.msbi_tahun_ke=m.tahun_ke
+and g.msbi_premi_ke=m.premi_ke
+and f.lsbs_id = l.lsbs_id
+and f.lsdbs_number = l.lsdbs_number
+and g.mspro_prod_date between $P{tanggalAwal} and $P{tanggalAkhir}
+and e.jenis=2
+and f.lsbs_id=73
+and c.level_id=4
+and C.NO_URUT=(select max(no_urut) from eka.mst_reff_bii where reg_spaj=a.reg_spaj)
+and m.MCR_FLAG=1
+and n.lrbj_id(+) = d.lrbj_id
+and o.level_id(+) = penutup.lrbj_id1
+and (select MSPA_PAY_DATE from eka.mst_payment where MSPA_PAYMENT_ID=(select MSPA_PAYMENT_ID from eka.mst_tag_payment where reg_spaj=a.reg_spaj and msbi_premi_ke=1 and rownum=1) ) > '18 jul 2013'
+) x group by kode_agent,referrer,penutup, kode, gm,cabang,wilayah,reg_spaj, no_Polis,lsdbs_name,nm_pp,
+        lscb_pay_mode, ao, tgl_input_spaj, tgl_aksep, tgl_bayar, MSPRO_BEG_DATE, kurs, MSPRO_NILAI_KURS, cabang_referrer,MSPRO_BEG_DATE,
+        MSPRO_PROD_DATE, lrbj_ket, jab_penutup, penutup_aktif, leader, type_premi
+order by reg_spaj, no_Polis, tgl_bayar]]>
+	</queryString>
+	<field name="CABANG" class="java.lang.String"/>
+	<field name="CABANG_REFERRER" class="java.lang.String"/>
+	<field name="FLAG" class="java.math.BigDecimal"/>
+	<field name="INSURED_NAME" class="java.lang.String"/>
+	<field name="KURS" class="java.math.BigDecimal"/>
+	<field name="MSPRO_BEG_DATE" class="java.sql.Timestamp"/>
+	<field name="MSPRO_PROD_DATE" class="java.sql.Timestamp"/>
+	<field name="NAMA_NASABAH" class="java.lang.String"/>
+	<field name="PAY_MODE" class="java.lang.String"/>
+	<field name="PENUTUP" class="java.lang.String"/>
+	<field name="POLICY_NO" class="java.lang.String"/>
+	<field name="PREMI_POKOK" class="java.math.BigDecimal"/>
+	<field name="PREMI_RIDER" class="java.math.BigDecimal"/>
+	<field name="PREMI_TOP_UP" class="java.math.BigDecimal"/>
+	<field name="REFERRER" class="java.lang.String"/>
+	<field name="TAHUN_KE" class="java.math.BigDecimal"/>
+	<field name="TGL_BAYAR_NB" class="java.sql.Timestamp"/>
+	<field name="TOP_UP" class="java.math.BigDecimal"/>
+	<field name="TOTAL_PREMI" class="java.math.BigDecimal"/>
+	<field name="UPP_POKOK_RIDER" class="java.math.BigDecimal"/>
+	<field name="UPP_TOPUP" class="java.math.BigDecimal"/>
+	<field name="WILAYAH" class="java.lang.String"/>
+	<group name="mainGroup" isStartNewPage="true">
+		<groupHeader>
+			<band height="79">
+				<staticText>
+					<reportElement x="1567" y="55" width="82" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Wilayah]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1510" y="55" width="57" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Kurs]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1306" y="55" width="68" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Total Premi]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="135" y="55" width="100" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Referral Branch]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="55" width="25" height="24"/>
+					<box>
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[No.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="908" y="55" width="57" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Tahun Ke]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1238" y="55" width="68" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Premi Rider]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="965" y="55" width="57" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Premi Ke]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="25" y="55" width="110" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Referral Name]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="758" y="55" width="75" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Beg Date]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="833" y="55" width="75" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Production Date]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1102" y="55" width="68" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Premi Pokok]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1649" y="55" width="75" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[TGL RK NB]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="0" width="177" height="20"/>
+					<textElement>
+						<font size="14"/>
+					</textElement>
+					<text><![CDATA[Laporan PA]]></text>
+				</staticText>
+				<textField hyperlinkType="None">
+					<reportElement x="0" y="20" width="692" height="20"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA["Periode : " + new SimpleDateFormat("dd/MM/yyyy").format($P{tanggalAwal}) + " s/d " + new SimpleDateFormat("dd/MM/yyyy").format($P{tanggalAkhir})]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="235" y="55" width="110" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Agent Name]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="345" y="55" width="100" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Agent Branch]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="445" y="55" width="93" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Policy No]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="538" y="55" width="110" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Policy Holder]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="648" y="55" width="110" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Insured Name]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1022" y="55" width="80" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Pay Mode]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1170" y="55" width="68" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Premi TopUp]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1374" y="55" width="68" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[UPTP Pokok + Rider]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1442" y="55" width="68" height="24"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" pdfFontName="Arial"/>
+					</textElement>
+					<text><![CDATA[UPTP Top Up]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="49"/>
+		</groupFooter>
+	</group>
+	<detail>
+		<band height="12">
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="1102" y="0" width="68" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{PREMI_POKOK}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="1238" y="0" width="68" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{PREMI_RIDER}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="1306" y="0" width="68" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{TOTAL_PREMI}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="25" height="12"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + ($V{REPORT_COUNT}.intValue()) + "."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="25" y="0" width="110" height="12"/>
+				<box topPadding="1" leftPadding="2" bottomPadding="1" rightPadding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REFERRER}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="135" y="0" width="100" height="12"/>
+				<box topPadding="1" leftPadding="3" bottomPadding="1" rightPadding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CABANG_REFERRER}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="833" y="0" width="75" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSPRO_PROD_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="908" y="0" width="57" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{TAHUN_KE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="965" y="0" width="57" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{FLAG}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="758" y="0" width="75" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{MSPRO_BEG_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="1510" y="0" width="57" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{KURS}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="445" y="0" width="93" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{POLICY_NO}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="538" y="0" width="110" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_NASABAH}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="1022" y="0" width="80" height="12"/>
+				<box padding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PAY_MODE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="235" y="0" width="110" height="12"/>
+				<box topPadding="1" leftPadding="3" bottomPadding="1" rightPadding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PENUTUP}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="345" y="0" width="100" height="12"/>
+				<box topPadding="1" leftPadding="3" bottomPadding="1" rightPadding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{CABANG}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="648" y="0" width="110" height="12"/>
+				<box topPadding="1" leftPadding="3" bottomPadding="1" rightPadding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{INSURED_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="1170" y="0" width="68" height="12"/>
+				<box topPadding="1" leftPadding="3" bottomPadding="1" rightPadding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{PREMI_TOP_UP}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="1442" y="0" width="68" height="12"/>
+				<box topPadding="1" leftPadding="3" bottomPadding="1" rightPadding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{UPP_TOPUP}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="1374" y="0" width="68" height="12"/>
+				<box topPadding="1" leftPadding="3" bottomPadding="1" rightPadding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{UPP_POKOK_RIDER}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="1567" y="0" width="82" height="12"/>
+				<box topPadding="1" leftPadding="3" bottomPadding="1" rightPadding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{WILAYAH}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement stretchType="RelativeToTallestObject" x="1649" y="0" width="75" height="12"/>
+				<box topPadding="1" leftPadding="3" bottomPadding="1" rightPadding="1">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" pdfFontName="Arial"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{TGL_BAYAR_NB}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

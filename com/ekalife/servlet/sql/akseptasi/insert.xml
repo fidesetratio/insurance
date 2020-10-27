@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+		
+   	 <!--Insert mst_sample_uw-->
+   	 <insert id="elions.uw.insert.mst_sample_uw" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_SAMPLE_UW  
+	   			 ( REG_SPAJ, TGL_ACCEPT, STATUS_BATAL, PERIOD_THN, PERIOD_BLN, INSURED_ID, HOLDER_ID )  
+   					VALUES ( #spaj#, SYSDATE, 0, #thn#, #bln#, #msteInsured#, #policyHolder# )  
+	 </insert>
+	 
+     <!--Insert mst_cnt_polis-->
+   	 <insert id="elions.uw.insert.mst_cnt_polis" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_CNT_POLIS  
+			( LCA_ID,   LSBS_ID,   MSCNP_VALUE,      MSCNP_MAX )  
+	  VALUES ( #as_cab# , #as_bisnis# , #ld_no# , 999999999 )
+	
+	 </insert>
+   	 
+    <!--Insert mst_trans_ulink-->
+   	 <insert id="elions.uw.insert.mst_trans_ulink" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_TRANS_ULINK  
+				( REG_SPAJ, MU_KE, MTU_KE,MTU_TGL_TRANS, LT_ID, LJI_ID, MTU_DESC,   
+				  MTU_JUMLAH, MTU_TGL_NAB, MTU_NAB, MTU_UNIT, MTU_DK, MTU_SALDO_UNIT,   
+				  MTU_TGL_INPUT, LUS_ID, MTU_FLAG_PRINT, LSPD_ID,   MTU_TGL_PROSES, MTU_FLAG_LOCK )  
+		VALUES ( #txtnospaj#, #ar_ke#, #k#, #ldt_aksep#,  #lt_id#, #lji_id#, #mtu_desc#,   
+					#ld_det_jum#, #mtu_tgl_nab:TIMESTAMP#,   #mtu_nab#,   #mtu_unit#,   #mtu_dk#,   #saldo_unit#,  
+				   SYSDATE, #gl_lus_id#, #mtu_flag_print#, #lspd_id#, null, #li_lock# ) 	
+	 </insert>
+	
+	<!--Insert mstulink-->
+   	 <insert id="elions.uw.insert.mst_ulink" parameterClass="java.util.HashMap">
+		  INSERT INTO EKA.MST_ULINK  
+         ( REG_SPAJ,
+         MU_KE,
+         MU_LUS_ID,
+         MU_FLAG_PRINT,
+         MU_TGL_INPUT,
+		 <isNotEmpty property="mu_premi_ke">MU_PREMI_KE,</isNotEmpty>
+         LT_ID,
+       	 <isNotEmpty property="mu_tgl_trans">MU_TGL_TRANS,</isNotEmpty>
+         <isNotEmpty property="mu_jlh_premi">MU_JLH_PREMI,</isNotEmpty>
+         MU_LSPD_ID)
+		 VALUES ( 
+		 #reg_spaj#,
+		 #mu_ke#,
+		 #mu_lus_id#,
+		 #mu_flag_print#,
+		 SYSDATE,
+		 <isNotEmpty property="mu_premi_ke">#mu_premi_ke#,</isNotEmpty>
+		 #lt_id#,
+		 <isNotEmpty property="mu_tgl_trans">#mu_tgl_trans#,</isNotEmpty>
+         <isNotEmpty property="mu_jlh_premi">#mu_jlh_premi#,</isNotEmpty>
+         #mu_lspd_id# )  
+	 </insert>
+	
+	<!--Insert mst_det_ulink-->
+   	 <insert id="elions.uw.insert.mst_dulink" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_DET_ULINK 
+		(REG_SPAJ,
+		MU_KE,
+		LJI_ID,
+		<isNotEmpty property="mdu_persen">MDU_PERSEN,</isNotEmpty>
+        <isNotEmpty property="mdu_saldo_unit">MDU_SALDO_UNIT,</isNotEmpty>
+        <isNotEmpty property="mdu_jumlah">MDU_JUMLAH,</isNotEmpty>
+        <isNotEmpty property="mdu_persen_tu">MDU_PERSEN,</isNotEmpty>
+        <isNotEmpty property="mdu_last_trans">MDU_LAST_TRANS,</isNotEmpty>
+        <isNotEmpty property="mdu_flag_min">MDU_FLAG_MIN,</isNotEmpty>
+        <isNotEmpty property="mdu_unit">MDU_UNIT,</isNotEmpty> 
+		MDU_AKTIF)
+        VALUES( 
+		 #reg_spaj#,
+		 #mu_ke#, 
+		 #lji_id#, 
+		<isNotEmpty property="mdu_persen">#mdu_persen#,</isNotEmpty>
+		<isNotEmpty property="mdu_saldo_unit">#mdu_saldo_unit#,</isNotEmpty>
+        <isNotEmpty property="mdu_jumlah">#mdu_jumlah#,</isNotEmpty>
+        <isNotEmpty property="mdu_persen_tu">#mdu_persen#,</isNotEmpty>
+        <isNotEmpty property="mdu_last_trans">#mdu_last_trans#,</isNotEmpty>
+    	<isNotEmpty property="mdu_flag_min">#mdu_flag_min#,</isNotEmpty>
+        <isNotEmpty property="mdu_unit">#mdu_unit#,</isNotEmpty> 
+        #mdu_aktif#)
+		
+	 </insert>
+	 
+	<!--Insert mst_bulink-->
+   	 <insert id="elions.uw.insert.mst_bulink" parameterClass="java.util.HashMap">
+		INSERT INTO EKA.MST_BIAYA_ULINK 
+		(REG_SPAJ,
+		MU_KE,
+		<isNotEmpty property="mbu_jumlah">MBU_JUMLAH,</isNotEmpty>
+		<isNotEmpty property="mbu_persen">MBU_PERSEN,</isNotEmpty> 
+		LJB_ID)
+		VALUES( 
+		#reg_spaj#,
+		#mu_ke#,
+		<isNotEmpty property="mbu_jumlah">#mbu_jumlah#,</isNotEmpty>
+		<isNotEmpty property="mbu_persen">#mbu_persen#,</isNotEmpty> 
+		#ljb_id#)
+	 </insert>
+	 
+</sqlMap>

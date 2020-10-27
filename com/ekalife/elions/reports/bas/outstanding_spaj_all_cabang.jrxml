@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="outstanding_spaj_all_cabang" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<property name="com.jasperassistant.designer.VGuides.Page Header" value="109"/>
+	<property name="com.jasperassistant.designer.HGuides" value="29,98,279,342,394,461,530,727"/>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="tanggalAwal" class="java.lang.String">
+		<defaultValueExpression><![CDATA["04/04/2007"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.lang.String">
+		<defaultValueExpression><![CDATA["14/08/2007"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT  lca_id,msf_id, msfh_dt, total_spaj_cab, msag_id, mcl_first, NVL(jumlah,0) jumlah,lca_nama,lus_full_name
+    FROM (SELECT  a.lca_id, a.msf_id, b.msfh_dt, SUM (a.msf_amount) total_spaj_cab, lca_nama,lus_full_name
+              FROM eka.mst_form a, eka.mst_form_hist b, eka.lst_cabang c, eka.lst_user d, eka.lst_jenis_spaj e
+             WHERE a.msf_id = b.msf_id
+               AND a.mss_jenis = 0
+               AND b.msf_urut = 1
+               AND b.posisi = 0
+			   AND a.lca_id=c.lca_id
+               AND a.lsjs_id = e.lsjs_id
+			   AND e.jenis = 0
+			   AND TRUNC(b.msfh_dt) >=to_date($P{tanggalAwal},'dd/mm/yyyy')
+			   AND TRUNC(b.msfh_dt) <=to_date($P{tanggalAkhir},'dd/mm/yyyy')
+			   AND a.lus_id=d.lus_id
+          GROUP BY a.lca_id,a.msf_id, b.msfh_dt, c.lca_nama ,lus_full_name) tabel_1,
+         (SELECT a.msf_id_asli, c.msag_id, d.mcl_first, COUNT(*)jumlah
+            FROM eka.mst_spaj_det a,
+                 eka.mst_agent_branch b,
+                 eka.mst_agent c,
+                 eka.mst_client_new d
+           WHERE a.msab_id <> 0
+             AND a.msab_id = b.msab_id
+             AND b.msag_id = c.msag_id
+             AND c.mcl_id = d.mcl_id 
+			GROUP BY a.msf_id_asli, c.msag_id, d.mcl_first		
+		) tabel_2
+   WHERE tabel_1.msf_id = tabel_2.msf_id_asli (+)
+GROUP BY lca_id,msf_id, msfh_dt, total_spaj_cab, msag_id, mcl_first,jumlah,lca_nama,lus_full_name]]>
+	</queryString>
+	<field name="JUMLAH" class="java.math.BigDecimal"/>
+	<field name="LCA_ID" class="java.lang.String"/>
+	<field name="LCA_NAMA" class="java.lang.String"/>
+	<field name="LUS_FULL_NAME" class="java.lang.String"/>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="MSAG_ID" class="java.lang.String"/>
+	<field name="MSFH_DT" class="java.util.Date"/>
+	<field name="MSF_ID" class="java.lang.String"/>
+	<field name="TOTAL_SPAJ_CAB" class="java.math.BigDecimal"/>
+	<variable name="total_agent" class="java.math.BigDecimal" resetType="Group" resetGroup="lca_Id" incrementType="Group" incrementGroup="msf_id" calculation="Sum">
+		<variableExpression><![CDATA[$F{JUMLAH}]]></variableExpression>
+	</variable>
+	<variable name="no" class="java.lang.Number" resetType="Group" resetGroup="lca_Id" incrementType="Group" incrementGroup="msf_id" calculation="Count">
+		<variableExpression><![CDATA[$F{MSF_ID}]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<group name="lca_Id">
+		<groupExpression><![CDATA[$F{LCA_ID}]]></groupExpression>
+		<groupHeader>
+			<band height="17">
+				<textField hyperlinkType="None">
+					<reportElement x="29" y="1" width="201" height="15"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{LCA_NAMA}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="1" y="-1" width="1" height="18"/>
+				</line>
+				<line>
+					<reportElement x="1" y="16" width="793" height="1"/>
+				</line>
+				<line>
+					<reportElement x="0" y="-1" width="793" height="1"/>
+				</line>
+				<line>
+					<reportElement x="793" y="0" width="1" height="17"/>
+				</line>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="2">
+				<line>
+					<reportElement x="0" y="0" width="793" height="1"/>
+				</line>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="msf_id">
+		<groupExpression><![CDATA[$F{MSF_ID}]]></groupExpression>
+		<groupHeader>
+			<band height="17">
+				<textField hyperlinkType="None">
+					<reportElement x="34" y="1" width="59" height="15"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{MSF_ID}]]></textFieldExpression>
+				</textField>
+				<textField pattern="dd/MM/yyyy" hyperlinkType="None">
+					<reportElement x="285" y="1" width="53" height="15"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression class="java.util.Date"><![CDATA[$F{MSFH_DT}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="lca_Id" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="342" y="1" width="45" height="15"/>
+					<textElement textAlignment="Right" verticalAlignment="Top"/>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{TOTAL_SPAJ_CAB}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="lca_Id" isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement x="402" y="1" width="46" height="15"/>
+					<textElement textAlignment="Right" verticalAlignment="Top"/>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal($F{TOTAL_SPAJ_CAB}.intValue()-$V{total_agent}.intValue())]]></textFieldExpression>
+				</textField>
+				<subreport isUsingCache="true">
+					<reportElement x="1" y="0" width="60" height="17" printWhenGroupChanges="lca_Id"/>
+					<subreportParameter name="msf_id">
+						<subreportParameterExpression><![CDATA[$F{MSF_ID}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="tanggalAkhir">
+						<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="tanggalAwal">
+						<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="lca_id"/>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.bas.sub_outstanding_spaj_all_cabang")+".jasper"]]></subreportExpression>
+				</subreport>
+				<textField pattern="0." hyperlinkType="None">
+					<reportElement x="5" y="2" width="19" height="13"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.Number"><![CDATA[$V{no}]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="None">
+					<reportElement x="105" y="1" width="126" height="15"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{LUS_FULL_NAME}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="530" y="-1" width="1" height="18"/>
+				</line>
+				<line>
+					<reportElement x="727" y="-1" width="1" height="18"/>
+				</line>
+				<line>
+					<reportElement x="342" y="-1" width="1" height="18"/>
+				</line>
+				<line>
+					<reportElement x="461" y="0" width="1" height="17"/>
+				</line>
+				<line>
+					<reportElement x="394" y="-1" width="1" height="18"/>
+				</line>
+				<line>
+					<reportElement x="279" y="0" width="1" height="17"/>
+				</line>
+				<line>
+					<reportElement x="793" y="0" width="1" height="17"/>
+				</line>
+				<line>
+					<reportElement x="98" y="-1" width="1" height="18"/>
+				</line>
+				<line>
+					<reportElement x="1" y="-1" width="1" height="18"/>
+				</line>
+				<line>
+					<reportElement x="29" y="-1" width="1" height="18"/>
+				</line>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="msag_id">
+		<groupExpression><![CDATA[$F{MSAG_ID}]]></groupExpression>
+	</group>
+	<pageHeader>
+		<band height="127">
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="51" width="271" height="20"/>
+				<textElement>
+					<font fontName="sansserif" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Tanggal : "+$P{tanggalAwal}+" s/d "+$P{tanggalAkhir}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement x="1" y="93" width="793" height="34"/>
+			</rectangle>
+			<staticText>
+				<reportElement x="5" y="4" width="544" height="20"/>
+				<textElement textAlignment="Left">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[LAPORAN OUTSTANDING SPAJ SELURUH CABANG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2" y="94" width="28" height="33"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="35" y="95" width="354" height="15"/>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Permintaan SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="402" y="95" width="54" height="15"/>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Sisa Stok]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="38" y="109" width="47" height="15"/>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No Form]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="282" y="109" width="57" height="15"/>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tanggal]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="342" y="109" width="47" height="15"/>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jumlah]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="403" y="109" width="54" height="15"/>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="468" y="95" width="318" height="15"/>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SPAJ di Agen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="466" y="109" width="57" height="15"/>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Kode Agen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="530" y="109" width="198" height="15"/>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Agen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="740" y="109" width="44" height="15"/>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jumlah]]></text>
+			</staticText>
+			<line>
+				<reportElement x="29" y="93" width="1" height="33"/>
+			</line>
+			<line>
+				<reportElement x="29" y="109" width="260" height="1"/>
+			</line>
+			<line>
+				<reportElement x="288" y="109" width="107" height="1"/>
+			</line>
+			<line>
+				<reportElement x="98" y="109" width="1" height="18"/>
+			</line>
+			<staticText>
+				<reportElement x="104" y="109" width="96" height="15"/>
+				<textElement textAlignment="Center">
+					<font fontName="sansserif" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Admin]]></text>
+			</staticText>
+			<line>
+				<reportElement x="279" y="109" width="1" height="18"/>
+			</line>
+			<line>
+				<reportElement x="342" y="109" width="1" height="18"/>
+			</line>
+			<line>
+				<reportElement x="394" y="94" width="1" height="33"/>
+			</line>
+			<line>
+				<reportElement x="461" y="94" width="1" height="33"/>
+			</line>
+			<line>
+				<reportElement x="530" y="109" width="1" height="18"/>
+			</line>
+			<line>
+				<reportElement x="727" y="109" width="1" height="17"/>
+			</line>
+			<line>
+				<reportElement x="461" y="109" width="334" height="1"/>
+			</line>
+		</band>
+	</pageHeader>
+</jasperReport>

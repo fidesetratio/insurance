@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="list_pengiriman_polis" pageWidth="842" pageHeight="615" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="822" leftMargin="10" rightMargin="10" topMargin="20" bottomMargin="20" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="startDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["19/06/2007"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="endDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["20/06/2007"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="userName" class="java.lang.String">
+		<defaultValueExpression><![CDATA["XXXXXX"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="sysDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<parameter name="sdsKirimPolis" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<queryString>
+		<![CDATA[SELECT   a.reg_spaj, c.lsbs_id, c.lsdbs_number, g.lsdbs_name, a.mspo_policy_no_format,
+		         e.mcl_first, b.mste_beg_date, b.mste_tgl_kirim_polis,i.msps_date,
+		         a.mspo_date_ttp, b.mste_tgl_komisi,
+		         DECODE (a.mspo_jenis_terbit, 1, 'S', 'H') softcopy,
+		         to_char(b.mste_tgl_kirim_lb, 'hh24') kirim_hh, to_char(b.mste_tgl_kirim_lb, 'mi') kirim_mm,
+		         to_char(b.mste_tgl_terima_lb, 'hh24') terima_hh, to_char(b.mste_tgl_terima_lb, 'mi') terima_mm,
+		         b.mste_tgl_kirim_lb, b.mste_tgl_terima_lb, j.keterangan
+		    FROM eka.mst_policy a,
+		         eka.mst_insured b,
+		         eka.mst_product_insured c,
+		         eka.lst_cabang d,
+		         eka.mst_client_new e,
+		         eka.lst_user f,
+		         eka.lst_det_bisnis g,
+		         eka.lst_policy_status h,
+				(select * from eka.mst_position_spaj where msps_desc = 'TRANSFER KE TANDA TERIMA') i,
+				(select a.reg_spaj, (case when a.msps_desc = 'SPH KIRIM KE LIFE BENEFIT' then 'SPH' 
+				when a.msps_desc = 'SPT KIRIM KE LIFE BENEFIT' then 'SPT' 
+				when a.msps_desc = 'SPH DAN SPT KIRIM KE LIFE BENEFIT' then 'SPH DAN SPT' else '' end) keterangan
+				from eka.mst_position_spaj a where a.msps_desc = 'SPH DAN SPT KIRIM KE LIFE BENEFIT' or a.msps_desc = 'SPT KIRIM KE LIFE BENEFIT' or a.msps_desc = 'SPH KIRIM KE LIFE BENEFIT') j
+		   WHERE a.reg_spaj = b.reg_spaj
+		     AND b.reg_spaj = c.reg_spaj
+			 AND a.reg_spaj = i.reg_spaj(+) 
+			 AND a.reg_spaj = j.reg_spaj(+) 
+		     AND b.mste_insured_no = c.mste_insured_no
+		     AND a.lca_id = d.lca_id
+		     AND a.mspo_policy_holder = e.mcl_id
+		     AND a.lus_id = f.lus_id
+		     AND c.lsbs_id = g.lsbs_id
+		     AND c.lsdbs_number = g.lsdbs_number
+		     AND c.lsbs_id < 300
+		     AND a.lssp_id = h.lssp_id
+		     AND h.lssp_active = 1
+		     AND (CASE
+		             WHEN (   (c.lsbs_id = 142 AND c.lsdbs_number = 2)
+		                   OR (c.lsbs_id = 158 AND c.lsdbs_number = 6)
+						OR (c.lsbs_id = 175 AND c.lsdbs_number = 2)
+		                  )
+		                THEN a.mspo_date_ttp
+		             WHEN a.lca_id = '09'
+		                THEN b.mste_tgl_kirim_polis
+		             ELSE b.mste_tgl_komisi
+		          END
+		         ) IS NOT NULL
+				 and b.mste_tgl_aksep between to_date($P{startDate},'dd/mm/yyyy') and to_date($P{endDate},'dd/mm/yyyy')+1
+		ORDER BY c.lsbs_id, c.lsdbs_number, a.mspo_policy_no]]>
+	</queryString>
+	<field name="kirim_hh" class="java.lang.String"/>
+	<field name="kirim_mm" class="java.lang.String"/>
+	<field name="lsbs_id" class="java.math.BigDecimal"/>
+	<field name="lsdbs_name" class="java.lang.String"/>
+	<field name="lsdbs_number" class="java.math.BigDecimal"/>
+	<field name="mcl_first" class="java.lang.String"/>
+	<field name="mspo_date_ttp" class="java.util.Date"/>
+	<field name="mspo_policy_no_format" class="java.lang.String"/>
+	<field name="msps_date" class="java.util.Date"/>
+	<field name="mste_beg_date" class="java.util.Date"/>
+	<field name="mste_tgl_kirim_lb" class="java.util.Date"/>
+	<field name="mste_tgl_kirim_polis" class="java.util.Date"/>
+	<field name="mste_tgl_komisi" class="java.util.Date"/>
+	<field name="mste_tgl_terima_lb" class="java.util.Date"/>
+	<field name="reg_spaj" class="java.lang.String"/>
+	<field name="softcopy" class="java.lang.String"/>
+	<field name="terima_hh" class="java.lang.String"/>
+	<field name="terima_mm" class="java.lang.String"/>
+	<field name="keterangan" class="java.lang.String">
+		<fieldDescription><![CDATA[keterangan]]></fieldDescription>
+	</field>
+	<variable name="nomer" class="java.lang.Integer" resetType="Group" resetGroup="LSDBS_NAME" calculation="Count">
+		<variableExpression><![CDATA[$F{reg_spaj}]]></variableExpression>
+	</variable>
+	<variable name="jumlah" class="java.lang.Integer" resetType="Group" resetGroup="LSDBS_NAME" calculation="Count">
+		<variableExpression><![CDATA[$F{lsdbs_name}]]></variableExpression>
+	</variable>
+	<group name="LSDBS_NAME" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{lsdbs_name}]]></groupExpression>
+		<groupHeader>
+			<band height="121">
+				<textField>
+					<reportElement x="0" y="88" width="333" height="12"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{lsdbs_name}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="332" y="101" width="48" height="20"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="8" isBold="true" pdfFontName="Times-Bold"/>
+					</textElement>
+					<text><![CDATA[Tgl Transfer TTP]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="474" y="101" width="78" height="20"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="8" isBold="true" pdfFontName="Times-Bold"/>
+					</textElement>
+					<text><![CDATA[Tgl Kirim
+Dari UW]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="380" y="101" width="70" height="20"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="8" isBold="true" pdfFontName="Times-Bold"/>
+					</textElement>
+					<text><![CDATA[Tgl Proses Komisi]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="449" y="101" width="25" height="20"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="8" isBold="true" pdfFontName="Times-Bold"/>
+					</textElement>
+					<text><![CDATA[S/H]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="552" y="101" width="80" height="20"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="8" isBold="true" pdfFontName="Times-Bold"/>
+					</textElement>
+					<text><![CDATA[Tgl Terima 
+Oleh LB]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="101" width="19" height="20"/>
+					<box border="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="8" isBold="true" pdfFontName="Times-Bold"/>
+					</textElement>
+					<text><![CDATA[No]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="101" y="101" width="112" height="20"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="8" isBold="true" pdfFontName="Times-Bold"/>
+					</textElement>
+					<text><![CDATA[Pemegang Polis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="213" y="101" width="49" height="20"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="8" isBold="true" pdfFontName="Times-Bold"/>
+					</textElement>
+					<text><![CDATA[Efektif Polis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="19" y="101" width="82" height="20"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="8" isBold="true" pdfFontName="Times-Bold"/>
+					</textElement>
+					<text><![CDATA[No. Polis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="262" y="101" width="70" height="20"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="8" isBold="true" pdfFontName="Times-Bold"/>
+					</textElement>
+					<text><![CDATA[Tgl Kirim]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="0" y="41" width="573" height="45"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Arial" size="9" isBold="false" isItalic="false" pdfFontName="Arial" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Polis yang ada di list ini adalah :\n"+
+"a) Polis Agen, Worksite : jika sudah ada instruksi pembayaran komisi ke Finance.(polis hardcopy maupun softcopy)\n"+
+"b) Polis Bancass : jika Tgl Kirim sudah diinput\n"+
+"c) Simas Prima : jika sudah Transfer TTP"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="0" y="27" width="496" height="12"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Arial" size="9" isBold="false" isItalic="false" pdfFontName="Arial" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Tgl. Kirim Ke LB: " +$P{sysDate}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="0" y="15" width="496" height="12"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Arial" size="9" isBold="false" isItalic="false" pdfFontName="Arial" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Tgl. Akseptasi: " + $P{startDate} + " s/d " + $P{endDate}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="0" width="285" height="15"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Arial" size="10" isBold="true" isItalic="false" pdfFontName="Arial-Bold" isPdfEmbedded="false"/>
+					</textElement>
+					<text><![CDATA[LIST PENGIRIMAN SPH / SPT KE LIFE BENEFIT]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="632" y="101" width="80" height="20"/>
+					<box topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="8" isBold="true" pdfFontName="Times-Bold"/>
+					</textElement>
+					<text><![CDATA[Keterangan]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="61">
+				<line>
+					<reportElement x="0" y="-1" width="712" height="2"/>
+					<graphicElement/>
+				</line>
+				<textField>
+					<reportElement positionType="Float" x="0" y="3" width="314" height="38"/>
+					<textElement>
+						<font fontName="Times New Roman" size="8" pdfFontName="Times-Roman"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Diproses oleh : "+$P{userName} + "\n" +
+"Diterima tanggal .................... oleh: .................... (tgl diisi oleh user Life Benefit)" + "\n" +
+"Note: S = Softcopy, H = Hardcopy\n" +
+"Print Date : " + $P{REPORT_SCRIPTLET}.formatDateWithTime(new Date())]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<detail>
+		<band height="15">
+			<line>
+				<reportElement x="0" y="0" width="1" height="15"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="18" y="0" width="1" height="15"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="100" y="0" width="1" height="15"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="212" y="0" width="1" height="15"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="261" y="0" width="1" height="15"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="331" y="0" width="1" height="15"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="379" y="0" width="1" height="15"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="449" y="0" width="1" height="15"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="473" y="0" width="1" height="15"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="551" y="0" width="1" height="15"/>
+				<graphicElement/>
+			</line>
+			<textField>
+				<reportElement x="1" y="1" width="16" height="13"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{nomer}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="20" y="1" width="79" height="13"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{mspo_policy_no_format}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="102" y="1" width="108" height="13"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{mcl_first}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="214" y="1" width="45" height="13"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{mste_beg_date})]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="631" y="0" width="1" height="15"/>
+				<graphicElement/>
+			</line>
+			<textField>
+				<reportElement x="263" y="1" width="67" height="13"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateWithMinute($F{mste_tgl_kirim_polis})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="333" y="1" width="45" height="13"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{msps_date})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="381" y="1" width="67" height="13"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateWithMinute($F{mste_tgl_komisi})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="451" y="1" width="21" height="13"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{softcopy}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="475" y="1" width="75" height="13"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateWithMinute($F{mste_tgl_kirim_lb})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="553" y="1" width="77" height="13"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateWithMinute($F{mste_tgl_terima_lb})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="634" y="1" width="73" height="14"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{keterangan}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="711" y="0" width="1" height="15"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</detail>
+	<summary>
+		<band height="54">
+			<subreport>
+				<reportElement x="0" y="33" width="592" height="20"/>
+				<subreportParameter name="userName">
+					<subreportParameterExpression><![CDATA[$P{userName}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="startDate">
+					<subreportParameterExpression><![CDATA[$P{startDate}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="sysDate">
+					<subreportParameterExpression><![CDATA[$P{sysDate}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="endDate">
+					<subreportParameterExpression><![CDATA[$P{endDate}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$P{sdsKirimPolis}]]></dataSourceExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("subreport.uw.list_pengiriman_polis")+".jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</summary>
+</jasperReport>

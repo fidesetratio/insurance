@@ -1,0 +1,837 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<typeAlias alias="hashMap" type="java.util.HashMap" />
+	<typeAlias alias="formSpaj" type="com.ekalife.elions.model.FormSpaj" />
+	<typeAlias alias="formHistory" type="com.ekalife.elions.model.FormHist" />
+	<typeAlias alias="spaj" type="com.ekalife.elions.model.Spaj" />
+	<typeAlias alias="spajDet" type="com.ekalife.elions.model.SpajDet"/>
+	<typeAlias alias="region" type="com.ekalife.elions.model.Region"/>
+	<typeAlias alias="agen" type="com.ekalife.elions.model.Agen"/>
+	<typeAlias alias="sms_in" type="com.ekalife.elions.model.sms.Smsserver_in"/>
+	<typeAlias alias="travelIns" type="com.ekalife.elions.model.TravelInsurance"/>
+	<typeAlias alias="suratHist" type="com.ekalife.elions.model.Surat_history" />
+	<typeAlias alias="kartuNama" type="com.ekalife.elions.model.KartuNama" />
+	
+	<update id="elions.bas.updateBlankoTravelIns" parameterClass="travelIns">
+		UPDATE   eka.mst_spaj_det
+		   SET   lsp_id = #lsp_id_baru#
+		 WHERE       no_blanko = SUBSTR (#msid_blanko#, -6)
+		         AND lsp_id = #lsp_id_lama#
+		         AND msf_id = #msf_id#
+	</update>
+
+	<update id="elions.bas.updateTravelInsDet" parameterClass="travelIns">
+		UPDATE eka.mst_travel_ins_det              
+		SET tgl_input = SYSDATE                                     
+		<isNotNull removeFirstPrepend="true" prepend="," property="lus_id">lus_id = #lus_id# </isNotNull>                                                               
+		<isNotNull removeFirstPrepend="true" prepend="," property="msid_beg_date">msid_beg_date = #msid_beg_date# </isNotNull>                                          
+		<isNotNull removeFirstPrepend="true" prepend="," property="msid_blanko">msid_blanko = upper(#kode_premi# || #msid_blanko#) </isNotNull>                                         
+		<isNotNull removeFirstPrepend="true" prepend="," property="msid_date_birth">msid_date_birth = #msid_date_birth# </isNotNull>                                    
+		<isNotNull removeFirstPrepend="true" prepend="," property="msid_end_date">msid_end_date = #msid_end_date# </isNotNull>                                          
+		<isNotNull removeFirstPrepend="true" prepend="," property="msid_hp">msid_hp = upper(#msid_hp#) </isNotNull>                                                     
+		<isNotNull removeFirstPrepend="true" prepend="," property="msid_kd_telp_rmh">msid_kd_telp_rmh = upper(#msid_kd_telp_rmh#) </isNotNull>                          
+		<isNotNull removeFirstPrepend="true" prepend="," property="msid_nama">msid_nama = trim(upper(#msid_nama#)) </isNotNull>                                               
+		<isNotNull removeFirstPrepend="true" prepend="," property="msid_place_birth">msid_place_birth = upper(#msid_place_birth#) </isNotNull>                          
+		<isNotNull removeFirstPrepend="true" prepend="," property="msid_premi">msid_premi = #msid_premi# </isNotNull>                                                   
+		<isNotNull removeFirstPrepend="true" prepend="," property="msid_premi_setor">msid_premi_setor = #msid_premi_setor# </isNotNull>                                                   
+		<isNotNull removeFirstPrepend="true" prepend="," property="msid_sex">msid_sex = #msid_sex# </isNotNull>                                                         
+		<isNotNull removeFirstPrepend="true" prepend="," property="msid_telp_rmh">msid_telp_rmh = upper(#msid_telp_rmh#) </isNotNull>                                   
+		<isNotNull removeFirstPrepend="true" prepend="," property="msid_up">msid_up = #msid_up# </isNotNull>                                                            
+		<isNotNull removeFirstPrepend="true" prepend="," property="msid_alamat">msid_alamat = #msid_alamat# </isNotNull>                                                            
+		<isNotNull removeFirstPrepend="true" prepend="," property="msid_kota">msid_kota = #msid_kota# </isNotNull>                                                            
+		<isNotNull removeFirstPrepend="true" prepend="," property="msid_kd_pos">msid_kd_pos = #msid_kd_pos# </isNotNull>                                                            
+		WHERE MSTI_ID = #msti_id#                                                       
+		AND MSTI_JENIS = #msti_jenis#                                                   
+		AND MSID_NO = #msid_no#                                                         
+	</update>
+
+	<update id="elions.bas.updateTravelIns" parameterClass="travelIns">
+		UPDATE eka.mst_travel_ins                                                       
+		SET msti_tgl_input = SYSDATE
+		<isNotNull removeFirstPrepend="true" prepend="," property="lsb_id">lsb_id = #lsb_id# </isNotNull>                                                               
+		<isNotNull removeFirstPrepend="true" prepend="," property="lus_id_aksep">lus_id_aksep = #lus_id_aksep# </isNotNull>                                             
+		<isNotNull removeFirstPrepend="true" prepend="," property="lus_id_input">lus_id_input = #lus_id_input# </isNotNull>                                             
+		<isNotNull removeFirstPrepend="true" prepend="," property="lus_id_komisi">lus_id_komisi = #lus_id_komisi# </isNotNull>                                          
+		<isNotNull removeFirstPrepend="true" prepend="," property="msti_jml_peserta">msti_jml_peserta = #msti_jml_peserta# </isNotNull>                                 
+		<isNotNull removeFirstPrepend="true" prepend="," property="msti_kom_tax">msti_kom_tax = #msti_kom_tax# </isNotNull>                                             
+		<isNotNull removeFirstPrepend="true" prepend="," property="msti_komisi">msti_komisi = #msti_komisi# </isNotNull>                                                
+		<isNotNull removeFirstPrepend="true" prepend="," property="msti_msag_id">msti_msag_id = upper(#msti_msag_id#) </isNotNull>                                      
+		<isNotNull removeFirstPrepend="true" prepend="," property="msti_posisi">msti_posisi = #msti_posisi# </isNotNull>                                                
+		<isNotNull removeFirstPrepend="true" prepend="," property="msti_premi">msti_premi = #msti_premi# </isNotNull>                                                   
+		<isNotNull removeFirstPrepend="true" prepend="," property="msti_premi_setor">msti_premi_setor = #msti_premi_setor# </isNotNull>                                 
+		<isNotNull removeFirstPrepend="true" prepend="," property="msti_tgl">msti_tgl = #msti_tgl# </isNotNull>                                                         
+		<isNotNull removeFirstPrepend="true" prepend="," property="msti_tgl_rk">msti_tgl_rk = #msti_tgl_rk# </isNotNull>                                                         
+		<isNotNull removeFirstPrepend="true" prepend="," property="msti_tgl_aksep">msti_tgl_aksep = #msti_tgl_aksep# </isNotNull>                                       
+		<isNotNull removeFirstPrepend="true" prepend="," property="msti_tgl_komisi">msti_tgl_komisi = #msti_tgl_komisi# </isNotNull>                                    
+		<isNotNull removeFirstPrepend="true" prepend="," property="msti_tgl_prod">msti_tgl_prod = #msti_tgl_prod# </isNotNull>                                          
+		<isNotNull removeFirstPrepend="true" prepend="," property="msti_up">msti_up = #msti_up# </isNotNull>                                                            
+		<isNotNull removeFirstPrepend="true" prepend="," property="no_pre">no_pre = upper(#no_pre#) </isNotNull>                                                        
+		<isNotNull removeFirstPrepend="true" prepend="," property="no_voucher">no_voucher = upper(#no_voucher#) </isNotNull>                                            
+		WHERE MSTI_ID = #msti_id#                                                       
+		AND MSTI_JENIS = #msti_jenis#                                                   
+	</update>
+
+	<update id="elions.bas.updateFormSpaj" parameterClass="formSpaj">
+		UPDATE eka.mst_form
+		<dynamic prepend=" set ">
+			<isNotNull removeFirstPrepend="true" prepend="," property="posisi">posisi = #posisi#</isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="lca_id">lca_id = upper(#lca_id#)</isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="lsjs_id">lsjs_id = #lsjs_id#</isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="msab_id">msab_id = #msab_id#</isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="lus_id">lus_id = #lus_id#</isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="msf_amount">msf_amount = #msf_amount#</isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="msf_amount_req">msf_amount_req = #msf_amount_req#</isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="msf_id">msf_id = upper(#msf_id#)</isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="mss_jenis">mss_jenis = #mss_jenis#</isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="start_no_blanko">start_no_blanko = #start_no_blanko#</isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="end_no_blanko">end_no_blanko = #end_no_blanko#</isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="no_blanko_req">no_blanko_req = #no_blanko_req#</isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="status_permintaan">status_permintaan = #status_permintaan#</isNotNull>
+		</dynamic>
+		WHERE 
+			MSF_ID = #msf_id# AND MSS_JENIS = #mss_jenis# 
+			AND LCA_ID = #lca_id# AND LSJS_ID = #lsjs_id# 
+			AND MSAB_ID = #msab_id#	AND lus_id=#lus_id#
+	</update>
+
+	<update id="elions.bas.updateStokSpaj" parameterClass="spaj">
+		UPDATE eka.mst_spaj
+		SET modify_dt = sysdate 
+		<dynamic>
+			<isNotNull prepend=","	property="lca_id">lca_id = upper(#lca_id#)</isNotNull>
+			<isNotNull prepend=","	property="lsjs_id">lsjs_id = #lsjs_id#</isNotNull>
+			<isNotNull prepend=","	property="modify_lus_id">modify_lus_id = #modify_lus_id#</isNotNull>
+			<isNotNull prepend=","	property="msab_id">msab_id = #msab_id#</isNotNull>
+			<isNotNull prepend=","	property="mss_amount">mss_amount = mss_amount + #mss_amount#</isNotNull>
+			<isNotNull prepend=","	property="mss_jenis">mss_jenis = #mss_jenis#</isNotNull>
+			<isNotNull prepend=","	property="damage">damage = #damage#</isNotNull>
+		</dynamic>
+		WHERE MSS_JENIS = #mss_jenis# AND LCA_ID = #lca_id# AND LSJS_ID
+		= #lsjs_id# AND MSAB_ID = #msab_id# 
+		<isNotNull property="lus_id">and lus_id=#lus_id#</isNotNull>
+	</update>
+	
+	<update id="elions.bas.updateStokSpajnol" parameterClass="spaj">
+		UPDATE eka.mst_spaj
+		SET modify_dt = sysdate 
+		<dynamic>
+			<isNotNull prepend=","	property="lca_id">lca_id = upper(#lca_id#)</isNotNull>
+			<isNotNull prepend=","	property="lsjs_id">lsjs_id = #lsjs_id#</isNotNull>
+			<isNotNull prepend=","	property="modify_lus_id">modify_lus_id = #modify_lus_id#</isNotNull>
+			<isNotNull prepend=","	property="msab_id">msab_id = #msab_id#</isNotNull>
+			<isNotNull prepend=","	property="mss_amount">mss_amount =  #mss_amount#</isNotNull>
+			<isNotNull prepend=","	property="mss_jenis">mss_jenis = #mss_jenis#</isNotNull>
+			<isNotNull prepend=","	property="damage">damage = #damage#</isNotNull>
+		</dynamic>
+		WHERE MSS_JENIS = #mss_jenis# AND LCA_ID = #lca_id# AND LSJS_ID
+		= #lsjs_id# AND MSAB_ID = #msab_id# 
+		<isNotNull property="lus_id">and lus_id=#lus_id#</isNotNull>
+	</update>	
+
+	<update id="elions.bas.updateSpajDet" parameterClass="spajDet">
+		UPDATE eka.mst_spaj_det
+		SET mssd_dt = #mssd_dt#
+		<dynamic>
+			<isNotNull prepend="," property="msf_id">msf_id = upper(#msf_id#) </isNotNull>
+			<isNotNull prepend="," property="msf_id_asli">msf_id_asli = upper(#msf_id_asli#) </isNotNull>
+			<isNotNull prepend="," property="lca_id">lca_id = upper(#lca_id#) </isNotNull>
+			<isNotNull prepend="," property="lsp_id">lsp_id = #lsp_id# </isNotNull>
+			<isNotNull prepend="," property="msab_id">msab_id = #msab_id# </isNotNull>
+			<isNotNull prepend="," property="mss_jenis">mss_jenis = #mss_jenis# </isNotNull>
+			<isNotNull prepend="," property="mssd_desc">mssd_desc = upper(#mssd_desc#) </isNotNull>
+			<isNotNull prepend="," property="reg_spaj">reg_spaj = #reg_spaj# </isNotNull>
+			<isNotNull prepend="," property="mspo_policy_no">mspo_policy_no = #mspo_policy_no# </isNotNull>
+			<isNotNull prepend="," property="mssd_lus_id">mssd_lus_id = #mssd_lus_id# </isNotNull>
+			<isEqual property="flag_bef" compareValue="1" >
+				,msf_id_bef= #msf_id_bef# 
+			</isEqual>
+			<!--<isNotNull prepend="," property="mssd_dt"> </isNotNull>-->
+		</dynamic>
+		WHERE LSJS_ID = #lsjs_id#
+		AND NO_BLANKO = #no_blanko#
+	</update>
+	
+	<update id="elions.bas.updateSpajDetV2" parameterClass="spajDet">
+		UPDATE eka.mst_spaj_det
+		SET mssd_dt = #mssd_dt#
+		<dynamic>
+			<isNotNull prepend="," property="msf_id">msf_id = upper(#msf_id#) </isNotNull>
+			<isNotNull prepend="," property="msf_id_asli">msf_id_asli = upper(#msf_id_asli#) </isNotNull>
+			<isNotNull prepend="," property="lca_id">lca_id = upper(#lca_id#) </isNotNull>
+			<isNotNull prepend="," property="lsp_id">lsp_id = #lsp_id# </isNotNull>
+			<isNotNull prepend="," property="msab_id">msab_id = #msab_id# </isNotNull>
+			<isNotNull prepend="," property="mss_jenis">mss_jenis = #mss_jenis# </isNotNull>
+			<isNotNull prepend="," property="mssd_desc">mssd_desc = upper(#mssd_desc#) </isNotNull>
+			<isNotNull prepend="," property="reg_spaj">reg_spaj = #reg_spaj# </isNotNull>
+			<isNotNull prepend="," property="mspo_policy_no">mspo_policy_no = #mspo_policy_no# </isNotNull>
+			<isEqual property="flag_bef" compareValue="1" >
+				,msf_id_bef= #msf_id_bef# 
+			</isEqual>
+		</dynamic>
+		WHERE LSJS_ID = #lsjs_id#
+		AND NO_BLANKO = #no_blanko#
+		AND mssd_lus_id = #mssd_lus_id#
+		AND msf_id = #msf_id_asli#
+	</update>	
+	
+	<update id="elions.bas.updateSpajDetTgjwb" parameterClass="spajDet">
+		UPDATE eka.mst_spaj_det
+		   SET msf_id = #msf_id#
+		       ,mssd_lus_id = #mssd_lus_id#
+		       ,mssd_dt = SYSDATE
+		       <isNotNull property="msf_id_bef">
+		       ,msf_id_bef=#msf_id_bef#
+		       </isNotNull>
+		 WHERE msab_id = #msab_id# AND lsp_id = 2
+	</update>
+	
+	<update id="elions.bas.updateSpajDetAll" parameterClass="java.util.HashMap">
+		UPDATE eka.mst_spaj_det
+		   SET msf_id = #msf_id_new#
+		 WHERE msf_id = #msf_id_old# 
+		 
+	</update>
+	
+	<update id="elions.bas.updateMstAgentStatus" parameterClass="agen">
+			 UPDATE eka.mst_agent SET msag_sp=#msag_sp# WHERE msag_id=#msag_id#
+	</update>
+	
+	<update id="elions.bas.updateResetMstCounterBtpp" parameterClass="java.util.HashMap">
+	 
+		UPDATE eka.mst_counter_btpp
+		   SET msco_value = 0,
+		       msco_mont_year = TO_CHAR (SYSDATE, 'mmyyyy')
+		 WHERE msco_number = #aplikasi# AND lca_id = #cabang#
+	</update>
+	
+	<update id="elions.bas.updateMstCounterBtpp" parameterClass="java.util.HashMap">
+		UPDATE eka.mst_counter_btpp
+		   SET msco_value = #nilai#
+		 WHERE msco_number = #aplikasi# AND lca_id= #cabang#
+   	</update>
+	
+	 <update id="elions.bas.update.updateMstBtppTglSetor" parameterClass="java.util.HashMap">
+		 update eka.mst_btpp set mst_tgl_setor=#tgl_setor# where mst_no=#mst_no#
+	</update>
+	
+	 <update id="elions.bas.updateMstBtppBatal" parameterClass="java.util.HashMap">
+		update eka.mst_Btpp 
+			set mst_flag_batal=#flag#
+			<isNotNull property="mst_no_batal">	
+				,mst_no_Reff_btl=#mst_no_batal#
+			</isNotNull>
+			<isNotNull property="mst_no_new">	
+				,mst_no_Reff_new=#mst_no_new#
+			</isNotNull>	
+		where mst_no=#mst_no#
+	</update>
+	
+	<update id="elions.bas.updateMstBtppFlagPrint" parameterClass="java.util.HashMap">
+		update eka.mst_Btpp 
+			set flag_print=#flag# 
+				where mst_no=#mst_no#
+	</update>
+	
+	<update id="elions.bas.updateMstBtppFlagbatal" parameterClass="string">
+		update eka.mst_Btpp 
+			set mst_Flag_batal=1
+				where mst_no=#mst_no#
+	</update>
+	<update id="elions.bas.updateMstBtppFlagbatal1" parameterClass="string">
+		update eka.mst_Btpp 
+			set mst_Flag_batal=5
+				where mst_no=#mst_no#
+	</update>
+
+	<update id="elions.bas.update_mst_client_new_pp" parameterClass="com.ekalife.elions.model.Pemegang2">
+		UPDATE eka.mst_client_new                                                                                                                            
+		<dynamic prepend=" set ">                                                                                                                             
+			<isNotNull removeFirstPrepend="true" prepend="," property="lgj_id">lgj_id = upper(#lgj_id#) </isNotNull>                                              
+			<isNotNull removeFirstPrepend="true" prepend="," property="lti_id">lti_id = #lti_id# </isNotNull>                                              
+			<isNotNull removeFirstPrepend="true" prepend="," property="ljb_id">ljb_id = upper(#ljb_id#) </isNotNull>                                              
+			<isNotNull removeFirstPrepend="true" prepend="," property="lside_id">lside_id = #lside_id# </isNotNull>  
+			<isNotNull removeFirstPrepend="true" prepend="," property="lus_id">lus_id = #lus_id# </isNotNull>  
+			<isNotNull removeFirstPrepend="true" prepend="," property="mcl_tgl_input">mcl_tgl_input = #mcl_tgl_input# </isNotNull>                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mkl_industri">mkl_industri = upper(#mkl_industri#) </isNotNull>                            
+			<isNotNull removeFirstPrepend="true" prepend="," property="mkl_kerja">mkl_kerja = upper(#mkl_kerja#) </isNotNull>                                     
+			<isNotNull removeFirstPrepend="true" prepend="," property="mkl_pendanaan">mkl_pendanaan = upper(#mkl_pendanaan#) </isNotNull>                         
+			<isNotNull removeFirstPrepend="true" prepend="," property="mkl_penghasilan">mkl_penghasilan = upper(#mkl_penghasilan#) </isNotNull>                   
+			<isNotNull removeFirstPrepend="true" prepend="," property="mkl_tujuan">mkl_tujuan = upper(#mkl_tujuan#) </isNotNull>                                  
+			<isNotNull removeFirstPrepend="true" prepend="," property="mpn_job_desc">mpn_job_desc = upper(#mpn_job_desc#) </isNotNull>                            
+			<isNotNull removeFirstPrepend="true" prepend="," property="mspe_email">mspe_email = upper(#mspe_email#) </isNotNull>                                  
+			<isNotNull removeFirstPrepend="true" prepend="," property="mspe_lama_kerja">mspe_lama_kerja = #mspe_lama_kerja# </isNotNull>                          
+			<isNotNull removeFirstPrepend="true" prepend="," property="mspe_no_identity">mspe_no_identity = upper(trim(replace(replace(replace(replace(replace(replace(#mspe_no_identity:VARCHAR#,'/'),'.'),','),'\'),'-'),' '))) </isNotNull>                
+			<isNotNull removeFirstPrepend="true" prepend="," property="mspe_sts_mrt">mspe_sts_mrt = upper(#mspe_sts_mrt#) </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="mcl_agama">mcl_agama = upper(#mcl_agama#) </isNotNull>
+		</dynamic>                                                                                                                                            
+		WHERE MCL_ID = #mcl_id# 
+	</update>
+<!--			<isNotNull removeFirstPrepend="true" prepend="," property="mkl_smbr_penghasilan">mkl_smbr_penghasilan = upper(#mkl_smbr_penghasilan#) </isNotNull>   -->
+	
+	<update id="elions.bas.update_mst_client_new_ttg" parameterClass="com.ekalife.elions.model.Tertanggung">
+		UPDATE eka.mst_client_new                                                                                                                            
+		<dynamic prepend=" set ">                                                                                                                             
+			<isNotNull removeFirstPrepend="true" prepend="," property="lgj_id">lgj_id = upper(#lgj_id#) </isNotNull>                                              
+			<isNotNull removeFirstPrepend="true" prepend="," property="lti_id">lti_id = #lti_id# </isNotNull>                                              
+			<isNotNull removeFirstPrepend="true" prepend="," property="ljb_id">ljb_id = upper(#ljb_id#) </isNotNull>                                              
+			<isNotNull removeFirstPrepend="true" prepend="," property="lside_id">lside_id = #lside_id# </isNotNull>  
+			<isNotNull removeFirstPrepend="true" prepend="," property="lus_id">lus_id = #lus_id# </isNotNull>  
+			<isNotNull removeFirstPrepend="true" prepend="," property="mcl_tgl_input">mcl_tgl_input = #mcl_tgl_input# </isNotNull>                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mkl_industri">mkl_industri = upper(#mkl_industri#) </isNotNull>                            
+			<isNotNull removeFirstPrepend="true" prepend="," property="mkl_kerja">mkl_kerja = upper(#mkl_kerja#) </isNotNull>                                     
+			<isNotNull removeFirstPrepend="true" prepend="," property="mkl_pendanaan">mkl_pendanaan = upper(#mkl_pendanaan#) </isNotNull>                         
+			<isNotNull removeFirstPrepend="true" prepend="," property="mkl_penghasilan">mkl_penghasilan = upper(#mkl_penghasilan#) </isNotNull>                   
+			<isNotNull removeFirstPrepend="true" prepend="," property="mkl_tujuan">mkl_tujuan = upper(#mkl_tujuan#) </isNotNull>                                  
+			<isNotNull removeFirstPrepend="true" prepend="," property="mpn_job_desc">mpn_job_desc = upper(#mpn_job_desc#) </isNotNull>                            
+			<isNotNull removeFirstPrepend="true" prepend="," property="mspe_email">mspe_email = upper(#mspe_email#) </isNotNull>                                  
+			<isNotNull removeFirstPrepend="true" prepend="," property="mspe_lama_kerja">mspe_lama_kerja = #mspe_lama_kerja# </isNotNull>                          
+			<isNotNull removeFirstPrepend="true" prepend="," property="mspe_no_identity">mspe_no_identity = upper(trim(replace(replace(replace(replace(replace(replace(#mspe_no_identity:VARCHAR#,'/'),'.'),','),'\'),'-'),' '))) </isNotNull>                
+			<isNotNull removeFirstPrepend="true" prepend="," property="mspe_sts_mrt">mspe_sts_mrt = upper(#mspe_sts_mrt#) </isNotNull>   
+			<isNotNull removeFirstPrepend="true" prepend="," property="mcl_agama">mcl_agama = upper(#mcl_agama#) </isNotNull>
+		</dynamic>                                                                                                                                            
+		WHERE MCL_ID = #mcl_id# 
+	</update>	
+	<!--			<isNotNull removeFirstPrepend="true" prepend="," property="mkl_smbr_penghasilan">mkl_smbr_penghasilan = upper(#mkl_smbr_penghasilan#) </isNotNull>   -->
+	
+	<update id="elions.bas.update_mst_address_new_ttg" parameterClass="com.ekalife.elions.model.Tertanggung">
+		UPDATE eka.mst_address_new                                                                                                                            
+		<dynamic prepend=" set ">                                                                                                                             
+		<isNotNull removeFirstPrepend="true" prepend="," property="alamat_kantor">alamat_kantor = upper(#alamat_kantor#) </isNotNull>                         
+		<isNotNull removeFirstPrepend="true" prepend="," property="alamat_rumah">alamat_rumah = upper(#alamat_rumah#) </isNotNull>                            
+		<isNotNull removeFirstPrepend="true" prepend="," property="area_code_fax">area_code_fax = upper(#area_code_fax#) </isNotNull>                         
+		<isNotNull removeFirstPrepend="true" prepend="," property="area_code_kantor">area_code_kantor = upper(#area_code_kantor#) </isNotNull>                
+		<isNotNull removeFirstPrepend="true" prepend="," property="area_code_kantor2">area_code_kantor2 = upper(#area_code_kantor2#) </isNotNull>             
+		<isNotNull removeFirstPrepend="true" prepend="," property="area_code_rumah">area_code_rumah = upper(#area_code_rumah#) </isNotNull>                   
+		<isNotNull removeFirstPrepend="true" prepend="," property="area_code_rumah2">area_code_rumah2 = upper(#area_code_rumah2#) </isNotNull>                
+		<isNotNull removeFirstPrepend="true" prepend="," property="email">email = upper(#email#) </isNotNull>                                                 
+		<isNotNull removeFirstPrepend="true" prepend="," property="kd_pos_kantor">kd_pos_kantor = upper(#kd_pos_kantor#) </isNotNull>                         
+		<isNotNull removeFirstPrepend="true" prepend="," property="kd_pos_rumah">kd_pos_rumah = upper(#kd_pos_rumah#) </isNotNull>                            
+		<isNotNull removeFirstPrepend="true" prepend="," property="kota_kantor">kota_kantor = upper(#kota_kantor#) </isNotNull>                               
+		<isNotNull removeFirstPrepend="true" prepend="," property="kota_rumah">kota_rumah = upper(#kota_rumah#) </isNotNull>                                  
+		<isNotNull removeFirstPrepend="true" prepend="," property="no_fax">no_fax = upper(#no_fax#) </isNotNull>                                              
+		<isNotNull removeFirstPrepend="true" prepend="," property="no_hp">no_hp = upper(#no_hp#) </isNotNull>                                                 
+		<isNotNull removeFirstPrepend="true" prepend="," property="no_hp2">no_hp2 = upper(#no_hp2#) </isNotNull>                                              
+		<isNotNull removeFirstPrepend="true" prepend="," property="telpon_kantor">telpon_kantor = upper(#telpon_kantor#) </isNotNull>                         
+		<isNotNull removeFirstPrepend="true" prepend="," property="telpon_kantor2">telpon_kantor2 = upper(#telpon_kantor2#) </isNotNull>                      
+		<isNotNull removeFirstPrepend="true" prepend="," property="telpon_rumah">telpon_rumah = upper(#telpon_rumah#) </isNotNull>                            
+		<isNotNull removeFirstPrepend="true" prepend="," property="telpon_rumah2">telpon_rumah2 = upper(#telpon_rumah2#) </isNotNull>                         
+		</dynamic>                                                                                                                                            
+		WHERE MCL_ID = #mcl_id#              
+	</update>	
+	
+	<update id="elions.bas.update_mst_address_new_pp" parameterClass="com.ekalife.elions.model.Pemegang2">
+		UPDATE eka.mst_address_new                                                                                                                            
+		<dynamic prepend=" set ">                                                                                                                             
+		<isNotNull removeFirstPrepend="true" prepend="," property="alamat_kantor">alamat_kantor = upper(#alamat_kantor#) </isNotNull>                         
+		<isNotNull removeFirstPrepend="true" prepend="," property="alamat_rumah">alamat_rumah = upper(#alamat_rumah#) </isNotNull>                            
+		<isNotNull removeFirstPrepend="true" prepend="," property="area_code_fax">area_code_fax = upper(#area_code_fax#) </isNotNull>                         
+		<isNotNull removeFirstPrepend="true" prepend="," property="area_code_kantor">area_code_kantor = upper(#area_code_kantor#) </isNotNull>                
+		<isNotNull removeFirstPrepend="true" prepend="," property="area_code_kantor2">area_code_kantor2 = upper(#area_code_kantor2#) </isNotNull>             
+		<isNotNull removeFirstPrepend="true" prepend="," property="area_code_rumah">area_code_rumah = upper(#area_code_rumah#) </isNotNull>                   
+		<isNotNull removeFirstPrepend="true" prepend="," property="area_code_rumah2">area_code_rumah2 = upper(#area_code_rumah2#) </isNotNull>                
+		<isNotNull removeFirstPrepend="true" prepend="," property="email">email = upper(#email#) </isNotNull>                                                 
+		<isNotNull removeFirstPrepend="true" prepend="," property="kd_pos_kantor">kd_pos_kantor = upper(#kd_pos_kantor#) </isNotNull>                         
+		<isNotNull removeFirstPrepend="true" prepend="," property="kd_pos_rumah">kd_pos_rumah = upper(#kd_pos_rumah#) </isNotNull>                            
+		<isNotNull removeFirstPrepend="true" prepend="," property="kota_kantor">kota_kantor = upper(#kota_kantor#) </isNotNull>                               
+		<isNotNull removeFirstPrepend="true" prepend="," property="kota_rumah">kota_rumah = upper(#kota_rumah#) </isNotNull>                                  
+		<isNotNull removeFirstPrepend="true" prepend="," property="no_fax">no_fax = upper(#no_fax#) </isNotNull>                                              
+		<isNotNull removeFirstPrepend="true" prepend="," property="no_hp">no_hp = upper(#no_hp#) </isNotNull>                                                 
+		<isNotNull removeFirstPrepend="true" prepend="," property="no_hp2">no_hp2 = upper(#no_hp2#) </isNotNull>                                              
+		<isNotNull removeFirstPrepend="true" prepend="," property="telpon_kantor">telpon_kantor = upper(#telpon_kantor#) </isNotNull>                         
+		<isNotNull removeFirstPrepend="true" prepend="," property="telpon_kantor2">telpon_kantor2 = upper(#telpon_kantor2#) </isNotNull>                      
+		<isNotNull removeFirstPrepend="true" prepend="," property="telpon_rumah">telpon_rumah = upper(#telpon_rumah#) </isNotNull>                            
+		<isNotNull removeFirstPrepend="true" prepend="," property="telpon_rumah2">telpon_rumah2 = upper(#telpon_rumah2#) </isNotNull>                         
+		</dynamic>                                                                                                                                            
+		WHERE MCL_ID = #mcl_id#              
+	</update>	
+	
+	<update id="elions.bas.update_mst_address_billing" parameterClass="com.ekalife.elions.model.AddressBilling">
+		UPDATE eka.mst_address_billing                                                                                                                        
+		<dynamic prepend=" set ">                                                                                                                             
+		<isNotNull removeFirstPrepend="true" prepend="," property="e_mail">e_mail = upper(#e_mail#) </isNotNull>                                              
+		<isNotNull removeFirstPrepend="true" prepend="," property="flag_cc">flag_cc = #flag_cc# </isNotNull>                                                  
+		<isNotNull removeFirstPrepend="true" prepend="," property="kota">kota = upper(#kota#) </isNotNull>                                                    
+		<isNotNull removeFirstPrepend="true" prepend="," property="lca_id">lca_id = upper(#lca_id#) </isNotNull>                                              
+		<isNotNull removeFirstPrepend="true" prepend="," property="lska_id">lska_id = #lska_id# </isNotNull>                                                  
+		<isNotNull removeFirstPrepend="true" prepend="," property="lskc_id">lskc_id = #lskc_id# </isNotNull>                                                  
+		<isNotNull removeFirstPrepend="true" prepend="," property="lskl_id">lskl_id = #lskl_id# </isNotNull>                                                  
+		<isNotNull removeFirstPrepend="true" prepend="," property="lsrg_id">lsrg_id = upper(#lsrg_id#) </isNotNull>                                           
+		<isNotNull removeFirstPrepend="true" prepend="," property="lti_id">lti_id = #lti_id# </isNotNull>                                                     
+		<isNotNull removeFirstPrepend="true" prepend="," property="lwk_id">lwk_id = upper(#lwk_id#) </isNotNull>                                              
+		<isNotNull removeFirstPrepend="true" prepend="," property="msap_address">msap_address = upper(#msap_address#) </isNotNull>                            
+		<isNotNull removeFirstPrepend="true" prepend="," property="msap_area_code1">msap_area_code1 = upper(#msap_area_code1#) </isNotNull>                   
+		<isNotNull removeFirstPrepend="true" prepend="," property="msap_area_code2">msap_area_code2 = upper(#msap_area_code2#) </isNotNull>                   
+		<isNotNull removeFirstPrepend="true" prepend="," property="msap_area_code3">msap_area_code3 = upper(#msap_area_code3#) </isNotNull>                   
+		<isNotNull removeFirstPrepend="true" prepend="," property="msap_area_code_fax1">msap_area_code_fax1 = upper(#msap_area_code_fax1#) </isNotNull>       
+		<isNotNull removeFirstPrepend="true" prepend="," property="msap_area_code_fax2">msap_area_code_fax2 = upper(#msap_area_code_fax2#) </isNotNull>       
+		<isNotNull removeFirstPrepend="true" prepend="," property="msap_contact">msap_contact = upper(#msap_contact#) </isNotNull>                            
+		<isNotNull removeFirstPrepend="true" prepend="," property="msap_fax1">msap_fax1 = upper(#msap_fax1#) </isNotNull>                                     
+		<isNotNull removeFirstPrepend="true" prepend="," property="msap_fax2">msap_fax2 = upper(#msap_fax2#) </isNotNull>                                     
+		<isNotNull removeFirstPrepend="true" prepend="," property="msap_phone1">msap_phone1 = upper(#msap_phone1#) </isNotNull>                               
+		<isNotNull removeFirstPrepend="true" prepend="," property="msap_phone2">msap_phone2 = upper(#msap_phone2#) </isNotNull>                               
+		<isNotNull removeFirstPrepend="true" prepend="," property="msap_phone3">msap_phone3 = upper(#msap_phone3#) </isNotNull>                               
+		<isNotNull removeFirstPrepend="true" prepend="," property="msap_zip_code">msap_zip_code = upper(#msap_zip_code#) </isNotNull>                         
+		<isNotNull removeFirstPrepend="true" prepend="," property="no_hp">no_hp = upper(#no_hp#) </isNotNull>                                                 
+		<isNotNull removeFirstPrepend="true" prepend="," property="no_hp2">no_hp2 = upper(#no_hp2#) </isNotNull>                                              
+		</dynamic>                                                                                                                                            
+		WHERE REG_SPAJ = #reg_spaj#          
+	</update>	
+	
+	<update id="elions.bas.updateMstPolicyLsreId" parameterClass="java.util.HashMap">
+		update eka.mst_policy 
+			set lsre_id=#lsre_id# 
+				where reg_spaj=rpad(replace(#reg_spaj# ,'.'),11,' ') 
+					  and lstb_id=#lstb_id#
+	</update>
+
+	<update id="elions.bas.updateMstInsuredMsteFlagNasabah" parameterClass="java.util.HashMap">
+		UPDATE eka.mst_insured
+		   SET mste_flag_update_nasabah = #mste_flag_update_nasabah#
+		 WHERE reg_spaj = rpad(replace(#reg_spaj#,'.'),11,' ')  AND mste_insured_no = 1
+	</update>
+	
+	<update id="elions.bas.updateMstFormLusId" parameterClass="java.util.HashMap">
+			UPDATE eka.mst_form
+		   SET lus_id = #lus_id#
+		 WHERE msf_id = #msf_id#
+	</update>
+	
+	<update id="elions.bas.updateMstSpajLusId" parameterClass="java.util.HashMap">
+		UPDATE eka.mst_spaj
+		   SET lus_id = #lus_id#,
+		       modify_lus_id = #lus_id#
+		 WHERE msab_id IN (SELECT DISTINCT msab_id
+		                              FROM eka.mst_form
+		                             WHERE msf_id = #msf_id#)
+	</update>
+
+	<update id="elions.bas.updateMstSpajDetLusId" parameterClass="java.util.HashMap">
+		UPDATE eka.mst_spaj_det
+		   SET mssd_lus_id = #lus_id#
+		 WHERE msf_id = #msf_id#
+	</update>
+
+	<update id="elions.bas.updateTanggalSpajDet" parameterClass="java.util.HashMap">
+		UPDATE eka.mst_spaj_det SET mssd_dt = to_date(#tanggal#,'dd/mm/yyyy') 
+		 WHERE msab_id = (SELECT msab_id FROM eka.mst_agent_branch WHERE msag_id = #kodeAgent#)
+		   AND msf_id = (SELECT msf_id FROM eka.mst_spaj_det WHERE no_blanko = #noBlanko# and mss_jenis = 1)	
+	</update>
+
+	<update id="elions.bas.updateTanggalFormHist" parameterClass="java.util.HashMap">
+		UPDATE  eka.mst_form_hist a  
+		   SET a.msfh_dt = to_date(#tanggal#,'dd/mm/yyyy')
+		 WHERE a.msf_id = (SELECT msf_id
+						       FROM eka.mst_spaj_det 
+						      WHERE msab_id = (SELECT msab_id FROM eka.mst_agent_branch WHERE msag_id = #kodeAgent#)
+					   	        AND no_blanko = #noBlanko#)
+		   AND a.msfh_dt = (SELECT mssd_dt
+						     FROM eka.mst_spaj_det 
+						    WHERE msab_id = (SELECT msab_id FROM eka.mst_agent_branch WHERE msag_id = #kodeAgent#)
+					   	      AND no_blanko = #noBlanko#)
+	</update>
+	
+	<update id="elions.bas.updateSmsserver_in" parameterClass="sms_in">
+		UPDATE eka.smsserver_in                                                         
+			<dynamic prepend=" set ">                                                       
+				<isNotNull removeFirstPrepend="true" prepend="," property="encoding">encoding =upper(#encoding#) </isNotNull>                                                  
+				<isNotNull removeFirstPrepend="true" prepend="," property="gateway_id">gateway_id = upper(#gateway_id#) </isNotNull>                                            
+				<isNotNull removeFirstPrepend="true" prepend="," property="message_date">message_date = #message_date# </isNotNull>                                             
+				<isNotNull removeFirstPrepend="true" prepend="," property="original_receive_date">original_receive_date = #original_receive_date# </isNotNull>                  
+				<isNotNull removeFirstPrepend="true" prepend="," property="original_ref_no">original_ref_no = upper(#original_ref_no#) </isNotNull>                             
+				<isNotNull removeFirstPrepend="true" prepend="," property="originator">originator = upper(#originator#) </isNotNull>                                            
+				<isNotNull removeFirstPrepend="true" prepend="," property="process">process = #process# </isNotNull>                                                            
+				<isNotNull removeFirstPrepend="true" prepend="," property="receive_date">receive_date = #receive_date# </isNotNull>                                             
+				<isNotNull removeFirstPrepend="true" prepend="," property="text">text = upper(#text#) </isNotNull>                                                              
+				<isNotNull removeFirstPrepend="true" prepend="," property="type">type = upper(#type#) </isNotNull>                                                              
+				<isNotNull removeFirstPrepend="true" prepend="," property="process_date">process_date=#process_date#</isNotNull>	
+				<isNotNull removeFirstPrepend="true" prepend="," property="lus_id">lus_id=#lus_id#</isNotNull>
+				<isNotNull removeFirstPrepend="true" prepend="," property="proses_ket">proses_ket=#proses_ket#</isNotNull>
+			</dynamic>                                                                      
+		WHERE ID = #id#                                                                 
+	</update>
+	
+	<update id="elions.bas.updateFormBandara" parameterClass="java.util.HashMap">
+		UPDATE eka.mst_form_bandara                                                         
+		   SET tgl_permintaan = to_date(#date#,'dd/mm/yyyy'),
+		   	   nama_perwakilan = upper(#nama#),
+		   	   juml_blanko = #jumlh#,
+		   	   no_blanko = #noBlanko#,
+		   	   lus_admin = #lus_id#                                                      
+		 WHERE no_permintaan = #id# 	
+	</update>
+	
+	<update id="elions.bas.updateSuratHist" parameterClass="suratHist">
+		UPDATE   eka.mst_surat_history
+		   SET   tgl_fu1 = #tgl_fu1#,
+		         user_fu1 = #user_fu1#,
+		         ket_fu1 = #ket_fu1#,
+		         ket2_fu1 = #ket2_fu1#,
+		         tgl_fu2 = #tgl_fu2#,
+		         user_fu2 = #user_fu2#,
+		         ket_fu2 = #ket_fu2#,
+		         ket2_fu2 = #ket2_fu2#,
+		         tgl_fu3 = #tgl_fu3#,
+		         user_fu3 = #user_fu3#,
+		         ket_fu3 = #ket_fu3#,
+		         ket2_fu3 = #ket2_fu3#
+		 WHERE   reg_spaj = #reg_spaj# AND jenis = #jenis# AND no = #no# AND periode = #periode# 		
+	</update>
+	
+	<update id="elions.bas.updateMstDetRecruiter" parameterClass="java.util.HashMap">
+		update eka.mst_det_rekruter
+		   set msrk_id = #ls_recruiter#                        
+		 where msag_id = #ls_recruit#		
+	</update>
+	
+	<update id="elions.bas.updateMasterInputAgen" parameterClass="com.ekalife.elions.model.Mia">
+		UPDATE eka.mst_input_agensys                                                    
+		<dynamic prepend=" set ">                                                       
+			<isNotNull removeFirstPrepend="true" prepend="," property="lbn_id">lbn_id = #lbn_id# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="lca_id">lca_id = upper(#lca_id#) </isNotNull>                                                        
+			<isNotNull removeFirstPrepend="true" prepend="," property="lsrg_id">lsrg_id = upper(#lsrg_id#) </isNotNull>                                                     
+			<isNotNull removeFirstPrepend="true" prepend="," property="lus_id">lus_id = #lus_id# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="lwk_id">lwk_id = upper(#lwk_id#) </isNotNull>                                                        
+			<isNotNull removeFirstPrepend="true" prepend="," property="mcl_id">mcl_id = upper(#mcl_id#) </isNotNull>                                                        
+			<isNotNull removeFirstPrepend="true" prepend="," property="mia_akhir_kontrak">mia_akhir_kontrak = to_date(#mia_akhir_kontrak#,'dd/mm/yyyy') </isNotNull>                              
+			<isNotNull removeFirstPrepend="true" prepend="," property="mia_aktif">mia_aktif = #mia_aktif# </isNotNull>                                                      
+			<isNotNull removeFirstPrepend="true" prepend="," property="mia_alamat">mia_alamat = upper(#mia_alamat#) </isNotNull>                                            
+			<isNotNull removeFirstPrepend="true" prepend="," property="mia_awal_kontrak">mia_awal_kontrak = to_date(#mia_awal_kontrak#,'dd/mm/yyyy') </isNotNull>                                 
+			<isNotNull removeFirstPrepend="true" prepend="," property="mia_birth_date">mia_birth_date = to_date(#mia_birth_date#,'dd/mm/yyyy') </isNotNull>                                       
+			<isNotNull removeFirstPrepend="true" prepend="," property="mia_birth_place">mia_birth_place = upper(#mia_birth_place#) </isNotNull>                             
+			<isNotNull removeFirstPrepend="true" prepend="," property="mia_input_date">mia_input_date = to_date(#mia_input_date#,'dd/mm/yyyy') </isNotNull>                                       
+			<isNotNull removeFirstPrepend="true" prepend="," property="mia_ktp">mia_ktp = upper(#mia_ktp#) </isNotNull>                                                     
+			<isNotNull removeFirstPrepend="true" prepend="," property="mia_level">mia_level = #mia_level# </isNotNull>                                                      
+			<isNotNull removeFirstPrepend="true" prepend="," property="mia_level_recruit">mia_level_recruit = #mia_level_recruit# </isNotNull>                              
+			<isNotNull removeFirstPrepend="true" prepend="," property="mia_nama">mia_nama = upper(#mia_nama#) </isNotNull>                                                  
+			<isNotNull removeFirstPrepend="true" prepend="," property="mia_no_kontrak">mia_no_kontrak = upper(#mia_no_kontrak#) </isNotNull>                                
+			<isNotNull removeFirstPrepend="true" prepend="," property="mia_no_rek">mia_no_rek = upper(#mia_no_rek#) </isNotNull>                                            
+			<isNotNull removeFirstPrepend="true" prepend="," property="mia_recruiter">mia_recruiter = upper(#mia_recruiter#) </isNotNull>                                   
+			<isNotNull removeFirstPrepend="true" prepend="," property="mia_tgl_aktif">mia_tgl_aktif = to_date(#mia_tgl_aktif#,'dd/mm/yyyy') </isNotNull>                                          
+			<isNotNull removeFirstPrepend="true" prepend="," property="msag_id">msag_id = upper(#msag_id#) </isNotNull>                                                     
+			<isNotNull removeFirstPrepend="true" prepend="," property="mia_tgl_berkas">mia_tgl_berkas = to_date(#mia_tgl_berkas#,'dd/mm/yyyy') </isNotNull>                                       
+		</dynamic>                                                                      
+		WHERE MIA_AGENSYS_ID = #mia_agensys_id#    	
+	</update>
+	
+	<update id="elions.bas.updateHadiah" parameterClass="com.ekalife.elions.model.Hadiah">
+		update eka.mst_hadiah 
+		<dynamic prepend=" set ">                                                       
+			<isNotNull removeFirstPrepend="true" prepend="," property="reg_spaj">reg_spaj = #reg_spaj# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_no">mh_no = #mh_no# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="lhc_id">lhc_id = #lhc_id# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="lh_id">lh_id = #lh_id# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="lspd_id">lspd_id = #lspd_id# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="supplier_id">supplier_id = #supplier_id# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_flag_kirim">mh_flag_kirim = #mh_flag_kirim# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_budget">mh_budget = #mh_budget# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_harga">mh_harga = #mh_harga# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_alamat">mh_alamat = #mh_alamat# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_kota">mh_kota = #mh_kota# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_kodepos">mh_kodepos = #mh_kodepos# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_telepon">mh_telepon = #mh_telepon# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_keterangan">mh_keterangan = #mh_keterangan# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_quantity">mh_quantity = #mh_quantity# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="lbn_id">lbn_id = #lbn_id# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_rek_no">mh_rek_no = #mh_rek_no# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_rek_nama">mh_rek_nama = #mh_rek_nama# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_input">mh_tgl_input = #mh_tgl_input# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_aksep">mh_tgl_aksep = #mh_tgl_aksep# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_paid">mh_tgl_paid = #mh_tgl_paid# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_kirim_vendor">mh_tgl_kirim_vendor = #mh_tgl_kirim_vendor# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_terima_ajs">mh_tgl_terima_ajs = #mh_tgl_terima_ajs# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_kirim_ajs">mh_tgl_kirim_ajs = #mh_tgl_kirim_ajs# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_terima_nsbh">mh_tgl_terima_nsbh = #mh_tgl_terima_nsbh# </isNotNull> 
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_alamat_kirim">mh_alamat_kirim = #mh_alamat_kirim# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_kota_kirim">mh_kota_kirim = #mh_kota_kirim# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_kodepos_kirim">mh_kodepos_kirim = #mh_kodepos_kirim# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="flag_standard">flag_standard = #flag_standard# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="program_hadiah">program_hadiah = #program_hadiah# </isNotNull>                                                       
+		</dynamic>                                                               
+		 where reg_spaj = #reg_spaj# and mh_no = #mh_no#			
+	</update>
+	
+	<!-- Update dokumen hadiah input -->
+	<update id="elions.bas.updatedokumenHadiahInput" parameterClass="com.ekalife.elions.model.Hadiah">
+		update eka.mst_hadiah set lspd_id = #lspd_id#                                  
+		 where reg_spaj = #reg_spaj# and mh_no = #mh_no#			
+	</update>
+	
+	<!-- Update cancel hadiah -->
+	<update id="elions.bas.updatecancelHadiah" parameterClass="com.ekalife.elions.model.Hadiah">
+		update eka.mst_hadiah set lspd_id = #lspd_id#                                  
+		 where reg_spaj = #reg_spaj# and mh_no = #mh_no#			
+	</update>
+	
+	<update id="elions.bas.updateProsesTransfer" parameterClass="com.ekalife.elions.model.Hadiah">
+    	update eka.mst_hadiah
+    	<dynamic prepend=" set ">
+    		<isNotNull removeFirstPrepend="true" prepend="," property="lspd_id">lspd_id = #lspd_id# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_aksep">mh_tgl_aksep = #mh_tgl_aksep# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_paid">mh_tgl_paid = #mh_tgl_paid# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_kirim_vendor">mh_tgl_kirim_vendor = #mh_tgl_kirim_vendor# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_terima_ajs">mh_tgl_terima_ajs = #mh_tgl_terima_ajs# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_kirim_ajs">mh_tgl_kirim_ajs = #mh_tgl_kirim_ajs# </isNotNull>                                                               
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_terima_nsbh">mh_tgl_terima_nsbh = #mh_tgl_terima_nsbh# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_deadline_bayar">mh_tgl_deadline_bayar = #mh_tgl_deadline_bayar# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_keterangan">mh_keterangan = #mh_keterangan# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_kirim_uw">mh_tgl_kirim_uw = #mh_tgl_kirim_uw# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_order_purchasing">mh_tgl_order_purchasing = #mh_tgl_order_purchasing# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_barang_ready">mh_tgl_barang_ready = #mh_tgl_barang_ready# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_kirim_ga">mh_tgl_kirim_ga = #mh_tgl_kirim_ga# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_sn">mh_sn = #mh_sn# </isNotNull>  
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_kirim_hadiah">mh_tgl_kirim_hadiah = #mh_tgl_kirim_hadiah# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_alamat_kirim">mh_alamat_kirim = #mh_alamat_kirim# </isNotNull>  
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_kota_kirim">mh_kota_kirim = #mh_kota_kirim# </isNotNull> 
+			<isNotNull removeFirstPrepend="true" prepend="," property="mh_kodepos_kirim">mh_kodepos_kirim = #mh_kodepos_kirim# </isNotNull>                                                                            
+    		<isNotNull removeFirstPrepend="true" prepend="," property="mh_tgl_kirim_package">mh_tgl_kirim_package = #mh_tgl_kirim_package# </isNotNull>
+    	</dynamic>
+    	 where reg_spaj = #reg_spaj# and mh_no = #mh_no#
+    </update>
+    
+    <update id="elions.bas.cancelProsesTransfer" parameterClass="com.ekalife.elions.model.Hadiah">
+    	update eka.mst_hadiah
+    	set lspd_id = #lspd_id#
+    	where reg_spaj = #reg_spaj# and mh_no = #mh_no#
+    </update>
+
+    <update id="elions.bas.updateKodeBridge" parameterClass="java.util.HashMap">
+        update eka.mst_agent
+           set lsrg_id = #lsrg_id#                        
+         where msag_id = #msag_id#       
+    </update>
+    
+    <update id="elions.bas.updateHadiahStableSave" parameterClass="java.util.HashMap">
+    	update eka.mst_hadiah set lh_id = #lh_id# where reg_spaj = #reg_spaj#
+    </update>
+    
+    <update id="elions.bas.updateMstBillingBillNo" parameterClass="java.util.HashMap">
+     	update eka.mst_billing set msbi_flag_kuitansi = #msbi_flag_kuitansi#
+		 where reg_spaj = rpad(replace(#spaj#,'.'),11,' ')
+		   and trim(msbi_bill_no) =trim(#msbi_bill_no#)
+    </update>
+    
+    <update id="elions.bas.updateJenisHadiah" parameterClass="java.util.HashMap">
+    	<isNotEmpty>
+    		<isEqual property="mode" compareValue="aktif">
+    			update eka.lst_hadiah set flag_active = 1 where lh_id = #lh_id# and lhc_id = #lhc_id#
+    		</isEqual>
+    		<isEqual property="mode" compareValue="non_aktif">
+    			update eka.lst_hadiah set flag_active = 0 where lh_id = #lh_id# and lhc_id = #lhc_id#
+    		</isEqual>
+    	</isNotEmpty>
+    </update>
+    
+    <update id="elions.bas.updateBatalSsp" parameterClass="hashMap">
+        update eka.mst_cplan@eb 
+        set lssp_id = #lssp_id#,
+            lspd_id = #lspd_id#,
+            mcp_flag_bill = #mcp_flag_bill#,
+            mcp_tgl_batal = #mcp_tgl_batal#,
+            mcp_alasan = upper(#mcp_alasan#)
+        where no_id = #id#
+    </update>
+    
+    <update id="elions.bas.updateStokBrosur" parameterClass="formSpaj">
+    	<!-- update stok.stock_brosur set stock = stock + (#msf_amount#) 
+    		where upper(code_brosur) = upper(#lsjs_prefix#) 
+    			and busdev = #busdev#
+    			and aktif = 1 -->
+    	update stok.stock_brosur set stock = stock + (#msf_amount#) 
+            where rtrim(upper(code_brosur)) = rtrim(upper(#lsjs_prefix#)) 
+                and busdev = #busdev#
+                and jenis = #jn_brosur#
+                and aktif = 1
+    </update>
+    
+    <update id="elions.bas.updateKartuNama" parameterClass="kartuNama">
+		UPDATE eka.mst_kartu_nama set mkn_approve = #mkn_approve#, mkn_position = #mkn_position#
+			where mkn_id = #mkn_id#              
+	</update>
+	
+	<update id="elions.bas.updateLstAddrRegion" parameterClass="java.util.HashMap">
+		UPDATE eka.lst_addr_region
+		<dynamic prepend=" set ">
+			<isNotNull removeFirstPrepend="true" prepend="," property="nama">lar_nama = #nama# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="alamat">lar_alamat = #alamat# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="admin">lar_admin = #admin# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="telp">lar_telpon = #telp# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="email">lar_email = #email# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="no">lar_no = #no# </isNotNull>
+			<isNotNull removeFirstPrepend="true" prepend="," property="aktif">flag_aktif = #aktif# </isNotNull>
+	    	<isNotNull removeFirstPrepend="true" prepend="," property="lar_speedy">lar_speedy = #lar_speedy# </isNotNull>                                                               
+		</dynamic>
+		WHERE lar_id = #lar_id#
+	</update>
+	
+	<update id="elions.bas.updateAddressRegion" parameterClass="com.ekalife.elions.model.AddressRegion">
+		UPDATE eka.lst_addr_region
+		<dynamic prepend=" set ">
+			<isNotEmpty property="lar_nama">
+				<isNotNull removeFirstPrepend="true" prepend="," property="lar_nama">lar_nama = #lar_nama# </isNotNull>
+			</isNotEmpty>
+			<isNotEmpty property="lar_alamat">
+				<isNotNull removeFirstPrepend="true" prepend="," property="lar_alamat">lar_alamat = #lar_alamat# </isNotNull>
+			</isNotEmpty>
+			<isNotEmpty property="lar_admin">
+				<isNotNull removeFirstPrepend="true" prepend="," property="lar_admin">lar_admin = #lar_admin# </isNotNull>
+			</isNotEmpty>
+			<isNotEmpty property="lar_telpon">
+				<isNotNull removeFirstPrepend="true" prepend="," property="lar_telpon">lar_telpon = #lar_telpon# </isNotNull>
+			</isNotEmpty>
+			<isNotEmpty property="lar_lca_id">
+				<isNotNull removeFirstPrepend="true" prepend="," property="lar_lca_id">lar_telpon = #lar_lca_id# </isNotNull>
+			</isNotEmpty>
+			<isNotEmpty property="lar_email">
+				<isNotNull removeFirstPrepend="true" prepend="," property="lar_email">lar_email = #lar_email# </isNotNull>
+			</isNotEmpty>
+			<isNotEmpty property="lar_no">
+				<isNotNull removeFirstPrepend="true" prepend="," property="lar_no">lar_no = #lar_no# </isNotNull>
+			</isNotEmpty>
+			<isNotEmpty property="lar_head">
+				<isNotNull removeFirstPrepend="true" prepend="," property="lar_head">lar_head = #lar_head# </isNotNull>
+			</isNotEmpty>
+			<isNotEmpty property="lar_kode_bmi">
+				<isNotNull removeFirstPrepend="true" prepend="," property="lar_kode_bmi">lar_kode_bmi = #lar_kode_bmi# </isNotNull>
+			</isNotEmpty>
+			<isNotEmpty property="flag_aktif">
+				<isNotNull removeFirstPrepend="true" prepend="," property="flag_aktif">flag_aktif = #flag_aktif# </isNotNull>
+			</isNotEmpty>
+			<isNotEmpty property="lar_nama">
+				<isNotNull removeFirstPrepend="true" prepend="," property="lar_email_cc">lar_email_cc = #lar_email_cc# </isNotNull>
+			</isNotEmpty>
+			<isNotEmpty property="lska_id">
+				<isNotNull removeFirstPrepend="true" prepend="," property="lska_id">lska_id = #lska_id# </isNotNull>
+			</isNotEmpty>
+			<isNotEmpty property="lar_email_tambahan">
+				<isNotNull removeFirstPrepend="true" prepend="," property="lar_email_tambahan">lar_email_tambahan = #lar_email_tambahan# </isNotNull>
+			</isNotEmpty>
+			<isNotEmpty property="lar_email_tambahan_cc">
+				<isNotNull removeFirstPrepend="true" prepend="," property="lar_email_tambahan_cc">lar_email_tambahan_cc = #lar_email_tambahan_cc# </isNotNull>
+		    </isNotEmpty>
+		    <isNotEmpty property="lar_speedy">
+		    	<isNotNull removeFirstPrepend="true" prepend="," property="lar_speedy">lar_speedy = #lar_speedy# </isNotNull>
+		    </isNotEmpty>
+		    <isNotEmpty property="lar_luas">
+		    	<isNotNull removeFirstPrepend="true" prepend="," property="lar_luas">lar_luas = #lar_luas# </isNotNull>   
+		    </isNotEmpty>
+		    <isNotEmpty property="lar_fax">
+		    	<isNotNull removeFirstPrepend="true" prepend="," property="lar_fax">lar_fax = #lar_fax# </isNotNull>      
+		    </isNotEmpty>
+		    <isNotEmpty property="lar_status_gedung">
+		    	<isNotNull removeFirstPrepend="true" prepend="," property="lar_status_gedung">lar_status_gedung = #lar_status_gedung# </isNotNull>
+		    </isNotEmpty>
+		    <isNotEmpty property="lar_beg_date_sewa">
+		    	<isNotNull removeFirstPrepend="true" prepend="," property="lar_beg_date_sewa">lar_beg_date_sewa = #lar_beg_date_sewa# </isNotNull>
+		    </isNotEmpty>
+		    <isNotEmpty property="lar_end_date_sewa">
+		    	<isNotNull removeFirstPrepend="true" prepend="," property="lar_end_date_sewa">lar_end_date_sewa = #lar_end_date_sewa# </isNotNull>
+		    </isNotEmpty>
+		    <isNotEmpty property="lar_beg_date_domisili">
+		    	<isNotNull removeFirstPrepend="true" prepend="," property="lar_beg_date_domisili">lar_beg_date_domisili = #lar_beg_date_domisili# </isNotNull>
+			</isNotEmpty>
+			<isNotEmpty property="lar_end_date_domisili">
+				<isNotNull removeFirstPrepend="true" prepend="," property="lar_end_date_domisili">lar_end_date_domisili = #lar_end_date_domisili# </isNotNull>	    	                                                      
+			</isNotEmpty>
+			<isNotEmpty property="lar_update_date">
+				<isNotNull removeFirstPrepend="true" prepend="," property="lar_update_date">lar_update_date = #lar_update_date# </isNotNull>	    	                                                      
+			</isNotEmpty>
+			<isNotEmpty property="lar_end_date_reklame">
+				<isNotNull removeFirstPrepend="true" prepend="," property="lar_end_date_reklame">lar_end_date_reklame = #lar_end_date_reklame# </isNotNull>	    	                                                      
+			</isNotEmpty>
+		</dynamic>
+		WHERE lar_id = #lar_id#
+	</update>
+	
+	<update id="elions.bas.updateMonitoringSpaj" parameterClass="java.util.HashMap">
+		update eka.mst_spaj_ao 
+		<isEqual property="type" compareValue="old">	
+			set id_dok = 'XX'||#value#, flag_active = 0, update_date = sysdate 
+			where id_dok = #value# and lstb_id = 1 and jenis = #jenis#
+		</isEqual>
+		<isEqual property="type" compareValue="new">
+			set flag_further = null , update_date = sysdate 
+			where id_dok = #value# and lstb_id = 1 and jenis = #jenis# and flag_active = 1
+		</isEqual>	
+		<isEqual property="type" compareValue="update_further">
+			<isNotNull property="tgl_kembali_ke_agen">
+				set update_date = sysdate, tgl_kembali_ke_agen = #tgl_kembali_ke_agen#, tgl_terima_dari_agen = #tgl_terima_dari_agen#, flag_further = null, jenis_further = #jenis_further#, keterangan_further = #keterangan_further#
+				where id_dok = #value# and lstb_id = 1 and jenis = #jenis# and flag_active = 1 and flag_further = 1 and (tgl_kembali_ke_agen is null or tgl_terima_dari_agen is null)
+			</isNotNull>
+			<isNull property="tgl_kembali_ke_agen">
+				set update_date = sysdate, tgl_terima_dari_agen = #tgl_terima_dari_agen#
+				where id_dok = #value# and lstb_id = 1 and jenis = #jenis# and flag_active = 1 and flag_further = 1 and (tgl_kembali_ke_agen is null or tgl_terima_dari_agen is null)
+			</isNull>
+		</isEqual>
+		<isEqual property="type" compareValue="update_to_further">
+			set update_date = sysdate,  flag_further = 1, tgl_further = sysdate 
+			where id_dok = #value# and lstb_id = 1 and jenis = #jenis# and flag_active = 1
+		</isEqual>	
+		<isEqual property="type" compareValue="update">
+			set update_date = sysdate,  flag_further = 2 
+			where id_dok = #value# and lstb_id = 1 and jenis = #jenis# and flag_active = 1
+		</isEqual>	
+		<isEqual property="type" compareValue="update_NF_to_further">
+			set msag_id =  #msag_id#,name_customer = upper(#nama_pemegang#), tgl_further = sysdate , update_date = sysdate,  flag_further = 1, tgl_kembali_ke_agen = #tgl_kembali_ke_agen#, tgl_terima_dari_agen = #tgl_terima_dari_agen#, email_cc= #emailcc#, jenis_further = #jenis_further#, keterangan_further = #keterangan_further#
+			where id_dok = #value# and lstb_id = 1 and jenis = #jenis# and flag_active = 1
+		</isEqual>	
+		<isEqual property="type" compareValue="edit_data_further">
+				set name_customer = upper(#nama_pemegang#), update_date = sysdate,tgl_kembali_ke_agen = #tgl_kembali_ke_agen#, tgl_terima_dari_agen = #tgl_terima_dari_agen#, email_cc= #emailcc#, jenis_further = #jenis_further#, keterangan_further = #keterangan_further#
+				where id_dok = #value# and lstb_id = 1 and jenis = #jenis# and flag_active = 1 and flag_further = 1
+			
+		</isEqual>
+		<isEqual property="type" compareValue="update_further_to_NF_inputSpaj">
+			set update_date = sysdate,flag_further = null, reg_spaj = #emailcc#, tgl_terima_dari_agen =sysdate
+				where id_dok = #value# and lstb_id = 1 and flag_active = 1 
+		</isEqual>
+		
+		
+					
+	</update>
+	
+	 <update id="elions.bas.updateStokSpajUw" parameterClass="formSpaj">
+    	update eka.lst_jenis_spaj set lsjs_stock = lsjs_stock + (#msf_amount#) ,lsjs_qty_form =lsjs_qty_form + (#msf_amount#) , modify_dt=#msfh_dt#
+            where lsjs_id=#lsjs_id# 
+                and jenis = 0
+                and aktif = 1
+    </update>
+    
+    <update id="elions.bas.updatePenguranganSpajUw" parameterClass="formSpaj">
+    	update eka.lst_jenis_spaj set lsjs_stock = lsjs_stock - (#msf_amount#)
+    	  <!-- <isEmpty property="msfh_dt">, modify_dt=trunc(sysdate)</isEmpty>
+		  <isNotEmpty property="msfh_dt">,modify_dt=#msfh_dt# </isNotEmpty -->
+            where lsjs_id=#lsjs_id# 
+                and jenis = 0
+                and aktif = 1
+    </update>
+    
+    <update id="elions.bas.updateListAgingFollowup" parameterClass="java.util.HashMap">
+    	update eka.lst_aging_followup_temp 
+    	set followup = 1
+		where beg_date = to_date(#a_beg_date#,'dd/MM/yyyy') 
+			and end_date = to_date(#a_end_date#,'dd/MM/yyyy')
+			and followup = 0
+			and create_date is not null
+			and mspo_policy_no in 
+			    (select distinct
+			        a.mspo_policy_no
+			    from
+			        eka.lst_aging_followup_temp a,
+			        eka.mst_policy b,
+			        eka.mst_followup c,
+			        eka.mst_billing d
+			    where
+			        a.mspo_policy_no = b.mspo_policy_no
+			        and a.beg_date = to_date(#a_beg_date#,'dd/MM/yyyy') 
+			        and a.end_date = to_date(#a_end_date#,'dd/MM/yyyy')
+			        and b.reg_spaj = c.reg_spaj
+			        and c.reg_spaj = d.reg_spaj
+			        and c.msbi_premi_ke = d.msbi_premi_ke
+			        and c.msbi_tahun_ke = d.msbi_tahun_ke
+			        and d.msbi_beg_date between to_date(#a_beg_date#,'dd/MM/yyyy') and to_date(#a_end_date#,'dd/MM/yyyy')
+			        and a.followup = 0
+			        and create_date is not null) 
+    </update>
+		 
+</sqlMap>

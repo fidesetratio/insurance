@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="laporan_bas_cek_data_inputdata_all" pageWidth="1225" pageHeight="791" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="1205" leftMargin="10" rightMargin="10" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.VGuides.Column Header" value="30,102,106,128"/>
+	<property name="com.jasperassistant.designer.HGuides" value="4,8,30,32,34,80,83,132,135,152,207,210,250,252,255,297,350,398,438,571,574,643,646,714,716,792,794,796,858,860,862,1146"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="tanggalAwal" class="java.lang.String">
+		<defaultValueExpression><![CDATA["03/10/2007"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.lang.String">
+		<defaultValueExpression><![CDATA["03/10/2007"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<queryString>
+		<![CDATA[SELECT tabel2.msch_status_input,tabel5.lssh_name, 1 retour, 1 kirim, tabel1.mspo_policy_no,
+       tabel2.msch_no_seri, tabel1.msch_nama_pp, tabel1.msch_nama_tt,
+       tabel1.msch_nama_produk, tabel1.msch_cabang, tabel1.msch_alamat,
+       tabel1.msch_kota, tabel1.msch_tgl_kirim, tabel1.msch_tgl_terima,
+       tabel1.msch_penerima, tabel2.msch_tgl_upload,
+       tabel2.msch_bas_tgl_terima,tabel2.msch_zip_code,tabel2.msch_history,tabel2.lssh_id,tabel2.lus_id,
+	nvl(tabel6.msap_area_code1,'-') msap_area_code1, nvl(tabel6.msap_phone1,'-') msap_phone1, nvl(tabel6.msap_area_code2,'-')msap_area_code2, nvl(tabel6.msap_phone2,'-') msap_phone2,
+       nvl(tabel6.msap_area_code3,'-')msap_area_code3, nvl(tabel6.msap_phone3,'-') msap_phone3, nvl(tabel6.no_hp,'-') no_hp, nvl(tabel6.no_hp2,'-') no_hp2
+  FROM (SELECT *
+          FROM eka.mst_client_history
+         WHERE lssh_id in(1,2,3) AND msch_status_input = 3) tabel1,
+       (SELECT *
+          FROM eka.mst_client_history msch_parent
+         WHERE lssh_id = 1
+           AND msch_status_input in( 1,2)
+           AND TRUNC(msch_tgl_upload) >=to_date($P{tanggalAwal},'dd/mm/yyyy')
+           AND TRUNC(msch_tgl_upload) <=to_date($P{tanggalAkhir},'dd/mm/yyyy')
+           AND msch_no_urut = (
+                  SELECT MAX (msch_no_urut)
+                    FROM eka.mst_client_history
+                   WHERE lssh_id = 1
+                     AND msch_status_input in(1,2)
+					 AND MSPO_POLICY_NO=msch_parent.MSPO_POLICY_NO
+		)
+		) tabel2,
+		eka.mst_policy tabel3,
+		eka.mst_insured tabel4,
+		eka.lst_status_history tabel5,
+	   eka.mst_address_billing tabel6
+ WHERE tabel1.mspo_policy_no = tabel2.mspo_policy_no and
+ 	   tabel1.mspo_policy_no=tabel3.mspo_policy_no and
+	   tabel3.reg_spaj=tabel4.reg_spaj and
+	   tabel3.reg_spaj=tabel6.reg_spaj and
+	   tabel4.mste_insured_no=1 and
+	   tabel4.mste_flag_update_nasabah=1 and
+	   tabel1.lssh_id=tabel5.lssh_id]]>
+	</queryString>
+	<field name="kirim" class="java.lang.Integer"/>
+	<field name="lssh_id" class="java.lang.Integer"/>
+	<field name="lssh_name" class="java.lang.String"/>
+	<field name="lus_id" class="java.lang.Integer"/>
+	<field name="msap_area_code1" class="java.lang.String"/>
+	<field name="msap_area_code2" class="java.lang.String"/>
+	<field name="msap_area_code3" class="java.lang.String"/>
+	<field name="msap_phone1" class="java.lang.String"/>
+	<field name="msap_phone2" class="java.lang.String"/>
+	<field name="msap_phone3" class="java.lang.String"/>
+	<field name="msch_alamat" class="java.lang.String"/>
+	<field name="msch_bas_tgl_terima" class="java.util.Date"/>
+	<field name="msch_cabang" class="java.lang.String"/>
+	<field name="msch_history" class="java.lang.String"/>
+	<field name="msch_kota" class="java.lang.String"/>
+	<field name="msch_nama_pp" class="java.lang.String"/>
+	<field name="msch_nama_produk" class="java.lang.String"/>
+	<field name="msch_nama_tt" class="java.lang.String"/>
+	<field name="msch_no_seri" class="java.lang.String"/>
+	<field name="msch_penerima" class="java.lang.String"/>
+	<field name="msch_status_input" class="java.lang.Integer"/>
+	<field name="msch_tgl_kirim" class="java.util.Date"/>
+	<field name="msch_tgl_terima" class="java.util.Date"/>
+	<field name="msch_tgl_upload" class="java.util.Date"/>
+	<field name="msch_zip_code" class="java.lang.String"/>
+	<field name="mspo_policy_no" class="java.lang.String"/>
+	<field name="no_hp" class="java.lang.String"/>
+	<field name="no_hp2" class="java.lang.String"/>
+	<field name="retour" class="java.lang.Integer"/>
+	<variable name="total" class="java.math.BigDecimal" calculation="Count">
+		<variableExpression><![CDATA[new BigDecimal($V{REPORT_COUNT}.intValue())]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="retour" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($F{lssh_id}.intValue()==0)?
+($F{retour})
+: new Integer(0)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<variable name="kirim" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal( $V{total}.intValue()-$V{retour}.intValue())]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<columnHeader>
+		<band height="129">
+			<staticText>
+				<reportElement x="4" y="30" width="80" height="18"/>
+				<textElement/>
+				<text><![CDATA[Tanggal]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4" y="1" width="335" height="20"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[LAPORAN CHECK DATA DAN INPUT DATA (ALL)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4" y="47" width="80" height="18"/>
+				<textElement/>
+				<text><![CDATA[Status]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="138" y="47" width="10" height="18"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="138" y="30" width="10" height="18"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="148" y="31" width="248" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggalAwal}+" s/d "+$P{tanggalAkhir}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="148" y="48" width="209" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Dokumen Lengkap Diterima"]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="4" y="104" width="982" height="1"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="252" y="82" width="1" height="22"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="32" y="82" width="1" height="22"/>
+				<graphicElement/>
+			</line>
+			<frame>
+				<reportElement mode="Opaque" x="32" y="82" width="367" height="22" backcolor="#C0C0C0"/>
+				<box border="1Point" padding="0"/>
+				<staticText>
+					<reportElement x="2" y="1" width="216" height="20" backcolor="#C0C0C0"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true" isItalic="true"/>
+					</textElement>
+					<text><![CDATA[VENDOR]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="223" y="1" width="138" height="20"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true" isItalic="true"/>
+					</textElement>
+					<text><![CDATA[BAS/Nasabah]]></text>
+				</staticText>
+				<line>
+					<reportElement x="220" y="0" width="1" height="22"/>
+					<graphicElement/>
+				</line>
+			</frame>
+			<frame>
+				<reportElement mode="Opaque" x="4" y="102" width="1143" height="27" backcolor="#C0C0C0"/>
+				<box border="1Point" padding="0"/>
+				<staticText>
+					<reportElement x="4" y="5" width="18" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[No.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="30" y="5" width="44" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Tgl Kirim]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="79" y="5" width="46" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Tgl Terima]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="131" y="5" width="66" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Penerima]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="206" y="5" width="40" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Status]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="297" y="4" width="48" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Tgl Terima]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="349" y="4" width="44" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Tgl Input]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="395" y="4" width="38" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[No. Seri]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="437" y="4" width="74" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Nama Pemegang]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="524" y="4" width="86" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Nama Tertanggung]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="617" y="4" width="68" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[No. Polis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="689" y="4" width="100" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Nama Produk]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Transparent" x="921" y="4" width="52" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Cabang]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="975" y="4" width="72" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Alamat Penagihan]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1056" y="5" width="36" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Kota]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1101" y="3" width="36" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[KdPos]]></text>
+				</staticText>
+				<line>
+					<reportElement x="76" y="0" width="1" height="25"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="128" y="0" width="1" height="25"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="203" y="0" width="1" height="25"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="248" y="0" width="1" height="25"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="394" y="0" width="1" height="25"/>
+					<graphicElement/>
+				</line>
+				<staticText>
+					<reportElement x="251" y="5" width="40" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Update]]></text>
+				</staticText>
+				<line>
+					<reportElement x="293" y="0" width="1" height="25"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="346" y="0" width="1" height="25"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="434" y="0" width="1" height="25"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="790" y="0" width="1" height="26"/>
+					<graphicElement/>
+				</line>
+				<staticText>
+					<reportElement mode="Transparent" x="792" y="4" width="63" height="21"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[No Telp]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Transparent" x="858" y="4" width="55" height="21"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[HP]]></text>
+				</staticText>
+				<line>
+					<reportElement x="856" y="0" width="1" height="26"/>
+					<graphicElement/>
+				</line>
+			</frame>
+			<line>
+				<reportElement x="32" y="104" width="1" height="25"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="524" y="103" width="1" height="25"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="618" y="103" width="1" height="25"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="690" y="103" width="1" height="25"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="921" y="103" width="1" height="25"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="976" y="103" width="1" height="25"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="1052" y="103" width="1" height="25"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="1099" y="104" width="1" height="25"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="30">
+			<textField>
+				<reportElement x="9" y="1" width="21" height="10"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="34" y="1" width="43" height="10"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{msch_tgl_kirim})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="83" y="1" width="43" height="10"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{msch_tgl_terima})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="135" y="1" width="69" height="24"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{msch_penerima}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="210" y="1" width="40" height="24"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{lssh_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="301" y="0" width="47" height="10"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{msch_bas_tgl_terima})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="353" y="0" width="42" height="10"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{msch_tgl_upload})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="399" y="0" width="37" height="10"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{msch_no_seri}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="441" y="0" width="80" height="25"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{msch_nama_pp}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="529" y="0" width="87" height="25"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{msch_nama_tt}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="621" y="0" width="67" height="10"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatPolis($F{mspo_policy_no})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="693" y="0" width="99" height="10"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{msch_nama_produk}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="925" y="0" width="50" height="24"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{msch_cabang}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="979" y="0" width="71" height="25"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{msch_alamat}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1060" y="1" width="38" height="25"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{msch_kota}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1105" y="1" width="35" height="25"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{msch_zip_code}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="4" y="0" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="80" y="0" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="32" y="0" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="132" y="0" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="207" y="0" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="252" y="0" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="350" y="-1" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="398" y="0" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="524" y="-1" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="618" y="-1" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="690" y="-1" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="921" y="-1" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="976" y="-1" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="1052" y="-1" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="1099" y="0" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="1146" y="0" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="4" y="28" width="1143" height="2"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="297" y="0" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="438" y="0" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<textField>
+				<reportElement x="255" y="1" width="40" height="24"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{msch_status_input}.intValue() ==1)?
+	("Bas")
+:("Nasabah")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="794" y="-1" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="860" y="-1" width="1" height="30"/>
+				<graphicElement/>
+			</line>
+			<textField>
+				<reportElement x="795" y="0" width="63" height="27"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["("+$F{msap_area_code1}+")"+$F{msap_phone1}+"\n"+
+"("+$F{msap_area_code2}+")"+$F{msap_phone2}+"\n"+
+"("+$F{msap_area_code3}+")"+$F{msap_phone3}+"\n"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="861" y="0" width="56" height="27"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{no_hp}+"\n"+$F{no_hp2}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="17">
+			<textField>
+				<reportElement x="1065" y="4" width="80" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Hal : "+$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="laporan_data_vendor" pageWidth="1009" pageHeight="612" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="989" leftMargin="10" rightMargin="10" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.VGuides.Column Header" value="30,154"/>
+	<property name="com.jasperassistant.designer.VGuides.Detail" value="14"/>
+	<property name="com.jasperassistant.designer.HGuides" value="4,6,34,38,118,122,138,147,205,208,272,277,362,365,521,525,594,598,668,671,744,748,898,901,982"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.util.Properties"/>
+	<queryString>
+		<![CDATA[SELECT b.lssh_name, 1 retour, 1 kirim, a.*, c.reg_spaj
+  FROM (SELECT   *
+            FROM eka.mst_client_history parent_ch
+           WHERE TRUNC (parent_ch.msch_tgl_upload) >=  $P{tanggalAwal}
+             AND TRUNC (parent_ch.msch_tgl_upload) <= $P{tanggalAkhir}
+             AND parent_ch.msch_status_input = 3
+             AND msch_no_urut =
+                    (SELECT MAX (msch_no_urut)
+                       FROM eka.mst_client_history
+                      WHERE msch_status_input = 3
+                        AND mspo_policy_no = parent_ch.mspo_policy_no)
+       ) a,
+       eka.lst_status_history b,
+       eka.mst_policy c
+ WHERE a.lssh_id = b.lssh_id
+   AND RPAD (REPLACE (a.mspo_policy_no, '.'), 14, ' ') =
+                               RPAD (REPLACE (c.mspo_policy_no, '.'), 14, ' ')]]>
+	</queryString>
+	<field name="KIRIM" class="java.math.BigDecimal"/>
+	<field name="LSSH_ID" class="java.math.BigDecimal"/>
+	<field name="LSSH_NAME" class="java.lang.String"/>
+	<field name="LUS_ID" class="java.math.BigDecimal"/>
+	<field name="MSCH_ALAMAT" class="java.lang.String"/>
+	<field name="MSCH_CABANG" class="java.lang.String"/>
+	<field name="MSCH_KOTA" class="java.lang.String"/>
+	<field name="MSCH_NAMA_PP" class="java.lang.String"/>
+	<field name="MSCH_NAMA_PRODUK" class="java.lang.String"/>
+	<field name="MSCH_NAMA_TT" class="java.lang.String"/>
+	<field name="MSCH_NO_SERI" class="java.lang.String"/>
+	<field name="MSCH_NO_URUT" class="java.math.BigDecimal"/>
+	<field name="MSCH_PENERIMA" class="java.lang.String"/>
+	<field name="MSCH_TGL_KIRIM" class="java.util.Date"/>
+	<field name="MSCH_TGL_TERIMA" class="java.util.Date"/>
+	<field name="MSCH_TGL_UPLOAD" class="java.util.Date"/>
+	<field name="MSCH_ZIP_CODE" class="java.lang.String"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="RETOUR" class="java.math.BigDecimal"/>
+	<variable name="total" class="java.math.BigDecimal" calculation="Count">
+		<variableExpression><![CDATA[new BigDecimal($V{REPORT_COUNT}.intValue())]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="retour" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($F{LSSH_ID}.intValue()==0)?
+($F{RETOUR})
+: new BigDecimal(0)]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="kirim" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new BigDecimal( $V{total}.intValue()-$V{retour}.intValue())]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<columnHeader>
+		<band height="184">
+			<frame>
+				<reportElement mode="Opaque" x="4" y="154" width="979" height="30" forecolor="#000000" backcolor="#D8D8D8"/>
+				<box border="1Point" padding="0"/>
+				<staticText>
+					<reportElement x="2" y="7" width="26" height="21"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[No.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="34" y="9" width="69" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Status]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="117" y="7" width="52" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[No. Seri]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="204" y="9" width="143" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Nama Pemegang Polis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="361" y="8" width="148" height="21"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Nama Tertanggung]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="521" y="9" width="65" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[No Polis]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="593" y="9" width="65" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Nama Produk]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="666" y="9" width="65" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Cabang]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="744" y="9" width="140" height="20"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Alamat Pengiriman]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="896" y="8" width="74" height="21"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Kota]]></text>
+				</staticText>
+				<line>
+					<reportElement x="30" y="0" width="1" height="30"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="114" y="0" width="1" height="30"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="201" y="0" width="1" height="30"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="358" y="0" width="1" height="29"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="517" y="0" width="1" height="30"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="590" y="0" width="1" height="30"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="664" y="0" width="1" height="29"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="740" y="0" width="1" height="29"/>
+					<graphicElement/>
+				</line>
+				<line>
+					<reportElement x="894" y="0" width="1" height="29"/>
+					<graphicElement/>
+				</line>
+			</frame>
+			<staticText>
+				<reportElement x="4" y="30" width="80" height="18"/>
+				<textElement>
+					<font pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Tanggal]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4" y="1" width="335" height="20"/>
+				<textElement>
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[LAPORAN PENGIRIMAN DATA DARI VENDOR]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4" y="47" width="80" height="18"/>
+				<textElement>
+					<font pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[PIC]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4" y="82" width="116" height="18"/>
+				<textElement>
+					<font pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Data terkirim
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4" y="65" width="80" height="18"/>
+				<textElement>
+					<font pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Contact Number
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4" y="116" width="80" height="18"/>
+				<textElement>
+					<font pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Data retour
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4" y="99" width="135" height="18"/>
+				<textElement>
+					<font pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Data yang berhasil terkirim
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="138" y="47" width="10" height="18"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="138" y="30" width="10" height="18"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="138" y="65" width="10" height="18"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="138" y="82" width="10" height="18"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="138" y="99" width="10" height="18"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="138" y="116" width="10" height="18"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="148" y="31" width="248" height="18"/>
+				<textElement>
+					<font pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAwal})+" s/d "+$P{REPORT_SCRIPTLET}.formatDateNumber($P{tanggalAkhir})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="148" y="48" width="223" height="18"/>
+				<textElement>
+					<font pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("bas.data_vendor.pic")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="148" y="66" width="223" height="18"/>
+				<textElement>
+					<font pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("bas.data_vendor.notelp")]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="148" y="83" width="50" height="18"/>
+				<textElement>
+					<font pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="148" y="100" width="50" height="18"/>
+				<textElement>
+					<font pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{kirim}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="148" y="117" width="50" height="18"/>
+				<textElement>
+					<font pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{retour}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="16">
+			<textField>
+				<reportElement x="6" y="1" width="25" height="14"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="39" y="1" width="72" height="14"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSSH_NAME}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="122" y="1" width="75" height="14"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REG_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="208" y="1" width="142" height="14"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSCH_NAMA_PP}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="365" y="1" width="148" height="14"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSCH_NAMA_TT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="528" y="1" width="61" height="14"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_POLICY_NO}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="602" y="1" width="61" height="14"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSCH_NAMA_PRODUK}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="675" y="1" width="61" height="14"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSCH_CABANG}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="748" y="1" width="135" height="14"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSCH_ALAMAT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="901" y="1" width="77" height="14"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSCH_KOTA}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="4" y="0" width="1" height="16"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="34" y="0" width="1" height="16"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="118" y="0" width="1" height="16"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="205" y="-1" width="1" height="16"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="362" y="-1" width="1" height="16"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="521" y="0" width="1" height="16"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="594" y="0" width="1" height="16"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="668" y="0" width="1" height="16"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="744" y="0" width="1" height="16"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="898" y="0" width="1" height="16"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="982" y="0" width="1" height="16"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="4" y="15" width="979" height="1"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</detail>
+</jasperReport>

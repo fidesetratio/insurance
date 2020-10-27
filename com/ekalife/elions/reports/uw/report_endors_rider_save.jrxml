@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="report_endors_rider_save" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["02200900210"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="props" class="java.lang.String"/>
+	<parameter name="note1" class="java.lang.Integer"/>
+	<parameter name="note2" class="java.lang.Integer"/>
+	<parameter name="ttTambahan" class="java.lang.Boolean"/>
+	<queryString>
+		<![CDATA[select distinct a.mspo_policy_no, a.reg_spaj, a.mspo_beg_date, a.mspo_end_date, b.mspr_beg_date, b.mspr_end_date,
+	   d.msen_endors_no, c.mcl_first,b.mspr_tsi, b.mspr_premium,d.msen_input_date, b.lsbs_id , b.mspr_ins_period,
+	   e.msde_old1, 
+	   (case when e.msde_old2 like '%STABLE%SAVE%' then 'STABLE SAVE' 
+				when e.msde_old2 like '%DANA%SEJAHTERA%' then 'DANA SEJAHTERA' 
+				when e.msde_old2 like '%SUPER%SEJAHTERA%' then 'SUPER SEJAHTERA'
+ 				when e.msde_old2 like '%STABLE%LINK%' then 'STABLE LINK'
+			    when e.msde_old2 like '%POWER%SAVE%' then 'POWER SAVE'
+				when e.msde_old2 like '%EKA%SEHAT%' then 'EKA SEHAT'
+			    when e.msde_old2 like '%PLATINUM%SAVE%' then 'PLATINUM SAVE'
+				else e.msde_old2 end) msde_old2, 
+	   (case when f.lsbs_id in (183,820) then 1 else 0 end) flag_ekasehat,
+	   (case when f.lsbs_id in (811,819) then 1 else 0 end) flag_hcp,
+	   e.msde_old3, e.msde_old4, e.msde_old5,
+	   e.msde_new1, e.msde_new2, e.msde_new3, e.msde_new4, e.msde_new5,
+	   (case when f.lsbs_id =822 then 'SWINE FLU - A(H1N1) RIDER ' 
+	   		 when f.lsbs_id =813 and f.lsdbs_number=4 then 'CRITICAL ILLNESS RIDER 4' 
+			 when f.lsbs_id =818 and f.lsdbs_number=3 then 'TERM INSURANCE RIDER 4' 
+			 when f.lsbs_id =819 then 'HCP FAMILY RIDER 4'
+			 when f.lsbs_id =820 then 'EKA SEHAT RIDER'
+	         else f.lsdbs_name end) lsdbs_name,
+	   tt.mcl_first nama_tt,g.mste_age, h.lscb_id_rider, pay.lscb_pay_mode,
+		(case when f.lsbs_id = 819 then substr(f.lsdbs_name,-5)
+	   		 when f.lsbs_id = 820 then substr(f.lsdbs_name, 16, 1) 
+			 else '' end)plan_peserta
+from eka.mst_policy a,
+	 (select * from eka.mst_product_insured where lsbs_id >=800) b,
+	 eka.mst_client_new c,
+	 eka.mst_endors d,
+	 eka.mst_det_endors e,
+	 eka.lst_det_bisnis f,
+	 eka.mst_insured g,
+	 eka.mst_rider_save h,
+	 eka.mst_client_new tt,
+	 eka.lst_pay_mode pay
+where a.reg_spaj = b.reg_spaj
+  and a.reg_spaj = d.reg_spaj
+  and a.reg_spaj = g.reg_spaj
+  and a.reg_spaj = h.reg_spaj
+  and b.lsbs_id = h.lsbs_id
+  and b.lsdbs_number = h.lsdbs_number
+  and b.lsbs_id <>820
+  and h.lsdbs_number = (case when h.lsbs_id=820 and h.lsdbs_number>30 then 0 else h.lsdbs_number end)
+  and g.mste_insured = tt.mcl_id
+  and h.lscb_id_rider = pay.lscb_id
+  and a.reg_spaj = $P{spaj}
+  and a.mspo_policy_holder = c.mcl_id
+  and d.msen_endors_no = e.msen_endors_no
+  and b.lsbs_id = f.lsbs_id
+  and b.lsdbs_number = f.lsdbs_number]]>
+	</queryString>
+	<field name="FLAG_EKASEHAT" class="java.math.BigDecimal"/>
+	<field name="FLAG_HCP" class="java.math.BigDecimal"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSCB_ID_RIDER" class="java.math.BigDecimal"/>
+	<field name="LSCB_PAY_MODE" class="java.lang.String"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="MSDE_NEW1" class="java.lang.String"/>
+	<field name="MSDE_NEW2" class="java.lang.String"/>
+	<field name="MSDE_NEW3" class="java.lang.String"/>
+	<field name="MSDE_NEW4" class="java.lang.String"/>
+	<field name="MSDE_NEW5" class="java.lang.String"/>
+	<field name="MSDE_OLD1" class="java.lang.String"/>
+	<field name="MSDE_OLD2" class="java.lang.String"/>
+	<field name="MSDE_OLD3" class="java.lang.String"/>
+	<field name="MSDE_OLD4" class="java.lang.String"/>
+	<field name="MSDE_OLD5" class="java.lang.String"/>
+	<field name="MSEN_ENDORS_NO" class="java.lang.String"/>
+	<field name="MSEN_INPUT_DATE" class="java.util.Date"/>
+	<field name="MSPO_BEG_DATE" class="java.util.Date"/>
+	<field name="MSPO_END_DATE" class="java.util.Date"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSPR_BEG_DATE" class="java.util.Date"/>
+	<field name="MSPR_END_DATE" class="java.util.Date"/>
+	<field name="MSPR_INS_PERIOD" class="java.math.BigDecimal"/>
+	<field name="MSPR_PREMIUM" class="java.math.BigDecimal"/>
+	<field name="MSPR_TSI" class="java.math.BigDecimal"/>
+	<field name="MSTE_AGE" class="java.math.BigDecimal"/>
+	<field name="NAMA_TT" class="java.lang.String"/>
+	<field name="PLAN_PESERTA" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<detail>
+		<band height="144">
+			<staticText>
+				<reportElement positionType="Float" x="142" y="84" width="10" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="142" y="64" width="10" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="2" y="21" width="100" height="20" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean((($F{LSBS_ID}.intValue()!=820 && $F{LSBS_ID}.intValue()!=819) && ($F{LSBS_ID}.intValue()==822 && $P{ttTambahan}.booleanValue()==false))==true)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<text><![CDATA[Nama Tertanggung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="2" y="104" width="115" height="20" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean(!($F{LSBS_ID}.intValue()==822))]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<text><![CDATA[Cara Pembayaran Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="142" y="44" width="10" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="142" y="104" width="10" height="20" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean(!($F{LSBS_ID}.intValue()==822 ))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" x="152" y="84" width="276" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSBS_ID}.intValue()==822 ?"GRATIS":$F{MSDE_OLD3} + " " +($F{LSBS_ID}.intValue()==820 ? $F{MSDE_OLD4}: $P{REPORT_SCRIPTLET}.format2Digit($F{MSPR_PREMIUM}))]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="152" y="124" width="275" height="20" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean(!($F{LSBS_ID}.intValue()==822))]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPR_INS_PERIOD} + " Tahun"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="152" y="44" width="277" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSPR_BEG_DATE}) + " s/d " + $P{REPORT_SCRIPTLET}.formatDateIndonesian($F{MSPR_END_DATE})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="2" y="44" width="100" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<text><![CDATA[Masa Asuransi]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" x="2" y="84" width="100" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[(($F{LSBS_ID}.intValue()==813 || $F{LSBS_ID}.intValue()==818) && $F{LSCB_ID_RIDER}.intValue()!=0 )?"Premi Plan Rider *)":($F{LSBS_ID}.intValue()==811 || $F{LSBS_ID}.intValue()==819 || $F{LSBS_ID}.intValue()==183 || $F{LSBS_ID}.intValue()==820?"Premi Plan Rider **)":"Premi Plan Rider")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="2" y="124" width="115" height="20" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean(!($F{LSBS_ID}.intValue()==822))]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<text><![CDATA[Premi Dibayarkan Selama]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" x="2" y="64" width="137" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{LSBS_ID}.intValue()==819 || $F{LSBS_ID}.intValue()==820)?"Jenis Plan" : "Uang Pertanggungan"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="142" y="21" width="10" height="20" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean((($F{LSBS_ID}.intValue()!=820 && $F{LSBS_ID}.intValue()!=819) && ($F{LSBS_ID}.intValue()==822 && $P{ttTambahan}.booleanValue()==false))==true)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="142" y="124" width="10" height="20" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean(!($F{LSBS_ID}.intValue()==822))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" x="152" y="104" width="275" height="20" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean(!($F{LSBS_ID}.intValue()==822))]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSCB_PAY_MODE}]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement positionType="Float" x="0" y="41" width="583" height="3" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean((($F{FLAG_EKASEHAT}.intValue()==1 || $F{FLAG_HCP}.intValue()==1)==true) || ($F{LSBS_ID}.intValue()==822 && $P{ttTambahan}.booleanValue()==true))]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="spaj">
+					<subreportParameterExpression><![CDATA[$P{spaj}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ttTambahan">
+					<subreportParameterExpression><![CDATA[$P{ttTambahan}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lsbs_id">
+					<subreportParameterExpression><![CDATA[$F{LSBS_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.uw.report_endors_tt_tambahan")+".jasper"]]></subreportExpression>
+			</subreport>
+			<textField>
+				<reportElement positionType="Float" x="152" y="21" width="277" height="20" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean((($F{LSBS_ID}.intValue()!=820 && $F{LSBS_ID}.intValue()!=819) && ($F{LSBS_ID}.intValue()==822 && $P{ttTambahan}.booleanValue()==false))==true)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_TT} + " ( " + $F{MSTE_AGE} + " tahun )"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="152" y="64" width="276" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{LSBS_ID}.intValue()==819 || $F{LSBS_ID}.intValue()==820)?$F{PLAN_PESERTA}:$F{MSDE_OLD3} + " " + $P{REPORT_SCRIPTLET}.format2Digit($F{MSPR_TSI})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="0" y="0" width="480" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{REPORT_COUNT}+". "+$F{LSDBS_NAME} +" - Additional Benefit dengan data sebagai berikut :"]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="42">
+			<textField>
+				<reportElement positionType="Float" x="1" y="2" width="426" height="20" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean($P{note1}.intValue()>0)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["*) Premi akan meningkat setiap tahun sesuai dengan pertambahan usia Tertanggung."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="1" y="22" width="468" height="20" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[new Boolean($P{note2}.intValue()>0)]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["**)  Premi  akan meningkat secara otomatis setiap memasuki kelompok usia yang lebih tinggi."]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnFooter>
+</jasperReport>

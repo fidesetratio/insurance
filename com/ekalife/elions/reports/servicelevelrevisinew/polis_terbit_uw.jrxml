@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="polis_terbit_uw" pageWidth="1100" pageHeight="595" orientation="Landscape" columnWidth="1060" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="3"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="3"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="props" class="java.lang.String"/>
+	<parameter name="user_id" class="java.lang.String"/>
+	<parameter name="tanggalAwal" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("01/01/2008")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.util.Date">
+		<defaultValueExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).parse("31/12/2008")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select lsdbs_name, sum(decode(lku_id,'01',1,0)) rupiah, sum(decode(lku_id,'02',1,0)) dolar, sum(decode(mste_medical,1,1,0)) medical, sum(decode(mste_medical,0,1,0)) non_medical, sum(decode(lku_id,'01',mspr_tsi,0))UP_rupiah, sum(decode(lku_id,'02',mspr_tsi,0))UP_dolar, sum(decode(lku_id,'01',mspr_premium,0))premi_rupiah, sum(decode(lku_id,'02',mspr_premium,0))premi_dolar from (
+	SELECT dist, reg_spaj, lsdbs_name, mste_tgl_terima_spaj, mste_tgl_spaj_doc, mste_tgl_aksep, mste_tgl_valid_print,mspo_date_print, mste_tgl_kirim_polis, lsrg_nama, 
+	(case when lama_proses_nab <= 0 then 0 else lama_proses_nab end) lama_proses_nab,lku_id,mste_medical, mspr_tsi,mspr_premium, 
+	lama_proses_nab1, lama_pending, sysdate, lsbs_id, lsdbs_number, lca_id, flag_ws  FROM (
+	SELECT   decode(b.lca_id,'09','Bancassurance','08','Worksite','42','Worksite',decode(g.lsgb_id,17,'Agency (UNIT LINK)', 'Agency')) dist,
+			 b.reg_spaj, 
+			 (case 
+			 when h.jn_bank = 2 and c.lsbs_id = 142 and c.lsdbs_number = 2 then 'SIMAS PRIMA'
+			 when h.jn_bank = 2 and c.lsbs_id = 158 and c.lsdbs_number = 6 then 'SIMAS PRIMA MANFAAT BULANAN'
+			 when h.jn_bank = 2 and c.lsbs_id = 175 and c.lsdbs_number = 2 then 'SIMAS PRIMA SYARIAH'
+			 else d.lsdbs_name
+			 end) lsdbs_name,
+			 a.mste_tgl_terima_spaj,
+			 a.mste_tgl_valid_print,
+	         a.mste_tgl_spaj_doc, a.mste_tgl_aksep, b.mspo_date_print,
+	         a.mste_tgl_kirim_polis, e.lsrg_nama,
+				nvl((SELECT eka.workdays (
+									(CASE 
+										  WHEN a.mste_tgl_terima_spaj is null
+										       THEN a.mste_tgl_spaj_doc
+	                                      WHEN a.mste_tgl_spaj_doc is null 
+										  	   THEN a.mste_tgl_spaj_doc 
+										  WHEN (a.mste_tgl_terima_spaj >= to_date(to_char(mste_tgl_terima_spaj,'dd/mm/yyyy')||' 12:00:00','dd/mm/yyyy hh24:mi:ss') 
+										  	   and to_char(a.mste_tgl_terima_spaj,'dd/mm/yyyy') = to_char(a.mste_tgl_kirim_polis+1,'dd/mm/yyyy')
+										  	   and to_char(a.mste_tgl_terima_spaj,'dd/mm/yyyy') = to_char(a.mste_tgl_spaj_doc,'dd/mm/yyyy'))   
+											   or 
+											   (a.mste_tgl_terima_spaj >= to_date(to_char(mste_tgl_terima_spaj,'dd/mm/yyyy')||' 12:00:00','dd/mm/yyyy hh24:mi:ss') 
+										  	   and to_char(a.mste_tgl_terima_spaj,'dd/mm/yyyy') = to_char(a.mste_tgl_kirim_polis+1,'dd/mm/yyyy')
+										  	   and to_char(a.mste_tgl_terima_spaj,'dd/mm/yyyy') = to_char(a.mste_tgl_spaj_doc+1,'dd/mm/yyyy'))
+											   or 
+											   (a.mste_tgl_terima_spaj <= to_date(to_char(mste_tgl_terima_spaj,'dd/mm/yyyy')||' 12:00:00','dd/mm/yyyy hh24:mi:ss') 
+										  	   and to_char(a.mste_tgl_terima_spaj,'dd/mm/yyyy') = to_char(a.mste_tgl_kirim_polis,'dd/mm/yyyy')
+										  	   and to_char(a.mste_tgl_terima_spaj,'dd/mm/yyyy') = to_char(a.mste_tgl_spaj_doc,'dd/mm/yyyy'))
+											   or
+											   (a.mste_tgl_terima_spaj >= to_date(to_char(mste_tgl_terima_spaj,'dd/mm/yyyy')||' 12:00:00','dd/mm/yyyy hh24:mi:ss')) 			  
+										  THEN a.mste_tgl_spaj_doc+1 
+										  ELSE a.mste_tgl_spaj_doc 
+										  END),
+									(CASE WHEN h.jn_bank=2 THEN (select min(msps_date) msps_date from eka.mst_position_spaj where reg_spaj=a.reg_spaj and lssa_id in ('5','10') ) ELSE nvl(a.mste_tgl_valid_print, a.mste_tgl_kirim_polis) END))-1 FROM DUAL),0) lama_proses_nab,
+	         nvl((SELECT eka.workdays (b.mspo_next_bill, (CASE WHEN h.jn_bank=2 THEN (select min(msps_date) msps_date from eka.mst_position_spaj where reg_spaj=a.reg_spaj and lssa_id in ('5','10') ) ELSE nvl(a.mste_tgl_valid_print, a.mste_tgl_kirim_polis) END)) FROM DUAL),0) lama_proses_nab1,
+	         (SELECT eka.workdays (a.mste_tgl_terima_spaj, SYSDATE) FROM DUAL) lama_pending, 
+			 SYSDATE, d.lsbs_id, d.lsdbs_number,
+	         b.lca_id, DECODE (b.lca_id, '42', 1, 0) flag_ws, b.lku_id, a.mste_medical,c.mspr_tsi, (case when c.lsbs_id = 164 then j.msl_premi else c.mspr_premium end)mspr_premium
+	    FROM eka.mst_insured a,
+	         eka.mst_policy b,
+	         eka.mst_product_insured c,
+	         eka.lst_det_bisnis d,
+	         eka.lst_region e, 
+			 eka.lst_bisnis g,
+			 eka.lst_user h,
+			 eka.mst_production i,
+			 (select * from eka.mst_slink where msl_new =1)j
+	   WHERE b.reg_spaj = a.reg_spaj
+	     AND a.reg_spaj = c.reg_spaj
+	     AND a.reg_spaj = i.reg_spaj
+		 AND a.reg_spaj = j.reg_spaj(+)
+	     AND a.mste_insured_no = c.mste_insured_no
+	     AND d.lsbs_id = c.lsbs_id
+	     AND d.lsdbs_number = c.lsdbs_number
+	     AND e.lca_id = b.lca_id
+	     AND e.lwk_id = b.lwk_id
+	     AND e.lsrg_id = b.lsrg_id
+	     AND c.lsbs_id < 300
+		 AND (i.mspro_prod_date BETWEEN $P{tanggalAwal} AND $P{tanggalAkhir})
+	     AND b.lstb_id = 1
+	     AND a.mste_tgl_kirim_polis IS NOT NULL
+		 AND c.lsbs_id = g.lsbs_id
+		 and b.lus_id = h.lus_id
+		 AND i.mspro_prod_ke = 1
+	ORDER BY decode(b.lca_id,'09','Bancassurance','08','Worksite','42','Worksite','Agency-Regional'), 
+		 (case 
+		 when h.jn_bank = 2 and c.lsbs_id = 142 and c.lsdbs_number = 2 then 'SIMAS PRIMA'
+		 when h.jn_bank = 2 and c.lsbs_id = 158 and c.lsdbs_number = 6 then 'SIMAS PRIMA MANFAAT BULANAN'
+		 when h.jn_bank = 2 and c.lsbs_id = 175 and c.lsdbs_number = 2 then 'SIMAS PRIMAS SYARIAH'
+		 else d.lsdbs_name
+		 end),
+		 b.reg_spaj)
+)
+group by lsdbs_name
+order by lsdbs_name]]>
+	</queryString>
+	<field name="DOLAR" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="MEDICAL" class="java.math.BigDecimal"/>
+	<field name="NON_MEDICAL" class="java.math.BigDecimal"/>
+	<field name="PREMI_DOLAR" class="java.math.BigDecimal"/>
+	<field name="PREMI_RUPIAH" class="java.math.BigDecimal"/>
+	<field name="RUPIAH" class="java.math.BigDecimal"/>
+	<field name="UP_DOLAR" class="java.math.BigDecimal"/>
+	<field name="UP_RUPIAH" class="java.math.BigDecimal"/>
+	<variable name="total_polis" class="java.lang.Integer">
+		<variableExpression><![CDATA[new Integer(
+	$F{MEDICAL}.intValue() + 
+	$F{NON_MEDICAL}.intValue() 
+)]]></variableExpression>
+	</variable>
+	<title>
+		<band height="28">
+			<staticText>
+				<reportElement x="0" y="6" width="802" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="12" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[NB PRODUCTION BY PLAN UW]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="32">
+			<staticText>
+				<reportElement x="0" y="0" width="99" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PERIODE :]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="99" y="0" width="460" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($P{tanggalAwal})
++ " s/d " + 
+$P{REPORT_SCRIPTLET}.formatDateIndonesian($P{tanggalAkhir})
++ " (Tanggal Produksi) "]]></textFieldExpression>
+			</textField>
+			<elementGroup/>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="37">
+			<staticText>
+				<reportElement x="0" y="1" width="24" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="24" y="1" width="165" height="33" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NAMA PLAN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="189" y="18" width="58" height="15" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Rp.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="189" y="1" width="282" height="17" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[JUMLAH POLIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="471" y="1" width="207" height="17" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[UP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="677" y="1" width="208" height="17" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Premi New Business]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="33" width="910" height="2"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="0" y="0" width="910" height="1"/>
+				<graphicElement/>
+			</line>
+			<staticText>
+				<reportElement x="246" y="18" width="58" height="15" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[US$]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="304" y="18" width="58" height="15" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Medis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="361" y="18" width="58" height="15" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Non Medis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="419" y="18" width="52" height="15" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[All]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="471" y="18" width="105" height="15" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Rp.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="576" y="18" width="102" height="15" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[US$]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="783" y="18" width="102" height="15" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[US$]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="678" y="18" width="105" height="15" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Rp.]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="16">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="0" width="24" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="24" y="0" width="166" height="15"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="190" y="0" width="57" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{RUPIAH}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="247" y="0" width="57" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{DOLAR}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="304" y="0" width="57" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{MEDICAL}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="361" y="0" width="57" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{NON_MEDICAL}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="418" y="0" width="53" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{total_polis}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="471" y="1" width="105" height="14"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($F{UP_RUPIAH})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="575" y="1" width="104" height="14"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($F{UP_DOLAR})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="678" y="1" width="104" height="14"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($F{PREMI_RUPIAH})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="782" y="1" width="104" height="14"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format2Digit($F{PREMI_DOLAR})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<lastPageFooter>
+		<band height="21">
+			<textField>
+				<reportElement x="3" y="6" width="749" height="14"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Printed date : "+$P{REPORT_SCRIPTLET}.formatDateWithTime(new Date()) +"  by User :  "+$P{user_id}]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="479">
+			<subreport>
+				<reportElement x="17" y="84" width="325" height="183"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_terbit_agencyreg")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="368" y="84" width="325" height="183"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_terbit_bancass")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="142" y="296" width="325" height="183"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_terbit_worksite")+".jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="583" y="296" width="325" height="183"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_terbit")+".jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement x="0" y="0" width="99" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PERIODE :]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="99" y="0" width="460" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateIndonesian($P{tanggalAwal})
++ " s/d " + 
+$P{REPORT_SCRIPTLET}.formatDateIndonesian($P{tanggalAkhir})
++ " (Tanggal Produksi) "]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement x="718" y="84" width="325" height="183"/>
+				<subreportParameter name="tanggalAwal">
+					<subreportParameterExpression><![CDATA[$P{tanggalAwal}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="user_id">
+					<subreportParameterExpression><![CDATA[$P{user_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="props">
+					<subreportParameterExpression><![CDATA[$P{props}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="tanggalAkhir">
+					<subreportParameterExpression><![CDATA[$P{tanggalAkhir}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getProperty("report.summary_polis_terbit_bancass2")+".jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</summary>
+</jasperReport>

@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<cacheModel id="elions.uw.cache.references" type="LRU" readOnly="true"
+		serialize="false">
+		<flushInterval hours="8" />
+		<property name="cache-size" value="100" />
+		<flushOnExecute statement="elions.common.resetIbatisCache"/>
+	</cacheModel>
+
+	<select id="elions.uw.selectJenisDeduct" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references">
+		select * from eka.lst_jn_deduct
+	</select>
+
+	<select id="elions.uw.selectJenisTransaksi" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references">
+		SELECT lt_id, lt_transksi, lt_dk, lt_flag_biaya
+		  FROM eka.lst_transaksi order by lt_id
+	</select>
+
+	<!-- Posisi SPAJ -->
+	<select id="elions.uw.selectPositionSpaj" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references">
+		select * from eka.lst_document_position order by lspd_id
+	</select>
+
+	<!-- Bank-bank Eka Life -->
+	<select id="elions.uw.selectBankEkaLife" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references" parameterClass="string">
+		SELECT a.lbn_id, nvl(a.lsrek_id,0) lsrek_id, a.lre_acc_no, b.lbn_nama, c.lsbp_nama, a.lsrek_gl_no,
+		         a.lku_id, d.lku_symbol, (c.lsbp_nama||' '||b.lbn_nama||' ['||d.lku_symbol||']' || '-' || a.lre_acc_no) nama
+		    FROM eka.lst_rek_ekalife a,
+		         eka.lst_bank b,
+		         eka.lst_bank_pusat c,
+		         eka.lst_kurs d
+		   WHERE 
+		   		<isEqual compareValue="0000">
+					 lre_acc_no = '-' AND 
+		   		</isEqual>
+		   		<isNotEqual compareValue="0000">
+		   			replace(replace(replace(trim(lre_acc_no),'.',''),'-',''),' ','') like '%'||#value# AND 
+		   		</isNotEqual>
+		     a.lku_id(+) = d.lku_id
+		     AND a.lbn_id = b.lbn_id
+		     AND b.lsbp_id = c.lsbp_id
+		     and a.lsrek_aktif = 1
+		     AND a.lsrek_gl_no IS NOT NULL
+		ORDER BY a.lsrek_gl_no ASC
+	</select>
+	
+	<select id="elions.uw.selectBankEkaLife2" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references" parameterClass="string">
+		SELECT a.lbn_id, nvl(a.lsrek_id,0) lsrek_id, a.lre_acc_no, b.lbn_nama, c.lsbp_nama, a.lsrek_gl_no,
+		         a.lku_id, d.lku_symbol, (c.lsbp_nama||' '||b.lbn_nama||' ['||d.lku_symbol||']' || '-' || a.lre_acc_no) nama
+		    FROM eka.lst_rek_ekalife a,
+		         eka.lst_bank b,
+		         eka.lst_bank_pusat c,
+		         eka.lst_kurs d
+		   WHERE 
+		   		<isEqual compareValue="00000">
+					 lre_acc_no = '-' AND 
+		   		</isEqual>
+		   		<isNotEqual compareValue="00000">
+		   			replace(replace(replace(trim(lre_acc_no),'.',''),'-',''),' ','') like '%'||#value# AND 
+		   		</isNotEqual>
+		     a.lku_id(+) = d.lku_id
+		     AND a.lbn_id = b.lbn_id
+		     AND b.lsbp_id = c.lsbp_id
+		     and a.lsrek_aktif = 1
+		     AND a.lsrek_gl_no IS NOT NULL
+		ORDER BY a.lsrek_gl_no ASC
+	</select>
+
+	<!-- Bank Pusat -->
+	<select id="elions.uw.selectBankPusat" resultClass="java.util.HashMap" parameterClass="string" cacheModel="elions.uw.cache.references">
+		SELECT   lsbp_id, lsbp_nama
+		    FROM eka.lst_bank_pusat
+		    where flag_aktif = 1
+		ORDER BY lsbp_nama ASC
+	</select>
+
+	<!-- Select daily currency -->
+	<select id="elions.uw.selectKurs" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references">
+		SELECT   a.lku_id, a.lsne_id, a.lku_symbol, b.lkh_date, b.lkh_currency,
+		         b.lkh_kurs_jual, b.lkh_kurs_beli
+		    FROM eka.lst_kurs a, (SELECT *
+		                            FROM eka.lst_daily_currency
+		                           WHERE TO_CHAR (lkh_date, 'yyyymmdd') = to_char(sysdate,'yyyymmdd')) b
+		   WHERE a.lku_id = b.lku_id(+)
+		ORDER BY a.lku_symbol
+	</select>
+
+	<!-- Jenis Pembayaran -->
+	<select id="elions.uw.selectPayType" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references">
+		SELECT   lsjb_id, lsjb_type
+		    FROM eka.lst_payment_type
+		ORDER BY lsjb_type		
+	</select>
+
+	<select id="elions.uw.selectPayType0" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references" parameterClass="string">
+		SELECT   lsjb_id, lsjb_type
+		    FROM eka.lst_payment_type
+		    <isEqual compareValue="3">
+				where lsjb_id = #value#
+		   	</isEqual>
+		   	<isNotEqual compareValue="3">
+		    	where lsjb_type_bank = #value#
+		   	</isNotEqual>
+		ORDER BY lsjb_id asc	
+	</select>	
+
+	<!-- mst_default -->
+	<select id="elions.uw.selectMst_default" resultClass="date" parameterClass="int" cacheModel="elions.uw.cache.references">
+		SELECT msdef_date
+		  FROM eka.mst_default
+		 WHERE msdef_id = #value#
+	</select>
+
+	<!-- mst_default -->
+	<select id="elions.uw.selectMst_default.numeric" resultClass="double" parameterClass="int" cacheModel="elions.uw.cache.references">
+		SELECT msdef_numeric
+		  FROM eka.mst_default
+		 WHERE msdef_id = #value#
+	</select>
+
+	<!-- sysdate(+ x hari) -->
+	<select id="elions.uw.selectSysdateTruncated" resultClass="date" parameterClass="int" cacheModel="elions.uw.cache.references">
+		select trunc(sysdate+#value#) from dual
+	</select>
+
+	<!-- sysdate -->
+	<select id="elions.uw.selectSysdate" resultClass="date" parameterClass="int">
+		select sysdate from dual
+	</select>
+	
+	<select id="elions.uw.selectSysdateMap" resultClass="date" parameterClass="hashMap">
+		<isEqual property="add" compareValue="dd">
+			<isEqual property="trunc" compareValue="true">
+				select trunc(sysdate+#nilai#) hasil from dual
+			</isEqual>
+			<isEqual property="trunc" compareValue="false">
+				select (sysdate+#nilai#) hasil from dual
+			</isEqual>		
+		</isEqual>
+		<isEqual property="add" compareValue="mm">
+			<isEqual property="trunc" compareValue="true">
+				select trunc(add_months(sysdate,#nilai#)) hasil from dual
+			</isEqual>
+			<isEqual property="trunc" compareValue="false">
+				select add_months(sysdate,#nilai#) hasil from dual
+			</isEqual>		
+		</isEqual>
+		<isEqual property="add" compareValue="yy">
+			<isEqual property="trunc" compareValue="true">
+				select trunc(add_months(sysdate,#nilai#*12)) hasil from dual
+			</isEqual>
+			<isEqual property="trunc" compareValue="false">
+				select add_months(sysdate,#nilai#*12) hasil from dual
+			</isEqual>		
+		</isEqual>
+	</select>
+
+	<select id="elions.uw.selectAdminRegion" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references">
+		SELECT   to_char(lar_id) KEY, (lar_admin || ' - ' || lar_nama) VALUE
+		    FROM eka.lst_addr_region
+		ORDER BY 2
+	</select>
+
+	<select id="elions.uw.selectStatusPolis" resultClass="java.util.HashMap" parameterClass="int" cacheModel="elions.uw.cache.references">
+		select lssp_id, lssp_status from eka.lst_policy_status where lssp_id = #value#
+	</select>
+
+	<select id="elions.uw.selectGelar" parameterClass="int" resultClass="id.co.sinarmaslife.std.model.vo.DropDown" cacheModel="elions.uw.cache.references">
+		select to_char(lti_id) key, lti_note value from eka.lst_title where lti_jn_title=#value# and lti_id <![CDATA[<>]]> 0 order by lti_note
+	</select>
+
+	<select id="elions.uw.selectRegions" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references" parameterClass="string">
+		SELECT (trim(a.lsrg_nama) || ' / ' || trim(c.lwk_nama) || ' / ' || trim(b.lca_nama)) region_name,
+		       a.lca_id || a.lwk_id || a.lsrg_id AS region_id
+		  FROM eka.lst_region a, eka.lst_cabang b, eka.lst_wakil c
+		 WHERE c.lca_id = b.lca_id AND c.lca_id = a.lca_id AND c.lwk_id = a.lwk_id
+		 <isNotEmpty>
+		 	 AND (trim(a.lsrg_nama) || ' / ' || trim(c.lwk_nama) || ' / ' || trim(b.lca_nama)) like '%' || upper(#value#) || '%'
+		 </isNotEmpty>
+	</select>
+
+	<select id="elions.uw.selectIcdCode" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references" parameterClass="string">
+		   SELECT lic_id id, lic_id || ' - ' || lic_desc code 
+		     FROM eka.lst_icd
+		    WHERE  trim(upper(lic_id)) LIKE '%' || trim(upper(#VALUE#)) || '%'
+		 ORDER BY lic_id
+	</select>
+	
+	<select id="elions.uw.selectDaftarIcd" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references" parameterClass="java.util.HashMap">
+		SELECT lic_id, lic_desc
+		  FROM eka.lst_icd
+		 WHERE lic_id LIKE upper(#id#)||'%' 
+		   AND upper(lic_desc) LIKE '%'||upper(#desc#)||'%' 
+		   AND lic_type = #type# 
+		   AND active = 1
+	  ORDER BY lic_id   	
+	</select>
+	
+	<select id="elions.uw.selectIcdByClassy" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references" parameterClass="java.util.HashMap">
+		  SELECT lic_id, lic_desc
+		    FROM eka.lst_icd
+		   WHERE lic_id between #data1#||'%' and #data2#||'%'
+		ORDER BY lic_id 	
+	</select>
+	
+	<select id="elions.uw.selectDaftarProvider" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references" parameterClass="java.util.HashMap">
+		SELECT rsnama, rsalamat
+		  FROM eka.lst_rumah_sakit @eb
+		 WHERE rsnama LIKE '%'||upper(#name#)||'%'
+		   AND rsalamat LIKE '%'||upper(#addr#)||'%'  
+	  ORDER BY rsnama		
+	</select>
+
+	<select id="elions.uw.selectWilayah" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references"
+			parameterClass="string">
+		SELECT lska_id, lska_note
+		  FROM eka.lst_kabupaten
+		  <isNotEmpty>
+		  	 WHERE upper(lska_note) like upper(#value#||'%')
+		  </isNotEmpty>	
+		  ORDER BY lska_note
+	</select>
+
+	<select id="elions.uw.selectAllSpaj" resultClass="string" parameterClass="string" cacheModel="elions.uw.cache.references">
+		SELECT mscan_spaj_baru spaj
+		  FROM eka.mst_cancel
+		 WHERE reg_spaj = rpad(replace(#value#,'.'),11,' ')
+		UNION
+		SELECT reg_spaj
+		  FROM eka.mst_cancel
+		 WHERE mscan_spaj_baru = rpad(replace(#spaj#,'.'),11,' ')
+		UNION
+		SELECT rpad(replace(#spaj#,'.'),11,' ') spaj FROM dual
+	</select>
+	
+	<select id="elions.uw.selectAllDepartment" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references">
+		select * from eka.lst_department order by lde_dept
+	</select>
+	
+	<select id="elions.uw.selectDropDown" resultClass="id.co.sinarmaslife.std.model.vo.DropDown">
+		SELECT $key_column$ "key", $value_column$ "value", $desc_column$ "desc"
+		FROM $table_name$
+		<isNotEmpty property="where_clause" prepend="WHERE ">$where_clause$</isNotEmpty>
+		ORDER BY $order_column$	
+	</select>
+	
+	<select id="elions.uw.selectDropDownUserUw" resultClass="id.co.sinarmaslife.std.model.vo.DropDown">
+		SELECT $key_column$ "key", $value_column$ "value"
+		FROM $table_name$
+		<isNotEmpty property="where_clause" prepend="WHERE ">$where_clause$</isNotEmpty>
+		ORDER BY $order_column$	
+	</select>
+	
+	<select id="elions.uw.selectDropDownHashMap" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references">
+		SELECT $key_column$ KEY, $value_column$ VALUE
+		FROM $table_name$
+		<isNotEmpty property="where_clause" prepend="WHERE ">$where_clause$</isNotEmpty>
+		ORDER BY $order_column$	
+	</select>
+
+	<select id="elions.uw.selectBank" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references">
+		  SELECT a.lbn_id, b.lsbp_id, a.lbn_nama, b.lsbp_nama
+		    FROM eka.lst_bank a, eka.lst_bank_pusat b
+		   WHERE a.lsbp_id = b.lsbp_id
+		ORDER BY lsbp_nama	
+	</select>
+	
+	<select id="elions.uw.selectLoanTemp" parameterClass="string" resultClass="java.util.HashMap">
+		SELECT distinct "EKA"."MST_POLICY"."MSPO_INS_PERIOD" as ldec_tahun,   
+		         nvl("EKA"."MST_POLICY"."MSPO_INS_BULAN",0) as ldec_bulan,   
+		         "EKA"."MST_PRODUCT_INSURED"."LKU_ID" as ls_kurs,   
+		         nvl("EKA"."MST_PRODUCT_INSURED"."MSPR_BUNGA_KPR",0) as ldc_bunga,   
+		         "EKA"."MST_PRODUCT_INSURED"."MSPR_TSI" as ldec_up,   
+		         "EKA"."MST_PRODUCT_INSURED"."LSBS_ID" as li_bisnis  
+		    FROM "EKA"."MST_POLICY",   
+		         "EKA"."MST_PRODUCT_INSURED"  
+		   WHERE ( "EKA"."MST_POLICY"."REG_SPAJ" = "EKA"."MST_PRODUCT_INSURED"."REG_SPAJ" ) and  
+		         ( ( EKA."MST_POLICY"."MSPO_POLICY_NO" = #value#  ) AND  
+		         ((( EKA."MST_PRODUCT_INSURED"."LSBS_ID" <![CDATA[>=]]> 300 ) AND ( EKA."MST_PRODUCT_INSURED"."LSBS_ID" <![CDATA[<=]]> 399 )) or  
+					(( EKA."MST_PRODUCT_INSURED"."LSBS_ID" <![CDATA[>=]]> 500 ) AND ( EKA."MST_PRODUCT_INSURED"."LSBS_ID" <![CDATA[<=]]> 599 ))))
+	</select>
+	
+	<select id="elions.uw.selectLstTblSpdn" parameterClass="java.util.HashMap" resultClass="int">
+		SELECT "EKA"."LST_TBL_SPDN"."VALUE"  
+          FROM "EKA"."LST_TBL_SPDN"  
+         WHERE ( EKA."LST_TBL_SPDN"."LSBS_ID" = #detBisnis# ) AND  
+               ( EKA."LST_TBL_SPDN"."LAMA_TANGGUNG" = #tahun# ) AND  
+               ( EKA."LST_TBL_SPDN"."BLN_KE" = #bulan# )	
+	</select>
+	
+	<select id="elions.uw.selectDaftarPeserta" parameterClass="java.lang.String" resultClass="java.util.HashMap">
+	  SELECT   *
+	    FROM (SELECT a.reg_spaj, a.mste_insured_no insured_no, a.mste_insured mcl_id, 'TTG 1' as person, b.mcl_first, b.mspe_date_birth, 
+                     case b.mspe_sex 
+                     when 0 then 'Wanita'
+                     else 'Pria' 
+                     end as kelamin, b.mspe_sex
+                FROM eka.mst_insured a, eka.mst_client_new b
+               WHERE a.mste_insured = b.mcl_id              
+               UNION
+              SELECT a.reg_spaj, 0 insured_no, a.mspo_policy_holder mcl_id, 'PP' as person, c.mcl_first, c.mspe_date_birth, 
+                     case c.mspe_sex 
+                     when 0 then 'Wanita'
+                     else 'Pria' 
+                     end as kelamin, c.mspe_sex
+                FROM eka.mst_policy a, eka.mst_product_insured b, eka.mst_client_new c
+               WHERE a.reg_spaj = b.reg_spaj
+                 AND b.lsbs_id IN (804, 814, 815, 816, 817, 835)
+                 AND a.mspo_policy_holder = c.mcl_id
+               UNION
+              SELECT reg_spaj, no_urut insured_no, NULL mcl_id, 'TTG ' || no_urut as person, nama, tgl_lahir as mspe_date_birth, 
+                     case kelamin 
+                     when 0 then 'Wanita'
+                     else 'Pria' 
+                     end as kelamin, kelamin as mspe_sex
+		        FROM eka.mst_peserta WHERE no_urut <![CDATA[<>]]> 1 and lsbs_id<![CDATA[<>]]>839)
+			   WHERE reg_spaj = rpad(replace(#value#,'.'),11,' ')			   		 
+			ORDER BY insured_no		
+	</select>
+	
+	<select id="elions.uw.selectLstWorksheet" parameterClass="java.util.HashMap" resultClass="id.co.sinarmaslife.std.model.vo.DropDown" cacheModel="elions.uw.cache.references">
+		  SELECT lw_id AS VALUE, lw_desc AS KEY
+		    FROM eka.lst_worksheet
+		   WHERE lw_jenis = #jenis# 
+		     AND lw_aktif = 1
+		     <isNotNull property="id" >AND lw_id = #id#</isNotNull>
+		ORDER BY lw_desc	
+	</select>
+
+	<select id="elions.uw.selectNoSuratAtDb" resultClass="java.lang.Integer">
+		SELECT msco_value
+		  FROM eka.mst_counter
+		 WHERE UPPER (msco_name) LIKE '%FAC%' AND lca_id = 'XX'	
+	</select>
+	
+	<select id="elions.uw.selectNoSuratPenawaran" resultClass="java.util.HashMap">
+		SELECT msco_value
+		  FROM eka.mst_counter
+		 WHERE UPPER (msco_name) LIKE '%REINS%' AND lca_id = 'XX'
+		ORDER BY msco_number 		
+	</select>
+	
+	<select id="elions.uw.selectCabBII" resultClass="java.util.HashMap" cacheModel="elions.uw.cache.references">
+		SELECT to_char(lcb_no) KEY, (nama_cabang) VALUE
+		FROM eka.lst_cabang_bii
+		WHERE jenis = 2
+		    AND flag_aktif = 1
+		    AND email_cab is not null
+		    AND nama_cabang is not null
+		ORDER BY nama_cabang
+	</select>
+	
+	<select id="elions.uw.selectDropDownFU" parameterClass="java.util.HashMap" resultClass="id.co.sinarmaslife.std.model.vo.DropDown">
+		SELECT concat(LSFU_EMAIL,concat(';',dataC.email)) "key", LSFU_STATUS "value", LSFU_STATUS "desc"   
+		FROM EKA.LST_FOLLOWUP,
+		<isNotEqual property="lsfuId" compareValue="32">
+				 (select d1.reg_spaj, concat (d1.mspe_email ,concat(';',  d2.mspe_email)) email
+		        from (  select a.reg_spaj, c.mspe_email from eka.mst_agent_prod a, eka.mst_agent b , eka.mst_client_new c
+		                where   a.lsle_id = 3
+		                and a.msag_id = b.msag_id 
+		                and b.mcl_id = c.mcl_id ) d1,
+		             (  select a.reg_spaj, c.mspe_email from eka.mst_agent_prod a, eka.mst_agent b , eka.mst_client_new c
+		                where   a.lsle_id = 4
+		                and a.msag_id = b.msag_id 
+		                and b.mcl_id = c.mcl_id ) d2
+		         where   d1.reg_spaj = d2.reg_spaj
+		       	 and d1.reg_spaj = #spaj#)dataC  
+		 </isNotEqual>
+		 <isEqual property="lsfuId" compareValue="32">
+				 (select d1.reg_spaj, CONCAT (AC.lus_email, CONCAT (';', CONCAT (dlar.LAR_EMAIL,CONCAT (';', CONCAT (d1.mspe_email, CONCAT (';', d2.mspe_email)))))) email
+		        from (  select a.reg_spaj, c.mspe_email from eka.mst_agent_prod a, eka.mst_agent b , eka.mst_client_new c
+		                where   a.lsle_id = 3
+		                and a.msag_id = b.msag_id 
+		                and b.mcl_id = c.mcl_id ) d1,
+		             (  select a.reg_spaj, c.mspe_email from eka.mst_agent_prod a, eka.mst_agent b , eka.mst_client_new c
+		                where   a.lsle_id = 4
+		                and a.msag_id = b.msag_id 
+		                and b.mcl_id = c.mcl_id ) d2,
+		             (  SELECT a.reg_spaj, b.lus_email
+                        FROM eka.mst_policy a,
+                        eka.lst_user b
+                        WHERE a.lus_id = b.lus_id) AC,
+                     (  select mp.reg_spaj,   lar.LAR_EMAIL 
+                        from  eka.mst_policy mp ,  EKA.LST_REGION lr ,  EKA.LST_ADDR_REGION lar
+                        where  mp.lca_id = lr.lca_id
+                                and mp.lwk_id = lr.lwk_id
+                                and mp.lsrg_id = lr.lsrg_id
+                                and lr.lar_id = lar.lar_id) dlar  
+                 where   d1.reg_spaj = d2.reg_spaj and d1.reg_spaj = AC.reg_spaj and d1.reg_spaj = dlar.reg_spaj
+		       	 and d1.reg_spaj = #spaj#)dataC  
+		 </isEqual>		       
+		WHERE lsfu_id = #lsfuId#  ORDER BY 1 
+	</select>
+</sqlMap>

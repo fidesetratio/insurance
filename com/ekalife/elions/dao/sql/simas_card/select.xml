@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="elions.simas_card">
+
+	<typeAlias alias="dropDown" type="id.co.sinarmaslife.std.model.vo.DropDown"/>
+	<typeAlias alias="hashMap" type="java.util.HashMap"/>
+	<typeAlias alias="simCard" type="com.ekalife.elions.model.Simcard"/>
+
+	<resultMap class="simCard" id="result.simCard">
+		<result property="msc_jenis" column="msc_jenis" javaType="int" jdbcType="NUMBER" />                                                                                                                                                             
+		<result property="no_kartu" column="no_kartu" javaType="string" jdbcType="VARCHAR2" />                                                                                                                                                                
+		<result property="nama" column="nama" javaType="string" jdbcType="VARCHAR2" />                                                                                                                                                                        
+		<result property="alamat" column="alamat" javaType="string" jdbcType="VARCHAR2" />                                                                                                                                                                    
+		<result property="kota" column="kota" javaType="string" jdbcType="VARCHAR2" />                                                                                                                                                                        
+		<result property="kode_pos" column="kode_pos" javaType="string" jdbcType="VARCHAR2" />                                                                                                                                                                
+		<result property="flag_print" column="flag_print" javaType="int" jdbcType="NUMBER" />                                                                                                                                                           
+		<result property="tgl_akhir" column="tgl_akhir" javaType="date" jdbcType="DATE" />                                                                                                                                                              
+		<result property="tgl_lahir" column="tgl_lahir" javaType="date" jdbcType="DATE" />                                                                                                                                                              
+		<result property="tgl_print" column="tgl_print" javaType="date" jdbcType="DATE" />                                                                                                                                                              
+		<result property="lca_cabang" column="lca_cabang" javaType="string" jdbcType="VARCHAR2" />                                                                                                                                                            
+		<result property="lca_id" column="lca_id" javaType="string" jdbcType="VARCHAR2" />                                                                                                                                                                    
+		<result property="flag_aktif" column="flag_aktif" javaType="int" jdbcType="NUMBER" />                                                                                                                                                           
+		<result property="cabang_bank" column="cabang_bank" javaType="string" jdbcType="VARCHAR2" />
+		<result property="tgl_naktif" column="tgl_naktif" javaType="date" jdbcType="DATE" />
+		<result property="tgl_naktif_end" column="tgl_naktif_end" javaType="date" jdbcType="DATE" />
+		<result property="tgl_naktif_endkartu" column="tgl_naktif_endkartu" javaType="date" jdbcType="DATE" />
+		<result property="tgl_naktif_endsurat" column="tgl_naktif_endsurat" javaType="date" jdbcType="DATE" />
+	</resultMap>	
+	
+	<select id="selectCetakSimasCardNew" parameterClass="hashMap" resultMap="result.simCard">
+		SELECT d.msc_jenis, d.no_kartu, NVL (d.nama, ' ') nama, NVL (d.alamat, ' ') alamat,
+		       NVL (d.kota, ' ') kota, NVL (d.kode_pos, ' ') kode_pos, d.flag_print,
+		       d.tgl_akhir, d.tgl_lahir, d.tgl_print, NVL (d.lca_cabang, ' ') lca_cabang,
+		       NVL (d.lca_id, ' ') lca_id, d.flag_aktif, LPAD (' ', 50) cabang_bank,tgl_naktif
+		  FROM eka.mst_simcard d,
+		  	   eka.mst_kartu_pas e
+		 WHERE d.reg_spaj = e.reg_spaj
+		   AND e.produk = '05'
+		   AND e.flag_active = 1 
+		   AND d.msc_jenis = #msc_jenis#
+		<isNotEqual property="lca_id" compareValue="ALL">
+		   AND d.lca_id = #lca_id# 
+		</isNotEqual> 
+		   AND d.flag_print = #flag_print#
+		<isNotEmpty property="cabangBII">
+		 AND d.reg_spaj in (
+			SELECT a.reg_spaj
+			  FROM eka.mst_policy a, eka.mst_nasabah b, eka.lst_cab_bii c
+			 WHERE a.mspo_plan_provider = b.mns_kd_nasabah
+			   AND b.kd_region = c.kd_region
+			   AND b.kd_koord = c.kd_koord
+			   AND b.kd_area = c.kd_area
+			   AND b.kd_cabang = c.kd_cabang
+			   AND c.kode = #cabangBII# 
+		 )	
+		</isNotEmpty>
+		<isNotEmpty property="cabangBankSinarmas">
+		 AND d.reg_spaj in (
+			SELECT b.reg_spaj
+			  FROM eka.mst_policy b, eka.lst_user u
+			 WHERE b.lus_id = u.lus_id AND u.cab_bank = #cabangBankSinarmas#		 	
+		 )
+		</isNotEmpty>
+		AND rownum <![CDATA[<=]]> #jumlah_print#
+	</select>
+
+	<select id="selectCetakSimasCard" parameterClass="hashMap" resultMap="result.simCard">
+		SELECT msc_jenis, no_kartu, NVL (nama, ' ') nama, NVL (alamat, ' ') alamat,
+		       NVL (kota, ' ') kota, NVL (kode_pos, ' ') kode_pos, flag_print,
+		       tgl_akhir, tgl_lahir, tgl_print, NVL (lca_cabang, ' ') lca_cabang,
+		       NVL (lca_id, ' ') lca_id, flag_aktif, LPAD (' ', 50) cabang_bank,tgl_naktif
+		  FROM eka.mst_simcard
+		 WHERE msc_jenis = #msc_jenis#
+		<isNotEqual property="lca_id" compareValue="ALL">
+		   AND lca_id = #lca_id# 
+		</isNotEqual> 
+		   AND flag_print = #flag_print#
+		<isNotEmpty property="cabangBII">
+		 AND reg_spaj in (
+			SELECT a.reg_spaj
+			  FROM eka.mst_policy a, eka.mst_nasabah b, eka.lst_cab_bii c
+			 WHERE a.mspo_plan_provider = b.mns_kd_nasabah
+			   AND b.kd_region = c.kd_region
+			   AND b.kd_koord = c.kd_koord
+			   AND b.kd_area = c.kd_area
+			   AND b.kd_cabang = c.kd_cabang
+			   AND c.kode = #cabangBII# 
+		 )	
+		</isNotEmpty>
+		<isNotEmpty property="cabangBankSinarmas">
+		 AND reg_spaj in (
+			SELECT b.reg_spaj
+			  FROM eka.mst_policy b, eka.lst_user u
+			 WHERE b.lus_id = u.lus_id AND u.cab_bank = #cabangBankSinarmas#		 	
+		 )
+		</isNotEmpty>
+		AND rownum <![CDATA[<=]]> #jumlah_print#
+	</select>
+			 <!--
+			SELECT b.reg_spaj
+			  FROM eka.mst_reff_bii b, eka.lst_cabang_bii c
+			 WHERE b.lcb_no = c.lcb_no AND c.lcb_no = #cabangBankSinarmas# AND c.jenis = 2		
+			 and b.level_id = 4 and b.no_urut = (select max(no_urut) from eka.mst_reff_bii where level_id = 4 and reg_spaj = b.reg_spaj)
+			-->
+	<select id="selectSimasCardBySpaj" parameterClass="string" resultClass="simCard">
+		SELECT msc_jenis, no_kartu, NVL (nama, ' ') nama, NVL (alamat, ' ') alamat,
+		       NVL (kota, ' ') kota, NVL (kode_pos, ' ') kode_pos, flag_print,
+		       tgl_akhir, tgl_lahir, tgl_print, NVL (lca_cabang, ' ') lca_cabang,
+		       NVL (lca_id, ' ') lca_id, flag_aktif, LPAD (' ', 50) cabang_bank
+		  FROM eka.mst_simcard
+		 WHERE reg_spaj = rpad(replace(#reg_spaj# ,'.'),11,' ') 
+		   AND flag_aktif = 1 and msc_jenis != 9
+	</select>
+	
+	<select id="selectSimasCardByNoKartu" parameterClass="string" resultClass="simCard">
+		SELECT msc_jenis, no_kartu, NVL (nama, ' ') nama, NVL (alamat, ' ') alamat,
+		       NVL (kota, ' ') kota, NVL (kode_pos, ' ') kode_pos, flag_print,
+		       tgl_akhir, tgl_lahir, tgl_print, NVL (lca_cabang, ' ') lca_cabang,
+		       NVL (lca_id, ' ') lca_id, flag_aktif, LPAD (' ', 50) cabang_bank
+		  FROM eka.mst_simcard
+		 WHERE trim(no_kartu) = trim(#no_kartu#) 
+	</select>
+	
+	<select id="selectJenisSimasCard" resultClass="dropDown">
+		SELECT   msc_jenis KEY,
+		         DECODE (msc_jenis,
+		                 0, 'Individu (NB)',
+		                 1, 'Individu (Existing)',
+		                 2, 'Direksi',
+		                 3, 'Rekanan Direksi',
+		                 4, 'Merchant',
+		                 5, 'Marketing',
+		                 6, 'Karyawan MKL',
+		                 7, 'Karyawan BO'
+		                ) VALUE
+		    FROM eka.mst_simcard
+		   WHERE flag_print IN (0, 1)
+		GROUP BY msc_jenis	
+	</select>
+
+	<select id="selectCabangSimasCard" resultClass="java.util.HashMap">
+		SELECT   a.lca_id KEY, b.lca_nama VALUE
+		    FROM eka.mst_simcard a, eka.lst_cabang b
+		   WHERE a.flag_print IN (0, 1) AND a.lca_id = b.lca_id
+		GROUP BY a.lca_id, b.lca_nama
+		ORDER BY b.lca_nama	
+	</select>
+
+	<select id="selectCabangBankSimasCard" parameterClass="int" resultClass="dropDown">
+		<!-- BII -->
+		<isEqual compareValue="0">
+			SELECT DISTINCT c.kode key, c.nama_cabang value
+			           FROM eka.mst_policy a,
+			                eka.mst_nasabah b,
+			                eka.lst_cab_bii c,
+			                eka.mst_simcard d
+			          WHERE a.reg_spaj = d.reg_spaj
+			            AND a.mspo_plan_provider = b.mns_kd_nasabah
+			            AND b.kd_region = c.kd_region
+			            AND b.kd_koord = c.kd_koord
+			            AND b.kd_area = c.kd_area
+			            AND b.kd_cabang = c.kd_cabang
+			            AND d.msc_jenis = 0
+			            AND d.lca_id = '09'
+			            AND d.flag_print IN (0, 1)
+			       ORDER BY 2	   
+		</isEqual>
+		<!-- Bank Sinarmas -->
+		<isEqual compareValue="1">
+			SELECT DISTINCT c.lcb_no KEY, c.nama_cabang VALUE
+			           FROM eka.mst_simcard a, eka.mst_policy b, eka.lst_user u, eka.lst_cabang_bii c
+			          WHERE a.reg_spaj = b.reg_spaj
+			            AND b.lus_id = u.lus_id
+						AND u.cab_bank = c.lcb_no
+			            AND a.msc_jenis = 0
+			            AND a.flag_print IN (0, 1)
+			            AND a.lca_id = '09'
+			            AND c.jenis = 2
+			       ORDER BY 2
+		</isEqual>
+	</select>
+		<!--
+			SELECT DISTINCT c.lcb_no key, c.nama_cabang value
+			           FROM eka.mst_simcard a, eka.mst_reff_bii b, eka.lst_cabang_bii c
+			          WHERE a.reg_spaj = b.reg_spaj
+			            AND b.lcb_no = c.lcb_no
+			            AND a.msc_jenis = 0
+			            AND a.flag_print IN (0, 1)
+			            AND a.lca_id = '09'
+			            AND c.jenis = 2
+			            and b.level_id = 4 and b.no_urut = (select max(no_urut) from eka.mst_reff_bii where level_id = 4 and reg_spaj = b.reg_spaj)
+			       ORDER BY 2
+		-->
+
+	<select id="selectCariSimasCard" parameterClass="hashMap" resultClass="simCard">
+		SELECT   sim.msc_jenis, sim.no_kartu, sim.nama, sim.tgl_akhir, sim.mcl_id,
+		         sim.reg_spaj, sim.tgl_lahir, sim.alamat, sim.kota, sim.kode_pos,
+		         sim.tgl_proses, sim.flag_print, sim.tgl_print, sim.flag_aktif,
+		         sim.flag_roll, sim.lus_id, sim.polis, sim.total_premi, sim.kartu_ke,
+		         sim.tgl_input, sim.flag_nb, sim.lca_id, sim.lca_cabang, sim.notes
+		    FROM eka.mst_simcard sim, eka.mst_policy pol
+		   WHERE sim.reg_spaj = pol.reg_spaj AND 
+		<isEqual property="jenis" compareValue="0">
+			sim.nama LIKE '%' || UPPER(TRIM(#kata#)) || '%'
+		</isEqual>
+		<isEqual property="jenis" compareValue="1">
+			pol.reg_spaj LIKE '%' || REPLACE(UPPER(TRIM(#kata#)), '.') || '%'
+		</isEqual>
+		<isEqual property="jenis" compareValue="2">
+			pol.mspo_policy_no LIKE '%' || REPLACE(UPPER(TRIM(#kata#)), '.') || '%'
+		</isEqual>
+		ORDER BY sim.nama
+	</select>
+
+	<select id="selectSimcard" parameterClass="hashMap" resultClass="simCard">
+		SELECT   sim.msc_jenis, sim.no_kartu, sim.nama, sim.tgl_akhir, sim.mcl_id,
+		         sim.reg_spaj, sim.tgl_lahir, sim.alamat, sim.kota, sim.kode_pos,
+		         sim.tgl_proses, sim.flag_print, sim.tgl_print, sim.flag_aktif,
+		         sim.flag_roll, sim.lus_id, sim.polis, sim.total_premi, sim.kartu_ke,
+		         sim.tgl_input, sim.flag_nb, sim.lca_id, sim.lca_cabang, sim.notes, 
+				 u.lus_login_name
+		    FROM eka.mst_simcard sim, eka.lst_user u
+		   WHERE sim.lus_id = u.lus_id 
+		     AND sim.msc_jenis = #msc_jenis#
+		     AND sim.no_kartu = #no_kartu#		
+	</select>
+
+	<select id="selectCountSimcardByJenis" parameterClass="int" resultClass="int">
+		SELECT COUNT (*)
+		  FROM eka.mst_simcard
+		 WHERE msc_jenis = #value# 	
+	</select>
+		<!-- VIPcard -->
+ 	<select id="selectCetakVipCard" parameterClass="hashMap" resultMap="result.simCard">
+ 		SELECT msc_jenis, no_kartu, NVL (nama, ' ') nama, NVL (alamat, ' ') alamat,
+ 		       NVL (kota, ' ') kota, NVL (kode_pos, ' ') kode_pos, flag_print,
+ 		       tgl_akhir, tgl_lahir, tgl_print, NVL (lca_cabang, ' ') lca_cabang,
+ 		       NVL (lca_id, ' ') lca_id, flag_aktif, LPAD (' ', 50) cabang_bank,
+ 		       tgl_naktif, tgl_naktif+365 tgl_naktif_end,
+<!--  		       tgl_naktif, tgl_naktif+365 tgl_naktif_end, (tgl_naktif+interval'5'year)-1 tgl_naktif_endkartu,  (tgl_naktif+interval'1'year)-1 tgl_naktif_endsurat -->
+ 		  	   add_months(tgl_naktif,60) -1 tgl_naktif_endkartu, add_months(tgl_naktif,12) -1 tgl_naktif_endsurat
+ 		  FROM eka.mst_simcard
+ 		 WHERE msc_jenis = #msc_jenis#
+ 		<isNotEqual property="lca_id" compareValue="ALL">
+ 		   AND lca_id = #lca_id#
+ 		</isNotEqual>
+ 		   AND flag_print = #flag_print#
+ 		   AND rownum <![CDATA[<=]]> #jumlah_print#
+ 		   AND TRUNC(tgl_naktif) <![CDATA[>=]]> '01 JUN 2018'
+ 		   ORDER BY TGL_NAKTIF ASC
+ 	</select>
+</sqlMap>

@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="worksheet_uw_renewal" pageWidth="595" pageHeight="640" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="50" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.HGuides" value="5,22"/>
+	<property name="com.jasperassistant.designer.DataSource" value="dataprod"/>
+	<property name="com.jasperassistant.designer.VGuides.Page Header" value="251"/>
+	<parameter name="nospaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["40201511520"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="user_id" class="java.lang.String"/>
+	<parameter name="area1" class="java.lang.String"/>
+	<parameter name="area2" class="java.lang.String"/>
+	<parameter name="area3" class="java.lang.String"/>
+	<parameter name="prod" class="java.lang.String"/>
+	<parameter name="area4" class="java.lang.String"/>
+	<parameter name="area5" class="java.lang.String"/>
+	<parameter name="namatt" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT  A.REG_SPAJ, 
+                A.MSPO_NO_BLANKO no_blanko, 
+                a.mspo_policy_no_format no_polis,
+                (initcap(C.MCL_FIRST) || ' / ' ||  (trunc((sysdate - C.MSPE_DATE_BIRTH)/365)+1) ) pemegang,
+                (initcap(d.MCL_FIRST) || ' / ' ||  (trunc((sysdate - d.MSPE_DATE_BIRTH)/365)+1) ) tertanggung,
+                Pri.LSBS_ID,
+                Pri.LSDBS_NUMBER,
+                ((select to_char((ADD_MONTHS( PI.MSPR_BEG_DATE, 12 )),'dd/mm') || '/' || to_char((ADD_MONTHS( sysdate, (case when (((select to_char((ADD_MONTHS( PI.MSPR_BEG_DATE, 12 )-1),'yyyy') from eka.mst_product_insured pi 
+where a.reg_spaj = pi.reg_spaj and pri.lsbs_id = pi.lsbs_id and pi.lsdbs_number = pri.lsdbs_number))-(to_char(sysdate,'yyyy'))) = 1 then 12 else 0 end) )-1),'yyyy')
+                    from eka.mst_product_insured pi where a.reg_spaj = pi.reg_spaj and pri.lsbs_id = pi.lsbs_id and pi.lsdbs_number = pri.lsdbs_number) || ' - ' ||            
+                    (select to_char((ADD_MONTHS( PI.MSPR_BEG_DATE, 24 )-1),'dd/mm') || '/' || to_char((ADD_MONTHS( sysdate, (12+(case when (((select to_char((ADD_MONTHS( PI.MSPR_BEG_DATE, 12 )-1),'yyyy') from eka.mst_product_insured pi 
+where a.reg_spaj = pi.reg_spaj and pri.lsbs_id = pi.lsbs_id and pi.lsdbs_number = pri.lsdbs_number))-(to_char(sysdate,'yyyy'))) = 1 then 12 else 0 end)) )-1),'yyyy')
+                    from eka.mst_product_insured pi where a.reg_spaj = pi.reg_spaj and pri.lsbs_id = pi.lsbs_id and pi.lsdbs_number = pri.lsdbs_number)) periode_polis,                
+                            (SELECT TO_CHAR(SYSDATE,'dd MON yyyy') FROM DUAL) tggl,
+                (SELECT TO_CHAR(SYSDATE,'dd-mm-yyyy') FROM DUAL) tggl1
+            FROM eka.mst_policy a, eka.mst_insured i, EKA.mst_product_insured pri, eka.mst_client_new c, eka.mst_client_new d, eka.lst_det_bisnis e
+            WHERE   a.reg_spaj = i.reg_spaj
+                and a.reg_spaj = pri.reg_spaj
+                and a.mspo_policy_holder = c.mcl_id
+                and i.mste_insured = d.mcl_id (+)
+                AND pri.LSBS_ID = E.LSBS_ID
+                AND pri.LSDBS_NUMBER = E.LSDBS_NUMBER
+                AND a.reg_spaj = RPAD (REPLACE ($P{nospaj}, '.'), 11, ' ')
+                and E.LSDBS_NAME = $P{prod}]]>
+	</queryString>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NUMBER" class="java.math.BigDecimal"/>
+	<field name="NO_BLANKO" class="java.lang.String"/>
+	<field name="NO_POLIS" class="java.lang.String"/>
+	<field name="PEMEGANG" class="java.lang.String"/>
+	<field name="PERIODE_POLIS" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="TERTANGGUNG" class="java.lang.String"/>
+	<field name="TGGL" class="java.lang.String"/>
+	<field name="TGGL1" class="java.lang.String"/>
+	<title>
+		<band height="33">
+			<staticText>
+				<reportElement x="5" y="1" width="240" height="26"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="12" isBold="true" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[UNDERWRITING WORKSHEET RENEWAL]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="310" y="1" width="240" height="26"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{user_id}+", "+$F{TGGL}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="5" y="32" width="551" height="1"/>
+			</line>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="525">
+			<staticText>
+				<reportElement x="5" y="20" width="147" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Nomor SPAJ / No. Blangko]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="5" y="50" width="164" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Nama Pemegang Polis / Umur]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="187" y="20" width="13" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="187" y="50" width="13" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="209" y="20" width="341" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REG_SPAJ} + " / " + $F{NO_BLANKO}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="209" y="50" width="341" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PEMEGANG}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="5" y="81" width="164" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Nama Tertanggung / Umur]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="209" y="81" width="341" height="20"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{namatt}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="187" y="81" width="13" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="5" y="112" width="90" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Plan Renewal]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="187" y="112" width="13" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="209" y="112" width="341" height="20"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{prod}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="5" y="143" width="87" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Periode Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="187" y="143" width="13" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="187" y="174" width="13" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="5" y="174" width="164" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Premi Periode Selanjutnya]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="5" y="213" width="164" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Underwriting Suggestion]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="187" y="213" width="13" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="209" y="143" width="341" height="20"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PERIODE_POLIS}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="209" y="174" width="341" height="20"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Rp "+$P{area4}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="22" y="437" width="86" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[- Keputusan UW]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="22" y="313" width="109" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[- Klaim Kesehatan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="22" y="375" width="86" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[- Simultan]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="209" y="375" width="341" height="52"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{area3}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="187" y="313" width="13" height="20"/>
+				<textElement>
+					<font fontName="arial" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="187" y="375" width="13" height="20"/>
+				<textElement>
+					<font fontName="arial" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="209" y="251" width="341" height="52"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{area1}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="187" y="251" width="13" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="209" y="437" width="341" height="52"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{area5}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="22" y="251" width="98" height="20"/>
+				<textElement>
+					<font fontName="Arial" size="11" isItalic="false" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[- Attention List]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="209" y="313" width="341" height="52"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{area2}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="187" y="437" width="13" height="20"/>
+				<textElement>
+					<font fontName="arial" size="11" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+</jasperReport>

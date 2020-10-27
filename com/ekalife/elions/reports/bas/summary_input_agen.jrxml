@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using an evaluation version of JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="summary_input_agen" pageWidth="1200" pageHeight="595" orientation="Landscape" columnWidth="1160" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30">
+	<property name="com.jasperassistant.designer.DataSource" value="dataprod"/>
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="true"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="5"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="5"/>
+	<property name="com.jasperassistant.designer.Margins" value="true"/>
+	<property name="com.jasperassistant.designer.Rulers" value="true"/>
+	<property name="com.jasperassistant.designer.SnapToGuides" value="true"/>
+	<parameter name="bdate" class="java.lang.String">
+		<defaultValueExpression><![CDATA[" "]]></defaultValueExpression>
+	</parameter>
+	<parameter name="edate" class="java.lang.String">
+		<defaultValueExpression><![CDATA[" "]]></defaultValueExpression>
+	</parameter>
+	<parameter name="cabang" class="java.lang.String">
+		<defaultValueExpression><![CDATA[" "]]></defaultValueExpression>
+	</parameter>
+	<parameter name="userinput" class="java.lang.String">
+		<defaultValueExpression><![CDATA[" "]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select * from (
+    select 
+        a.mku_tglinput tgl_input, a.mku_no_reg no_reg, trim(a.mku_first || ' ' || a.mku_middle || ' ' || a.mku_last) nama_rekrut, '?' level_rekrut,
+        nvl(a.mku_diundang, a.mku_rekruiter) nama_rekruter, eka.utils.agen_jabatan(a.msrk_id) level_rekruter, a.mku_region kode_region, 
+        eka.utils.cabang(substr(a.mku_region, 1, 2)) cabang, eka.utils.kanwil_nama(substr(a.mku_region, 1, 2), substr(mku_region, 3, 2)) wakil, b.lsrg_nama region, a.mku_tgl_berkas tgl_berkas,
+        c.lus_full_name
+    from 
+        eka.mst_kuesioner a, eka.lst_region b, eka.lst_user c
+    where 
+        a.mku_region = (b.lca_id || b.lwk_id || b.lsrg_id)
+        and a.mku_tglinput between '1 sep 2011' and '12 sep 2011' 
+        and a.lus_id = c.lus_id
+    union        
+    select 
+        a.mia_input_date tgl_input, a.mia_agensys_id no_reg, a.mia_nama nama_rekrut, decode(a.mia_level_recruit, 1, 'Agency Director', 2, 'Agency Manager', 3, 'Sales Manager', 4, 'Sales Executive') level_rekrut,
+        eka.utils.agen(a.mia_recruiter) nama_rekruter, eka.utils.agen_jabatan(a.mia_recruiter) level_rekruter, (a.lca_id || a.lwk_id || a.lsrg_id) kode_region, 
+        eka.utils.cabang(a.lca_id) cabang, eka.utils.kanwil_nama(a.lca_id, a.lwk_id) wakil, b.lsrg_nama region, a.mia_tgl_berkas tgl_berkas,
+        c.lus_full_name
+    from 
+        eka.mst_input_agensys a, eka.lst_region b, eka.lst_user c
+    where 
+        a.lca_id = b.lca_id and a.lwk_id = b.lwk_id and a.lsrg_id = b.lsrg_id
+        and a.mia_input_date between '1 sep 2011' and '12 sep 2011'
+        and a.lus_id = c.lus_id
+) order by tgl_input]]>
+	</queryString>
+	<field name="CABANG" class="java.lang.String"/>
+	<field name="KODE_REGION" class="java.lang.String"/>
+	<field name="LEVEL_REKRUT" class="java.lang.String"/>
+	<field name="LEVEL_REKRUTER" class="java.lang.String"/>
+	<field name="LUS_FULL_NAME" class="java.lang.String"/>
+	<field name="NAMA_REKRUT" class="java.lang.String"/>
+	<field name="NAMA_REKRUTER" class="java.lang.String"/>
+	<field name="NO_REG" class="java.lang.String"/>
+	<field name="REGION" class="java.lang.String"/>
+	<field name="TGL_BERKAS" class="java.sql.Timestamp"/>
+	<field name="TGL_INPUT" class="java.sql.Timestamp"/>
+	<field name="WAKIL" class="java.lang.String"/>
+	<columnHeader>
+		<band height="90">
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="0" width="340" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Laporan Summary Input Register Agen"]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="45" width="340" height="15"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Periode Input: " + $P{bdate} + " s/d " + $P{edate}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="65" width="20" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="20" y="65" width="100" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tgl
+Input]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="220" y="65" width="70" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No.
+Register]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="290" y="65" width="150" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama
+Calon Agen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="440" y="65" width="80" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Level
+Agen Rekrut]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="520" y="65" width="150" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama
+Agen Rekruter]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="670" y="65" width="80" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Level
+Agen Rekruter]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="750" y="65" width="226" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Cabang
+]]></text>
+			</staticText>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="30" width="340" height="15"/>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["User Input: " + $P{userinput}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="15" width="340" height="15"/>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Cabang: " + $P{cabang}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="120" y="65" width="100" height="25"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tgl
+Terima Berkas]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="975" y="65" width="146" height="25"/>
+				<box padding="2">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama User 
+Input Admin
+]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15">
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="0" y="0" width="20" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy (HH:mm:ss)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="20" y="0" width="100" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{TGL_INPUT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="220" y="0" width="70" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NO_REG}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="290" y="0" width="150" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_REKRUT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="440" y="0" width="80" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LEVEL_REKRUT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="520" y="0" width="150" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{NAMA_REKRUTER}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="670" y="0" width="80" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LEVEL_REKRUTER}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="750" y="0" width="226" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REGION}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy (HH:mm:ss)" isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="120" y="0" width="100" height="15"/>
+				<box padding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{TGL_BERKAS}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement x="975" y="0" width="146" height="15"/>
+				<box padding="2">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LUS_FULL_NAME}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

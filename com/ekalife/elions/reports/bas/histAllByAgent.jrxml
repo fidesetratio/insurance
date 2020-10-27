@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="histAllByAgent" pageWidth="1300" pageHeight="595" orientation="Landscape" columnWidth="1260" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="eka8i"/>
+	<property name="com.jasperassistant.designer.VGuides.Detail" value="19"/>
+	<property name="com.jasperassistant.designer.HGuides" value="25,136,225,305,410,500,581,800,880,960"/>
+	<parameter name="print" class="java.util.Date">
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ag" class="java.lang.String">
+		<defaultValueExpression><![CDATA["600770"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select a.blanko, a.lsjs_id, a.lsp_id, a.msfh_desc, a.flag_urut, a.msfh_date, a.msab_id, a.lus_id, a.lca_admin,
+	   a.lsjs_desc, a.lsp_jenis, a.reg_spaj, a.mspo_policy_no,a.msag_id, a.lca_agent,a.lwk_id, a.mcl_first, 
+	   a.lwk_nama, a.lca_nama, a.lus_login_name, a.tgl_permintaan, a.tgl_pertanggungjawaban, 
+	   (case when tgl_permintaan is null then '' 
+	   		 when tgl_pertanggungjawaban is null then  to_char(eka.workdays(tgl_permintaan, sysdate))
+			 when tgl_permintaan is not null and tgl_pertanggungjawaban is not null then ''
+	   end) lama
+from (
+select b.lsjs_prefix || a.no_blanko blanko, a.lsjs_id, a.lsp_id, a.msfh_desc, a.flag_urut, a.msfh_date, a.msab_id, a.lus_id, a.lca_id lca_admin,
+	   b.lsjs_desc, 
+	   c.lsp_jenis,
+	   (case when a.lsp_id = 3 then d.reg_spaj else '' end) reg_spaj,
+	   (case when a.lsp_id = 3 then d.mspo_policy_no else '' end) mspo_policy_no,
+	   e.msag_id, 
+	   f.lca_id lca_agent, f.lwk_id,
+	   g.mcl_first,
+	   h.lwk_nama, i.lca_nama,
+	   j.lus_login_name,
+	   decode(a.lsp_id,2,a.msfh_date, (select min(msfh_date)
+									  from eka.mst_fitrah_hist 
+									  where lsp_id = 2
+									  and no_blanko = a.no_blanko
+									  and flag_urut = a.flag_urut
+									  and msab_id = a.msab_id) ) tgl_permintaan,
+	   (case when a.lsp_id not in(1,2) then a.msfh_date else to_date('','dd/mm/yyyy') end) tgl_pertanggungjawaban
+  from (select a.no_blanko, a.lsjs_id, a.lsp_id, a.msfh_desc, a.flag_urut, a.msfh_date, a.msab_id, a.lus_id, a.lca_id 
+		from eka.mst_fitrah_hist a
+		where lsp_id <> 1) a,
+  	   eka.lst_jenis_spaj b,
+	   eka.lst_pertgjwbn c,
+	   eka.mst_spaj_det d,	   
+   	   eka.mst_agent_branch e,            
+  	   eka.mst_agent f,            
+   	   eka.mst_client_new g,
+   	   eka.lst_wakil h,
+	   eka.lst_cabang i,
+	   eka.lst_user j
+WHERE a.lsjs_id = b.lsjs_id
+  AND a.lsp_id = c.lsp_id        
+  AND a.lsp_id <> 1
+  AND a.no_blanko = d.no_blanko
+  AND a.lsjs_id = d.lsjs_id
+  AND a.msab_id = e.msab_id
+  AND a.lus_id = j.lus_id
+  AND e.msag_id = f.msag_id        
+  AND f.mcl_id = g.mcl_id
+  AND f.lca_id = h.lca_id
+  AND f.lwk_id = h.lwk_id
+   AND a.lca_id = i.lca_id
+) a
+where a.msag_id = $P{ag}
+order by a.lsjs_desc, a.blanko]]>
+	</queryString>
+	<field name="BLANKO" class="java.lang.String"/>
+	<field name="FLAG_URUT" class="java.math.BigDecimal"/>
+	<field name="LAMA" class="java.lang.String"/>
+	<field name="LCA_ADMIN" class="java.lang.String"/>
+	<field name="LCA_AGENT" class="java.lang.String"/>
+	<field name="LCA_NAMA" class="java.lang.String"/>
+	<field name="LSJS_DESC" class="java.lang.String"/>
+	<field name="LSJS_ID" class="java.math.BigDecimal"/>
+	<field name="LSP_ID" class="java.math.BigDecimal"/>
+	<field name="LSP_JENIS" class="java.lang.String"/>
+	<field name="LUS_ID" class="java.math.BigDecimal"/>
+	<field name="LUS_LOGIN_NAME" class="java.lang.String"/>
+	<field name="LWK_ID" class="java.lang.String"/>
+	<field name="LWK_NAMA" class="java.lang.String"/>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="MSAB_ID" class="java.math.BigDecimal"/>
+	<field name="MSAG_ID" class="java.lang.String"/>
+	<field name="MSFH_DATE" class="java.util.Date"/>
+	<field name="MSFH_DESC" class="java.lang.String"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="TGL_PERMINTAAN" class="java.util.Date"/>
+	<field name="TGL_PERTANGGUNGJAWABAN" class="java.util.Date"/>
+	<pageHeader>
+		<band height="92">
+			<staticText>
+				<reportElement x="4" y="4" width="539" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="13" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PT Asuransi Jiwa Sinarmas MSIG Tbk. - REPORT HISTORY FORM SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4" y="24" width="58" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[Cabang :]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="61" y="24" width="200" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LWK_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="5" y="70" width="280" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Nama Agent : " + "  " + $F{MSAG_ID} + " - " + $F{MCL_FIRST}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="45">
+			<staticText>
+				<reportElement x="1141" y="5" width="120" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[User Input]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="937" y="5" width="204" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Keterangan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="578" y="5" width="80" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Status]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="818" y="5" width="120" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tgl Pertanggungjawaban
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="658" y="5" width="80" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Lama Hari]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="738" y="5" width="80" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tgl Input]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="133" y="5" width="90" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Region]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="383" y="5" width="105" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No. Register SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="5" width="23" height="40"/>
+				<box border="1Point" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No. ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="303" y="5" width="80" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No. Blanko]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="223" y="5" width="80" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Jenis SPAJ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="488" y="5" width="90" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No. Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="23" y="5" width="110" height="40"/>
+				<box padding="0" topBorder="1Point" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Perwakilan]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField>
+				<reportElement x="937" y="0" width="204" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSFH_DESC}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1141" y="0" width="120" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LUS_LOGIN_NAME}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="738" y="0" width="80" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{TGL_PERMINTAAN})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="818" y="0" width="120" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{TGL_PERTANGGUNGJAWABAN})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="658" y="0" width="80" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LAMA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="578" y="0" width="80" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["  " + $F{LSP_JENIS} + "  "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="0" width="23" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="1Point" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{REPORT_COUNT} + ". "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="303" y="0" width="80" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["  " + $F{BLANKO} + "  "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="23" y="0" width="110" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["  " + $F{LWK_NAMA} + "   "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="383" y="0" width="105" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REG_SPAJ}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="223" y="0" width="80" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSJS_DESC}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="488" y="0" width="90" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSPO_POLICY_NO}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="133" y="0" width="90" height="20"/>
+				<box padding="0" topBorder="None" leftBorder="None" bottomBorder="1Point" rightBorder="1Point"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["  " + $F{LCA_NAMA} + "  "]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="40">
+			<textField>
+				<reportElement x="83" y="20" width="80" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$P{print}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="3" y="20" width="80" height="20"/>
+				<textElement/>
+				<text><![CDATA[Tanggal Print : ]]></text>
+			</staticText>
+		</band>
+	</pageFooter>
+</jasperReport>

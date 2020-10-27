@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+   	<!--Update mst_insured_medical-->
+	<update id="elions.uw.update.mst_insured_medical" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_INSURED  
+			SET MSTE_MEDICAL = #mste_medical#  
+			WHERE EKA.MST_INSURED.REG_SPAJ = #spaj#
+		</update>
+  
+ 	<!--Update lst_sample_uw-->
+	<update id="elions.uw.update.lst_sample_uw" parameterClass="java.lang.String">
+			UPDATE EKA.LST_SAMPLE_UW  
+   					SET FLAG_SAMPLE = 1  
+	   				WHERE EKA.LST_SAMPLE_UW.TGL_SAMPLE = (
+   							SELECT MIN(EKA.LST_SAMPLE_UW.TGL_SAMPLE)
+	   						FROM EKA.LST_SAMPLE_UW
+		   					WHERE ( EKA.LST_SAMPLE_UW.TGL_SAMPLE <![CDATA[<=]]> SYSDATE ) AND  
+   									( EKA.LST_SAMPLE_UW.TGL_SAMPLE2 <![CDATA[>=]]> SYSDATE ) AND
+	   								( EKA.LST_SAMPLE_UW.FLAG_SAMPLE = 0 )) 
+		</update>
+   
+    <!--Update mst_insured_status-->
+	<update id="elions.uw.update.mst_insured_status" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_INSURED  
+			SET    LSSA_ID = #li_aksep:NUMBER# 
+			<isNotEmpty property="lusId">,LUS_ID=#lusId:VARCHAR#</isNotEmpty>
+			<isNotEmpty property="flagTgl">,MSTE_TGL_AKSEP=sysdate</isNotEmpty>
+			<isNotNull property="li_aktif">,MSTE_ACTIVE = #li_aktif:NUMBER# </isNotNull>
+		 	WHERE  ( EKA.MST_INSURED.REG_SPAJ = #txtnospaj:VARCHAR#)AND  
+					 ( EKA.MST_INSURED.MSTE_INSURED_NO = #txtinsured_no:NUMBER#)   
+	</update>
+	
+	<!--Update mst_pas_sms_status-->
+	<update id="elions.uw.update.mst_pas_sms_status" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_PAS_SMS  
+			SET msp_tgl_status = #msp_tgl_status# ,LUS_ID_UW_STATUS=#lusId#, msp_ket_status=#msp_ket_status#, msp_status=#msp_status#
+		 	WHERE MSP_ID = #msp_id#   
+	</update>
+	
+	<!--Update mst_insured_tgl_kirim_admedika -->
+	<update id="elions.uw.update.mst_insured_kirim_admedika" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_INSURED  
+			SET MSTE_TGL_KIRIM_ADMEDIKA	= sysdate ,
+				LUS_ID=#lusId:VARCHAR#
+			WHERE  ( EKA.MST_INSURED.REG_SPAJ = #txtnospaj:VARCHAR#)AND  
+					 ( EKA.MST_INSURED.MSTE_INSURED_NO = #txtinsured_no:NUMBER#)  
+	</update>
+	
+	
+  
+   <!--Update mst_cnt_polis-->
+	<update id="elions.uw.update.mst_cnt_polis" parameterClass="java.util.HashMap">
+		 UPDATE EKA.MST_CNT_POLIS  
+			  SET MSCNP_VALUE = #ld_no#  
+			  WHERE ( EKA.MST_CNT_POLIS.LCA_ID = #as_cab# ) AND  
+			        ( EKA.MST_CNT_POLIS.LSBS_ID = #as_bisnis# )   
+			  
+   	</update>
+  
+	<!--Update mst_policy nopolis-->
+	<update id="elions.uw.update.mst_policy.nopolis" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_POLICY 
+	         SET MSPO_POLICY_NO =#ls_nopol#,   
+	         		MSPO_POLICY_NO_FORMAT=#ls_nopol_formated#  
+	   		WHERE EKA.MST_POLICY.REG_SPAJ = #txtnospaj# and  
+		          EKA.MST_POLICY.LSTB_ID = 1
+   	</update>
+  
+	<!--Update mst_policy mspo preexisting-->
+	<update id="elions.uw.update.mst_policy.mspo_preexisting" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_POLICY 
+	         SET MSPO_PREEXISTING=#value#
+	       WHERE ( EKA.MST_POLICY.REG_SPAJ = #txtnospaj# ) and  
+		          ( ( EKA.MST_POLICY.LSPD_ID = #lspdId# ) AND  
+		          ( EKA.MST_POLICY.LSTB_ID = #lstbId# ) )   
+			        
+			  
+   	</update>
+ 
+ 	<update id="elions.uw.akseptasi.update.mst_ulink" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_ULINK  
+		   SET MU_LSPD_ID = #lspd_id#, MU_TGL_TRANS = #mu_tgl_trans#  
+		 WHERE ( EKA.MST_ULINK.REG_SPAJ = #reg_spaj# ) AND  
+		       ( EKA.MST_ULINK.MU_KE =#mu_ke# )   
+			  
+   	</update>
+   	
+   	<update id="elions.uw.update.mst_insured_status_bas" parameterClass="java.util.HashMap">
+		UPDATE EKA.MST_INSURED  
+			SET    LSSA_ID_BAS = #li_aksep:NUMBER# 		
+		 	WHERE  ( EKA.MST_INSURED.REG_SPAJ = #spaj:VARCHAR#)AND  
+					 ( EKA.MST_INSURED.MSTE_INSURED_NO = #txtinsured_no:NUMBER#)   
+	</update>
+  
+
+
+ 
+ </sqlMap>

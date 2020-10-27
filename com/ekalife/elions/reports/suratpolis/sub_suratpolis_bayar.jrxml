@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="sub_suratpolis_bayar" pageWidth="595" pageHeight="842" columnWidth="525" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<parameter name="spaj" class="java.lang.String">
+		<defaultValueExpression><![CDATA["09160071317"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select distinct
+   tgl_bayar, nama_bank, kurs, msbi_remain,
+   (case when mste_flag_cc in(1,9) and msbi_remain !=0 then ((mspa_payment+abs(msbi_remain))) else mspa_payment end) jumlah_bayar,
+    lsjb_type_bank, mspa_old_policy
+from
+(select distinct a.mspa_pay_date tgl_bayar, d.lsbp_nama nama_bank, e.lku_symbol kurs,j.msbi_remain,
+            sum(case when i.mste_flag_cc=1 and j.msbi_remain !=0 then ((a.mspa_payment)) 
+                     when A.LSJB_ID = 3 and A.MSPA_FLAG_MERCHANT = 1 and j.msbi_remain !=0 then (a.mspa_payment+abs(j.msbi_remain))
+                        else a.mspa_payment end) mspa_payment,
+         h.lsjb_type_bank, a.mspa_old_policy ,i.mste_flag_cc      
+from eka.mst_payment a,     
+     eka.lst_rek_ekalife b,
+     eka.lst_bank c,
+     eka.lst_bank_pusat d,
+     eka.lst_kurs e,
+     eka.mst_tag_payment f,
+     eka.mst_production g,
+     eka.lst_payment_type h,
+     eka.mst_insured i,
+     eka.mst_billing j        
+where a.reg_spaj = f.reg_spaj
+and a.reg_spaj = g.reg_spaj
+and a.reg_spaj=i.reg_spaj
+and a.reg_spaj=j.reg_spaj
+and a.mspa_payment_id = f.mspa_payment_id
+and a.lsrek_id = b.lsrek_id
+and b.lbn_id = c.lbn_id
+and c.lsbp_id = d.lsbp_id
+and a.lku_id = e.lku_id
+and f.msbi_tahun_ke = g.msbi_tahun_ke
+and f.msbi_premi_ke = g.msbi_premi_ke
+and j.msbi_tahun_ke=g.msbi_tahun_ke
+and j.msbi_premi_ke=g.msbi_premi_ke
+and a.lsjb_id = h.lsjb_id
+and g.mspro_prod_date = (select mspro_prod_date from eka.mst_production where reg_spaj = a.reg_spaj and msbi_premi_ke = 1 and mspro_jn_prod = 1)
+and a.reg_spaj =$P{spaj}
+group by a.mspa_pay_date, d.lsbp_nama, e.lku_symbol, h.lsjb_type_bank, a.mspa_old_policy,j.msbi_remain,i.mste_flag_cc)]]>
+	</queryString>
+	<field name="JUMLAH_BAYAR" class="java.math.BigDecimal"/>
+	<field name="KURS" class="java.lang.String"/>
+	<field name="LSJB_TYPE_BANK" class="java.math.BigDecimal"/>
+	<field name="MSPA_OLD_POLICY" class="java.lang.String"/>
+	<field name="NAMA_BANK" class="java.lang.String"/>
+	<field name="TGL_BAYAR" class="java.util.Date"/>
+	<variable name="fulus" class="java.lang.String">
+		<variableExpression><![CDATA[(($F{JUMLAH_BAYAR} != null) ? 
+    ($P{REPORT_SCRIPTLET}.formatCurrency($F{KURS}, $F{JUMLAH_BAYAR})):""
+)]]></variableExpression>
+	</variable>
+	<detail>
+		<band height="14">
+			<textField isStretchWithOverflow="true" hyperlinkType="None">
+				<reportElement positionType="Float" x="0" y="0" width="519" height="14"/>
+				<textElement markup="styled">
+					<font fontName="Times New Roman" size="10" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["<style isBold=\"true\" pdfFontName=\"Times-Bold\">" + $V{fulus} +"</style> "+"yang kami terima pada tanggal "+$P{REPORT_SCRIPTLET}.formatDateIndonesian($F{TGL_BAYAR})+(($F{LSJB_TYPE_BANK}.intValue()==1)?" di Rekening "+$F{NAMA_BANK}+".":" dari manfaat Polis No "+$P{REPORT_SCRIPTLET}.formatPolis($F{MSPA_OLD_POLICY})+".")]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

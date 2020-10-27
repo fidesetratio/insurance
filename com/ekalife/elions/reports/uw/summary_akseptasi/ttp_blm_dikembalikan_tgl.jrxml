@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="ttp_blm_dikembalikan_tgl" pageWidth="1200" pageHeight="842" columnWidth="1160" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ajsdb"/>
+	<parameter name="tanggalAwal" class="java.lang.String">
+		<defaultValueExpression><![CDATA["03/09/2009"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="tanggalAkhir" class="java.lang.String">
+		<defaultValueExpression><![CDATA["27/09/2009"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT DISTINCT a.lca_id, b.mste_tgl_kirim_polis,
+                TO_CHAR ((b.mste_tgl_kirim_polis + 31),
+                         'dd/mm/yyyy'
+                        ) tgl_terima,
+                a.reg_spaj, a.mspo_policy_no, a.mspo_ao,
+                TO_CHAR (b.mste_tgl_kirim_polis, 'dd/mm/yyyy') tgl_kirim,c.mspr_tsi,cab.lca_nama,
+                SYSDATE, d.mcl_first pemegang, c1.mcl_first agen,b.mste_beg_date,
+                e.lsdbs_name, e.lsbs_id, kom.msco_comm, sa.status_accept
+           FROM eka.mst_policy a,
+                eka.mst_insured b,
+                eka.mst_product_insured c,
+                eka.mst_client_new d,
+                eka.lst_det_bisnis e,
+                eka.mst_agent_prod f,
+                eka.mst_agent g,
+                eka.mst_client_new c1,eka.lst_cabang cab,
+                eka.mst_commission kom,eka.lst_status_accept sa
+          WHERE a.reg_spaj = b.reg_spaj
+            AND a.reg_spaj = c.reg_spaj
+            AND a.reg_spaj = f.reg_spaj
+            AND f.reg_spaj = kom.reg_spaj
+            AND c.lsbs_id = e.lsbs_id
+			and a.lca_id=cab.lca_id
+            AND c.lsdbs_number = e.lsdbs_number
+			and b.LSSA_ID=sa.lssa_id
+            AND a.reg_spaj = f.reg_spaj
+            AND b.mste_tgl_kirim_polis IS NOT NULL
+            AND a.mspo_policy_holder = d.mcl_id
+            AND a.mspo_date_ttp IS NULL
+            AND f.msag_id = g.msag_id
+            AND f.msag_id = kom.msag_id
+            AND f.lev_comm = kom.lev_comm
+            AND g.mcl_id = c1.mcl_id
+            AND kom.msbi_tahun_ke = 1
+            AND kom.msbi_premi_ke = 1
+            AND a.lssp_id = 1
+            AND (    a.lca_id <> '09'
+                 AND e.lsbs_id NOT IN
+                        ('164',
+                         '142',
+                         '143',
+                         '144',
+                         '155',
+                         '158',
+                         '174',
+                         '175',
+                         '176',
+                         '177',
+                         '171'
+                        )
+                )
+            AND (e.lsbs_id NOT IN ('153') AND e.lsdbs_number NOT IN ('5'))
+            AND (e.lsbs_id NOT IN ('170') AND e.lsdbs_number NOT IN ('1'))
+            AND f.lsle_id = 4
+            AND c.lsbs_id < 300
+            AND NVL (TRUNC (SYSDATE) - TRUNC (b.mste_tgl_kirim_polis), 0) > 40
+			and trunc( b.mste_tgl_kirim_polis) >=to_date($P{tanggalAwal},'dd/mm/yyyy')
+			and trunc( b.mste_tgl_kirim_polis) <=to_date($P{tanggalAkhir},'dd/mm/yyyy')
+       ORDER BY cab.lca_nama ASC]]>
+	</queryString>
+	<field name="AGEN" class="java.lang.String"/>
+	<field name="LCA_ID" class="java.lang.String"/>
+	<field name="LCA_NAMA" class="java.lang.String"/>
+	<field name="LSBS_ID" class="java.math.BigDecimal"/>
+	<field name="LSDBS_NAME" class="java.lang.String"/>
+	<field name="MSCO_COMM" class="java.math.BigDecimal"/>
+	<field name="MSPO_AO" class="java.lang.String"/>
+	<field name="MSPO_POLICY_NO" class="java.lang.String"/>
+	<field name="MSPR_TSI" class="java.math.BigDecimal"/>
+	<field name="MSTE_BEG_DATE" class="java.util.Date"/>
+	<field name="MSTE_TGL_KIRIM_POLIS" class="java.util.Date"/>
+	<field name="PEMEGANG" class="java.lang.String"/>
+	<field name="REG_SPAJ" class="java.lang.String"/>
+	<field name="STATUS_ACCEPT" class="java.lang.String"/>
+	<field name="SYSDATE" class="java.util.Date"/>
+	<field name="TGL_KIRIM" class="java.lang.String"/>
+	<field name="TGL_TERIMA" class="java.lang.String"/>
+	<title>
+		<band height="51">
+			<staticText>
+				<reportElement x="1" y="0" width="766" height="27"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[List Polis Yang TTP Tidak DiKembalikan Ke UW >40 Hari SejakTanggal Kirim Polis (Komisi NB Tidak Di Bayarkan)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1" y="27" width="110" height="24"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Tanggal Proses]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="111" y="27" width="80" height="24"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{tanggalAwal}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="15">
+			<staticText>
+				<reportElement x="0" y="1" width="90" height="14"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Cabang]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="90" y="1" width="150" height="14"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Nama Penutup]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="240" y="1" width="120" height="14"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[No Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="360" y="1" width="120" height="14"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Pemegang Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="480" y="1" width="120" height="14"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Product]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="600" y="1" width="101" height="14"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="701" y="1" width="120" height="14"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Efektif Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="821" y="1" width="90" height="14"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Tgl Kirim Polis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="910" y="1" width="80" height="14"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Komisi NB]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="990" y="1" width="120" height="14"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<text><![CDATA[Status]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="17">
+			<textField>
+				<reportElement x="90" y="0" width="150" height="17"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{AGEN}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="240" y="0" width="120" height="17"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["`"+$F{MSPO_POLICY_NO}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="360" y="0" width="120" height="17"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PEMEGANG}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="480" y="0" width="120" height="17"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LSDBS_NAME}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="821" y="0" width="90" height="17"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TGL_KIRIM}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="0" width="90" height="17"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LCA_NAMA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="600" y="0" width="101" height="17"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrencyNoDigit("Rp ",($F{MSPR_TSI}))]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="701" y="0" width="120" height="17"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{MSTE_BEG_DATE})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="910" y="0" width="80" height="17"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatCurrencyNoDigit("Rp ",$F{MSCO_COMM})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="990" y="0" width="120" height="17"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{STATUS_ACCEPT}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

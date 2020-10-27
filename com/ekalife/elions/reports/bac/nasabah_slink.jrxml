@@ -1,0 +1,441 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using JasperAssistant (http://www.jasperassistant.com) -->
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="nasabah_slink" pageWidth="1600" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="1560" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" scriptletClass="com.ekalife.utils.jasper.JasperScriptlet">
+	<property name="com.jasperassistant.designer.Grid" value="false"/>
+	<property name="com.jasperassistant.designer.SnapToGrid" value="false"/>
+	<property name="com.jasperassistant.designer.GridWidth" value="12"/>
+	<property name="com.jasperassistant.designer.GridHeight" value="12"/>
+	<property name="com.jasperassistant.designer.DataSource" value="ekatest"/>
+	<parameter name="startDate" class="java.lang.String"/>
+	<parameter name="endDate" class="java.lang.String"/>
+	<parameter name="lus_id" class="java.lang.String"/>
+	<parameter name="NoPolis" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT a.msl_kode, c.mspo_policy_no_format, d.mcl_first, g.lku_symbol, a.msl_bdate, a.msl_edate, upper(a.msl_desc) msl_desc1, a.msl_tu_ke, decode(h.reg_spaj, null,a.msl_premi,0) msl_premi, a.msl_bunga, b.msl_bdate, b.msl_desc, 
+decode(h.mpc_premi+h.mpc_bunga,null,0,h.mpc_premi+h.mpc_bunga) as bayar_bunga, 
+decode(a.msl_kode,8,decode(((a.msl_premi + a.msl_bunga) - decode(h.mpc_premi+h.mpc_bunga,null,0,h.mpc_premi+h.mpc_bunga)),null,0,((a.msl_premi + a.msl_bunga) - decode(h.mpc_premi+h.mpc_bunga,null,0,h.mpc_premi+h.mpc_bunga))),0) as penarikan,
+decode(h.reg_spaj, null,null,(e.mrc_no_ac || '- a/n ' || e.mrc_nama || ', ' || f.lsbp_nama || ' cabang : ' || e.mrc_cabang)) rekening, decode(a.msl_ro,1,'ROLLOVER NILAI TUNAI (ALL)',2,'ROLLOVER PREMI',3,'AUTOBREAK') msl_ro, a.msl_rate, 
+	   a.msl_mgi,h.mpc_cair tanggal_bayar, a.msl_bp bonus_performance		
+		FROM eka.mst_slink a, 
+		  	   (SELECT *
+		          FROM eka.mst_slink
+		         WHERE msl_kode IN (2, 3, 8) AND msl_aktif = 1) b,
+				 eka.mst_policy c,
+				 eka.mst_client_new d,
+				 eka.mst_rek_client e,
+				 eka.lst_bank_pusat f,
+				 eka.lst_kurs g,
+				 eka.mst_powersave_cair h
+		 WHERE (a.reg_spaj = RPAD (REPLACE ($P{NoPolis} , '.'), 11, ' ') or c.mspo_policy_no=rpad(replace($P{NoPolis},'.'),14,' '))
+		   AND a.msL_kode in (2,3,5,8)
+		   AND a.reg_spaj = b.reg_spaj(+)
+		   AND a.reg_spaj = c.reg_spaj
+		   AND a.reg_spaj = e.reg_spaj
+		   AND a.reg_spaj = h.reg_spaj(+)
+		   AND c.mspo_policy_holder = d.mcl_id
+		   AND e.lsbp_id = f.lsbp_id
+		   AND c.lku_id = g.lku_id
+		   AND a.msl_tu_ke = b.msl_tu_ke(+)
+		   AND a.msl_no = h.mpc_urut(+)
+			order by a.msl_tu_ke, a.msl_no]]>
+	</queryString>
+	<field name="BAYAR_BUNGA" class="java.math.BigDecimal"/>
+	<field name="BONUS_PERFORMANCE" class="java.math.BigDecimal"/>
+	<field name="LKU_SYMBOL" class="java.lang.String"/>
+	<field name="MCL_FIRST" class="java.lang.String"/>
+	<field name="MSL_BDATE" class="java.util.Date"/>
+	<field name="MSL_BUNGA" class="java.math.BigDecimal"/>
+	<field name="MSL_DESC" class="java.lang.String"/>
+	<field name="MSL_DESC1" class="java.lang.String"/>
+	<field name="MSL_EDATE" class="java.util.Date"/>
+	<field name="MSL_KODE" class="java.math.BigDecimal"/>
+	<field name="MSL_MGI" class="java.math.BigDecimal"/>
+	<field name="MSL_PREMI" class="java.math.BigDecimal"/>
+	<field name="MSL_RATE" class="java.math.BigDecimal"/>
+	<field name="MSL_RO" class="java.lang.String"/>
+	<field name="MSL_TU_KE" class="java.math.BigDecimal"/>
+	<field name="MSPO_POLICY_NO_FORMAT" class="java.lang.String"/>
+	<field name="PENARIKAN" class="java.math.BigDecimal"/>
+	<field name="REKENING" class="java.lang.String"/>
+	<field name="TANGGAL_BAYAR" class="java.util.Date"/>
+	<variable name="total_premi" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{MSL_PREMI}]]></variableExpression>
+	</variable>
+	<variable name="total_bunga" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{MSL_BUNGA}]]></variableExpression>
+	</variable>
+	<variable name="total_penarikan" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{BAYAR_BUNGA}]]></variableExpression>
+	</variable>
+	<variable name="total_sisa" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{PENARIKAN}]]></variableExpression>
+	</variable>
+	<variable name="total_bonus" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{BONUS_PERFORMANCE}]]></variableExpression>
+	</variable>
+	<title>
+		<band height="87">
+			<staticText>
+				<reportElement x="0" y="0" width="461" height="27"/>
+				<textElement>
+					<font size="18"/>
+				</textElement>
+				<text><![CDATA[PT Asuransi Jiwa Sinarmas MSIG Tbk.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="27" width="461" height="16"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[Laporan Nasabah Stable Link]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="0" y="66" width="364" height="16"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Nama Pemegang Polis : " + $F{MCL_FIRST}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="46" width="363" height="16"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["No Polis : " + $F{MSPO_POLICY_NO_FORMAT}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="35">
+			<staticText>
+				<reportElement x="4" y="7" width="24" height="20"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<line>
+				<reportElement x="2" y="4" width="1549" height="1"/>
+				<graphicElement/>
+			</line>
+			<line>
+				<reportElement x="2" y="31" width="1547" height="1"/>
+				<graphicElement/>
+			</line>
+			<staticText>
+				<reportElement x="33" y="7" width="174" height="20"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="665" y="7" width="119" height="20"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Premi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="213" y="7" width="61" height="20"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Beg Date]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="279" y="7" width="61" height="20"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[End Date]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="612" y="7" width="44" height="20"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Kurs]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1115" y="7" width="92" height="21"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Penarikan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1214" y="7" width="332" height="21"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Rekening]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1001" y="7" width="105" height="21"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Pembayaran Bunga]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="793" y="7" width="108" height="21"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Bunga]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="409" y="7" width="32" height="20"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[MGI]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="445" y="7" width="37" height="20"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Rate]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="486" y="7" width="123" height="20"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Jenis RO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="345" y="7" width="61" height="20"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Tanggal Bayar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="904" y="7" width="95" height="21"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Bonus Performance]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="26">
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToTallestObject" x="33" y="3" width="174" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{PENARIKAN}.doubleValue()!=0?$F{MSL_DESC1}+'*': $F{MSL_DESC1}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToTallestObject" x="1000" y="3" width="106" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{BAYAR_BUNGA})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="1213" y="3" width="333" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{REKENING}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToTallestObject" x="1115" y="3" width="91" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{PENARIKAN})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToTallestObject" x="665" y="3" width="119" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{MSL_PREMI})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToTallestObject" x="3" y="3" width="23" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{REPORT_COUNT}.intValue()) + "."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToTallestObject" x="212" y="3" width="62" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{MSL_BDATE})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToTallestObject" x="613" y="3" width="44" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LKU_SYMBOL}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToTallestObject" x="280" y="3" width="60" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{MSL_EDATE})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToTallestObject" x="791" y="3" width="110" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{MSL_BUNGA})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToTallestObject" x="409" y="3" width="32" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSL_MGI} + " bln"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToTallestObject" x="445" y="3" width="36" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSL_RATE} + "%"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToTallestObject" x="486" y="4" width="123" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{MSL_RO}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToTallestObject" x="345" y="3" width="60" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.formatDateNumber($F{TANGGAL_BAYAR})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToTallestObject" x="904" y="3" width="94" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($F{BONUS_PERFORMANCE})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="17">
+			<textField>
+				<reportElement x="1525" y="4" width="7" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["/"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1514" y="4" width="12" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="1532" y="4" width="12" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="2" y="3" width="1548" height="1"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="72">
+			<staticText>
+				<reportElement x="595" y="7" width="61" height="20"/>
+				<box border="None" padding="0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total :]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="664" y="6" width="119" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($V{total_premi})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="792" y="6" width="109" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($V{total_bunga})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1001" y="6" width="103" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($V{total_penarikan})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1114" y="6" width="91" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($V{total_sisa})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="3" y="33" width="125" height="14"/>
+				<textElement/>
+				<text><![CDATA[Keterangan Tambahan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4" y="47" width="194" height="14"/>
+				<textElement/>
+				<text><![CDATA[ * : sudah dilakukan pencairan]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="904" y="6" width="94" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.format0Digit($V{total_bonus})]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="0" width="1548" height="1"/>
+				<graphicElement/>
+			</line>
+		</band>
+	</summary>
+</jasperReport>
